@@ -1,0 +1,10 @@
+Sample input file to identify_space_group.  NaCl crystal.
+0    accuracy
+2    form of lattice parameters: to be entered as lengths and angles
+5.63 5.63 5.63 90 90 90  a,b,c,alpha,beta,gamma
+2    form of vectors defining unit cell
+F    face-centered lattice
+2           number of atoms in the primitive unit cell
+1 2         type of each atom
+0 0 0       position of each atom
+0.5 0.5 0.5

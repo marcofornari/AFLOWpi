@@ -1,0 +1,224 @@
+COMSUBS
+
+Harold T. Stokes and Dorian M. Hatch
+Department of Physics and Astronomy, Brigham Young University, Provo, Utah
+e-mail: stokesh@byu.edu
+
+This program finds possible paths taken by atoms in a reconstructive
+phase transition.  This is accomplished by finding maximal common
+subgroups of the two phases.  
+
+Version 2.0 contains an improved algorithm which contains major
+revisions.  (Phys. Rev. B 65, 144114-1-12 (2002) describes the
+algorithm for Versions 1.x.)  Differences between version 1.x and 2.0
+are described at the end of this document.
+
+See comsubs_sample* for sample input and output files for this program.
+
+COMSUBS reads input from standard input and sends output to standard output.
+A duplication of the output is also written into the file, comsubs.log.
+
+Below, crystal 1 and crystal 2 refer to the structures in the two phases.
+
+COMSUBS uses the following settings of space groups in International
+Tables of Crystallography:
+
+monoclinic: unique axis b, cell choice 1
+rhombohedral: hexagonal axes
+origin choice 2 (point of inversion at origin)
+
+-----------------------------------------------------------------------------
+
+The standard input to comsubs should contain the following
+information:
+
+Note that any characters following a '!' character in the input are
+treated as comments and are ignored.
+
+(1) title line.  This line is copied to the output, but is otherwise
+ignored by the program.
+
+(2) space group symmetry of crystal 1 (1-230)
+
+(3) lattice parameters of crystal 1: a,b,c,alpha,beta,gamma, where
+a,b,c are the lengths of the lattice vectors defining the conventional
+unit cell, alpha is the angle between b and c, beta is the angle
+between a and c, and gamma is the angle between a and b.  Angles are
+in degrees.  Units for lengths are arbitrary.
+
+(4) number of Wyckoff positions occupied by atoms in crystal 1.
+
+(5) information about each Wyckoff position (each on a separate line).
+This information can be given in two different forms: (a) the symbol
+for the atom and the x,y,z dimensionless coordinates of one of the
+atoms in that position. (b) the symbol for the atom, the symbol for
+the Wyckoff position (a,b,c,etc.), and the values for the x,y,z
+structural parameters (as given for that Wyckoff position in the
+International Tables for Crystallography).  Note that, for example,
+if only a value for y is needed, enter a zero for the value of x.
+
+(6) space group symmetry of crystal 2 (1-230)
+
+(7) lattice parameters of crystal 2: a,b,c,alpha,beta,gamma.
+
+(8) number of Wyckoff positions occupied by atoms in crystal 2.
+
+(9) information about each Wyckoff position
+
+(10) Each of the remaining lines contains a keyword followed by data
+if needed.  The possible keywords are:
+
+size: the minimum and maximum size of the primitive unit cell of the
+subgroup with respect to the primitive unit cell of crystal 1.  If
+only one value is entered, it will be interpreted to be the maximum
+size.  The default values for the minimum and maximum size are both 1.
+
+strain: the minimum and maximum values allowed for principal values of
+the strain tensor.  The default values are 0.66 and 1.5.
+
+neighbor: the minimum distance allowed between nearest neighbors along
+a linear path between the two crystals.  The default distance is zero.
+
+shuffle: the maximum atomic displacement allowed.  This is measured
+with respect to a "center of mass" of the crystal.
+
+subgroup: the minimum and maximum space group symmetry (1-230) of the
+subgroup to be considered.  The default values are 1 and 230.
+
+lattice: a particular choice of subgroup lattice to be considered.
+This is given by (1) the space-group symmetry of the subgroup, (2-4)
+the lattice vectors a,b,c of the subgroup each in terms of the lattice
+vectors a,b,c of crystal 1, and (5-7) the lattice vectors a,b,c of the
+subgroup each in terms of the lattice vectors a,b,c of crystal 2.  All
+seven items must be separated by spaces.  If the space-groups symmetry
+is not known, enter any space group which specifies the lattice
+centering intended.  Each lattice vector of the subgroup is given by
+three rational dimensionless numbers separated by commas (no spaces).
+The specification of the space-group symmetry of the subgroup does not
+restrict the considerations of those symmetry.  It merely communicates
+to the program the setting of the lattice vectors in the subgroup.
+For example: 166 1/2,0,1/2 0,1/2,-1/2 -1,1,1 0,1,1 -1,-1,0, 1,-1,1.
+Note that rational numbers are expressed in terms of the ratio of two
+integers.  By default, all possible lattice vectors of the subgroup
+are considered, within the constraints imposed by the length and
+strain keywords (or their default values).  When the lattice of the
+subgroup is selected, the constraints imposed by the length, strain,
+and neighbor keywords (or their default values) are ignored.
+
+madelung: relative madelung energy/atom of the structure half-way
+between the the two crystals.  This energy is given relative to the
+average madelung energy/atom in the two crystals.  On the lines
+following this keyword, enter the symbol for each type of atom
+followed by the net charge of that atom.  Each type of atom must be
+entered on a separate line.  If the relative madelung energy is high,
+the path will be energetically unfavorable due to distribution of
+charges.  Such paths can be eliminated from further investigation.
+
+-------------------------------------------------------------------------------
+
+The standard output of comsubs contains the following information:
+
+Note that after each minute elapsed time, the '.' character is sent
+standard output.  This lets the user know that the program is still
+running.
+
+(1) title, as read from the standard input
+
+(2) space group symmetry of crystal 1, as read from the standard
+input
+
+(3) lattice parameters of crystal 1, as read from the standard input
+
+(4) number of Wyckoff positions in crystal 1, as read from the standard input
+
+(5) each Wyckoff position, as read from the standard input along the
+the letter symbol for the Wyckoff position.  This allows the user to
+be sure that the program has correctly interpreted the atomic position
+given in the standard input.
+
+(6) space group symmetry of crystal 2, as read from the standard
+input
+
+(7) lattice parameters of crystal 2, as read from the standard input
+
+(8) number of Wyckoff positions in crystal 2, as read from the standard input
+
+(9) each Wyckoff position, as read from the standard input along the
+the letter symbol for the Wyckoff position.
+
+(10) acknowledgement of each keyword encountered
+
+(11) number of atoms in the primitive unit cell of each crystal.  The
+user should check these values to be sure that the data about the
+structures of the crystals have been correctly entered.
+
+(12) volume/atom in the two crystals.  For real data, these two values
+should be approximately equal.  Otherwise, the user should suspect that
+the input data may have been incorrectly entered.
+
+(13) nearest-neighbor distance in the two crystals.  Unreasonable
+values here should alert the user that the input data may have been
+incorrectly entered.
+
+(14) each subgroup found under the imposed constraints.  For each
+subgroup, the following information is given:
+
+(a) numbering of subgroups
+
+(b) principal values of the strain tensor for the path from crystal 1
+to crystal 2.  Pure rotations are removed from the strain tensor.
+
+(c) nearest-neighbor distance between any pair of atoms along a linear
+path between crystal 1 and crystal 2.
+
+(d) space-group symmetry of the common subgroup
+
+(e) subgroup in the setting of crystal 1: 
+  (i)   the relative size of the primitive unit cells
+  (ii)  the lattice vectors a,b,c of the subgroup in terms of the
+          lattice vectors a,b,c of crystal 1
+  (iii) the origin of the subgroup relative to the origin of 
+          crystal 1 in terms of the lattice vectors a,b,c of crystal 1
+  (iv)  the lattice parameters of the subgroup when it has the same 
+          structure as crystal 1
+  (v)   the atomic positions in the subgroup when it has the same 
+          structure as crystal 1.
+
+(f) same information for the subgroup in the setting of crystal 2.
+
+(g) subgroup with a structure half-way between that of crystals 1 and
+2: the lattice parameters and atomic positions.
+
+-------------------------------------------------------------------------------
+
+Differences between versions 1.x and 2.0
+
+(1) All superlattices for each size of unit cell of the subgroup are
+now considered.
+
+(2) For each common superlattice which obeys the strain constraint,
+all possible mappings of atoms from crystal 1 to crystal 2 are
+generated, without any consideration given to possible space-group
+symmetries of the common subgroup.
+
+(3) Space-group symmetry of the common subgroup is obtained only after
+a mapping has been found which obeys the constraints of minimum
+allowed nearest-neighbor distances and maximum allowed atomic shuffle.
+
+(4) The following are differences in the action of keywords (for more
+details, see the description of the keywords above):
+
+(a) length:  this keyword is no longer implemented.  Instead, all lattices
+of each allowed size are considered.
+
+(b) subgroup: the default subgroups considered now include the
+triclinic subgroup #1.
+
+(c) neighbor: sets a minimum value for nearest neighbor distance along
+the entire linear path between the two crystals.
+
+(d) size: may also indicate a minimum size of the unit cells of the
+subgroup.
+
+(e) shuffle: a new keyword which sets maximum atomic displacements
+allowed in the transition.
