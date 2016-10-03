@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plot module &mdash; AFLOWpi  documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="AFLOWpi  documentation" href="index.html" />
+    <link rel="next" title="prep module" href="prep.html" />
+    <link rel="prev" title="Welcome to AFLOWpi’s documentation!" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          AFLOWpi</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">plot module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prep.html">prep module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pseudo.html">pseudo module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="retr.html">retr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scfuj.html">scfuj module</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">plot module</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="index.html" title="Previous Chapter: Welcome to AFLOWpi’s documentation!"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Welcome to AF...</span>
+    </a>
+  </li>
+  <li>
+    <a href="prep.html" title="Next Chapter: prep module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">prep module &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/plot.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-plot">
+<span id="plot-module"></span><h1>plot module<a class="headerlink" href="#module-plot" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="plot.bands">
+<code class="descclassname">plot.</code><code class="descname">bands</code><span class="sig-paren">(</span><em>calcs, yLim=[-10, 10], DOSPlot='', LSDA=False, runlocal=False, postfix='', tight_banding=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates electronic band structure plots for the calculations in the dictionary of dictionaries
+of calculations with the option to have a DOS or PDOS plot to accompany it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries representing the set of calculations</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>yLim</strong> (<em>list</em>) &#8211;
+List or tuple of two integers for max and min range in horizontal axis of DOS plot</li>
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211;
+To plot DOS as spin polarized or not (calculation must have been done as spin polarized)</li>
+<li><strong>DOSPlot</strong> (<em>str</em>) &#8211;
+DOS or the PDOS plots next to the eletronic band structure plot (assuming you ran
+either ppDOS or ppPDOS) (default: NONE)</li>
+<li><strong>postfix</strong> (<em>str</em>) &#8211;
+Postfix to the filename of the plot</li>
+<li><strong>tight_banding</strong> (<em>bool</em>) &#8211;
+Whether to treat the input data as from Quantum Espresso or WanT bands.x</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.distortionEnergy">
+<code class="descclassname">plot.</code><code class="descname">distortionEnergy</code><span class="sig-paren">(</span><em>calcs1</em>, <em>xaxis</em>, <em>yaxis</em>, <em>zaxis='Energy'</em>, <em>calcs=None</em>, <em>colorbarUnits=None</em>, <em>titleArray=None</em>, <em>plotTitle=None</em>, <em>xAxisStr=None</em>, <em>yAxisStr=None</em>, <em>fileName='distortionEnergy.pdf'</em>, <em>percentage=False</em>, <em>runlocal=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#distortionEnergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.distortionEnergy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plot.dos">
+<code class="descclassname">plot.</code><code class="descname">dos</code><span class="sig-paren">(</span><em>calcs, yLim=[-10, 10], LSDA=False, runlocal=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates DOS plots for the calculations in the dictionary of dictionaries of calculations</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries representing the set of calculations</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>yLim</strong> (<em>list</em>) &#8211;
+List or tuple of two integers for max and min range in horizontal axis of DOS plot</li>
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211;
+To plot DOS as spin polarized or not (calculation must have been done as spin polarized)</li>
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
+Do the plotting right now or if False do it when the calculations are running</li>
+<li><strong>postfix</strong> (<em>str</em>) &#8211;
+Postfix to the filename of the plot</li>
+<li><strong>tight_banding</strong> (<em>bool</em>) &#8211;
+Whether to treat the input data as from Quantum Espresso or WanT bands.x</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.grid_plot">
+<code class="descclassname">plot.</code><code class="descname">grid_plot</code><span class="sig-paren">(</span><em>calcs</em>, <em>xaxis</em>, <em>yaxis</em>, <em>zaxis='Energy'</em>, <em>colorbarUnits=None</em>, <em>zaxis_title=None</em>, <em>plot_title=None</em>, <em>xAxisStr=None</em>, <em>yAxisStr=None</em>, <em>fileName='grid_plot.pdf'</em>, <em>runlocal=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#grid_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.grid_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plot.interpolatePlot">
+<code class="descclassname">plot.</code><code class="descname">interpolatePlot</code><span class="sig-paren">(</span><em>calcs</em>, <em>variable1</em>, <em>variable2</em>, <em>zaxis='Energy'</em>, <em>xaxisTitle=None</em>, <em>yaxisTitle=None</em>, <em>zaxisTitle=None</em>, <em>title=None</em>, <em>fileName='interpolatePlot.pdf'</em>, <em>delta=False</em>, <em>text_min=False</em>, <em>vhline_min=False</em>, <em>circle_min=False</em>, <em>delta_min=True</em>, <em>rel_center=False</em>, <em>plot_color='jet'</em>, <em>find_min=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#interpolatePlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.interpolatePlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of calculations and plots the energy of the calculations as a function of two input variables
+the first value is the baseline for the energy value and the energy plotted is the difference between that
+energy and the other energies in the grid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</li>
+<li><strong>variable1</strong> (<em>str</em>) &#8211; a string of the variable in the calculations that you want as your x axis</li>
+<li><strong>variable2</strong> (<em>str</em>) &#8211; a string of the variable in the calculations that you want to your y axis</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>title</strong> (<em>str</em>) &#8211;
+Title of plot (default: None)</li>
+<li><strong>zaxis</strong> (<em>str</em>) &#8211;
+Choice out of the keywords in each calc to plot in the Z axis (default: Energy)</li>
+<li><strong>xaxisTitle</strong> (<em>str</em>) &#8211;
+title of xaxis (default: same as variable1)</li>
+<li><strong>yaxisTitle</strong> (<em>str</em>) &#8211;
+title of yaxis (default: same as variable2)</li>
+<li><strong>zaxisTitle</strong> (<em>str</em>) &#8211;
+title of zaxis (default: same as zaxis)</li>
+<li><strong>fileName</strong> (<em>str</em>) &#8211;
+Name (and path where default is directory where script is run from ) of the
+output file (default: &#8216;interpolatePlot.pdf&#8217;)</li>
+<li><strong>delta</strong> (<em>bool</em>) &#8211;
+Z-axis scale relative to its first value</li>
+<li><strong>delta_min</strong> (<em>bool</em>) &#8211;
+Z-axis scale relative to its lowest value</li>
+<li><strong>text_min</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value if find_min=True</li>
+<li><strong>vhline_min</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value if find_min=True</li>
+<li><strong>circle_min</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value if find_min=True</li>
+<li><strong>delta_min</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value if find_min=True</li>
+<li><strong>rel_center</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value if find_min=True</li>
+<li><strong>plot_color</strong> (<em>str</em>) &#8211;
+string of the matplotlib colormap to be used</li>
+<li><strong>find_min</strong> (<em>bool</em>) &#8211;
+Interpolate between points and find value of
+variable1 and variable2 for the minimum value of Z axis</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.interpolatePlot1D">
+<code class="descclassname">plot.</code><code class="descname">interpolatePlot1D</code><span class="sig-paren">(</span><em>calcs</em>, <em>variable1</em>, <em>yaxis='Energy'</em>, <em>xaxisTitle=None</em>, <em>yaxisTitle=None</em>, <em>title=None</em>, <em>fileName='interpolatePlot.pdf'</em>, <em>delta=False</em>, <em>circle_min=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#interpolatePlot1D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.interpolatePlot1D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of calculations and plots the energy of the calculations as a function of two input variables
+the first value is the baseline for the energy value and the energy plotted is the difference between that
+energy and the other energies in the grid</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</li>
+<li><strong>variable1</strong> (<em>dict</em>) &#8211; a string of the variable in the calculations that you want as your x axis</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li><strong>yaxis</strong> (<em>str</em>) &#8211;
+Choice out of the keywords in each calc to plot in the Z axis (default: Energy)</li>
+<li><strong>xaxisTitle</strong> (<em>str</em>) &#8211;
+title of xaxis (default: same as variable1)</li>
+<li><strong>yaxisTitle</strong> (<em>str</em>) &#8211;
+title of yaxis (default: same as yaxis)</li>
+<li><strong>title</strong> (<em>str</em>) &#8211;
+Title of plot (default: None)</li>
+<li><strong>fileName</strong> (<em>str</em>) &#8211;
+Name (and path where default is directory where script is run from ) of the
+output file (default: &#8216;interpolatePlot.pdf&#8217;)</li>
+<li><strong>delta</strong> (<em>bool</em>) &#8211;
+Z-axis scale relative to its first value</li>
+<li><strong>circle_min</strong> (<em>bool</em>) &#8211;
+Display text of minimum value next to the minimum value</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.opdos">
+<code class="descclassname">plot.</code><code class="descname">opdos</code><span class="sig-paren">(</span><em>calcs, yLim=[-10, 10], LSDA=False, runlocal=False, postfix='', scale=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#opdos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.opdos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates electronic band structure plots for the calculations in the dictionary of dictionaries
+of calculations with the option to have a DOS or PDOS plot to accompany it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries representing the set of calculations</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>yLim</strong> (<em>list</em>) &#8211;
+List or tuple of two integers for max and min range in horizontal axis of DOS plot</li>
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211;
+To plot DOS as spin polarized or not (calculation must have been done as spin polarized)</li>
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
+Do the plotting right now or if False do it when the calculations are running</li>
+<li><strong>postfix</strong> (<em>str</em>) &#8211;
+Postfix to the filename of the plot</li>
+<li><strong>tight_banding</strong> (<em>bool</em>) &#8211;
+Whether to treat the input data as from Quantum Espresso or WanT bands.x</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.phonon">
+<code class="descclassname">plot.</code><code class="descname">phonon</code><span class="sig-paren">(</span><em>calcs</em>, <em>runlocal=False</em>, <em>postfix=''</em>, <em>THz=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.phonon" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plot.radialPDF">
+<code class="descclassname">plot.</code><code class="descname">radialPDF</code><span class="sig-paren">(</span><em>calcs</em>, <em>atomNum</em>, <em>filterElement=None</em>, <em>runlocal=False</em>, <em>title=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#radialPDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.radialPDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>kwargs get passed to pyplot.hist</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.read_transport_datafile">
+<code class="descclassname">plot.</code><code class="descname">read_transport_datafile</code><span class="sig-paren">(</span><em>ep_data_file</em>, <em>mult_x=1.0</em>, <em>mult_y=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#read_transport_datafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.read_transport_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Arguments:</p>
+<p>Keyword Arguments:</p>
+<p>Returns:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plot.transport_plots">
+<code class="descclassname">plot.</code><code class="descname">transport_plots</code><span class="sig-paren">(</span><em>calcs</em>, <em>runlocal=False</em>, <em>postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plot.html#transport_plots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plot.transport_plots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, Andrew Supka.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

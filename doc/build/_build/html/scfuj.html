@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>scfuj module &mdash; AFLOWpi  documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="AFLOWpi  documentation" href="index.html" />
+    <link rel="prev" title="run module" href="run.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body role="document">
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          AFLOWpi</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="plot.html">plot module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prep.html">prep module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pseudo.html">pseudo module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="retr.html">retr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">scfuj module</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">scfuj module</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="run.html" title="Previous Chapter: run module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; run module</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/scfuj.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 content">
+      
+  <div class="section" id="module-scfuj">
+<span id="scfuj-module"></span><h1>scfuj module<a class="headerlink" href="#module-scfuj" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="scfuj.WanT_bands">
+<code class="descclassname">scfuj.</code><code class="descname">WanT_bands</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID=None</em>, <em>eShift=10.0</em>, <em>nbnd=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#WanT_bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.WanT_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make input files for  WanT bands calculation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calc_copy -- dictionary of dictionaries of calculations</strong> (<em>-</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.WanT_dos">
+<code class="descclassname">scfuj.</code><code class="descname">WanT_dos</code><span class="sig-paren">(</span><em>oneCalc, ID=None, eShift=10.0, temperature=300.0, energy_range=[-10.0, 10.0]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#WanT_dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.WanT_dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make input files for  WanT bands calculation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calc_copy -- dictionary of dictionaries of calculations</strong> (<em>-</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.WanT_epsilon">
+<code class="descclassname">scfuj.</code><code class="descname">WanT_epsilon</code><span class="sig-paren">(</span><em>oneCalc, ID=None, eShift=10.0, temperature=300.0, energy_range=[0.1, 12.5]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#WanT_epsilon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.WanT_epsilon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make input files for  WanT bands calculation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calc_copy -- dictionary of dictionaries of calculations</strong> (<em>-</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.acbn0">
+<code class="descclassname">scfuj.</code><code class="descname">acbn0</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>projCalcID</em>, <em>byAtom=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#acbn0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.acbn0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.checkOscillation">
+<code class="descclassname">scfuj.</code><code class="descname">checkOscillation</code><span class="sig-paren">(</span><em>ID</em>, <em>oneCalc</em>, <em>uThresh=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#checkOscillation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.checkOscillation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.chkSpinCalc">
+<code class="descclassname">scfuj.</code><code class="descname">chkSpinCalc</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#chkSpinCalc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.chkSpinCalc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether an calculation is spin polarized or not.</p>
+<p>Arguments:</p>
+<p>&#8211;oneCalc : dictionary of a single calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.chk_species">
+<code class="descclassname">scfuj.</code><code class="descname">chk_species</code><span class="sig-paren">(</span><em>elm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#chk_species"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.chk_species" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.evCurveMinimize">
+<code class="descclassname">scfuj.</code><code class="descname">evCurveMinimize</code><span class="sig-paren">(</span><em>calcs</em>, <em>config=None</em>, <em>pThresh=10.0</em>, <em>final_minimization='vc-relax'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#evCurveMinimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.evCurveMinimize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.getU_frmACBN0out">
+<code class="descclassname">scfuj.</code><code class="descname">getU_frmACBN0out</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>byAtom=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#getU_frmACBN0out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.getU_frmACBN0out" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.maketree">
+<code class="descclassname">scfuj.</code><code class="descname">maketree</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>paodir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#maketree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.maketree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the directoy tree and place in the input file there</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs -- Dictionary of dictionaries of calculations</strong> (<em>-</em>) &#8211; </p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
+<li><strong>- pseudodir   &#8211; path of pseudopotential files directory</strong></li>
+<li><strong>- paodir       - path of pseudoatomic orbital basis set</strong></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.nscf_nosym_noinv">
+<code class="descclassname">scfuj.</code><code class="descname">nscf_nosym_noinv</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID=None</em>, <em>kpFactor=1.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#nscf_nosym_noinv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.nscf_nosym_noinv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the ncsf input to each subdir and update the master dictionary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>calc_copy -- dictionary of one calculation</strong> (<em>-</em>) &#8211; </li>
+<li><strong>kpFactor -- multiplicative factor for kpoints from SCF to DOS (default</strong> (<em>-</em>) &#8211; <ol class="arabic" start="2">
+<li></li>
+</ol>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.projwfc">
+<code class="descclassname">scfuj.</code><code class="descname">projwfc</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#projwfc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.projwfc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run projwfc on each calculation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>oneCalc -- dictionary of a single calculation</strong> (<em>-</em>) &#8211; </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.run">
+<code class="descclassname">scfuj.</code><code class="descname">run</code><span class="sig-paren">(</span><em>calcs</em>, <em>uThresh=0.001</em>, <em>nIters=20</em>, <em>mixing=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.run_transport">
+<code class="descclassname">scfuj.</code><code class="descname">run_transport</code><span class="sig-paren">(</span><em>__submitNodeName__</em>, <em>oneCalc</em>, <em>ID</em>, <em>run_scf=True</em>, <em>run_transport_prep=True</em>, <em>run_bands=True</em>, <em>epsilon=True</em>, <em>temperature=300</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#run_transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.run_transport" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.scfprep">
+<code class="descclassname">scfuj.</code><code class="descname">scfprep</code><span class="sig-paren">(</span><em>calcs</em>, <em>paodir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#scfprep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.scfprep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="scfuj.transport_prep">
+<code class="descclassname">scfuj.</code><code class="descname">transport_prep</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#transport_prep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.transport_prep" title="Permalink to this definition">¶</a></dt>
+<dd><p>sets up the environment do do scf-&gt;nscf-&gt;projwfc to get overlap for transport calcs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scfuj.updateUvals">
+<code class="descclassname">scfuj.</code><code class="descname">updateUvals</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>Uvals</em>, <em>ID=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scfuj.html#updateUvals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scfuj.updateUvals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify scf input file to do a lda+u calculation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>oneCalc      -- Dictionary of one calculation</strong> (<em>-</em>) &#8211; </li>
+<li><strong>Uvals        -- Dictionary of Uvals</strong> (<em>-</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2016, Andrew Supka.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
