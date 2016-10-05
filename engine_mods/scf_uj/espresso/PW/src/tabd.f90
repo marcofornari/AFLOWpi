@@ -56,46 +56,46 @@ FUNCTION hubbard_occ ( psd )
      !
      ! RARE EARTHS
      !
-     CASE( 'Ce', 'Th' )
-        hubbard_occ = 2.d0
+     CASE( 'Ce',  )
+        hubbard_occ = 1.d0
      !
-     CASE( 'Pr', 'Pa' )
-        hubbard_occ = 3.d0
+     CASE( 'Pr',  )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Nd', 'U'  )
-        hubbard_occ = 4.d0
+     CASE( 'Nd',  )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Pm', 'Np' )
-        hubbard_occ = 5.d0
+     CASE( 'Pm',  )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Sm', 'Pu','F' )
-        hubbard_occ = 6.d0
+     CASE( 'Sm', 'F' )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Eu', 'Am' )
-        hubbard_occ = 6.d0
+     CASE( 'Eu',  )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Gd', 'Cm' )
-        hubbard_occ = 7.d0
+     CASE( 'Gd',  )
+        hubbard_occ = 1.d0
+     ! 
+     CASE( 'Tb',  )
+        hubbard_occ = 0.d0
      !
-     CASE( 'Tb', 'Bk' )
-        hubbard_occ = 8.d0
+     CASE( 'Dy',  )
+        hubbard_occ = 1.d0
      !
-     CASE( 'Dy', 'Cf' )
-        hubbard_occ = 9.d0
+     CASE( 'Ho',  )
+        hubbard_occ =0.d0
      !
-     CASE( 'Ho', 'Es' )
-        hubbard_occ =10.d0
+     CASE( 'Er',  )
+        hubbard_occ =0.d0
      !
-     CASE( 'Er', 'Fm' )
-        hubbard_occ =11.d0
+     CASE( 'Tm',  )
+        hubbard_occ =0.d0
      !
-     CASE( 'Tm', 'Md' )
-        hubbard_occ =12.d0
+     CASE( 'Yb',  )
+        hubbard_occ =0.d0
      !
-     CASE( 'Yb', 'No' )
-        hubbard_occ =13.d0
-     !
-     CASE( 'Lu', 'Lr' )
+     CASE( 'Lu',  )
         hubbard_occ =14.d0
      !
      ! OTHER ELEMENTS

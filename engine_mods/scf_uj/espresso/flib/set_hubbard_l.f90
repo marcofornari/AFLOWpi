@@ -28,12 +28,19 @@ FUNCTION set_hubbard_l( psd ) RESULT( hubbard_l )
         hubbard_l = 2  
         !
      !
+     ! ... rare earths....without the f orbital
+     !
+     CASE('Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu')
+        !
+        hubbard_l = 2
+        !
+     !
      ! ... rare earths
      !
-     CASE('Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu', & 
-          'Th','Pa','U', 'Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr')
+!     CASE('Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu', & 
+!          'Th','Pa','U', 'Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr')
         !
-        hubbard_l = 3
+!        hubbard_l = 3
         !
      !
      ! ... other elements
