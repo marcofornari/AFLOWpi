@@ -20,7 +20,7 @@ calcs.plot.bands(yLim=[-10,10],DOSPlot='APDOS',
                  postfix='without_acbn0')
 # run the ACBN0 pseudo-hybrid functional to
 # self-consistently get Hubbard U
-calcs.scfuj(thresh=0.1,relax='vc-relax',
+calcs.acbn0(thresh=0.1,relax='vc-relax',
             kp_mult=1.5,mixing=0.7)
 # calculate the the DOS and PDOS for PBE+U SrTiO3
 calcs.dos()
