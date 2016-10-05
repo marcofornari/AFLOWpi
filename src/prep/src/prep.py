@@ -4902,7 +4902,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.initial_calcs.append(self.int_dict)
 
 
-        def dos(self,kpFactor=2,project=True):
+        def dos(self,kpFactor=2,project=True,n_valence=None):
 		'''
 		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
 		Adds a new step to the workflow.
@@ -4921,7 +4921,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.tight_banding=False
 		self.type='dos'
 		self.new_step(update_positions=True,update_structure=True)
-		self.int_dict = doss(self.int_dict,kpFactor=kpFactor)
+		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_valence=n_valence)
 		postfix = ConfigSectionMap('run','exec_postfix')
 
 		if len(re.findall(r'npool',postfix))!=0 or len(re.findall(r'nk',postfix))!=0:
@@ -5216,7 +5216,7 @@ def _num_bands(oneCalc,mult=True):
     return nbnd
 
 
-def doss(calcs,kpFactor=1.5):
+def doss(calcs,kpFactor=1.5,n_valence=None):
 	'''
 	Wrapper function to write the functio n AFLOWpi.prep._oneDoss to the _ID.py
 
@@ -5231,7 +5231,7 @@ def doss(calcs,kpFactor=1.5):
 
 	'''
 
-	loadModString = 'AFLOWpi.prep._oneDoss(oneCalc,ID,kpFactor=%s)'%kpFactor
+	loadModString = 'AFLOWpi.prep._oneDoss(oneCalc,ID,kpFactor=%s,n_valence=%s)'%(kpFactor,n_valence)
 	AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
 	'''get the fermi level from here'''
 	AFLOWpi.prep._addToAll(calcs,block='POSTPROCESSING',addition='AFLOWpi.retr._writeEfermi(oneCalc,ID)')
@@ -5240,7 +5240,7 @@ def doss(calcs,kpFactor=1.5):
 
 import math
 @newstepWrapper(_check_lock)
-def _oneDoss(oneCalc,ID,kpFactor=1.5):
+def _oneDoss(oneCalc,ID,kpFactor=1.5,n_valence=None):
     '''
     Converts an scf calculation to an nscf for calculating DOS.
 
@@ -5274,8 +5274,11 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5):
 
     inputDict=AFLOWpi.retr._splitInput(inputfile)
     inputDict['&control']['calculation']="'nscf'"
-
-    nbnd = AFLOWpi.prep._num_bands(oneCalc)
+    
+    if n_valence!=None:
+	    nbnd = AFLOWpi.prep._num_bands(oneCalc)
+    else:
+	    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_valence
 
     try:
 	    '''adds nbnd to input file'''
