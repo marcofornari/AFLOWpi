@@ -56,46 +56,46 @@ FUNCTION hubbard_occ ( psd )
      !
      ! RARE EARTHS
      !
-     CASE( 'Ce',  )
+     CASE( 'Ce'  )
         hubbard_occ = 1.d0
      !
-     CASE( 'Pr',  )
+     CASE( 'Pr'  )
         hubbard_occ = 0.d0
      !
-     CASE( 'Nd',  )
+     CASE( 'Nd'  )
         hubbard_occ = 0.d0
      !
-     CASE( 'Pm',  )
+     CASE( 'Pm'  )
         hubbard_occ = 0.d0
      !
      CASE( 'Sm', 'F' )
         hubbard_occ = 0.d0
      !
-     CASE( 'Eu',  )
+     CASE( 'Eu'  )
         hubbard_occ = 0.d0
      !
-     CASE( 'Gd',  )
+     CASE( 'Gd'  )
         hubbard_occ = 1.d0
      ! 
-     CASE( 'Tb',  )
+     CASE( 'Tb'  )
         hubbard_occ = 0.d0
      !
-     CASE( 'Dy',  )
+     CASE( 'Dy'  )
         hubbard_occ = 1.d0
      !
-     CASE( 'Ho',  )
+     CASE( 'Ho'  )
         hubbard_occ =0.d0
      !
-     CASE( 'Er',  )
+     CASE( 'Er'  )
         hubbard_occ =0.d0
      !
-     CASE( 'Tm',  )
+     CASE( 'Tm'  )
         hubbard_occ =0.d0
      !
-     CASE( 'Yb',  )
+     CASE( 'Yb'  )
         hubbard_occ =0.d0
      !
-     CASE( 'Lu',  )
+     CASE( 'Lu'  )
         hubbard_occ =14.d0
      !
      ! OTHER ELEMENTS
