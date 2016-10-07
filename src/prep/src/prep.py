@@ -2250,6 +2250,9 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
 	"""
 
+
+
+
         logging.debug('Entering makeAFLOWpitree')
         megahashStr=''
         for ID in calcs.keys():
@@ -2574,7 +2577,11 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
              config = os.path.abspath(os.path.join(execDIR,config))
          else:
              pass
-         
+
+#	 if not os.path.exists(config):
+#		 print "config %s does not exist. Exiting"
+#		 raise SystemExit
+
          AFLOWpi.prep._forceGlobalConfigFile(config)
          """
          FIX THSI         FIX THIS         FIX THIS         FIX THIS         FIX THIS
@@ -4083,6 +4090,10 @@ def init__(PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',wo
 	init_str='''
 *** Initiating AFLOWpi ***'''
 
+	if os.path.exists(configFile)==False:
+		logging.info('configuration file: %s does not exist.' % config)
+		print 'configuration file: %s does not exist.' % config
+		raise SystemExit
 
 	print AFLOWpi.run._colorize_message(init_str,level='ERROR',show_level=False)
 	
@@ -4122,14 +4133,37 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 
 
         if not os.path.exists(workdir):
-            try:
-                os.makedirs(workdir)
-            except Exception,e:
-                logging.warning('work directory %s does not exist and attempting to create it failed. Exiting AFLOWpi' % workdir)
-                SystemExit
-        if workdir==None:
-            workdir=os.curdir
-        
+		print "work_dir %s does not exist. exiting"%workdir
+		raise SystemExit
+    #        try:
+   #             os.makedirs(workdir)
+  #          except Exception,e:
+ #               logging.warning('work directory %s does not exist and attempting to create it failed. Exiting AFLOWpi' % workdir)
+#                SystemExit
+#        if workdir==None:
+#            workdir=os.curdir
+
+	try:
+		sym=os.readlink("./%s.symlink"%PROJECT)
+	except:
+		sym="./"
+	if not os.path.exists(sym) or sym=="./":
+		path = os.path.join(workdir,PROJECT)
+		try:
+			if os.path.islink("./%s.symlink"%PROJECT) and os.readlink("./%s.symlink"%PROJECT) == path:
+				print "./%s.symlink to %s is broken. Replacing it with new symlink."%(PROJECT,path)
+				os.unlink("./%s.symlink"%PROJECT)
+		except:
+			pass
+
+		try:
+			os.symlink(path,"./%s.symlink"%PROJECT)
+		except:
+			pass
+
+#        if os.path.exists(sym) and sym!="./"
+#		print "./%s already exists in %s skipping creation of symlink to AFLOWpi directory tree."%(PROJECT,path)
+
 	path = os.path.join(workdir,PROJECT,SET)
 	AFLOWpidir = os.path.join(path,'AFLOWpi')
 #
