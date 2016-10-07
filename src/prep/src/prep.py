@@ -5309,7 +5309,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_valence=None):
     inputDict=AFLOWpi.retr._splitInput(inputfile)
     inputDict['&control']['calculation']="'nscf'"
     
-    if n_valence!=None:
+    if n_valence==None:
 	    nbnd = AFLOWpi.prep._num_bands(oneCalc)
     else:
 	    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_valence
