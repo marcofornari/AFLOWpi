@@ -344,7 +344,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
    fd=.true.
    na_ifc=.true.
    q_in_band_form=.true.,
-   eigen_similarity=.true.
+   eigen_similarity=.false.
 
  /
 %s
