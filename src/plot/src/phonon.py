@@ -213,7 +213,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=True,color_opti
 			
 		elif len(splitLine)==6: # old style kpoint path input case with kpoint names
 			HSPList.append(splitLine[3])
-			specialPointName = splitLine[4][1:].rstrip()
+			specialPointName = splitLine[5].rstrip()
 
 			if specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gG': #renames gG to greek letter for capital gamma
 				specialPointName = r"$\Gamma$"
