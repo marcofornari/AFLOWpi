@@ -827,7 +827,7 @@ def _getCellParams(oneCalc,ID):
         cellParams = AFLOWpi.qe.regex.cell_parameters(lines,'content')
         splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         alat=float(splitInput['&system']['celldm(1)'])
-        paramMatrix=__cellStringToMatrix(cellParams)
+        paramMatrix=_cellStringToMatrix(cellParams)
 
         if len(cellParams):
 
@@ -851,8 +851,9 @@ def _getCellParams(oneCalc,ID):
                 return AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
     except Exception,e:
-
-
+        AFLOWpi.run._fancy_error_log(e)
+     
+     
         return AFLOWpi.retr._getAlatFromInput(oneCalc['_AFLOWPI_INPUT_']), AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
 def get_parameters(oneCalc,ID,conventional=True):
@@ -4122,7 +4123,7 @@ def _prim2ConvMatrix(cellParamMatrix,ibrav=0):
 
     if ibrav==13:
         conv2prim=numpy.matrix([[ 0.5  , 0.0 ,-0.5 ],
-                                [ 1.0  , 1.0 , 0.0 ],
+                                [ 0.0  , 1.0 , 0.0 ],
                                 [ 0.5  , 0.0 , 0.5 ]])
 
     
