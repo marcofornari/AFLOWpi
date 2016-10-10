@@ -192,19 +192,20 @@ def _fancy_error_log(e):
         logging.error(AFLOWpi.run._colorize_message(errorMSG))     
         logging.error(AFLOWpi.run._colorize_message('%%%DEBUG%%%'))       
 
-        
-    if AFLOWpi.prep._ConfigSectionMap('prep','log_level').upper() == 'DEBUG':
-        print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
-        try:
-            print e
-            for errorMSG in errorList:
-                print errorMSG
+    try:
+        if AFLOWpi.prep._ConfigSectionMap('prep','log_level').upper() == 'DEBUG':
+            print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
+            try:
+                print e
+                for errorMSG in errorList:
+                    print errorMSG
 
-        except Exception,e:
-            print e
+            except Exception,e:
+                print e
 
-        print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
-
+            print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
+    except:
+        pass
 
 
 def _getEnginePath(engine,calcType):
@@ -688,17 +689,22 @@ def bands(calcs,engine='',execPrefix=None,execPostfix=' ',holdFlag=True,config=N
     
     testOne(calcs,calcType='bands',engine=engine,execPrefix=execPrefix,execPostfix='',holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
-        try:
-            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='bands')
-        except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
-        try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands')
-        except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
+#        try:
+#            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='bands')
+#        except Exception,e:
+#            AFLOWpi.run._fancy_error_log(e)
+#        try:
+#            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands')
+#        except Exception,e:
+#            AFLOWpi.run._fancy_error_log(e)
 
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.run._PW_bands_fix(oneCalc,ID)')
-
+        bands_pp_run_string = '''if oneCalc['__execCounter__'] <=%s:
+        AFLOWpi.run._bands_pp(__submitNodeName__,oneCalc,ID)
+        oneCalc['__execCounter__']+=1
+        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+'''%oneCalc['__execCounterBkgrd__']
+        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',bands_pp_run_string)
+        oneCalc['__execCounterBkgrd__']+=1
 
 #############################################################################################################
 
@@ -2593,6 +2599,33 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
 ################################################################################################################
 
 ################################################################################################################
+
+def _bands_pp(__submitNodeName__,oneCalc,ID):
+    
+    nspin = int(AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID))
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+
+    if nspin==2:
+        up = oneCalc,'','bands_up',ID
+        dn = oneCalc,'','bands_dn',ID
+
+        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands_up',executable='bands.x',execPath='./bands.x')		
+
+
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'up')
+
+        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands_dn',executable='bands.x',execPath='./bands.x')		
+
+
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'dn')
+
+    else:
+        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands',executable='bands.x',execPath='./bands.x')		
+
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID)
+    
+
+
 def _makeInput(oneCalc,engine,calcType,ID=''):
     """
     Writes the input file for postprocessing calculations
@@ -2610,6 +2643,11 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
           stringDict (str): Input string of the PP step
           
     """
+
+
+
+    
+
 
     try:
         prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -2638,6 +2676,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
        prefix='%s'
        outdir='%s'
        DeltaE=0.01
+       degauss=0.001
        fildos='%s_dos.dat'
 
       /
@@ -2648,7 +2687,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 !       Emax=20
 !       Emin=-20
        outdir='%s'
-
+       degauss=0.001
     !    kresolveddos=.true.
        filpdos='%s'
 
@@ -2661,6 +2700,23 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      filband='./%s_band_data.out'
  /
  """ %  (prefix,temp_dir,ID),
+
+                    'bands_dn':""" &bands
+     prefix='%s'
+     outdir='%s'
+     spin_component=2
+     filband='./%s_dn_band_data.out'
+ /
+ """ %  (prefix,temp_dir,ID),
+
+                    'bands_up':""" &bands
+     prefix='%s'
+     outdir='%s'
+     spin_component=1
+     filband='./%s_up_band_data.out'
+ /
+ """ %  (prefix,temp_dir,ID),
+
 
 
                     'scf':
