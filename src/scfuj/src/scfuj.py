@@ -1030,6 +1030,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
         '''
 
 	oneCalcID = '_'.join(projCalcID.split('_')[:-1])#oneCalc['_AFLOWPI_PREFIX_'][1:]	
+        print oneCalcID
 	subdir = oneCalc['_AFLOWPI_FOLDER_']	
 	nspin = chkSpinCalc(oneCalc,oneCalcID)
 
@@ -1081,10 +1082,30 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 			lines = fin.read()
 
 			atmPosRegex = re.compile(r"positions \(alat units\)\n((?:.*\w*\s*tau\(.*\)\s=.*\(.*\)\n)+)",re.MULTILINE) 
+                        try:
+                            positions = AFLOWpi.retr.getPositionsFromOutput(oneCalc,oneCalcID)
+                            positions = AFLOWpi.retr._cellMatrixToString(positions)
+                            
+                            if positions=="":
+                                splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+                                positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
+                        except:
+                            splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+                            positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
+
+
 			lines1 = atmPosRegex.findall(lines)[0]
 			atmPosRegex1 = re.compile(r".*=.*\((.*)\)\n+",re.MULTILINE)
 
 			atmPos = atmPosRegex1.findall(lines1)
+
+                        try:
+                            positions=np.asarray([[float(i.split()[1]),float(i.split()[2]),float(i.split()[3])] for i in positions.split("\n") if len(i.strip())!=0])
+                        except:
+                            positions=np.asarray([[float(i.split()[0]),float(i.split()[1]),float(i.split()[2])] for i in positions.split("\n") if len(i.strip())!=0])
+                        positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
+                        atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
+                        
 			atmPosList = []
 
 			for i in atmPos:atmPosList.append(map(float,i.split()))
@@ -1092,13 +1113,14 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 		except Exception,e:
 			AFLOWpi.run._fancy_error_log(e)
-
+                        raise SystemExit
 
 
                 for i in range(len(atmPosList)):
 			try:
 		#Convert fractional atomic coordinates to cartesian coordinates using the lattice vectors (cell parameters)
-				atmPosStr += str(list(np.array(atmPosList[i])*a)).strip('[]')
+#				atmPosStr += str(list(np.array(atmPosList[i])*a)).strip('[]')
+				atmPosStr += str(list(np.array(atmPosList[i]))).strip('[]')
 				if i != len(atmPosList)-1:
 					atmPosStr += ' ,'
 			except Exception,e:
@@ -1704,8 +1726,8 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
         try:
-
-            oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,override_lock=True)
+            pass
+#            oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,override_lock=True)
 
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
