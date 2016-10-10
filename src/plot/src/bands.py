@@ -285,6 +285,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	else:
 		filebands = os.path.join(subdir,'%s_bands.xmgr'%calcID)
+		if not os.path.exists(filebands):
+			filebands_up = os.path.join(subdir,'%s_up_bands.xmgr'%calcID)
+			filebands_dn = os.path.join(subdir,'%s_dn_bands.xmgr'%calcID)
+
                 Efermi_shift=Efermi
 
 
@@ -297,7 +301,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
        #to set figure size and default fonts
 	matplotlib.rc("font", family="serif")      #to set the font type
-	matplotlib.rc("font", size=10)             #to set the font size
+	matplotlib.rc("font", size=20)             #to set the font size
 
         
         width = 20
@@ -307,7 +311,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
      #to do the gaussian smoothing               
  
      #################################
-	if nspin==2 and tight_banding==True:
+	if nspin==2:
 		k_x_up,k_y_up = AFLOWpi.plot._clean_bands_data_qe(filebands_up,Efermi_shift)
 		k_x_dn,k_y_dn = AFLOWpi.plot._clean_bands_data_qe(filebands_dn,Efermi_shift)
 		k_x,k_y=k_x_up,k_y_up
@@ -331,11 +335,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
         Plot each band (k_x[i]),(k_y[i]) on the band structure plot from list of
         the values of energy and position from their respective list by k points
 	'''
-	if nspin==2 and tight_banding==True:
+	if nspin==2:
 		for i in range(len(k_x_up)):
 			try:
-				pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,label="$\uparrow$")
-				pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,label="$\downarrow$")
+				pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,label="$\uparrow$",linewidth=2)
+				pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
@@ -344,10 +348,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	else:
 		if tight_banding==True:
 			for i in range(len(k_x)):
-				pylab.plot((k_x[i]),(k_y[i]),'k')			
+				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)			
 		else:
 			for i in range(len(k_x)):
-				pylab.plot((k_x[i]),(k_y[i]),'k')
+				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)
 
 
 	pylab.ylabel('E(eV)')
@@ -456,10 +460,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	for sym in symIndex:
             try:
-                pylab.axvline(a[sym], color = 'k')
+                print a[sym]
+                pylab.axvline(a[sym], color = 'k',linewidth=2)
             except Exception,e:
-                print sym
-                pylab.axvline(a[-1], color = 'k')
+
+                pylab.axvline(a[-1], color = 'k',linewidth=2)
 		
                 pass
      #Print path labels to band structure x-axis
@@ -470,7 +475,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 				bars.append(a[index] )
 			except:
 				bars.append(a[-1] )
-		pylab.xticks(bars,SymPrint)
+		pylab.xticks(bars,SymPrint, fontsize = 20)
 	except Exception,e:
                 print e
 		pylab.xticks([a[-1] for index in symIndex],SymPrint)
@@ -557,9 +562,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			'''gets the energy and the DOS for the orbital for the atom'''
 			enshift, floatdos,floatdosDOWN = getPlotData(filepath)
 			"""makes a sum of all the pdos for a total"""
-			floatdos=AFLOWpi.plot.__smoothGauss(floatdos)
-			floatdosDOWN=AFLOWpi.plot.__smoothGauss(floatdosDOWN)
-			enshift=AFLOWpi.plot.__smoothGauss(enshift)
+#			floatdos=AFLOWpi.plot.__smoothGauss(floatdos)
+#			floatdosDOWN=AFLOWpi.plot.__smoothGauss(floatdosDOWN)
+#			enshift=AFLOWpi.plot.__smoothGauss(enshift)
 
 
 			''' scales DOS to larges value of DOS in the given energy range and finds the largest DOS between the different orbitals'''
@@ -572,24 +577,25 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			except:
                             pass
 			if species=='TOTAL':	
-				pylab.plot(floatdos,enshift,'-',label=species,color='k')		
+				pylab.plot(floatdos,enshift,'-',label=species,color='k',linewidth=2)		
 			else:
-				pylab.plot(floatdos,enshift,'-',label=species)							
+				pylab.plot(floatdos,enshift,'-',label=species,linewidth=2)						
 
 			if LSDA:
 				if species=='TOTAL':
-					pylab.plot(floatdosDOWN,enshift,'-',label=species,color='k')		
+					pylab.plot(floatdosDOWN,enshift,'-',label=species,color='k',linewidth=2)		
 				else:
-					pylab.plot(floatdosDOWN,enshift,'-',label=species)						
+					pylab.plot(floatdosDOWN,enshift,'-',label=species,linewidth=2)					   
 
 		handles, labels = ax2.get_legend_handles_labels()
 
 		if LSDA:
-			ax2.legend(handles[::-2], labels[::-2])
-			pylab.xlim(1.1*minDOS,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range 
+			ax2.legend(handles[::-2], labels[::-2],fontsize=14)
+			dosRange=max([minDOS,maxDOS])
+			pylab.xlim(-1.1*dosRange,1.1*dosRange) # scales DOS to larges value of DOS in the given energy range 
 			pylab.axvline(0.0, color = 'k', linewidth = 1.3) #line separating up and down spin
 		else:
-			ax2.legend(handles[::-1], labels[::-1])
+			ax2.legend(handles[::-1], labels[::-1],fontsize=14)
 			pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 		pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
@@ -615,7 +621,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			else:
 				labels[item]=''
 		
-		ax2.set_xticklabels(labels)
+		ax2.set_xticklabels(labels,fontsize = 20)
 
 ##########################################################################################################
 	     #to plot the DOS
@@ -651,9 +657,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		floatdosDOWN=map(float,dosdw)
 		enshift = numpy.array(endos) #to treat the list b as an array?
 
-		floatdos=AFLOWpi.plot.__smoothGauss(floatdos)
-		floatdosDOWN=AFLOWpi.plot.__smoothGauss(floatdosDOWN)
-		enshift=AFLOWpi.plot.__smoothGauss(enshift)		
+#		floatdos=AFLOWpi.plot.__smoothGauss(floatdos)
+#		floatdosDOWN=AFLOWpi.plot.__smoothGauss(floatdosDOWN)
+#		enshift=AFLOWpi.plot.__smoothGauss(enshift)		
 
 		ax2=pylab.subplot(122)
 
@@ -681,7 +687,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			else:
 				labels[item]=''
 		
-		ax2.set_xticklabels(labels)
+		ax2.set_xticklabels(labels,fontsize = 14)
 		ax1.set_position([0.07,0.1,0.67,0.8]) #[left,bottom,width,height]
 		ax2.set_position([0.75,0.1,0.20,0.8])
 
@@ -698,22 +704,29 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	ax1.spines['top'].set_linewidth(1.5)
 	ax1.set_frame_on(True) #or False 
 
+	low_tick_bound=int(numpy.ceil(yLim[0]))
+	high_tick_bound=int(numpy.floor(yLim[1])+1.0)
+
+	ax1.yaxis.set_ticks(numpy.arange(low_tick_bound,high_tick_bound))
+
 	pylab.ylim(yLim[0],yLim[1])
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line
 
      ##############################
      #to increase the linewidth of the axis, on both subplots
         description='Electronic Band Structure'
-        if DOSPlot=='APDOS':
-            description+=' and Atom Projected DOS'
-        if DOSPlot=='DOS':
-            description+=' and DOS'
+#        if DOSPlot=='APDOS':
+#            description+=' and Atom Projected DOS'
+#        if DOSPlot=='DOS':
+#            description+=' and DOS'
         
 	'''gives the name of the compound in the calculation in the name of the file for the band structure plot'''
 	figtitle = ''
         compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
 	figtitle = '%s: %s' % (description,compoundNameLatex) 
-	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
+	ax1.set_title(figtitle)
+#	ax1.axes.xaxis.set_label_position('top')
+#	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
 
 	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
