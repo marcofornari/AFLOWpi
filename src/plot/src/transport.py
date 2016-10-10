@@ -53,54 +53,61 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
 	'''
 
         trans_plot_dict={}
-        trans_plot_dict['ZetaT']         = {'pf':'ZetaT_',
-                                            'ft':'${\zeta}$T:',
-                                            'lc':'{\zeta}T ',
-                                            'xl':'Energy (eV)',
-                                            'yl':'${\zeta}T$ (au)',
+        trans_plot_dict['ZT']            = {'pf':'ZetaT_',
+                                            'ft':'ZT:',
+                                            'lc':'ZT ',
+                                            'xl':'$\mu$ (eV)',
+                                            'yl':'ZT (au)',
                                             'fp':'ZETAT',
+
                                             }
         trans_plot_dict['cond']          = {'pf':'cond_',
                                             'ft':'$Conduction$:',
                                             'lc':'Cond. ',
-                                            'xl':'Energy (eV)',
-                                            'yl':'$Conduction$ (au)',
+                                            'xl':'$\mu$ (eV)',
+                                            'yl':'$\sigma$ $(10^{20}$ $m/\Omega)$ ',
                                             'fp':'CONDUCTION',
+
                                             }
         trans_plot_dict['seebeck']       = {'pf':'seebeck_',
                                             'ft':'$Seebeck$:',
                                             'lc':'Seebeck ',
-                                            'xl':'Energy (eV)',
-                                            'yl':'S ($\mu$V/K)',
+                                            'xl':'$\mu$ (eV)',
+                                            'yl':'S $(10^{-3} $ $V/K)$',
                                             'fp':'SEEBECK',
                                             }
+
         trans_plot_dict['sig_seebeck']   = {'pf':'sigma_seebeck_',
-                                            'ft':'$\sigma_{Seebeck}$:',
-                                            'lc':'\sigma_{Seebeck} ',
-                                            'xl':'Energy (eV)',
-                                            'yl':'$\sigma_{Seebeck}$ (au)',
+                                            'ft':'$\sigma S$:',
+                                            'lc':'\sigma S ',
+                                            'xl':'$\mu$ (eV)',
+                                            'yl':'$\sigma S$ ($Vm/\Omega/K)$ ',
                                             'fp':'SIGMA_SEEBECK',
+
                                             }
         trans_plot_dict['kappa']         = {'pf':'kappa_',
                                             'ft':'$\kappa$:',
                                             'lc':'\kappa ',
-                                            'xl':'Energy (eV)',
-                                            'yl':'$\kappa$ (au)',
+                                            'xl':'$\mu$ (eV)',
+                                            'yl':'$\kappa$ $(10^{17}$ $W/m/K)$',
                                             'fp':'KAPPA',
+
                                             }
         trans_plot_dict['epsilon_i']     = {'pf':'epsilon_imag_',
                                             'ft':'$\epsilon_{imaginary}$:',
                                             'lc':'\epsilon_{i} ',
-                                            'xl':'Energy (eV)',
+                                            'xl':'$\hbar\omega$ (eV)',
                                             'yl':'$\epsilon_{imag}$ (au)',
                                             'fp':'EPSILON_IMAG',
+
                                             }
         trans_plot_dict['epsilon_r']     = {'pf':'epsilon_real_',
                                             'ft':'$\epsilon_{real}$:',
                                             'lc':'\epsilon_{r} ',
-                                            'xl':'Energy (eV)',
+                                            'xl':'$\hbar\omega$ (eV)',
                                             'yl':'$\epsilon_{real}$ (au)',
                                             'fp':'EPSILON_REAL',
+
                                             }
         
 
@@ -140,7 +147,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
 
 ####################################################################################################################
 
-        type_list=['kappa','sig_seebeck','ZetaT','seebeck','cond','epsilon_i','epsilon_r']
+        type_list=['kappa','seebeck','sig_seebeck','cond','ZT','epsilon_i','epsilon_r']
         for Type in type_list:
             try:
                 max_val=0.0
@@ -176,6 +183,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                             data_by_temp[temperature] = read_transport_datafile(file_name[i])                 
 
 
+
                 if spin_polarized==True:
                         #############################################################################################
                         ##Spin Polarized Case
@@ -202,6 +210,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
 
                 if spin_polarized==False:
                         ax2=pylab.subplot(111)
+
+			ax2.tick_params(axis='both', which='major', labelsize=21)
+
                         sorted_all =  sorted([[float(x[0]),x[1]] for x in data_by_temp.items()])
 
                         for temp_index in range(len(sorted_all)):                    
@@ -213,6 +224,13 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                             x_vals=sorted_all[temp_index][1][0]
                             y_vals=sorted_all[temp_index][1][1]
 
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    elif Type=='sig_seebeck':
+				    y_vals=numpy.asarray(y_vals)/1.0e-9
+			    elif Type=='cond':
+				    y_vals=numpy.asarray(y_vals)/1.0e20
+
                             max_x=max(x_vals)
                             min_x=min(x_vals)
                             for i in [y_vals]:
@@ -223,13 +241,17 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                                 set_min=min(i)
                                 if set_min<min_val:
                                     min_val=set_min
-
+			    
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=2)
 
 
                 if spin_polarized==True:
                     ax1=pylab.subplot(211)
                     ax2=pylab.subplot(212)
+
+		    ax1.tick_params(axis='both', which='minor', labelsize=21)
+		    ax2.tick_params(axis='both', which='major', labelsize=21)
+
                     sorted_dn =  sorted([[float(x[0]),x[1]] for x in data_by_temp_dn.items()])
                     sorted_up =  sorted([[float(x[0]),x[1]] for x in data_by_temp_up.items()])
 
@@ -240,6 +262,13 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                             marker_choice = markers[temp_index%len(markers)]
                             x_vals=sorted_dn[temp_index][1][0]
                             y_vals=sorted_dn[temp_index][1][1]
+
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    elif Type=='sig_seebeck':
+				    y_vals=numpy.asarray(y_vals)/1.0e-3
+			    elif Type=='cond':
+				    y_vals=numpy.asarray(y_vals)/1.0e20
 
                             max_x=max(x_vals)
                             min_x=min(x_vals)
@@ -254,15 +283,18 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                                     min_val=set_min
 
                             ax1.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=2)
-                            pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':18})
-                            pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':18})
+                            pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
+                            pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':22})
                             
 
                     pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
-                    ax1.legend(loc=0,fontsize=20)
-                    ax1.yaxis.set_ticks([0.0])
-                    pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':18})
-                    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':18})
+                    ax1.legend(loc=0,fontsize=22)
+
+		    if Type in ['epsilon_i','epsilon_r','ZT']:
+			    ax1.yaxis.set_ticks([0],)
+
+                    pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
+                    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':22})
  
                     for temp_index in range(len(sorted_up)):                    
                             label_text='$'+trans_plot_dict[Type]['lc']+'^{up}$ @ %sK'%int(sorted_up[temp_index][0])
@@ -271,6 +303,13 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                             ls_choice  = lines[temp_index%len(lines)]
                             x_vals=sorted_up[temp_index][1][0]
                             y_vals=sorted_up[temp_index][1][1]
+
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    elif Type=='sigma_seebeck':
+				    y_vals=numpy.asarray(y_vals)/1.0e-3
+			    elif Type=='cond':
+				    y_vals=numpy.asarray(y_vals)/1.0e20
 
                             max_x=max(x_vals)
                             min_x=min(x_vals)
@@ -304,33 +343,39 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                     try:
                         ax1.set_ylim([min_val*mult_min,max_val*mult_max])
                         ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) 
-                        ax1.yaxis.set_ticks([0.0])
+
+			if Type in ['epsilon_i','epsilon_r','ZT']:
+				ax1.yaxis.set_ticks([0.0])
+
                         ax1.xaxis.set_ticks([])
                         ax1.set_xlim([min_x,max_x])
                     except:
                         pass
 
-                    pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':18})
-                    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':18})
+                    pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
+                    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':22})
 
                 except Exception,e:
                     print e
                     pass
                 ax2.set_ylim([min_val*mult_min,max_val*mult_max])
-                ax2.legend(loc=0,fontsize=20)
+                ax2.legend(loc=0,fontsize=22)
 
                 ax2.set_xlim([min_x,max_x])
-                ax2.yaxis.set_ticks([0.0])
-                pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':18})
-                pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':18})
+		if Type in ['epsilon_i','epsilon_r','ZT']:
+			ax2.yaxis.set_ticks([0.0])
+
+                pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
+                pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':22})
 
                 compoundName = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
                 compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
 
-                ax2.legend(loc=0,fontsize=20)
-                ax2.yaxis.set_ticks([0.0])
+                ax2.legend(loc=0,fontsize=22)
+		if Type in ['epsilon_i','epsilon_r','ZT']:
+			ax2.yaxis.set_ticks([0])
 
-                ax2.axes.yaxis.set_ticks_position('right')
+#                ax2.axes.yaxis.set_ticks_position('right')
 
                 pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spin
 
