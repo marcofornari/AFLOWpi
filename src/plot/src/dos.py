@@ -14,6 +14,7 @@ import collections
 import math
 
 def __smoothGauss(list,strippedXs=False,degree=10):  
+	print "sg"
 	'''
 
 
@@ -85,7 +86,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 
 	#to set figure size and default fonts
 	matplotlib.rc("font", family="serif")      #to set the font type
-	matplotlib.rc("font", size=10)             #to set the font size
+	matplotlib.rc("font", size=20)             #to set the font size
 
 	"""get the path to the subdirectory of the calc that you are making plots for"""
         filedos = os.path.join(subdir,'%s_dos.dat'%ID)
@@ -133,7 +134,12 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
   
 
 	ax2=pylab.subplot(111)
-	floatdos,floatdosDOWN,enshift=__smoothGauss(floatdos),__smoothGauss(floatdosDOWN),__smoothGauss(enshift)
+	inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+	if "degauss" in inDict["&system"].keys():
+		floatdos,floatdosDOWN,enshift=floatdos,floatdosDOWN,enshift
+	else:
+		floatdos,floatdosDOWN,enshift=__smoothGauss(floatdos),__smoothGauss(floatdosDOWN),__smoothGauss(enshift)
+
 #        plot(f,enshift,'k') #to plot the original data
        	pylab.plot(enshift,floatdos,'k') #to plot the smoothed dat
 	dosMAX = 1.0*max([dos[k] for k in range(len(dos)) if en[k] < yLim[1] and en[k] > yLim[0]])
@@ -452,8 +458,14 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		floatdos=map(float,ldos)
 		floatdosDOWN=map(float,ldosDOWN)
 		enshift = numpy.array(endos) #to treat the list b as an array?
+		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
 
-                return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+		if "degauss" in inDict["&system"].keys():
+			return enshift,floatdos,floatdosDOWN
+		else:
+			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+
+
 
 	maxDOS=0
 	minDOS=0
@@ -690,7 +702,14 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		floatdosDOWN=map(float,ldosDOWN)
 		enshift = numpy.array(endos) #to treat the list b as an array?
 
-                return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+
+		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+		if "degauss" in inDict["&system"].keys():
+
+			return enshift,floatdos,floatdosDOWN
+		else:
+			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+
 
 
 	maxDOS=0
@@ -874,7 +893,7 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
 
         ##sometimes smearing will give negative pdos vals
         ##and we dont want that to show if not lsda
-        figtitle='Orbital Proj. DOS: %s %s'%(AFLOWpi.retr._getStoicName(oneCalc,strip=True),postfix)
+        figtitle='Orbital Proj. DOS: %s'%(AFLOWpi.retr._getStoicName(oneCalc,strip=True))
         if not LSDA:
             pyplot.gca().set_ylim(bottom=0)
 
