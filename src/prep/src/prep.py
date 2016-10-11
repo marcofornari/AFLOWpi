@@ -2034,7 +2034,8 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None):
             for prev_calc in  oneCalc['prev']:
                 try:
                     outfile = open(os.path.join(subdir,'%s.out' % prev_calc),'r').read()
-                    match1 = re.findall(r'Kohn-Sham states\s*=\s*([0-9]*)',outfile)[-1]
+#                    match1 = re.findall(r'Kohn-Sham states\s*=\s*([0-9]*)',outfile)[-1]
+		    match1 = float(re.findall(r'number of electrons\w*=\w*([.0-9]*)',outfile)[-1])/2.0
                     nbnd = int(1.75*int(match1))
                     prevID_str=prev_calc
                     break
@@ -5231,15 +5232,19 @@ def _num_bands(oneCalc,mult=True):
 		if os.path.exists(oldFile):
 			with open(oldFile,'r') as outfileObj:
 				outfile=outfileObj.read()
-				match1 = re.search(r'Kohn-Sham states=',outfile)
+				match1_P = re.search(r'Kohn-Sham states=',outfile)
+				match1 = re.search(r'number of electrons       =',outfile)
+
 				if match1==None:
 					continue
 				m1 = match1.end()
 				m2 = m1 + 15
+				m1_P= match1_P.end()
+				m2_P= m1_P + 15
 				if mult==True:
-					nbnd = int(1.75*int(outfile[m1:m2]))
+					nbnd = int(1.75*float(outfile[m1:m2])/2.0)
 				else:
-					nbnd = int(1.0*int(outfile[m1:m2]))
+					nbnd = int(1.0*int(outfile[m1_P:m2_P]))
 
 				print 'Number of bands to be Calculated: %s\n'% nbnd
 				logging.info('Number of bands to be Calculated %s: '% nbnd)
