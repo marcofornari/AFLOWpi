@@ -2612,12 +2612,12 @@ def _bands_pp(__submitNodeName__,oneCalc,ID):
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands_up',executable='bands.x',execPath='./bands.x')		
 
 
-        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'up')
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'_up')
 
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands_dn',executable='bands.x',execPath='./bands.x')		
 
 
-        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'dn')
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID+'_dn')
 
     else:
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands',executable='bands.x',execPath='./bands.x')		
