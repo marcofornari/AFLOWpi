@@ -8,7 +8,7 @@ import copy
 
 class isotropy():
 
-    def __init__(self,input_str,accuracy=0.000,):
+    def __init__(self,input_str,accuracy=0.000,output=False):
 
         self.input     =  AFLOWpi.prep._removeComments(input_str)
         self.accuracy  = accuracy
@@ -25,12 +25,20 @@ class isotropy():
         self.conv_beta = ''
         self.conv_gamma= ''
         self.origin    = ''
-        self.output    = self.__get_isotropy_output()
+        self.axes_flip = ''
+        self.output    = self.__get_isotropy_output(qe_output=output)
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.iso_basis = self.__get_iso_basis()
-        self.iso_pr_car= self.__get_iso_cart()
-        self.conv      = self.__convert_to_ibrav_matrix()
+        self.iso_basis = ''
+        self.iso_pr_car= ''
+
+        self.conv      = ''
+        if output==False:
+            self.iso_basis = self.__get_iso_basis()
+            self.iso_pr_car= self.__get_iso_cart()
+            self.conv      = self.__convert_to_ibrav_matrix()
+
+
 #        self.qe_conv   = self.__qe_conventional()
 #        self.a
 #        self.b
@@ -40,22 +48,55 @@ class isotropy():
 #        raise SystemExit
 
 
+    def cif(self):
+        return re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
 
-    def __generate_isotropy_input_from_qe_input(self):
-        cell_matrix = AFLOWpi.retr.getCellMatrixFromInput(self.input,string=False)*0.529177249
-        cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix,indent=False)
-        a,b,c,alpha,beta,gamma = AFLOWpi.retr.free2abc(cell_matrix,cosine=False,bohr=False,string=False)
+    def __generate_isotropy_input_from_qe_data(self,output=False):
+        if output:
+#            cell_matrix = AFLOWpi.retr.getCellMatrixFromOutput(self.input,string=False)*0.529177249
+            cm_string = AFLOWpi.qe.regex.cell_parameters(self.input,'content') 
 
-        positions = AFLOWpi.retr._getPositions(self.input,matrix=False)
-        self.orig_pos = AFLOWpi.retr._getPositions(self.input,matrix=True)
-        labels = AFLOWpi.retr._getPosLabels(self.input)
+            alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*.*alat[\D]*([0-9.]*)',re.M)
+            alat = float(alatSearch.findall(self.input)[-1])
+            
+
+
+            cell_matrix = AFLOWpi.retr._cellStringToMatrix(cm_string)
+            print cell_matrix
+            cell_matrix*= alat*0.529177249
+            cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix)
+
+            pos_with_labs = AFLOWpi.qe.regex.atomic_positions(self.input,'content') 
+            labels=[]
+            positions = []
+            
+            for i in pos_with_labs.split('\n'):
+                split_pos = i.split()
+                try:
+                    labels.append(split_pos[0])
+                    positions.append(' '.join(split_pos[1:4]))
+                except:
+                    pass
+            positions='\n'.join(positions)
+#            print positions
+#            print cm_string
+        else:
+            cell_matrix = AFLOWpi.retr.getCellMatrixFromInput(self.input,string=False)*0.529177249
+            positions = AFLOWpi.retr._getPositions(self.input,matrix=False)
+            labels = AFLOWpi.retr._getPosLabels(self.input)
+            self.orig_pos = AFLOWpi.retr._getPositions(self.input,matrix=True)
+        
+            cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix,indent=False)
+            a,b,c,alpha,beta,gamma = AFLOWpi.retr.free2abc(cell_matrix,cosine=False,bohr=False,string=False)
+
+
         self.pos_labels=labels
         num_atoms=len(labels)
         spec = list(set(labels))
 
 
         label_index=dict([[i[1],i[0]+1] for i in enumerate(spec)])
-        print labels
+#        print labels
         in_list={}
         for centering in ['P',]:
             isotropy_input_str='input file for isotropy generated from pwscf input by AFLOWpi\n'    
@@ -74,10 +115,10 @@ class isotropy():
 
         return in_list
 
-    def __get_isotropy_output(self):
+    def __get_isotropy_output(self,qe_output=False):
         centering='P'
 
-        in_dict = self.__generate_isotropy_input_from_qe_input()
+        in_dict = self.__generate_isotropy_input_from_qe_data(output=qe_output)
         ISODATA = os.path.join(AFLOWpi.__path__[0],'ISOTROPY')
         os.putenv('ISODATA',ISODATA+'/') 
 
@@ -90,7 +131,7 @@ class isotropy():
 
                 output = find_sym_process.communicate(input=in_str)[0]
                 
-                print output
+#                print output
 
 
 
@@ -131,8 +172,11 @@ class isotropy():
 
 
         std_prim_basis_str = re.findall('Vectors a,b,c:\s*\n(.*\n.*\n.*)\n',self.output)[0]
+        iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
+
 #        std_prim_basis = numpy.linalg.inv(AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str))
         std_prim_basis = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
+#        print globals().keys()
 
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
@@ -145,9 +189,22 @@ class isotropy():
 #        self.iso_basis=AFLOWpi.retr._cellStringToMatrix(prim_in)
 
         
-        self.iso_basis[:,0]/=self.conv_a*0.529177249
-        self.iso_basis[:,1]/=self.conv_b*0.529177249
-        self.iso_basis[:,2]/=self.conv_c*0.529177249
+
+
+        self.iso_basis[:,0]/=self.conv_a
+        self.iso_basis[:,1]/=self.conv_b
+        self.iso_basis[:,2]/=self.conv_c
+
+
+        self.axes_flip = numpy.linalg.inv(iso_conv.dot(self.iso_basis))
+#        self.iso_basis = self.axes_flip.dot(self.iso_basis)
+#            self.iso_basis = .dot(self.iso_basis))
+#        print numpy.around(numpy.linalg.inv(iso_conv.dot(self.iso_basis)),decimals=5)
+#        raise SystemExit
+
+#        self.iso_basis[:,0]/=0.529177249
+#        self.iso_basis[:,1]/=0.529177249
+#        self.iso_basis[:,2]/=0.529177249
 #        print self.iso_basis
 #        self.iso_basis-=self.origin
  #       print self.iso_basis
@@ -175,7 +232,7 @@ class isotropy():
         self.qe_basis = AFLOWpi.retr._prim2ConvMatrix(self.iso_basis,ibrav=self.ibrav)
 
         self.qe_basis = numpy.linalg.inv(self.qe_basis)
-        conv=self.qe_basis.T*numpy.linalg.inv(self.iso_basis).T
+        conv=self.qe_basis*numpy.linalg.inv(self.iso_basis)
 
 
         conv = numpy.around(conv,decimals=5)
@@ -209,9 +266,11 @@ class isotropy():
 #        print self.qe_basis
 
 #        print trans
+            
         self.qe_pos = copy.deepcopy(self.orig_pos)
 #        print self.conv
-
+        print self.conv
+        self.conv= self.conv.dot(self.axes_flip)
         for i in range(len(self.orig_pos)):
             self.origin= numpy.matrix(self.origin)
 
@@ -219,22 +278,21 @@ class isotropy():
 
             pos_copy = copy.deepcopy(self.orig_pos[i])
             pos_copy-=self.origin
-            print pos_copy
+#            print pos_copy
             pre_trans = numpy.matrix(pos_copy)
-            print pre_trans
-            self.qe_pos[i] =  (pre_trans*self.conv).getA()[0]
-
+#            print pre_trans
+            self.qe_pos[i] = self.conv.dot(pos_copy.T).T
 #            self.qe_pos[i] = pos_copy.dot(self.conv)
 #            pos_copy-=self.origin
 #            first = pos_copy.dot(numpy.linalg.inv(self.iso_basis))
             
 
         qe_pos_str = AFLOWpi.retr._joinMatrixLabels(self.pos_labels,self.qe_pos)
-
+                                         
         modifier = AFLOWpi.qe.regex.cell_parameters(self.input,return_which='modifier',).lower()
 
         prim_qe_cart = self.iso_pr_car
-        conv_iso = numpy.linalg.inv(self.iso_basis).dot(self.iso_pr_car)
+#        conv_iso = numpy.linalg.inv(self.iso_basis).dot(self.iso_pr_car)
 
         try:
             del input_dict['CELL_PARAMETERS']
@@ -249,6 +307,8 @@ class isotropy():
 #        input_dict['&system']['celldm(4)']=cdm4
 #        input_dict['&system']['celldm(5)']=cdm5
 #        input_dict['&system']['celldm(6)']=cdm6
+
+
         input_dict['&system']['a']=self.conv_a#*0.529177249
         input_dict['&system']['b']=self.conv_b#*0.529177249
         input_dict['&system']['c']=self.conv_c#*0.529177249
@@ -260,7 +320,7 @@ class isotropy():
 
         input_dict['&system']['ibrav']=self.ibrav
 
-        
+#
 
 
         input_dict['ATOMIC_POSITIONS']['__content__']=qe_pos_str
@@ -269,7 +329,7 @@ class isotropy():
 #        input_dict['CELL_PARAMETERS']['__content__']=qe_cm_string
         qe_convention_input = AFLOWpi.retr._joinInput(input_dict)
 #        print qe_convention_input
-
+        print qe_convention_input
         if ibrav==True:
             qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
             return qe_convention_input
