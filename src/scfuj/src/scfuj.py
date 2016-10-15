@@ -1672,7 +1672,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         #Update Uvals
         oneCalc = updateUvals(oneCalc, newUvals,ID=ID)
 	#update Uvals in _<ID>.py
-	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=Uvals)
+	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=newUvals)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
