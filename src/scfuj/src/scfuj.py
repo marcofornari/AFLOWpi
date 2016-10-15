@@ -661,7 +661,7 @@ def WanT_bands(oneCalc,ID=None,eShift=15.0,num_points=1000,cond_bands=0):
         except:
             eShift=10.0
 
-#        eShift=10.0
+        eShift=5.0
             
         try:
             prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -1672,7 +1672,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         #Update Uvals
         oneCalc = updateUvals(oneCalc, newUvals,ID=ID)
 	#update Uvals in _<ID>.py
-	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=newUvals)
+	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=Uvals)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
@@ -1740,7 +1740,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             pass
 
 
-        return oneCalc, newUvals
+        return oneCalc, Uvals
 
 
 def _get_ham_xml(oneCalc,ID):
