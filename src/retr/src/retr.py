@@ -853,8 +853,12 @@ def _getCellParams(oneCalc,ID):
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
      
-     
-        return AFLOWpi.retr._getAlatFromInput(oneCalc['_AFLOWPI_INPUT_']), AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
+        paramMatrix = AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
+
+        alat = AFLOWpi.retr._getAlatFromInput(oneCalc['_AFLOWPI_INPUT_']) 
+        paramMatrix/=alat
+
+        return alat,paramMatrix 
 
 def get_parameters(oneCalc,ID,conventional=True):
     if conventional:
@@ -1107,18 +1111,19 @@ def _getHighSymPoints(oneCalc,ID=None):
            'X'    : (0.5, 0.0, 0.5)
          }
 
-         aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0,],
-                                     [ 1.0, 0.0, 1.0,],
-                                     [ 1.0, 1.0, 0.0,],])/2.0
-         qe_conv    = numpy.asarray([[-1.0, 0.0, 1.0,],
-                                     [ 0.0, 1.0, 1.0],
-                                     [-1.0, 1.0, 0.0],])/2.0
+         aflow_conv = numpy.matrix([[ 0.0, 1.0, 1.0,],
+                                    [ 1.0, 0.0, 1.0,],
+                                    [ 1.0, 1.0, 0.0,],])/2.0
+         qe_conv    = numpy.matrix([[-1.0, 0.0, 1.0,],
+                                    [ 0.0, 1.0, 1.0 ],
+                                    [-1.0, 1.0, 0.0 ],])/2.0
         
-         for k,v in special_points.iteritems():
-             first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-             second = qe_conv.dot(first)
-             special_points[k]=tuple(second.tolist())
 
+
+         special_points_copy=copy.deepcopy(special_points)
+         for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])
 
 
          default_band_path = 'gG-X-W-K-gG-L-U-W-L-K|U-X'
@@ -1141,10 +1146,10 @@ def _getHighSymPoints(oneCalc,ID=None):
                                     [-1.0, 1.0, 1.0],
                                     [-1.0,-1.0, 1.0],])/2.0
         
-        for k,v in special_points.iteritems():
-            first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-            second = qe_conv.dot(first)
-            special_points[k]=tuple(second.tolist())
+        for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])
+
                 
         default_band_path = 'gG-H-N-gG-P-H|P-N'
         band_path = default_band_path
@@ -1258,11 +1263,11 @@ def _getHighSymPoints(oneCalc,ID=None):
        qe_conv    = numpy.asarray([[-1.0, 1.0, 1.0,],
                                    [ 1.0, 1.0, 1.0],
                                    [-1.0,-1.0, 1.0],])/2.0
-        
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
+
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])        
+
 
        default_band_path = 'gG-X-M-gG-Z-P-N-Z1-M|X-P'
        band_path = default_band_path
@@ -1297,10 +1302,11 @@ def _getHighSymPoints(oneCalc,ID=None):
                                    [ 1.0, 1.0, 1.0],
                                    [-1.0,-1.0, 1.0],])/2.0
         
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
+
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])        
+
 
 
        default_band_path = 'gG-X-Y-gS-gG-Z-gS1-N-P-Y1-Z|X-P'
@@ -1359,11 +1365,10 @@ def _getHighSymPoints(oneCalc,ID=None):
        qe_conv    = numpy.asarray([[ 1.0, 0.0, 1.0,],
                                    [ 1.0, 1.0, 0.0],
                                    [ 0.0, 1.0, 1.0],])/2.0
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])        
         
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
 
 
        default_band_path = 'gG-Y-T-Z-gG-X-A1-Y|T-X1|X-A-Z|L-gG'
@@ -1405,12 +1410,13 @@ def _getHighSymPoints(oneCalc,ID=None):
        qe_conv    = numpy.asarray([[ 1.0, 0.0, 1.0,],
                                    [ 1.0, 1.0, 0.0],
                                    [ 0.0, 1.0, 1.0],])/2.0
+
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])        
        
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
-#           print k,special_points[k]
+
+
        default_band_path = 'gG-Y-C-D-X-gG-Z-D1-H-C|C1-Z|X-H1|H-Y|L-gG'
        band_path = default_band_path
        return special_points, band_path
@@ -1449,10 +1455,12 @@ def _getHighSymPoints(oneCalc,ID=None):
                                    [ 1.0, 1.0, 0.0],
                                    [ 0.0, 1.0, 1.0],])/2.0
 
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
+
+
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])        
+
 
        default_band_path = 'gG-Y-T-Z-gG-X-A1-Y|X-A-Z|L-R'
        band_path = default_band_path
@@ -1496,11 +1504,10 @@ def _getHighSymPoints(oneCalc,ID=None):
                                    [-1.0, 1.0, 0.0],
                                    [ 0.0, 0.0, 2.0],])/2.0
        
-       for k,v in special_points.iteritems():
-           first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-           second = qe_conv.dot(first)
-           special_points[k]=tuple(second.tolist())
-           
+
+       for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])                   
 
        default_band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
        band_path = default_band_path
@@ -1581,10 +1588,11 @@ def _getHighSymPoints(oneCalc,ID=None):
                                      [-1.0, 1.0, 1.0],
                                      [-1.0,-1.0, 1.0],])/2.0
         
-         for k,v in special_points.iteritems():
-             first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-             second = qe_conv.dot(first)
-             special_points[k]=tuple(second.tolist())
+
+         for k,v in special_points_copy.iteritems():
+            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+            special_points[k]=tuple(second.flatten().tolist()[0])                   
+
             
          default_band_path = 'gG-X-L-T-W-R-X1-Z-gG-Y-S-W|L1-Y|Y1-Z'
          band_path = default_band_path

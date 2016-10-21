@@ -259,10 +259,12 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		return
 	try:
                 if tight_banding:
-                    Efermi=0.0
+			Efermi=AFLOWpi.retr._getEfermi(oneCalc,'%s_WanT_dos'%calcID,directID=True)
+
+			
                 else:
-                    Efermi=AFLOWpi.retr._getEfermi(oneCalc,calcID)
-                    print 'EFERMI BANDS NO TB',Efermi
+			Efermi=AFLOWpi.retr._getEfermi(oneCalc,calcID)
+			print 'EFERMI BANDS NO TB',Efermi
 
 		if type(Efermi)!=type(0.5):
 			Efermi=Efermi[0]
@@ -281,7 +283,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		if not os.path.exists(filebands):
 			filebands_up = os.path.join(subdir,'%s_bands_want_up.dat'%calcID)
 			filebands_dn = os.path.join(subdir,'%s_bands_want_down.dat'%calcID)
-                Efermi_shift=0.0
+                Efermi_shift=Efermi
 
 	else:
 		filebands = os.path.join(subdir,'%s_bands.xmgr'%calcID)
@@ -338,8 +340,13 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	if nspin==2:
 		for i in range(len(k_x_up)):
 			try:
-				pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,label="$\uparrow$",linewidth=2)
-				pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,label="$\downarrow$",linewidth=2)
+				
+				if tight_banding==True:
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
+				else:
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
@@ -348,7 +355,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	else:
 		if tight_banding==True:
 			for i in range(len(k_x)):
-				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)			
+				pylab.plot((k_x[i]),(k_y[i]),'k',marker=".",linestyle=" ",linewidth=1.3)			
 		else:
 			for i in range(len(k_x)):
 				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)

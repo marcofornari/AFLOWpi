@@ -396,13 +396,17 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	"""
 	try:
             if TB==True:
-                Efermi=0.0
-            else:
-		Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
+		    fermi_ID = '%s_WanT_dos'%calcID
+		    print fermi_ID
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
 
-		if type(Efermi)!=type(0.5):
-			Efermi=Efermi[0]
-	except:
+            else:
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
+		    if type(Efermi)!=type(0.5):
+			    Efermi=Efermi[0]
+
+	except Exception,e:
+
 		Efermi=0.0
         try:
             ax2=ax[speciesNum]
@@ -636,12 +640,13 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	"""
 	try:
             if TB==True:
-                Efermi=0.0
+		    fermi_ID = '%s_WanT_dos'%calcID
+		    print fermi_ID
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
             else:
-		Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
-
-		if type(Efermi)!=type(0.5):
-			Efermi=Efermi[0]
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
+		    if type(Efermi)!=type(0.5):
+			    Efermi=Efermi[0]
 	except:
 		Efermi=0.0
 

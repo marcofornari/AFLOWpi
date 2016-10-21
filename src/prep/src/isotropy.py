@@ -10,6 +10,16 @@ class isotropy():
 
     def __init__(self,input_str,accuracy=0.000,output=False):
 
+        if type(input_str)==type('asdf'):
+            pass
+        else:
+            try:
+                with open(input_str,'r') as fo:
+                    input_str = fo.read()
+            except:
+                print "Couldn't open file %s" %input_str
+                return 
+
         self.input     =  AFLOWpi.prep._removeComments(input_str)
         self.accuracy  = accuracy
         self.iso_input = ''
@@ -18,6 +28,7 @@ class isotropy():
         self.orig_pos  = ''
         self.iso_basis = ''
         self.qe_pos    = ''
+
         self.conv_a    = ''
         self.conv_c    = ''
         self.conv_b    = ''
@@ -29,6 +40,7 @@ class isotropy():
         self.output    = self.__get_isotropy_output(qe_output=output)
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
+        self.cif       = self.cif()
         self.iso_basis = ''
         self.iso_pr_car= ''
 
@@ -37,9 +49,9 @@ class isotropy():
             self.iso_basis = self.__get_iso_basis()
             self.iso_pr_car= self.__get_iso_cart()
             self.conv      = self.__convert_to_ibrav_matrix()
+            
 
-
-#        self.qe_conv   = self.__qe_conventional()
+            self.qe   = self.convert()
 #        self.a
 #        self.b
 #        self.c
@@ -62,7 +74,7 @@ class isotropy():
 
 
             cell_matrix = AFLOWpi.retr._cellStringToMatrix(cm_string)
-            print cell_matrix
+
             cell_matrix*= alat*0.529177249
             cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix)
 
@@ -196,7 +208,9 @@ class isotropy():
         self.iso_basis[:,2]/=self.conv_c
 
 
-        self.axes_flip = numpy.linalg.inv(iso_conv.dot(self.iso_basis))
+        self.axes_flip = iso_conv.dot(self.iso_basis)
+        self.axes_flip = numpy.linalg.inv(iso_conv)
+#        print self.axes_flip
 #        self.iso_basis = self.axes_flip.dot(self.iso_basis)
 #            self.iso_basis = .dot(self.iso_basis))
 #        print numpy.around(numpy.linalg.inv(iso_conv.dot(self.iso_basis)),decimals=5)
@@ -269,19 +283,29 @@ class isotropy():
             
         self.qe_pos = copy.deepcopy(self.orig_pos)
 #        print self.conv
-        print self.conv
-        self.conv= self.conv.dot(self.axes_flip)
+#        print self.conv
+        self.iso_babsis= self.axes_flip
+#        print self.output        
+#        self.iso_basis = self.iso_basis.dot()
+#        self.conv= self.conv.
+        print self.iso_basis
+        print self.qe_basis
+ 
         for i in range(len(self.orig_pos)):
             self.origin= numpy.matrix(self.origin)
+            mat_pos = numpy.matrix(self.orig_pos[i])
+            second = ((self.qe_basis*numpy.linalg.inv(self.iso_basis))*mat_pos.T).T
+            self.qe_pos[i]=second.flatten().tolist()[0]
+            
 
 #            self.orig_pos[i]-=self.origin
-
-            pos_copy = copy.deepcopy(self.orig_pos[i])
-            pos_copy-=self.origin
+            
+#            pos_copy = copy.deepcopy(self.orig_pos[i])
+#            pos_copy-=self.origin
 #            print pos_copy
-            pre_trans = numpy.matrix(pos_copy)
+#            pre_trans = numpy.matrix(pos_copy)
 #            print pre_trans
-            self.qe_pos[i] = self.conv.dot(pos_copy.T).T
+#            self.qe_pos[i] = self.conv.dot(pos_copy.T).T
 #            self.qe_pos[i] = pos_copy.dot(self.conv)
 #            pos_copy-=self.origin
 #            first = pos_copy.dot(numpy.linalg.inv(self.iso_basis))
@@ -329,7 +353,7 @@ class isotropy():
 #        input_dict['CELL_PARAMETERS']['__content__']=qe_cm_string
         qe_convention_input = AFLOWpi.retr._joinInput(input_dict)
 #        print qe_convention_input
-        print qe_convention_input
+#        print qe_convention_input
         if ibrav==True:
             qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
             return qe_convention_input

@@ -149,6 +149,48 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 	'''
         colors =['b','g','c','r','m','y','orange']
 
+#	for j in range(len(k_y[0])):
+#		if k_y[0][j]==0.0 and k_y[1][j]==0.0 and k_y[1][j]==0.0:
+#			for i in range(len(k_y)):
+#				k_y[i][j]=0.0
+#	gamma_index=
+#	for i in range(len(k_y[0])):
+	
+####################################################################################
+#	gamma_index=[]
+#	for sym in range(len(SymPrint)):
+#		if SymPrint[sym]=='$\\Gamma$':
+#			gamma_index.append(symIndex[sym])
+
+
+####################################################################################
+
+	#set frequency of optical branches at gamma to either one before or one after 
+	#so that the LOTO splitting at gamma doesn't result in an outlier point
+
+	gamma_index=[]
+	by_k = numpy.asarray(k_y).T
+	for i in range(len(by_k)):
+		num_zero =  len(by_k[i])-numpy.count_nonzero(by_k[i])
+		if num_zero>=3:
+			gamma_index.append(i)
+
+	for j in gamma_index:
+		for i in range(len(k_y)):
+			k_y[i][j]=0.0
+
+#		if k_y[0][j]==0.0:
+#			for i in range(len(k_y)):
+##				if i not in [0,1,2]:
+#				else:
+#				k_y[i][j]=0.0
+#					try:
+#						k_y[i][j]=k_y[i][j-1]
+#					except:	
+#						k_y[i][j]=k_y[i][j+1]
+
+
+
 	for i in range(len(k_x)):
             new_min_val=min(k_y[i])
             new_max_val=max(k_y[i])
@@ -164,8 +206,11 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
                 max_val=new_max_val
             if new_min_val<min_val:
                 min_val=new_min_val
+
+#	    if i>2:
+
 	    
-            pylab.plot((k_x[i]),(k_y[i]),color=color_choice,linestyle='-')
+            pylab.plot((k_x[i]),(k_y[i]),color=color_choice,linestyle='None',marker='.')
 
 
 
@@ -176,7 +221,9 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 	pylab.xlim(min(k_x[1]),max(k_x[1])) 
         
 
-        pylab.ylim(min_val,max_val) 
+
+
+        pylab.ylim(1.1*min_val,max_val*1.1) 
 
 	'''
         takes in a list of k points that was used as pw.x input for the 'bands'
@@ -275,6 +322,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
                 elif int(HSPList[i-1]) == 0 and int(HSPList[i]) == 0 and i!=len(HSPList)-2:
 			logging.debug('can not find HSP in __bandPlot. This shouldnt be able to be tripped')
 
+
      #add symmetry lines to the band structure plot
 	for sym in symIndex:
 		try:
@@ -289,6 +337,8 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		return
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Femi level line
 	locs, labels = pylab.xticks()
+
+
 
 ##########################################################################################################
 
@@ -319,11 +369,13 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
         plot_dos_y=[]
         pre_sort=[]
 	#smooth the phDOS
-	dos = AFLOWpi.plot.__smoothGauss(dos)   
-	freq_dos = AFLOWpi.plot.__smoothGauss(freq_dos)   
+#	dos = AFLOWpi.plot.__smoothGauss(dos)   
+#	freq_dos = AFLOWpi.plot.__smoothGauss(freq_dos)   
 
-        pylab.plot(dos,freq_dos,'k',linestyle='-') #to plot the smoothed data
-        pylab.ylim(min_val,max_val) 
+        pylab.plot(dos,freq_dos,'k',linestyle='-', linewidth=3) #to plot the smoothed data
+
+        ax1.set_ylim(1.1*min_val,max_val*1.1) 
+        ax2.set_ylim(1.1*min_val,max_val*1.1) 
 
         ax2.spines['bottom'].set_linewidth(1.5)
         ax2.spines['left'].set_linewidth(1.5)
@@ -334,6 +386,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
         ax2.yaxis.set_ticks_position('left')
         pylab.xlabel('Density of States (arb. units)')
         pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line
+
 
 
         ax1.set_position([0.07,0.1,0.69,0.8]) #[left,bottom,width,height]

@@ -534,13 +534,13 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                         scfKPointString = splitInput['K_POINTS']['__content__']
 			scfKPointSplit = [float(x) for x in scfKPointString.split()]
 
-                        before_kpf=reduce(lambda x, y: x*y, scfKPointSplit )
-                        scaling_kpf=before_kpf/150.0
-                        if scaling_kpf>1.0:
-                            kpFactor=1
-
+#                        before_kpf=reduce(lambda x, y: x*y, scfKPointSplit )
+#                        scaling_kpf=before_kpf/150.0
+#                        if scaling_kpf>1.0:
+#                            kpFactor=1
+                        
                             
-                            
+                        kpFactor=2.0    
 
 			for kpoint in range(len(scfKPointSplit)-3):
 				scfKPointSplit[kpoint] = str(int(math.ceil(scfKPointSplit[kpoint]*kpFactor)))
@@ -633,7 +633,7 @@ def projwfc(oneCalc,ID=None):
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_bands(oneCalc,ID=None,eShift=15.0,num_points=1000,cond_bands=0):
+def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=0):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -657,11 +657,11 @@ def WanT_bands(oneCalc,ID=None,eShift=15.0,num_points=1000,cond_bands=0):
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+10.0
+            eShift=float(Efermi)+5.0
         except:
             eShift=10.0
 
-        eShift=5.0
+#        eShift=5.0
             
         try:
             prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -671,13 +671,17 @@ def WanT_bands(oneCalc,ID=None,eShift=15.0,num_points=1000,cond_bands=0):
 #        if temp_dir!='./':
 #            subdir=temp_dir
 
+
+        do_norm=".TRUE."
         nbnd_string= ''
         if cond_bands!=0 and type(cond_bands) == type(452):
 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))+cond_bands
                 nbnd_string = 'atmproj_nbnd    = %s' % nbnds
+                do_norm=".FALSE."
 	elif cond_bands==True: 
 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=True))
                 nbnd_string = 'atmproj_nbnd    = %s' % nbnds
+                do_norm=".FALSE."
 	elif cond_bands==0 or cond_bands==False:
 #            nbnd_string=""
             nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))
@@ -698,9 +702,10 @@ datafile_dft	= \'./%s_TB.save/atomic_proj.dat\'
 nkpts_in        = %d                 
 nkpts_max	= %s		 
 do_orthoovp	= .FALSE.
+atmproj_do_norm = %s
 atmproj_sh      = %f                         
 %s
-"""%(ID,ID,len(lblList),num_points,eShift,nbnd_string)
+"""%(ID,ID,len(lblList),num_points,do_norm,eShift,nbnd_string)
 #"""%(prefix,subdir,subdir,prefix,len(special_points),eShift,nbnd_string)
 
 	if nspin == 1:
@@ -1030,7 +1035,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
         '''
 
 	oneCalcID = '_'.join(projCalcID.split('_')[:-1])#oneCalc['_AFLOWPI_PREFIX_'][1:]	
-        print oneCalcID
+
 	subdir = oneCalc['_AFLOWPI_FOLDER_']	
 	nspin = chkSpinCalc(oneCalc,oneCalcID)
 
@@ -1080,7 +1085,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 			scfOutput = '%s.out' % oneCalcID
 			fin = file(os.path.join(subdir,scfOutput),'r')
 			lines = fin.read()
-
+                        splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
 			atmPosRegex = re.compile(r"positions \(alat units\)\n((?:.*\w*\s*tau\(.*\)\s=.*\(.*\)\n)+)",re.MULTILINE) 
                         try:
                             positions = AFLOWpi.retr.getPositionsFromOutput(oneCalc,oneCalcID)
@@ -1093,16 +1098,23 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                             splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
                             positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
 
+                        if len(positions.strip())==0:
+                            positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
+
 
 			lines1 = atmPosRegex.findall(lines)[0]
 			atmPosRegex1 = re.compile(r".*=.*\((.*)\)\n+",re.MULTILINE)
 
 			atmPos = atmPosRegex1.findall(lines1)
 
+                        print oneCalc["_AFLOWPI_INPUT_"]
                         try:
                             positions=np.asarray([[float(i.split()[1]),float(i.split()[2]),float(i.split()[3])] for i in positions.split("\n") if len(i.strip())!=0])
                         except:
                             positions=np.asarray([[float(i.split()[0]),float(i.split()[1]),float(i.split()[2])] for i in positions.split("\n") if len(i.strip())!=0])
+
+
+
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
@@ -1655,7 +1667,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 #        acbn0(oneCalc, pdos_ID,byAtom=True)
 #        getU_frmACBN0out(oneCalc,ID,byAtom=True)
         newUvals = getU_frmACBN0out(oneCalc,ID)
-
+        Uvals=newUvals
         #slight to help with oscillation
         try:
             old_U = oneCalc['_AFLOWPI_UVALS_']

@@ -80,7 +80,7 @@ def _pull_forces(oneCalc,ID):
 
     force_out_string=''
     for i in force_split:
-        force_out_string+='%14.8f%14.8f%14.8f\n'%(float(i[0]),float(i[1]),float(i[2]),)
+        force_out_string+='%22.18s%22.18s%22.18s\n'%(i[0],i[1],i[2],)
 
     force_postfix='.'.join(ID.split('.')[1:])
     force_postfix=force_postfix.split('_')[0]
@@ -360,14 +360,14 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 
     for i in range(len(kpt_ints)):
 #        kgrid+='   nk%d = %s,\n'%(i+1,kpt_ints[i])
-        kgrid+='   nk%d = %s,\n'%(i+1,10)
+        kgrid+='   nk%d = %s,\n'%(i+1,40)
 
     matdyn_dos_template='''
  &input
    asr='crystal',
 %s
    fd=.true.
-!   na_ifc=.true.
+   na_ifc=.true.
    fldos='%s.phdos'
    flfrc='%s.fc',
    flfrq='%s.phDOS', 
@@ -379,7 +379,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 !   l2=%d
 !   l3=%d
    dos=.true.,
-   eigen_similarity=.true.
+   eigen_similarity=.false.
 %s   
  /
 '''%(amass_str,ID,ID,ID,ID,ID,ID,noatsym,nrx1,nrx2,nrx3,kgrid)
@@ -454,8 +454,8 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
           None          
           
     """
-    if ID in oneCalc["prev"]:
-        return
+#    if ID in oneCalc["prev"]:
+#        return
 
     #copy fd.x to the directories
     engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')

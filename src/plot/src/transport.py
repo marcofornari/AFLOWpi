@@ -65,7 +65,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix=''):
                                             'ft':'$Conduction$:',
                                             'lc':'Cond. ',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':'$\sigma$ $(10^{20}$ $m/\Omega)$ ',
+                                            'yl':'$\sigma/\tau$ $(10^{20}$ $m/\Omega)$ ',
                                             'fp':'CONDUCTION',
 
                                             }
