@@ -51,8 +51,8 @@ def transport_prep(oneCalc,ID):
         """
         AFLOWpi.scfuj.tb_prep(oneCalc,ID)
 	AFLOWpi.scfuj.want_dos_prep(oneCalc,ID)
-	AFLOWpi.scfuj.want_bands_prep(oneCalc,ID)
-	AFLOWpi.scfuj.want_epsilon_prep(oneCalc,ID)
+#	AFLOWpi.scfuj.want_bands_prep(oneCalc,ID)
+#	AFLOWpi.scfuj.want_epsilon_prep(oneCalc,ID)
 
 #############################################################################################
 def want_bands_prep(oneCalc,ID):
@@ -155,7 +155,7 @@ def want_eff_mass_prep(oneCalc,ID):
 
 
 
-def WanT_dos(oneCalc,ID=None,eShift=10.0,temperature=None,energy_range=[-11.0,11.0],boltzmann=True,k_grid=[40,40,40],pdos=False,num_e=2001,cond_bands=True,fermi_surface=False):
+def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.0],boltzmann=True,k_grid=[40,40,40],pdos=False,num_e=4001,cond_bands=True,fermi_surface=False):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -199,10 +199,10 @@ def WanT_dos(oneCalc,ID=None,eShift=10.0,temperature=None,energy_range=[-11.0,11
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+10.0
+            eShift=float(Efermi)+5.0
         except:
-            eShift=10.0
-	
+            eShift=5.0
+#	eShift=5.0
 	if temperature==None:
 		temp_temp=300.0
 	else:
@@ -216,7 +216,7 @@ def WanT_dos(oneCalc,ID=None,eShift=10.0,temperature=None,energy_range=[-11.0,11
         emin  =  energy_range[0]
         emax  =  energy_range[1]
         nbnd  =  nbnds
-        delta =  0.005
+        delta =  0.013605698
         ne    =  num_e
 	if boltzmann==True:
 		boltz_flag='.TRUE.'
@@ -247,7 +247,7 @@ emax            = %f
 atmproj_nbnd    = %d
 ne              = %d
 delta           = %f
-smearing_type   = 'mv'
+!smearing_type   = 'mv'
 do_orthoovp	= .TRUE.
 atmproj_sh      = %f         
 %s                
@@ -373,7 +373,7 @@ atmproj_sh      = %f
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_epsilon(oneCalc,ID=None,eShift=10.0,temperature=300.0,energy_range=[0.05,12.5]):
+def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.08,8.08]):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -400,11 +400,11 @@ def WanT_epsilon(oneCalc,ID=None,eShift=10.0,temperature=300.0,energy_range=[0.0
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+10.0
+            eShift=float(Efermi)+5.0
         except:
-            eShift=10.0
+            eShift=5.0
 
-
+#        eShift=5.0
 
         ###############################
         ###############################
@@ -417,8 +417,8 @@ def WanT_epsilon(oneCalc,ID=None,eShift=10.0,temperature=300.0,energy_range=[0.0
         emin  =  energy_range[0]
         emax  =  energy_range[1]
         nbnd  =  nbnds
-        delta =  0.2
-        ne    =  500
+        delta =  0.005
+        ne    =  1000
         #hardcode for now 
         #hardcode for now 
         ###############################
@@ -437,7 +437,7 @@ temperature     = %f
 atmproj_nbnd    = %d
 ne              = %d
 delta           = %f
-smearing_type   = 'mv'
+!smearing_type   = 'mv'
 do_orthoovp	= .TRUE.
 atmproj_sh      = %f                         
 
@@ -704,24 +704,6 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
 
-        if 'want_epsilon' not in oneCalc['__runList__']:
-            want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,temperature=temperature,energy_range=en_range)
-
-
-
-            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
-                AFLOWpi.run._oneRun(__submitNodeName__,want_epsilon,want_epsilon_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_epsilon.x' )
-
-            
-
-
-            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
-                abortIFRuntimeError(subdir, want_epsilon_ID)
-
-
-            oneCalc['__runList__'].append('want_epsilon')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-
 
             '''
             Will need to be filled in for the executable name with whatever wanT executable is called 
@@ -734,4 +716,32 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 
             
             return oneCalc,ID
+
+
+def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8]):
+
+
+            want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,energy_range=en_range)
+
+	    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
+		    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+	    else:
+		    execPrefix=''
+
+	    if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
+		    execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+	    else:
+		    execPostfix=''
+
+            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
+                AFLOWpi.run._oneRun(__submitNodeName__,want_epsilon,want_epsilon_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_epsilon.x' )
+
+            
+
+
+            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
+                abortIFRuntimeError(subdir, want_epsilon_ID)
+
+
+
 

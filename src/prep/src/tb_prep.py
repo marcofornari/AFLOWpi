@@ -30,7 +30,69 @@ class tight_binding:
 #	AFLOWpi.prep.addToAll_(calcs,block='POSTPROCESSING',addition='AFLOWpi.retr._writeEfermi(oneCalc,ID+"_nscf")')
 
 
-    def dos(self,dos_range=[-10,10],k_grid=[20,20,20],projected=True,ne=2001,cond_bands=True,fermi_surface=False):
+
+    def optical(self,en_range=[0.05,10],):
+        loadModString = 'AFLOWpi.scfuj.want_epsilon_prep(oneCalc,ID)'
+        AFLOWpi.prep.addToAll_(self.calcs,block='PREPROCESSING',addition=loadModString)		
+
+        command = '''if oneCalc["__execCounter__"]<=%s:
+     oneCalc,ID = AFLOWpi.scfuj._run_want_epsilon(__submitNodeName__,oneCalc,ID,)
+     oneCalc['__execCounter__']+=1
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter)
+
+        AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
+        self.step_counter+=1
+
+        calc_type='Calculate optical with PAO-TB Hamiltonian'
+        print '                 %s'% (calc_type)
+
+
+
+
+
+    def transport(self,temperature=[300,],en_range=[0.05,10],):
+		'''
+		Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
+		in the high level user interface. Adds a new step to the workflow.
+		
+		
+
+		Arguments:
+		      self: the _calcs_container object
+
+		Keyword Arguments:
+		      epsilon (bool): if True episilon tensor will be computed 
+		      temperature (list): list of temperature(s) at which to calculate transport properties
+
+		Returns:
+		      None
+
+		'''		
+
+		loadModString = 'AFLOWpi.scfuj.transport_prep(oneCalc,ID)'
+		AFLOWpi.prep.addToAll_(self.calcs,block='PREPROCESSING',addition=loadModString)		
+
+		for temp_index in range(len(temperature)):
+
+
+                        command='''if oneCalc["__execCounter__"]<=%s:
+     oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s)
+     oneCalc['__execCounter__']+=1
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,temperature[temp_index],False,False,False,False,repr(en_range))
+
+                        AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
+                        self.step_counter+=1
+
+			calc_type='Transport Properties at %sK' % temperature[temp_index]
+#			print '\nADDING TB STEP : %s'% (calc_type)
+			print AFLOWpi.run._colorize_message('\nADDING TB STEP: ',level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+			## no temperature parameter for WanT bands so only run 
+			## it once if run_bands=True in the input the method.
+
+
+
+
+    def dos(self,dos_range=[-6,6],k_grid=[20,20,20],projected=True,ne=2001,cond_bands=True,fermi_surface=False):
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_dos_prep(oneCalc,ID)')
         command='''if oneCalc["__execCounter__"]<=%s:
      oneCalc,ID = AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=%s,k_grid=%s,project=%s,num_e=%s,cond_bands=%s,fermi_surface=%s)
@@ -88,8 +150,8 @@ class tight_binding:
 	
 
 
-    def transport(self):
-        pass
+
+
 
 
 def _form_TB_dir(oneCalc,ID,from_ls=True):
@@ -108,7 +170,7 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
         print e
 
 
-def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=10.0,num_points=1000,cond_bands=True):
+def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,cond_bands=True):
     nscf_ID=ID+'_nscf'
 
     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
@@ -218,7 +280,7 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
 
     return oneCalc,ID
 
-def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-10,10],k_grid=[40,40,40],project=True,num_e=2001,cond_bands=True,fermi_surface=False):
+def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=[40,40,40],project=True,num_e=2001,cond_bands=True,fermi_surface=False):
     nscf_ID=ID+'_nscf'
 
     if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
@@ -353,7 +415,7 @@ class tb_plotter:
 	def __init__(self,calcs):
 		self.calcs=calcs
 
-	def opdos(self,yLim=[-10,10],runlocal=False,postfix=''):
+	def opdos(self,yLim=[-5,5],runlocal=False,postfix=''):
             AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Orbital Projected DOS of PAO-TB Representation'
@@ -362,7 +424,7 @@ class tb_plotter:
 
 
 
-	def bands(self,yLim=[-10,10],DOSPlot='',runlocal=False,postfix=''):
+	def bands(self,yLim=[-5,5],DOSPlot='',runlocal=False,postfix=''):
             AFLOWpi.plot.bands(self.calcs,yLim=yLim,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix,tight_banding=True)
 
             calc_type='Plot Electronic Band Structure of PAO-TB Representation'
@@ -372,7 +434,7 @@ class tb_plotter:
                     calc_type+=' with APDOS'
             print '                 %s'% (calc_type)
 
-	def dos(self,yLim=[-10,10],runlocal=False,postfix=''):
+	def dos(self,yLim=[-5,5],runlocal=False,postfix=''):
             pass
 
 
@@ -522,9 +584,46 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
         del oneCalc['__runList__']
-        return oneCalc,ID
-#        nbnd = int(splitInput['&system']['nbnd'])
 
+
+
+
+
+#        match1 = float(re.findall(r'number of electrons\s*=\s*([0-9.])',outfile)[-1])/2.0
+
+
+
+        AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-1,1],k_grid=[10,10,10],project=False,num_e=2000,cond_bands=False,fermi_surface=False)        
+        
+        dos_out = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.dat'%ID)
+
+        with open(dos_out,'r') as ifo:
+                outfile=ifo.readlines()
+
+
+        en_list=[]
+        va_list=[]
+        thresh = 0.00005
+        for i in range(len(outfile)):
+            try:
+                en,val =  map(float,outfile[i].split())
+                en_list.append(en)
+                va_list.append(val)
+            except:
+                pass
+        homo=0.0
+        for i in range(len(en_list)):
+            if en_list[i]<1.0 and en_list[i]>-1.0:
+                if va_list[i]>thresh:
+                    homo = en_list[i]
+
+
+        dos_fermi = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.efermi'%ID)
+
+        with open(dos_fermi,'w') as ifo:
+                ifo.write(str(homo))
+
+        return oneCalc,ID
 
 
 

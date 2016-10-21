@@ -2035,11 +2035,13 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None):
                 try:
                     outfile = open(os.path.join(subdir,'%s.out' % prev_calc),'r').read()
 #                    match1 = re.findall(r'Kohn-Sham states\s*=\s*([0-9]*)',outfile)[-1]
-		    match1 = float(re.findall(r'number of electrons\w*=\w*([.0-9]*)',outfile)[-1])/2.0
+		    match1 = float(re.findall(r'number of electrons\s*=\s*([.0-9]*)',outfile)[-1])/2.0
+		    nbnd = AFLOWpi.prep._num_bands(oneCalc)
                     nbnd = int(1.75*int(match1))
                     prevID_str=prev_calc
                     break
-                except:
+                except Exception,e:
+			print e
 			pass
 
             bandsKRegex = AFLOWpi.qe.regex.k_points('','content','regex')
@@ -4761,80 +4763,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-
-
-
-
-
-
-	def transport(self,temperature=[300,],en_range=[0.05,10],epsilon=True,run_bands=True):
-		'''
-		Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
-		in the high level user interface. Adds a new step to the workflow.
-		
-		
-
-		Arguments:
-		      self: the _calcs_container object
-
-		Keyword Arguments:
-		      epsilon (bool): if True episilon tensor will be computed 
-		      temperature (list): list of temperature(s) at which to calculate transport properties
-
-		Returns:
-		      None
-
-		'''		
-
-		self.type='transport'
-
-
-
-		self.new_step(update_positions=True,update_structure=True)
-		self.initial_calcs.append(self.int_dict)
-
-		loadModString = 'AFLOWpi.scfuj.transport_prep(oneCalc,ID)'
-		self.addToAll(block='PREPROCESSING',addition=loadModString)		
-		self.change_input('&control','calculation','"scf"')
-
-		self.tight_banding=False
-		
-
-
-		for temp_index in range(len(temperature)):
-			# two flags for whether or not to run the scf/nscf/pdos
-			# if doing the calculation at more than one temperature.
-			# transport calcs for each temp are considered separate
-			# steps in the workflow.
-			run_trans_prep=True
-			if self.tight_banding==True:
-				run_trans_prep=False
-			
-
-
-			run_scf=True
-			if self.scf_complete==True:
-				run_scf=False
-
-
-
-			self.tight_banding=True
-			self.scf_complete=True
-			
-
-			#only spawn off a new step if it's not the first temperature in the list
-			if temp_index!=0:
-				self.new_step(update_positions=True,update_structure=True)
-				self.initial_calcs.append(self.int_dict)
-			loadModString = "oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s)"%(temperature[temp_index],run_scf,run_trans_prep,epsilon,run_bands,repr(en_range))
-			self.addToAll(block='RUN',addition=loadModString)		
-
-			calc_type='Optical and Transport Properties at %sK' % temperature[temp_index]
-#			print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-			print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-			## no temperature parameter for WanT bands so only run 
-			## it once if run_bands=True in the input the method.
-			run_bands=False
 
 
 
