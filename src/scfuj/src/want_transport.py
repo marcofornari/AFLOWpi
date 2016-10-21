@@ -720,7 +720,6 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 
 def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8]):
 
-
             want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,energy_range=en_range)
 
 	    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
@@ -736,12 +735,10 @@ def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8]):
             for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
                 AFLOWpi.run._oneRun(__submitNodeName__,want_epsilon,want_epsilon_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_epsilon.x' )
 
-            
-
-
             for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
                 abortIFRuntimeError(subdir, want_epsilon_ID)
 
+	    return oneCalc,ID
 
 
-
+	    
