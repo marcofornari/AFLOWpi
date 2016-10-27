@@ -359,8 +359,8 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
     kpt_ints = [int(numpy.ceil(float(x)*5)) for x in kpt_str.split()[:3]]
 
     for i in range(len(kpt_ints)):
-#        kgrid+='   nk%d = %s,\n'%(i+1,kpt_ints[i])
-        kgrid+='   nk%d = %s,\n'%(i+1,40)
+        kgrid+='   nk%d = %s,\n'%(i+1,kpt_ints[i])
+#        kgrid+='   nk%d = %s,\n'%(i+1,40)
 
     matdyn_dos_template='''
  &input
