@@ -10,15 +10,10 @@ class isotropy():
 
     def __init__(self,input_str,accuracy=0.000,output=False):
 
-        if type(input_str)==type('asdf'):
-            pass
-        else:
-            try:
-                with open(input_str,'r') as fo:
-                    input_str = fo.read()
-            except:
-                print "Couldn't open file %s" %input_str
-                return 
+        if os.path.exists(input_str):
+            with open(input_str,'r') as fo:
+                input_str = fo.read()
+                
 
         self.input     =  AFLOWpi.prep._removeComments(input_str)
         self.accuracy  = accuracy
@@ -40,18 +35,23 @@ class isotropy():
         self.output    = self.__get_isotropy_output(qe_output=output)
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.cif       = self.cif()
-        self.iso_basis = ''
+        self.cif       = self.get_cif()
+#        self.iso_basis = ''
         self.iso_pr_car= ''
 
         self.conv      = ''
-        if output==False:
+#        if output==False:
+        try:
             self.iso_basis = self.__get_iso_basis()
+
             self.iso_pr_car= self.__get_iso_cart()
             self.conv      = self.__convert_to_ibrav_matrix()
             
 
             self.qe   = self.convert()
+        except Exception,e:
+            AFLOWpi.run._fancy_error_log(e)
+            pass
 #        self.a
 #        self.b
 #        self.c
@@ -60,7 +60,7 @@ class isotropy():
 #        raise SystemExit
 
 
-    def cif(self):
+    def get_cif(self):
         return re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
 
     def __generate_isotropy_input_from_qe_data(self,output=False):
@@ -142,7 +142,7 @@ class isotropy():
                 find_sym_process = subprocess.Popen(findsym_path,stdin=subprocess.PIPE,stdout=subprocess.PIPE,)
 
                 output = find_sym_process.communicate(input=in_str)[0]
-                
+                self.output=output
 #                print output
 
 
@@ -192,21 +192,34 @@ class isotropy():
 
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-        try:
-            prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']["__content__"])
-        except:
-            raise SystemExit
+        if input_dict['CELL_PARAMETERS']["__content__"]=='':
+            prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
+        else:
+            try:
+                prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
+            except Exception,e:
+                print e
+                raise SystemExit
+#$        iso_conv
 
-        self.iso_basis=prim_in        
+#        print prim_in*numpy.linalg.inv(iso_conv)
+
+        self.iso_basis=prim_in
 #        self.iso_basis=AFLOWpi.retr._cellStringToMatrix(prim_in)
 
         
 
 
-        self.iso_basis[:,0]/=self.conv_a
-        self.iso_basis[:,1]/=self.conv_b
-        self.iso_basis[:,2]/=self.conv_c
-
+#        self.iso_basis[:,0]/=self.conv_a
+#        self.iso_basis[:,1]/=self.conv_b
+#        self.iso_basis[:,2]/=self.conv_c
+        a= numpy.linalg.inv(iso_conv)
+        a[:,0]*=self.conv_a
+        a[:,1]*=self.conv_b
+        a[:,2]*=self.conv_c
+        print a
+#        self.iso_basis=a
+#        self.iso_basis=numpy.around(self.iso_basis,decimals=4)
 
         self.axes_flip = iso_conv.dot(self.iso_basis)
         self.axes_flip = numpy.linalg.inv(iso_conv)
@@ -245,9 +258,13 @@ class isotropy():
         
         self.qe_basis = AFLOWpi.retr._prim2ConvMatrix(self.iso_basis,ibrav=self.ibrav)
 
+        
+
         self.qe_basis = numpy.linalg.inv(self.qe_basis)
         conv=self.qe_basis*numpy.linalg.inv(self.iso_basis)
-
+        self.qe_basis[:,0]*=self.conv_a
+        self.qe_basis[:,1]*=self.conv_b
+        self.qe_basis[:,2]*=self.conv_c
 
         conv = numpy.around(conv,decimals=5)
         return conv
@@ -284,17 +301,20 @@ class isotropy():
         self.qe_pos = copy.deepcopy(self.orig_pos)
 #        print self.conv
 #        print self.conv
-        self.iso_babsis= self.axes_flip
+#        self.iso_babsis= self.axes_flip
 #        print self.output        
 #        self.iso_basis = self.iso_basis.dot()
 #        self.conv= self.conv.
         print self.iso_basis
         print self.qe_basis
- 
+        conv = self.qe_basis.dot(numpy.linalg.inv(self.iso_basis))
+        conv = numpy.around(conv,decimals=4)
+
         for i in range(len(self.orig_pos)):
             self.origin= numpy.matrix(self.origin)
             mat_pos = numpy.matrix(self.orig_pos[i])
-            second = ((self.qe_basis*numpy.linalg.inv(self.iso_basis))*mat_pos.T).T
+            second = conv.dot(mat_pos.T).T
+
             self.qe_pos[i]=second.flatten().tolist()[0]
             
 

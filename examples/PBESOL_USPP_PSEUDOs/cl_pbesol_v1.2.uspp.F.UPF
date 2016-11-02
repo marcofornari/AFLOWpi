@@ -12,7 +12,7 @@ nl pn  l   occ               Rcut            Rcut US             E pseu
 
 <PP_HEADER>
    0                   Version Number
-  Ch                   Element
+  Cl                   Element
    US                  Ultrasoft pseudopotential
     T                  Nonlinear Core Correction
 SLA  PW   PSX  PSC     PBEsol  Exchange-Correlation functional

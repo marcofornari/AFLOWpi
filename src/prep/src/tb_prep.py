@@ -9,36 +9,47 @@ import numpy
 import time
 
 class tight_binding:
-    def __init__(self,calcs,unoccupied_bands=True):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
-        self.cond_bands=unoccupied_bands
-
+        self.cond_bands=cond_bands
+        self.do_ham=False
         self.step_counter=0
+        self.thresh=proj_thr
         tb_plotter=AFLOWpi.prep.tb_plotter(calcs)
 
         AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')""")
         AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING',"""AFLOWpi.scfuj._get_ham_xml(oneCalc,ID)""")
 
         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=%s)
+     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=%s,paw=False,kp_factor=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,unoccupied_bands)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,self.cond_bands,kp_factor)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
+
+        command='''AFLOWpi.prep._rename_projectability(oneCalc,ID)'''
+        AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',command)
         self.step_counter+=1
-#	AFLOWpi.prep.addToAll_(calcs,block='POSTPROCESSING',addition='AFLOWpi.retr._writeEfermi(oneCalc,ID+"_nscf")')
 
 
 
-    def optical(self,en_range=[0.05,10],):
-        loadModString = 'AFLOWpi.scfuj.want_epsilon_prep(oneCalc,ID)'
+
+    def optical(self,en_range=[0.05,10.05],de=0.1):
+        ne=float(en_range[1]-en_range[0])/de
+
+        if self.step_counter==1:
+            self.do_ham=True
+        else:
+            self.do_ham=False
+
+        loadModString = 'AFLOWpi.scfuj.want_epsilon_prep(oneCalc,ID,en_range=%s,ne=%s)'%(en_range,ne)
         AFLOWpi.prep.addToAll_(self.calcs,block='PREPROCESSING',addition=loadModString)		
 
         command = '''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.scfuj._run_want_epsilon(__submitNodeName__,oneCalc,ID,)
+     oneCalc,ID = AFLOWpi.scfuj._run_want_epsilon(__submitNodeName__,oneCalc,ID,ne=%s,en_range=%s,compute_ham=%s,proj_thr=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,ne,en_range,self.do_ham,self.thresh)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
         self.step_counter+=1
@@ -50,7 +61,7 @@ class tight_binding:
 
 
 
-    def transport(self,temperature=[300,],en_range=[0.05,10],):
+    def transport(self,temperature=[300,],en_range=[0.05,10],de=0.1):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
 		in the high level user interface. Adds a new step to the workflow.
@@ -68,17 +79,21 @@ class tight_binding:
 		      None
 
 		'''		
-
+                ne=float(en_range[1]-en_range[0])/de
 		loadModString = 'AFLOWpi.scfuj.transport_prep(oneCalc,ID)'
 		AFLOWpi.prep.addToAll_(self.calcs,block='PREPROCESSING',addition=loadModString)		
 
-		for temp_index in range(len(temperature)):
 
+		for temp_index in range(len(temperature)):
+                        if self.step_counter==1:
+                            self.do_ham=True
+                        else:
+                            self.do_ham=False
 
                         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s)
+     oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s,ne=%s,compute_ham=%s,proj_thr=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,temperature[temp_index],False,False,False,False,repr(en_range))
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,temperature[temp_index],False,False,False,False,repr(en_range),ne,self.do_ham,self.thresh)
 
                         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
                         self.step_counter+=1
@@ -92,12 +107,22 @@ class tight_binding:
 
 
 
-    def dos(self,dos_range=[-6,6],k_grid=[20,20,20],projected=True,ne=2001,cond_bands=True,fermi_surface=False):
+    def dos(self,dos_range=[-6.5,6.5],k_grid=None,projected=True,de=0.1,cond_bands=True,fermi_surface=False):
+        ne=float(dos_range[1]-dos_range[0])/de
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_dos_prep(oneCalc,ID)')
+
+
+        if self.step_counter==1:
+            self.do_ham=True
+        else:
+            self.do_ham=False
+
+
         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=%s,k_grid=%s,project=%s,num_e=%s,cond_bands=%s,fermi_surface=%s)
+     oneCalc,ID = AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=%s,k_grid=%s,project=%s,num_e=%s,cond_bands=%s,fermi_surface=%s,compute_ham=%s,proj_thr=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,dos_range,k_grid,projected,ne,cond_bands,fermi_surface)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,dos_range,k_grid,projected,ne,cond_bands,fermi_surface,self.do_ham,self.thresh)
+
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
         self.step_counter+=1
@@ -112,11 +137,17 @@ class tight_binding:
             print '                 %s'% (calc_type)
 
     def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True):
+
+        if self.step_counter==1:
+            self.do_ham=True
+        else:
+            self.do_ham=False
+
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_bands_prep(oneCalc,ID)')
         command = '''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.prep._run_want_bands(__submitNodeName__,oneCalc,ID,eShift=%s,num_points=%s,cond_bands=%s)
+     oneCalc,ID = AFLOWpi.prep._run_want_bands(__submitNodeName__,oneCalc,ID,eShift=%s,num_points=%s,cond_bands=%s,compute_ham=%s,proj_thr=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,eShift,nk,cond_bands)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,eShift,nk,cond_bands,self.do_ham,self.thresh)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
         self.step_counter+=1
@@ -163,14 +194,14 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
         if not os.path.exists(TB_dir):
             os.mkdir(TB_dir)
         data_file_dft = os.path.join(save_dir,'data-file.xml')
-        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.dat')
+        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.xml')
         shutil.copy(data_file_dft,TB_dir)
         shutil.copy(atomic_proj_dat,TB_dir)
     except Exception,e:
         print e
 
 
-def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,cond_bands=True):
+def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.95):
     nscf_ID=ID+'_nscf'
 
     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
@@ -181,7 +212,7 @@ def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,con
     else:
         execPrefix=''
 
-    want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID=ID,eShift=eShift,num_points=num_points,cond_bands=cond_bands)
+    want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID=ID,eShift=eShift,num_points=num_points,cond_bands=cond_bands,compute_ham=compute_ham,proj_thr=proj_thr)
 
 
 
@@ -192,6 +223,27 @@ def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,con
 
     return oneCalc,ID
 
+def _rename_projectability(oneCalc,ID):
+#    nspin = int(AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID))
+#    if nspin==2:
+        proj_up = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'projectability_dn.txt')
+        proj_dn = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'projectability_up.txt')
+        try:
+            os.rename(proj_dn,proj_dn_new)
+        except:
+            pass
+        proj_dn_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_projectability_dn.txt'%ID)
+        proj_up_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_projectability_up.txt'%ID)        
+        try:
+            os.rename(proj_up,proj_up_new)
+        except:
+            pass
+        proj = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'projectability.txt')
+        proj_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_projectability.txt'%ID)
+        try:
+            os.rename(proj,proj_new)
+        except:
+            pass
 
 def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10):
     nscf_ID=ID+'_nscf'
@@ -280,7 +332,7 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
 
     return oneCalc,ID
 
-def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=[40,40,40],project=True,num_e=2001,cond_bands=True,fermi_surface=False):
+def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,project=True,num_e=2001,cond_bands=True,fermi_surface=False,compute_ham=False,proj_thr=0.95):
     nscf_ID=ID+'_nscf'
 
     if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
@@ -291,7 +343,7 @@ def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=[40,40,4
     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
     eShift=float(Efermi)+10.0
 
-    want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=eShift,cond_bands=cond_bands,fermi_surface=fermi_surface)
+    want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=eShift,cond_bands=cond_bands,fermi_surface=fermi_surface,compute_ham=compute_ham,proj_thr=proj_thr)
 
 
     for want_dos_ID,want_dos in want_dos_calc.iteritems():
@@ -321,10 +373,13 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
         #change the TB pdos file names so that they can be read by sumpdos
         if spin == -1:
             spin_postfix='_down'
+            dat_postfix ='_dn'
         elif spin == 1:
             spin_postfix='_up'
+            dat_postfix ='_up'
         else:
             spin_postfix=''
+            dat_postfix =''
 
         rename_info_re = re.compile(r'state #\s*(\d*): atom\s*(\d+)\s*\(\s*(\S*)\s*\).*wfc\s*(\d+)\s*\(l=(\d+).*\)\n')
         #first check the QE projwfc.x output for the orbital
@@ -344,10 +399,11 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                     orb_type=['s','p','d','f']
              
                     #the orig file name from WanT output
-                    orig_name = '%s_TB_WanT_dos-%04d.dat'%(ID,state_num)
+                    orig_name = '%s_TB_WanT%s_dos-%04d.dat'%(ID,dat_postfix,state_num)
+
                     orig_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],orig_name)
                     if not os.path.exists(orig_path ):
-                        orig_name = '%s_TB_WanT_dos-%04d.dat'%(ID,state_num)
+                        orig_name = '%s_TB_WanT%s_dos-%04d.dat'%(ID,dat_postfix,state_num)
                         orig_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],orig_name)
                     #the renamed filename
                     rename = '%s_TB%s.pdos_atm#%s(%s)_wfc#%s(%s)'%(ID,spin_postfix,atom_num,atom_spec,wfc_num,orb_type[orb_l])
@@ -422,6 +478,52 @@ class tb_plotter:
             print '                 %s'% (calc_type)
 
 
+	def transport(self,runlocal=False,postfix='',x_range=None):
+		'''
+		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
+
+		Arguments:
+		      self: the plotter object
+
+		Keyword Arguments:
+		      nm (bool): whether to plot in nanometers for spectrum or eV for energy
+		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
+	                                or write it to the _ID.py to run during the workflow
+		
+		Returns:
+		      None
+
+		'''
+
+		AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
+		
+		calc_type='Plot Optical and Transport properties'
+		print '                 %s'% (calc_type)
+
+
+	def optical(self,runlocal=False,postfix='',x_range=None):
+		'''
+		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
+
+		Arguments:
+		      self: the plotter object
+
+		Keyword Arguments:
+		      nm (bool): whether to plot in nanometers for spectrum or eV for energy
+		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
+	                                or write it to the _ID.py to run during the workflow
+		
+		Returns:
+		      None
+
+		'''
+
+
+		AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
+		
+		calc_type='Plot Optical  properties'
+		print '                 %s'% (calc_type)
+
 
 
 	def bands(self,yLim=[-5,5],DOSPlot='',runlocal=False,postfix=''):
@@ -438,7 +540,7 @@ class tb_plotter:
             pass
 
 
-def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=None):
+def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=None,paw=False,kp_factor=2.0):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -512,8 +614,8 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
             oneCalc['__runList__'].append('scf')
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
             
-
-            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,1.5,unoccupied_states=unoccupied_bands)	
+#            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,unoccupied_states=unoccupied_bands)	
+            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=unoccupied_bands)	
 
 
 
@@ -527,7 +629,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
             except Exception,e:
                 try:
-                    nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,1.5)	
+                    nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,unoccupied_states=unoccupied_bands)	
 
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
@@ -559,7 +661,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
             oneCalc['__runList__'].append('nscf')
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,paw=paw)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
@@ -589,39 +691,39 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
 
 
 
-#        match1 = float(re.findall(r'number of electrons\s*=\s*([0-9.])',outfile)[-1])/2.0
+        #        match1 = float(re.findall(r'number of electrons\s*=\s*([0-9.])',outfile)[-1])/2.0
 
 
 
-        AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-1,1],k_grid=[10,10,10],project=False,num_e=2000,cond_bands=False,fermi_surface=False)        
+        # AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-1,1],project=False,num_e=2000,cond_bands=False,fermi_surface=False)        
         
-        dos_out = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.dat'%ID)
+        # dos_out = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.dat'%ID)
 
-        with open(dos_out,'r') as ifo:
-                outfile=ifo.readlines()
+        # with open(dos_out,'r') as ifo:
+        #         outfile=ifo.readlines()
 
 
-        en_list=[]
-        va_list=[]
-        thresh = 0.00005
-        for i in range(len(outfile)):
-            try:
-                en,val =  map(float,outfile[i].split())
-                en_list.append(en)
-                va_list.append(val)
-            except:
-                pass
-        homo=0.0
-        for i in range(len(en_list)):
-            if en_list[i]<1.0 and en_list[i]>-1.0:
-                if va_list[i]>thresh:
-                    homo = en_list[i]
+        # en_list=[]
+        # va_list=[]
+        # thresh = 0.00005
+        # for i in range(len(outfile)):
+        #     try:
+        #         en,val =  map(float,outfile[i].split())
+        #         en_list.append(en)
+        #         va_list.append(val)
+        #     except:
+        #         pass
+        # homo=0.0
+        # for i in range(len(en_list)):
+        #     if en_list[i]<1.0 and en_list[i]>-1.0:
+        #         if va_list[i]>thresh:
+        #             homo = en_list[i]
 
 
         dos_fermi = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.efermi'%ID)
 
         with open(dos_fermi,'w') as ifo:
-                ifo.write(str(homo))
+                ifo.write(str(0.0))
 
         return oneCalc,ID
 
@@ -632,9 +734,9 @@ def _clean_want_bands(oneCalc,ID):
 
 
     try:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/*_WanT_bands.out')[-1]
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands.out'%ID)[-1]
     except:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/*_WanT_bands_up.out')[-1]
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands_up.out'%ID)[-1]
 
     with open(want_stdout_path,'r') as in_file_obj:
         in_string = in_file_obj.read()
@@ -653,25 +755,29 @@ def _clean_want_bands(oneCalc,ID):
             plot_bool.append(False)
 
     gg = re.findall("  Number of kpts in each segment\n((?:.*:\W+(?:\d*)\n)*)",in_string)
-    num = [int(x) for x in re.findall('line.*:\W+(\d+)',gg[0])]
-
+#    num = [int(x) for x in re.findall('line.*:\W+(\d+)',gg[0])]
+    num = [int(x) for x in re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)]
     total = 0
     include=[]
     #print path_name
     output_path_string = ''
     for i in range(len(num)):
         total+=num[i]+1
-        if plot_bool[i]:
-            if i==0:
-                output_path_string+='%s %s\n' %(path_name[i],num[i])
+        try:
+            if plot_bool[i]:
+                if i==0:
+                    output_path_string+='%s %s\n' %(path_name[i],num[i])
+                else:
+                    output_path_string+='%s %s\n' %(path_name[i],num[i]+1)
             else:
-                output_path_string+='%s %s\n' %(path_name[i],num[i]+1)
-        else:
-            output_path_string+='%s %s\n' %(path_name[i],0)
-        for j in range(num[i]):
-            include.append(plot_bool[i])
+                output_path_string+='%s %s\n' %(path_name[i],0)
+            for j in range(num[i]):
+                include.append(plot_bool[i])
 
-        include.append(True)
+            include.append(True)
+        except:
+            pass
+    print include
     #    print print_out
     output_path_string+='%s %s' %(path_name[-1],0)+'\n' 
     
@@ -683,6 +789,9 @@ def _clean_want_bands(oneCalc,ID):
         want_bands_data_path_dn = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_bands_want_down.dat'%ID)
         data_file_list=[want_bands_data_path_up,want_bands_data_path_dn,]
 
+
+
+    ret_data=[]
     for want_bands_data_path in data_file_list:
         with open(want_bands_data_path,'r') as in_file_obj:
             bands_dat = in_file_obj.read()
@@ -707,10 +816,12 @@ def _clean_want_bands(oneCalc,ID):
                     final_data+= split_data[i][j]+'\n'
 
             final_data+='\n'
-
-
-#        want_bands_data_path_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_bands_want.dat'%ID)
-        want_bands_data_path_new=want_bands_data_path
+            
+        ret_data.append(final_data)
+        want_bands_data_path_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],want_bands_data_path[:-4]+'_cleaned.dat')
+        print want_bands_data_path_new
+#        want_bands_data_path_new=want_bands_data_path
         with open(want_bands_data_path_new,'w') as in_file_obj:
             in_file_obj.write(final_data)
 
+#    return ret_data

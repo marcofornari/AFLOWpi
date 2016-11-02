@@ -14,7 +14,7 @@ import collections
 import math
 
 def __smoothGauss(list,strippedXs=False,degree=10):  
-	print "sg"
+
 	'''
 
 
@@ -473,7 +473,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 	maxDOS=0
 	minDOS=0
-	orbitalList = ['s','p','d','f',]
+	orbitalList = ['s','p','d','f',"All"]
 	pDOSFiles= glob.glob(os.path.join(subdir,'%s_*.sumpdos' % (atom)))
 
 	pDOSNoPath = []
@@ -521,11 +521,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		if not LSDA:
 			minDOS=0
 			
-		if orbitalName != 'All':
-			ax2.plot(enshift,floatdos,color+'-',label=orbitalName)
+#		if orbitalName != 'All':
 
-			if LSDA:
-				ax2.plot(enshift,floatdosDOWN,color+'-',label=orbitalName)
+		ax2.plot(enshift,floatdos,color+'-',label=orbitalName)
+		if LSDA:
+			ax2.plot(enshift,floatdosDOWN,color+'-',label=orbitalName)
 	
 		       	
 	handles, labels = ax2.get_legend_handles_labels()
@@ -709,7 +709,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 
 		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
-		if "degauss" in inDict["&system"].keys():
+		if "degauss" in inDict["&system"].keys() or TB==True:
 
 			return enshift,floatdos,floatdosDOWN
 		else:
@@ -719,7 +719,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 	maxDOS=0
 	minDOS=0
-	orbitalList = ['s','p','d','f',]
+	orbitalList = ['s','p','d','f',"All"]
 	pDOSFiles= glob.glob(os.path.join(subdir,'%s_*.sumpdos' % (atom)))
 
 	pDOSNoPath = []
@@ -766,11 +766,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		if not LSDA:
 			minDOS=0
 			
-		if orbitalName != 'All':
-			ax2.plot(enshift,floatdos,color+'-',label=orbitalName)
+#		if orbitalName != 'All':
+		ax2.plot(enshift,floatdos,color+'-',label=orbitalName)
 
-			if LSDA:
-				ax2.plot(enshift,floatdosDOWN,color+'-',label=orbitalName)
+		if LSDA:
+			ax2.plot(enshift,floatdosDOWN,color+'-',label=orbitalName)
 	
 		       	
 	handles, labels = ax2.get_legend_handles_labels()

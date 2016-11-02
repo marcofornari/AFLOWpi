@@ -2031,7 +2031,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None):
         '''checks to see if "crystal_b" has already been substituted for "automatic"'''
         try:
             prevID_str=oneCalc['prev'][-1]
-            for prev_calc in  oneCalc['prev']:
+            for prev_calc in reversed(oneCalc['prev']):
                 try:
                     outfile = open(os.path.join(subdir,'%s.out' % prev_calc),'r').read()
 #                    match1 = re.findall(r'Kohn-Sham states\s*=\s*([0-9]*)',outfile)[-1]
@@ -3805,7 +3805,7 @@ def ConfigSectionMap(section,option,configFile=None):
 #####################################################################################################################
 class init:
 
-        def __init__(self,PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',workdir=None):
+        def __init__(self,PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',workdir=None,make_symlink=False):
 		self.project=PROJECT
 		self.set=SET
 		self.config=config
@@ -3826,7 +3826,7 @@ class init:
 
 		globals()['__global__config__flag__']=True
 
-		self.keys = AFLOWpi.prep.init__(PROJECT, SET=SET, AUTHOR=AUTHOR, CORRESPONDING=CORRESPONDING, SPONSOR=SPONSOR,config=config,workdir=workdir)
+		self.keys = AFLOWpi.prep.init__(PROJECT, SET=SET, AUTHOR=AUTHOR, CORRESPONDING=CORRESPONDING, SPONSOR=SPONSOR,config=config,workdir=workdir,make_symlink=make_symlink)
 
         def items(self):
                 return self.keys.items()
@@ -4069,7 +4069,7 @@ def _getLoglevel():
 
 
 
-def init__(PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',workdir=None):
+def init__(PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',workdir=None,make_symlink=False):
 
 	"""
 	Initializes the frame
@@ -4138,34 +4138,27 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
         if not os.path.exists(workdir):
 		print "work_dir %s does not exist. exiting"%workdir
 		raise SystemExit
-    #        try:
-   #             os.makedirs(workdir)
-  #          except Exception,e:
- #               logging.warning('work directory %s does not exist and attempting to create it failed. Exiting AFLOWpi' % workdir)
-#                SystemExit
-#        if workdir==None:
-#            workdir=os.curdir
 
-	try:
-		sym=os.readlink("./%s.symlink"%PROJECT)
-	except:
-		sym="./"
-	if not os.path.exists(sym) or sym=="./":
-		path = os.path.join(workdir,PROJECT)
+	if make_symlink==True:
 		try:
-			if os.path.islink("./%s.symlink"%PROJECT) and os.readlink("./%s.symlink"%PROJECT) == path:
-				print "./%s.symlink to %s is broken. Replacing it with new symlink."%(PROJECT,path)
-				os.unlink("./%s.symlink"%PROJECT)
+			sym=os.readlink("./%s.symlink"%PROJECT)
 		except:
-			pass
+			sym="./"
+		if not os.path.exists(sym) or sym=="./":
+			path = os.path.join(workdir,PROJECT)
+			try:
+				if os.path.islink("./%s.symlink"%PROJECT) and os.readlink("./%s.symlink"%PROJECT) == path:
+					print "./%s.symlink to %s is broken. Replacing it with new symlink."%(PROJECT,path)
+					os.unlink("./%s.symlink"%PROJECT)
+			except:
+				pass
 
-		try:
-			os.symlink(path,"./%s.symlink"%PROJECT)
-		except:
-			pass
+			try:
+				os.symlink(path,"./%s.symlink"%PROJECT)
+			except:
+				pass
 
-#        if os.path.exists(sym) and sym!="./"
-#		print "./%s already exists in %s skipping creation of symlink to AFLOWpi directory tree."%(PROJECT,path)
+
 
 	path = os.path.join(workdir,PROJECT,SET)
 	AFLOWpidir = os.path.join(path,'AFLOWpi')
@@ -4575,7 +4568,7 @@ EXITING.
 
 
 
-	def tight_binding(self,unoccupied_states=True):
+	def tight_binding(self,cond_bands=True,proj_thr=0.95,kp_factor=2.0):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4585,14 +4578,14 @@ EXITING.
 		self.initial_calcs.append(self.int_dict)
 
 		calc_type='Generate PAO-TB Hamiltonian'
-		if unoccupied_states==True:
+		if cond_bands:
 			calc_type+=' with occupied and unoccupied states'
 		else:
 			calc_type+=' with only occupied states'
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,unoccupied_bands=unoccupied_states)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -4766,7 +4759,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.70,kp_mult=1.5):
+	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.20,kp_mult=1.5):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
 		user interface. Adds a new step to the workflow.
@@ -5002,27 +4995,6 @@ class plotter:
 	# 		loadModString = 'AFLOWpi.plot.__plot_thermal_conductivity(oneCalc,ID,postfix=%s,temperature=%s)'%(postfix,temperature)
 	# 		AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
 
-	def transport(self,runlocal=False,postfix=''):
-		'''
-		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
-
-		Arguments:
-		      self: the plotter object
-
-		Keyword Arguments:
-		      nm (bool): whether to plot in nanometers for spectrum or eV for energy
-		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-	                                or write it to the _ID.py to run during the workflow
-		
-		Returns:
-		      None
-
-		'''
-
-		AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix)
-		
-		calc_type='Plot Optical and Transport properties'
-		print '                 %s'% (calc_type)
 
 	def opdos(self,yLim=[-10,10],runlocal=False,postfix=''):
 		'''
@@ -5154,31 +5126,28 @@ def _num_bands(oneCalc,mult=True):
 
     subdir = oneCalc['_AFLOWPI_FOLDER_']
 
-    for old_ID in oneCalc['prev']:
+    for old_ID in reversed(oneCalc['prev']):
 	try:
 		oldFile = os.path.join(subdir,'%s.out' % old_ID)
 		if os.path.exists(oldFile):
 			with open(oldFile,'r') as outfileObj:
 				outfile=outfileObj.read()
-				match1_P = re.search(r'Kohn-Sham states=',outfile)
-				match1 = re.search(r'number of electrons       =',outfile)
 
-				if match1==None:
-					continue
-				m1 = match1.end()
-				m2 = m1 + 15
-				m1_P= match1_P.end()
-				m2_P= m1_P + 15
-				if mult==True:
-					nbnd = int(1.75*float(outfile[m1:m2])/2.0)
-				else:
-					nbnd = int(1.0*int(outfile[m1_P:m2_P]))
 
-				print 'Number of bands to be Calculated: %s\n'% nbnd
-				logging.info('Number of bands to be Calculated %s: '% nbnd)
+				match1 = float(re.findall(r'number of electrons\s*=\s*([.0-9]*)',outfile)[-1])
 				break
+
 	except Exception,e:
 		AFLOWpi.run._fancy_error_log(e)
+		continue
+
+    if mult==True:
+	    nbnd = int(1.75*match1/2.0)
+    else:
+	    nbnd = int(1.0*match1/2.0)
+
+    print 'Number of bands to be Calculated: %s\n'% nbnd
+    logging.info('Number of bands to be Calculated %s: '% nbnd)
 
     return nbnd
 

@@ -22,17 +22,26 @@ def _want_txt_to_bin(fpath,fname):
         return
 
     fin   = open(fpath+'/'+fname,"r")
-    ret=np.asarray(list(csv.reader(fin, delimiter=' ',skipinitialspace=True,
+    # fs = fin.read()
+    # if len(re.findall('[*]',fs))!=0:
+    #     fin.close()
+    #     fs = re.sub('.*[*]+.*\n','0.0 0.0\n',fs)
+    #     fin   = open(fpath+'/'+fname,"w")
+    #     fin.write(fs)
+    #     fin.close()
+    #     fin   = open(fpath+'/'+fname,"r")
+    try:
+        ret=np.asarray(list(csv.reader(fin, delimiter=' ',skipinitialspace=True,
                                        quoting=csv.QUOTE_NONNUMERIC)),dtype=np.float32)
-    fin.close()
+        fin.close()
 
-    bin_data =  ret[:,0]+1j*ret[:,1]
+        bin_data = ret[:,0]+1j*ret[:,1]
 
-    bout   = open(bin_file,"wb")
-    np.save(bout,bin_data)
-    bout.close()
-
-
+        bout   = open(bin_file,"wb")
+        np.save(bout,bin_data)
+        bout.close()
+    except:
+        return
 
 
 
@@ -467,31 +476,23 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                 splitInput = AFLOWpi.retr._splitInput(inputfile)
 
                 try:
+                        nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)
+                        if unoccupied_states==True:
+                            nbnd = int(1.75*nbnd)
+                            splitInput['&system']['nbnd']= nbnd                        
+                        elif type(unoccupied_states)==type(357):
+                            nbnd = int(1.00*nbnd)
+                            splitInput['&system']['nbnd']= nbnd+unoccupied_states
+                        else:
+                            nbnd = int(1.00*nbnd)
+                            splitInput['&system']['nbnd']= nbnd                       
+                            
+                        print 'Number of bands to be Calculated %s: '% nbnd
+                        logging.info('Number of bands to be Calculated %s: '% nbnd)
 
-                        for ID_old in oneCalc['prev']:
-                            try:
-                                a = ID_old+'.out'
-                                outfile = open(os.path.join(subdir,a),'r').read()
-                                match1 = re.search(r'Kohn-Sham states=',outfile)
-                                if match1==None:
-                                    continue
-                                m1 = match1.end()
-                                m2 = m1 + 15
-                                nbnd = int(1.75*int(outfile[m1:m2]))
-                                if unoccupied_states==True:
-                                    splitInput['&system']['nbnd']= nbnd                        
-                                else:
-                                    try:
-                                        del splitInput['&system']['nbnd']
-                                    except:
-                                        pass
-                                print 'Number of bands to be Calculated %s: '% nbnd
-                                logging.info('Number of bands to be Calculated %s: '% nbnd)
-                                break
-                            except Exception,e:
-                                pass
 
-			'''checks to see if nbnd has already been added to the file - in any case add/replace nbnd'''
+
+ 			'''checks to see if nbnd has already been added to the file - in any case add/replace nbnd'''
 #                        if "occupations" in splitInput['&system'].keys():
 #                            if splitInput['&system']["occupations"]!= 'smearing':
 #                                splitInput['&system']["occupations"]='"tetrahedra"'
@@ -502,9 +503,9 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
 
                         try:
                             splitInput['&electrons']['conv_thr']='1.0D-8'
-                            splitInput['&system']['nosym']='.true.'
-                            splitInput['&system']['noinv']='.true.'
-
+                            splitInput['&system']['nosym']='.True.'
+                            splitInput['&system']['noinv']='.True.'
+                            splitInput['&control']['verbosity']='"high"'
                             splitInput['&control']['calculation']='"nscf"'
                             inputfile=AFLOWpi.retr._joinInput(splitInput)
                             '''writes an input for band_plot.x to process the correct number of bands calculated'''
@@ -540,7 +541,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
 #                            kpFactor=1
                         
                             
-                        kpFactor=2.0    
+#                        kpFactor=2.0    
 
 			for kpoint in range(len(scfKPointSplit)-3):
 				scfKPointSplit[kpoint] = str(int(math.ceil(scfKPointSplit[kpoint]*kpFactor)))
@@ -577,7 +578,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
         return output_calc,calc_label
 
 
-def projwfc(oneCalc,ID=None):
+def projwfc(oneCalc,ID=None,paw=False):
 	'''
 	Run projwfc on each calculation
 
@@ -589,6 +590,9 @@ def projwfc(oneCalc,ID=None):
         temp_dir= AFLOWpi.prep._get_tempdir()
 	calc_copy=copy.deepcopy(oneCalc)
         output_calc = {}
+        nscf_ID=ID+'_nscf'
+        Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
+        eShift=float(Efermi)+4.0
         prefix = oneCalc['_AFLOWPI_PREFIX_']
         try:
                 subdir = oneCalc['_AFLOWPI_FOLDER_']
@@ -601,15 +605,18 @@ def projwfc(oneCalc,ID=None):
 
                     prefix = oneCalc['_AFLOWPI_PREFIX_']
                 
-
+                paw_str=""
+                if paw:
+                    paw_str="pawproj=.true."
 		inputfile = """&PROJWFC
   prefix='%s'
   filpdos='./%s_acbn0'
   outdir='%s'
   lwrite_overlaps=.TRUE.
-  lbinary_data  = .TRUE.
+  lbinary_data  = .FALSE.
+  %s
 /
-"""%(prefix,ID,temp_dir)
+"""%(prefix,ID,temp_dir,paw_str,)
 
 		calc_label = ID + '_pdos'		
 
@@ -633,13 +640,18 @@ def projwfc(oneCalc,ID=None):
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=0):
+def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.90):
 	'''
 		Make input files for  WanT bands calculation
 
 		Arguments:
         	 - calc_copy -- dictionary of dictionaries of calculations
 	'''
+
+        compute_ham_str=""
+	if compute_ham==False:
+		compute_ham_str="!"
+
 	output_calc = {}
         temp_dir= AFLOWpi.prep._get_tempdir()
 	calc_copy=copy.deepcopy(oneCalc)
@@ -657,7 +669,8 @@ def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=0):
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+5.0
+            eShift=float(Efermi)
+
         except:
             eShift=10.0
 
@@ -671,22 +684,26 @@ def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=0):
 #        if temp_dir!='./':
 #            subdir=temp_dir
 
-
+        oovp=".TRUE."
         do_norm=".TRUE."
         nbnd_string= ''
         if cond_bands!=0 and type(cond_bands) == type(452):
 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))+cond_bands
                 nbnd_string = 'atmproj_nbnd    = %s' % nbnds
-                do_norm=".FALSE."
-	elif cond_bands==True: 
-		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=True))
-                nbnd_string = 'atmproj_nbnd    = %s' % nbnds
-                do_norm=".FALSE."
+#                proj_thr=0.95
+           #     do_norm=".FALSE."
+
+          #      do_norm=".FALSE."
 	elif cond_bands==0 or cond_bands==False:
 #            nbnd_string=""
+            oovp=".FALSE."
             nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))
             nbnd_string = 'atmproj_nbnd    = %s' % nbnds
-        
+            proj_thr=0.90
+	if cond_bands==True: 
+		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=True))
+                nbnd_string = 'atmproj_nbnd    = %s' % nbnds       
+#                proj_thr=0.97 
 #        if nbnd==None:
 
  #           else:
@@ -698,14 +715,15 @@ def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=0):
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-datafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nkpts_in        = %d                 
 nkpts_max	= %s		 
-do_orthoovp	= .FALSE.
+do_orthoovp	= %s
 atmproj_do_norm = %s
+atmproj_thr     = %s
 atmproj_sh      = %f                         
 %s
-"""%(ID,ID,len(lblList),num_points,do_norm,eShift,nbnd_string)
+"""%(ID,compute_ham_str,ID,len(lblList),num_points,oovp,do_norm,proj_thr,eShift,nbnd_string)
 #"""%(prefix,subdir,subdir,prefix,len(special_points),eShift,nbnd_string)
 
 	if nspin == 1:
@@ -739,6 +757,9 @@ atmproj_sh      = %f
 		#Insert k-path
 		inputfile += kpathStr
 		inputfile1 += kpathStr
+
+                inputfile  = re.sub('_WanT','_WanT_up',inputfile)
+                inputfile1 = re.sub('_WanT','_WanT_dn',inputfile1)
 
                 calc_label_up = ID + "_WanT_bands_up" 
                 a = calc_label_up+'.in'
@@ -1624,35 +1645,31 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 
         
         if 'bands' not in oneCalc['__runList__']:
-            want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID)
-
-
-
+            want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID,compute_ham=True,cond_bands=False)
 
             for want_ID,want_calc in want_dict.iteritems():
 #                AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
                 AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix="",execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
 
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_up.txt")
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_down.txt")
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham.txt")
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp_up.txt")
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp_down.txt")
-            AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp.txt")
+            oneCalc['__runList__'].append('bands')
+            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+
             '''in case we're working in local scratch'''            
 #           AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['ham','wan','space'])
 
             for want_ID,want_calc in want_dict.iteritems():
                 abortIFRuntimeError(subdir, want_ID)
 
-
-            oneCalc['__runList__'].append('bands')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-
             '''
             Will need to be filled in for the executable name with whatever wanT executable is called 
             and that executable needs to be moved to the calculation directory tree before this is called
             '''
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_up.txt")
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_down.txt")
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham.txt")
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp_up.txt")
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp_down.txt")
+        AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kovp.txt")
 
 ############
 ##################################################################################################################
@@ -1746,8 +1763,8 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 
 
         try:
-            AFLOWpi.prep._clean_want_bands(oneCalc,ID)
-            AFLOWpi.plot._bands(oneCalc,ID,yLim=[-10,10],postfix='acbn0_TB',tight_banding=True)
+#            AFLOWpi.prep._clean_want_bands(oneCalc,ID)
+            AFLOWpi.plot._bands(oneCalc,ID,yLim=[-15,5],postfix='acbn0_TB',tight_banding=True)
         except:
             pass
 
@@ -1768,7 +1785,25 @@ def _get_ham_xml(oneCalc,ID):
     command = iotk_exe
     command += ' --iotk-exe %s.x' % iotk_exe
     command += ' convert ./%s_TB_WanT.ham ./RHAM_%s_%s.xml' % (ID,AFLOWpi.retr._getStoicName(oneCalc),ID)
-    os.system(command)
+    try:
+        os.system(command)
+    except:
+        pass
+    command = iotk_exe
+    command += ' --iotk-exe %s.x' % iotk_exe
+    command += ' convert ./%s_TB_WanT_up.ham ./RHAM_UP_%s_%s.xml' % (ID,AFLOWpi.retr._getStoicName(oneCalc),ID)
+    try:
+        os.system(command)
+    except:
+        pass
+    command = iotk_exe
+    command += ' --iotk-exe %s.x' % iotk_exe
+    command += ' convert ./%s_TB_WanT_dn.ham ./RHAM_DOWN_%s_%s.xml' % (ID,AFLOWpi.retr._getStoicName(oneCalc),ID)
+    try:
+        os.system(command)
+    except:
+        pass
+
 
 def checkOscillation(ID,oneCalc,uThresh=0.001):
     

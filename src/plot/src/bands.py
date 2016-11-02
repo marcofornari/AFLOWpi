@@ -10,6 +10,7 @@ import StringIO
 import glob
 import re
 import cPickle
+import matplotlib.lines as mlines
 
 
 def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False):
@@ -84,10 +85,11 @@ def __getPath_WanT(oneCalc,ID):
 
 
     '''
+
     try:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/*_WanT_bands.out')[-1]
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands.out'%ID)[-1]
     except:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/*_WanT_bands_up.out')[-1]
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands_up.out'%ID)[-1]
 
     with open(want_stdout_path,'r') as in_file_obj:
         in_string = in_file_obj.read()
@@ -106,31 +108,43 @@ def __getPath_WanT(oneCalc,ID):
         else:
             plot_bool.append(False)
 
-    gg = re.findall("  Number of kpts in each segment\n((?:.*:\W+(?:\d*)\n)*)",in_string)
-    num = [int(x) for x in re.findall('line.*:\W+(\d+)',gg[0])]
+    gg = re.findall("\s*Number of kpts in each segment\n((?:.*:\W+(?:\d*)\n)*)",in_string)
+    print gg
+
+    num = [int(x) for x in re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)]
+    print re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)
 
     total = 0
     include=[]
 
     output_path_string = ''
+    print plot_bool
     for i in range(len(num)):
-        total+=num[i]+1
-        if plot_bool[i]:
-            if i==0:
-                output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i],path_name[i])
-            else:
-                output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i]+1,path_name[i],)
-        else:
-            output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,0,path_name[i])
-        for j in range(num[i]):
-            include.append(plot_bool[i])
 
-        include.append(True)
+        total+=num[i]+1
+	try:
+		if plot_bool[i]:
+
+		    if i==0:
+			output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i],path_name[i])
+		    else:
+			output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i]+1,path_name[i],)
+		else:
+                    if i!=len(num):
+			    output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,0,path_name[i])
+		for j in range(num[i]):
+		    include.append(plot_bool[i])
+#		else:
+#			include.append(False)
+		include.append(True)
+		
+	except Exception,e:
+		print e
 
     output_path_string+='%s %s %s %s ! %s' %(0.0,0.0,0.0,0,path_name[-1])+'\n' 
 
-#    return 
-    print output_path_string
+
+
     return  output_path_string
 
 
@@ -279,10 +293,12 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
 	if tight_banding==True:
-		filebands = os.path.join(subdir,'%s_bands_want.dat'%calcID)
+		AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
+		filebands = os.path.join(subdir,'%s_bands_want_cleaned.dat'%calcID)
 		if not os.path.exists(filebands):
-			filebands_up = os.path.join(subdir,'%s_bands_want_up.dat'%calcID)
-			filebands_dn = os.path.join(subdir,'%s_bands_want_down.dat'%calcID)
+
+			filebands_up = os.path.join(subdir,'%s_bands_want_up_cleaned.dat'%calcID)
+			filebands_dn = os.path.join(subdir,'%s_bands_want_down_cleaned.dat'%calcID)
                 Efermi_shift=Efermi
 
 	else:
@@ -314,6 +330,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
  
      #################################
 	if nspin==2:
+#		AFLOWpi.prep._clean_want_bands(oneCalc,ID)
 		k_x_up,k_y_up = AFLOWpi.plot._clean_bands_data_qe(filebands_up,Efermi_shift)
 		k_x_dn,k_y_dn = AFLOWpi.plot._clean_bands_data_qe(filebands_dn,Efermi_shift)
 		k_x,k_y=k_x_up,k_y_up
@@ -345,20 +362,24 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
 					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 				else:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,label="$\uparrow$",linewidth=2)
-					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,label="$\downarrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
-		ax1.legend(handles[-2:], labels[-2:],numpoints=1)
-
+#		ax1.legend(handles[-2:], labels[-2:],numpoints=1)
+		up_legend_lab = mlines.Line2D([], [], color='red',label='$\uparrow$')
+		dn_legend_lab = mlines.Line2D([], [], color='black',label='$\downarrow$')
+		ax1.legend(handles=[up_legend_lab,dn_legend_lab])
 	else:
 		if tight_banding==True:
 			for i in range(len(k_x)):
-				pylab.plot((k_x[i]),(k_y[i]),'k',marker=".",linestyle=" ",linewidth=1.3)			
+				pylab.plot((k_x[i]),(k_y[i]),'k',marker=".",linestyle=" ",linewidth=1.3)	
+#				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)	
 		else:
 			for i in range(len(k_x)):
-				pylab.plot((k_x[i]),(k_y[i]),'k',linewidth=1.3)
+				pylab.plot((k_x[i]),(k_y[i]),'k',marker=".",linestyle=" ",linewidth=1.3)			
+	#
 
 
 	pylab.ylabel('E(eV)')
@@ -613,7 +634,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		ax2.spines['top'].set_linewidth(1.5)
 
 		ax2.set_yticklabels([])	     #to hide ticklabels
-		ax1.set_position([0.07,0.1,0.67,0.8]) #[left,bottom,width,height]
+		ax1.set_position([0.07,0.1,0.67,0.8]) #[left,bottom,width,height] 
 		ax2.set_position([0.75,0.1,0.20,0.8]) #other useful options for the frame! :D
 
 		ax2.yaxis.set_ticks([])

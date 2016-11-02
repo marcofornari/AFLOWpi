@@ -208,17 +208,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                     return oneCalc,ID
             except Exception,e:
                 AFLOWpi.run._fancy_error_log(e)
-#            #check to transfer calc data to local scratch if restart and local mode
-#            for k,v in calc_subset.iteritems():
-#                if v['__status__']['Complete']==False:
-#                    try:
-#                        AFLOWpi.prep._to_local_scratch(v,k)
-#                    except Exception,e:
-#                        AFLOWpi.run._fancy_error_log(e)
-                    
-        
-#        for ID_new,oneCalc_new in calc_subset.iteritems():
-#            calc_subset[ID_new]['__walltime_dict__']=oneCalc['__walltime_dict__']
+
 #################################################################################################
         for ID_new,oneCalc_new in calc_subset.iteritems():
             try:
@@ -239,7 +229,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
         try:
                 last=len(calc_subset)
-                for ID_new,oneCalc_new in reversed(calc_subset.items()):
+                for ID_new,oneCalc_new in calc_subset.items():
 
                     last-=1 
                     if last==0:
@@ -252,16 +242,6 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                         sajO=False
 
                     AFLOWpi.run._submitJob(ID_new,oneCalc_new,__submitNodeName__,forceOneJob=oneJobBool,sajOverride=sajO)
-                    #in the case for mult_jobs=False check to see if we're at the end time
-                    # if mult_jobs==False:
-                    #     if  AFLOWpi.prep._ConfigSectionMap('cluster','type')!='':
-                    #         if numpy.abs(time.time()-startScript)>walltime*0.90:
-                    #             if mult_jobs==False:
-                    #                 AFLOWpi.run._submitJob(ID,oneCalc,__submitNodeName__,sajOverride=True)
-                    #                 sys.exit(0)			
-
-
-
 
                 sys.exit(0)                    
 
@@ -307,5 +287,5 @@ def _swap_walltime_logs(main_ID,main_oneCalc,oneCalc,ID):
     #move files to local scratch if it's being used for the main pipeline 
     AFLOWpi.prep._to_local_scratch(main_oneCalc,main_ID)    
 
-#    for new_ID,new_oneCalc in calc_subset.iteritems():
+
         

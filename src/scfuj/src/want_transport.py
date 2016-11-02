@@ -3,7 +3,7 @@ import copy
 import logging 
 import os
 import AFLOWpi
-
+import numpy
 
 def tb_prep(oneCalc,ID):
 #############################################################################################
@@ -108,7 +108,7 @@ def want_dos_prep(oneCalc,ID):
 
 
 #############################################################################################
-def want_epsilon_prep(oneCalc,ID):
+def want_epsilon_prep(oneCalc,ID,en_range=[0.5,10.0],ne=95):
 	wantdir = AFLOWpi.prep._ConfigSectionMap('prep','want_dir')
         if os.path.isabs(wantdir) == False:
             configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -155,7 +155,7 @@ def want_eff_mass_prep(oneCalc,ID):
 
 
 
-def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.0],boltzmann=True,k_grid=[40,40,40],pdos=False,num_e=4001,cond_bands=True,fermi_surface=False):
+def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.0],boltzmann=True,k_grid=None,pdos=False,num_e=4001,cond_bands=True,fermi_surface=False,compute_ham=False,proj_thr=0.95):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -168,6 +168,10 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 	subdir = calc_copy['_AFLOWPI_FOLDER_']
 	nspin = AFLOWpi.scfuj.chkSpinCalc(calc_copy,ID)
 
+	compute_ham_str=""
+	if compute_ham==False:
+		compute_ham_str="!"
+
         try:
             prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
         except:
@@ -177,10 +181,9 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 #            subdir=temp_dir
 
         
-        if cond_bands!=0 and type(cond_bands) == type(452):
+	if cond_bands!=0 and type(cond_bands) == type(452):
 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))+cond_bands
-	elif cond_bands==True: 
-		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=True))
+	
 	elif cond_bands==False:
 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))
 	# if unoccupied_bands==True:
@@ -188,7 +191,8 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 	# 		nbnds=int(AFLOWpi.prep._num_bands(oneCalc))
 	# 	else:
 	# 		nbnds=nbnd
-		
+	if cond_bands==True: 
+		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False)*1.75)
 		       
 
         ###############################
@@ -196,13 +200,14 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
         #hardcode for now 
         #hardcode for now 
 
+
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+5.0
+            eShift=float(Efermi)+15.0
         except:
-            eShift=5.0
-#	eShift=5.0
+            eShift+4.0
+	eShift=5.5
 	if temperature==None:
 		temp_temp=300.0
 	else:
@@ -210,13 +215,18 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 
 	temp_ev=float(temp_temp)/11604.505
 
+	if k_grid==None:
+		inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
+		kpt_str  = inputDict['K_POINTS']['__content__']    
+		k_grid = [int(numpy.ceil(float(x)*5)) for x in kpt_str.split()[:3]]
+
         nk1   =  k_grid[0]
         nk2   =  k_grid[1]
         nk3   =  k_grid[2]
         emin  =  energy_range[0]
         emax  =  energy_range[1]
         nbnd  =  nbnds
-        delta =  0.013605698
+	delta = (emax-emin)/(num_e)
         ne    =  num_e
 	if boltzmann==True:
 		boltz_flag='.TRUE.'
@@ -238,7 +248,7 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-datafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d
@@ -248,10 +258,12 @@ atmproj_nbnd    = %d
 ne              = %d
 delta           = %f
 !smearing_type   = 'mv'
-do_orthoovp	= .TRUE.
+do_orthoovp	=.True.
+atmproj_do_norm =.TRUE.
+atmproj_thr     = %f 
 atmproj_sh      = %f         
 %s                
-"""%(ID,ID,nk1,nk2,nk3,emin,emax,nbnd,ne,delta,eShift,ferm_surf_str)	
+"""%(ID,compute_ham_str,ID,nk1,nk2,nk3,emin,emax,nbnd,ne,delta,proj_thr,eShift,ferm_surf_str)	
 	
 	if pdos==True:
 		inputfile+='projdos         = .TRUE.\n'
@@ -301,8 +313,11 @@ atmproj_sh      = %f
 	else:
 
 		inputfile1 = inputfile
-		#SPIN DOWN  SPIN DOWN  SPIN DOWN
 
+                inputfile  = re.sub('_WanT','_WanT_up',inputfile)
+                inputfile1 = re.sub('_WanT','_WanT_dn',inputfile1)
+
+		#SPIN UP  SPIN UP  SPIN UP
 		if boltzmann!=True:
 			inputfile += "fileout	      = '%s_WanT_dos_up.dat'\n"%(ID)
 			inputfile += '\nspin_component	= "up"  \n'
@@ -311,6 +326,7 @@ atmproj_sh      = %f
 			inputfile += "fileout	      = '%s_WanT_dos_up_%sK.dat'\n"%(ID,temperature)
 			inputfile +=  """fileout = '%s_WanT_dos_up_%sK.dat'   \n"""  %(ID,temperature)		      
 			inputfile += 'spin_component	= "up"  \n'
+			inputfile += 'do_boltzmann_conductivity = %s\n'  %boltz_flag
 #			inputfile += 'temperature     = %f\n'%temp_ev
 			#Create two input files for spin-up and spin-down components.
 			inputfile += "fileout2  = '%s_WanT_cond_up_%sK.dat'\n"%(ID,temperature)
@@ -318,9 +334,9 @@ atmproj_sh      = %f
 			inputfile += "fileout4  = '%s_WanT_sigma_seebeck_up_%sK.dat'\n"%(ID,temperature)
 			inputfile += "fileout5  = '%s_WanT_kappa_up_%sK.dat'\n"%(ID,temperature)		
 			inputfile += "fileout6  = '%s_WanT_ZetaT_up_%sK.dat'\n / \n"%(ID,temperature)
-		#SPIN UP  SPIN UP  SPIN UP
 
 
+		#SPIN DOWN  SPIN DOWN  SPIN DOWN
 		if boltzmann!=True:
 			inputfile1 += "fileout	      = '%s_WanT_dos_down.dat'\n"%(ID)
 			inputfile1 += '\nspin_component	= "down"  \n'
@@ -373,13 +389,19 @@ atmproj_sh      = %f
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.08,8.08]):
+def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01,8.01],ne=160,k_grid=None,compute_ham=False,proj_thr=0.95):
 	'''
 		Make input files for  WanT bands calculation
 
 		Arguments:
         	 - calc_copy -- dictionary of dictionaries of calculations
 	'''
+
+
+	compute_ham_str=""
+	if compute_ham==False:
+		compute_ham_str="!"
+
 	output_calc = {}
         temp_dir= AFLOWpi.prep._get_tempdir()
 	calc_copy=copy.deepcopy(oneCalc)
@@ -395,12 +417,12 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.08
 #        if temp_dir!='./':
 #            subdir=temp_dir
 
-	nbnds=int(AFLOWpi.prep._num_bands(oneCalc))
+	nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False)*1.75)
 
         try:
             nscf_ID=ID+'_nscf'
             Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+5.0
+            eShift=float(Efermi)+10.0
         except:
             eShift=5.0
 
@@ -411,14 +433,19 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.08
         #hardcode for now 
         #hardcode for now 
 	temp_ev=float(temperature)/11604.505
-        nk1   =  40
-        nk2   =  40
-        nk3   =  40
+
+	if k_grid==None:
+		inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
+		kpt_str  = inputDict['K_POINTS']['__content__']    
+		k_grid = [int(numpy.ceil(float(x)*5)) for x in kpt_str.split()[:3]]
+
+        nk1   =  k_grid[0]
+        nk2   =  k_grid[1]
+        nk3   =  k_grid[2]
         emin  =  energy_range[0]
         emax  =  energy_range[1]
         nbnd  =  nbnds
-        delta =  0.005
-        ne    =  1000
+	delta = (emax-emin)/(ne*2.0)
         #hardcode for now 
         #hardcode for now 
         ###############################
@@ -427,7 +454,7 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.08
 prefix		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-datafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d
@@ -439,14 +466,15 @@ ne              = %d
 delta           = %f
 !smearing_type   = 'mv'
 do_orthoovp	= .TRUE.
+atmproj_do_norm =.TRUE.
 atmproj_sh      = %f                         
-
-"""%(ID,ID,nk1,nk2,nk3,emin,emax,temp_ev,nbnd,ne,delta,eShift)
+atmproj_thr     = %f
+"""%(ID,compute_ham_str,ID,nk1,nk2,nk3,emin,emax,temp_ev,nbnd,ne,delta,eShift,proj_thr)
 
 	if nspin == 1:
-		inputfile += "fileout	      = '%s_WanT_epsilon_imag_%sK.dat'\n"%(ID,temperature)
-		inputfile += "fileout2	      = '%s_WanT_epsilon_real_%sK.dat'\n"%(ID,temperature)
-		inputfile += "fileout3	      = '%s_WanT_epsilon_eels_%sK.dat'\n/ \n"%(ID,temperature)
+		inputfile += "fileout	      = '%s_WanT_epsilon_imag.dat'\n"%(ID)
+		inputfile += "fileout2	      = '%s_WanT_epsilon_real.dat'\n"%(ID)
+		inputfile += "fileout3	      = '%s_WanT_epsilon_eels.dat'\n/ \n"%(ID)
 		# Insert k-path 
 #		inputfile += kpathStr
 
@@ -470,16 +498,18 @@ atmproj_sh      = %f
 
 	else:
 		inputfile1 = inputfile
+                inputfile  = re.sub('_WanT','_WanT_up',inputfile)
+                inputfile1 = re.sub('_WanT','_WanT_dn',inputfile1)
 		#Create two input files for spin-up and spin-down components.
 
-		inputfile += """fileout = '%s_WanT_epsilon_imag_up_%sK.dat' \nspin_component	= "up"\n"""  %(ID,temperature)
-		inputfile += "fileout2  = '%s_WanT_epsilon_real_up_%sK.dat'\n"%(ID,temperature)
-		inputfile += "fileout3  = '%s_WanT_epsilon_eels_up_%sK.dat'\n/ \n"%(ID,temperature)
+		inputfile += """fileout = '%s_WanT_epsilon_up_imag.dat' \nspin_component	= "up"\n"""  %(ID,)
+		inputfile += "fileout2  = '%s_WanT_epsilon_up_real.dat'\n"%(ID)
+		inputfile += "fileout3  = '%s_WanT_epsilon_up_eels.dat'\n/ \n"%(ID)
 
 
-		inputfile1 += """fileout = '%s_WanT_epsilon_imag_down_%sK.dat' \nspin_component	= "down"\n"""  %(ID,temperature)
-		inputfile1 += "fileout2  = '%s_WanT_epsilon_real_down_%sK.dat'\n"%(ID,temperature)
-		inputfile1 += "fileout3  = '%s_WanT_epsilon_eels_down_%sK.dat'\n/ \n"%(ID,temperature)
+		inputfile1 += """fileout = '%s_WanT_epsilon_down_imag.dat' \nspin_component	= "down"\n"""  %(ID,)
+		inputfile1 += "fileout2  = '%s_WanT_epsilon_down_real.dat'\n"%(ID)
+		inputfile1 += "fileout3  = '%s_WanT_epsilon_down_eels.dat'\n/ \n"%(ID)
 
 
 
@@ -519,11 +549,15 @@ atmproj_sh      = %f
 
 
 
-def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=True,run_bands=True,epsilon=True,temperature=300,en_range=[0.05,10.0]):
+def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=True,run_bands=False,epsilon=False,temperature=300,en_range=[0.05,10.0],ne=1000,compute_ham=False,proj_thr=0.95):
 
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
+
+	compute_ham_str=""
+	if compute_ham==False:
+		compute_ham_str="!"
 
         def abortIFRuntimeError(subdir, ID):
             outfile = file(os.path.join(subdir, "%s.out"%ID)).read()
@@ -691,7 +725,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 
 
         if 'want_dos' not in oneCalc['__runList__']:
-            want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,temperature=temperature)
+            want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,temperature=temperature,num_e=ne,energy_range=en_range,compute_ham=compute_ham,proj_thr=proj_thr)
 
             for want_dos_ID,want_dos in want_dos_calc.iteritems():
                 AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_dos.x' )
@@ -718,9 +752,18 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
             return oneCalc,ID
 
 
-def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8]):
+def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,compute_ham=False,proj_thr=0.95):
 
-            want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,energy_range=en_range)
+	    def abortIFRuntimeError(subdir, ID):
+		    outfile = file(os.path.join(subdir, "%s.out"%ID)).read()
+		    errorList = re.findall(r'from (.*) : error #.*\n',outfile)
+		    if len(errorList) > 0 and 'zmat_hdiag' not in errorList:        
+			    logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
+			    print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+			    raise SystemExit
+
+
+            want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,energy_range=en_range,ne=ne,compute_ham=compute_ham,proj_thr=proj_thr)
 
 	    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
 		    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
@@ -736,7 +779,7 @@ def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8]):
                 AFLOWpi.run._oneRun(__submitNodeName__,want_epsilon,want_epsilon_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_epsilon.x' )
 
             for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
-                abortIFRuntimeError(subdir, want_epsilon_ID)
+                abortIFRuntimeError(oneCalc["_AFLOWPI_FOLDER_"], want_epsilon_ID)
 
 	    return oneCalc,ID
 

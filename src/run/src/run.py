@@ -2675,19 +2675,19 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
                         """ &dos
        prefix='%s'
        outdir='%s'
-       DeltaE=0.01
-       degauss=0.001
+       DeltaE=0.05
+       degauss=0.01
        fildos='%s_dos.dat'
 
       /
 """ % (prefix,temp_dir,ID),
                             'pdos':"""  &projwfc
        prefix='%s'
-       DeltaE=0.01
+       DeltaE=0.05
 !       Emax=20
 !       Emin=-20
        outdir='%s'
-       degauss=0.001
+       degauss=0.01
     !    kresolveddos=.true.
        filpdos='%s'
 

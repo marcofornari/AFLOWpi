@@ -341,6 +341,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 !   l2=%d
 !   l3=%d
 !   nosym=%s
+   q_in_cryst_coord = .true. 
    fd=.true.
    na_ifc=.true.
    q_in_band_form=.true.,
