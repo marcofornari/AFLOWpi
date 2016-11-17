@@ -9,13 +9,16 @@ import numpy
 import time
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,cond_bands_proj=True):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
         self.do_ham=False
         self.step_counter=0
         self.thresh=proj_thr
+        self.shift=proj_sh
+        self.cond_bands_proj=cond_bands_proj
+
         tb_plotter=AFLOWpi.prep.tb_plotter(calcs)
 
         AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')""")
@@ -35,7 +38,7 @@ class tight_binding:
 
 
 
-    def optical(self,en_range=[0.05,10.05],de=0.1):
+    def optical(self,en_range=[0.05,5.05],de=0.05):
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
@@ -47,9 +50,9 @@ class tight_binding:
         AFLOWpi.prep.addToAll_(self.calcs,block='PREPROCESSING',addition=loadModString)		
 
         command = '''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.scfuj._run_want_epsilon(__submitNodeName__,oneCalc,ID,ne=%s,en_range=%s,compute_ham=%s,proj_thr=%s)
+     oneCalc,ID = AFLOWpi.scfuj._run_want_epsilon(__submitNodeName__,oneCalc,ID,ne=%s,en_range=%s,compute_ham=%s,proj_thr=%s,proj_sh=%s,proj_nbnd=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,ne,en_range,self.do_ham,self.thresh)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,ne,en_range,self.do_ham,self.thresh,self.shift,self.cond_bands_proj)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
         self.step_counter+=1
@@ -61,7 +64,7 @@ class tight_binding:
 
 
 
-    def transport(self,temperature=[300,],en_range=[0.05,10],de=0.1):
+    def transport(self,temperature=[300,],en_range=[-5.05,5.05],de=0.05):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
 		in the high level user interface. Adds a new step to the workflow.
@@ -91,9 +94,9 @@ class tight_binding:
                             self.do_ham=False
 
                         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s,ne=%s,compute_ham=%s,proj_thr=%s)
+     oneCalc,ID = AFLOWpi.scfuj.run_transport(__submitNodeName__,oneCalc,ID,temperature=%s,run_scf=%s,run_transport_prep=%s,epsilon=%s,run_bands=%s,en_range=%s,ne=%s,compute_ham=%s,proj_thr=%s,proj_sh=%s,proj_nbnd=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,temperature[temp_index],False,False,False,False,repr(en_range),ne,self.do_ham,self.thresh)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,temperature[temp_index],False,False,False,False,repr(en_range),ne,self.do_ham,self.thresh,self.shift,self.cond_bands_proj)
 
                         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
                         self.step_counter+=1
@@ -107,7 +110,7 @@ class tight_binding:
 
 
 
-    def dos(self,dos_range=[-6.5,6.5],k_grid=None,projected=True,de=0.1,cond_bands=True,fermi_surface=False):
+    def dos(self,dos_range=[-5.5,5.5],k_grid=None,projected=True,de=0.05,cond_bands=True,fermi_surface=False):
         ne=float(dos_range[1]-dos_range[0])/de
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_dos_prep(oneCalc,ID)')
 
@@ -119,9 +122,9 @@ class tight_binding:
 
 
         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=%s,k_grid=%s,project=%s,num_e=%s,cond_bands=%s,fermi_surface=%s,compute_ham=%s,proj_thr=%s)
+     oneCalc,ID = AFLOWpi.prep._run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=%s,k_grid=%s,project=%s,num_e=%s,cond_bands=%s,fermi_surface=%s,compute_ham=%s,proj_thr=%s,proj_sh=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,dos_range,k_grid,projected,ne,cond_bands,fermi_surface,self.do_ham,self.thresh)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,dos_range,k_grid,projected,ne,self.cond_bands_proj,fermi_surface,self.do_ham,self.thresh,self.shift)
 
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
@@ -145,9 +148,9 @@ class tight_binding:
 
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_bands_prep(oneCalc,ID)')
         command = '''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID = AFLOWpi.prep._run_want_bands(__submitNodeName__,oneCalc,ID,eShift=%s,num_points=%s,cond_bands=%s,compute_ham=%s,proj_thr=%s)
+     oneCalc,ID = AFLOWpi.prep._run_want_bands(__submitNodeName__,oneCalc,ID,num_points=%s,cond_bands=%s,compute_ham=%s,proj_thr=%s,proj_sh=%s,)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,eShift,nk,cond_bands,self.do_ham,self.thresh)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,nk,self.cond_bands_proj,self.do_ham,self.thresh,self.shift,)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
         self.step_counter+=1
@@ -187,21 +190,25 @@ class tight_binding:
 
 def _form_TB_dir(oneCalc,ID,from_ls=True):
     if from_ls:
-        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
+#        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
+        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['%s.save/atom_proj.dat'%oneCalc['_AFLOWPI_PREFIX_']],
+                                         glob=True,first_node_only=True)
+        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['%s.save/data-file.xml'%oneCalc['_AFLOWPI_PREFIX_']],
+                                         glob=True,first_node_only=True)
     try:
         save_dir = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],oneCalc['_AFLOWPI_PREFIX_']+'.save')
         TB_dir = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_TB.save'%ID)
         if not os.path.exists(TB_dir):
             os.mkdir(TB_dir)
         data_file_dft = os.path.join(save_dir,'data-file.xml')
-        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.xml')
+        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.dat')
         shutil.copy(data_file_dft,TB_dir)
         shutil.copy(atomic_proj_dat,TB_dir)
     except Exception,e:
         print e
 
 
-def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.95):
+def _run_want_bands(__submitNodeName__,oneCalc,ID,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.95,proj_sh=5.5):
     nscf_ID=ID+'_nscf'
 
     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
@@ -212,7 +219,7 @@ def _run_want_bands(__submitNodeName__,oneCalc,ID,eShift=5.0,num_points=1000,con
     else:
         execPrefix=''
 
-    want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID=ID,eShift=eShift,num_points=num_points,cond_bands=cond_bands,compute_ham=compute_ham,proj_thr=proj_thr)
+    want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID=ID,eShift=proj_sh,num_points=num_points,cond_bands=cond_bands,compute_ham=compute_ham,proj_thr=proj_thr)
 
 
 
@@ -332,7 +339,7 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
 
     return oneCalc,ID
 
-def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,project=True,num_e=2001,cond_bands=True,fermi_surface=False,compute_ham=False,proj_thr=0.95):
+def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,project=True,num_e=2001,cond_bands=True,fermi_surface=False,compute_ham=False,proj_thr=0.95,proj_sh=5.5):
     nscf_ID=ID+'_nscf'
 
     if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
@@ -341,9 +348,9 @@ def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,pro
         execPrefix=''
 
     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-    eShift=float(Efermi)+10.0
+#    eShift=float(Efermi)+10.0
 
-    want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=eShift,cond_bands=cond_bands,fermi_surface=fermi_surface,compute_ham=compute_ham,proj_thr=proj_thr)
+    want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=proj_sh,cond_bands=cond_bands,fermi_surface=fermi_surface,compute_ham=compute_ham,proj_thr=proj_thr,)
 
 
     for want_dos_ID,want_dos in want_dos_calc.iteritems():

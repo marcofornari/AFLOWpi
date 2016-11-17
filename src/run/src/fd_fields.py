@@ -75,7 +75,7 @@ def _pull_polarization(oneCalc,ID):
 
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
-
+        return
     e_pol_split = [float(x.split()[-1]) for x in ele_block.split('\n') if len(x.strip())!=0]
     e_ion_split = [float(x.split()[-1]) for x in ion_block.split('\n') if len(x.strip())!=0]
     
@@ -112,13 +112,13 @@ def _pull_eps_out(oneCalc,ID):
     """
 
     eps_string=''
-    eps_regex=re.compile('Dielectric tensor\n.*\n([0-9\s.-]*)')
+    eps_regex=re.compile('Dielectric tensor\n.*\n\s*([0-9\s.-]*)\n')
     try:
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_epol.out'%ID),'r') as out_file_obj:
             out_string = out_file_obj.read()
 
         eps_string=eps_regex.findall(out_string)[-1]
-
+        
         
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
@@ -153,7 +153,7 @@ def _pull_born_out(oneCalc,ID):
 
         for i in range(len(born_charges)):
             num_index=i+1
-            born_string+='         %s    \n'%num_index
+            born_string+='         %s\n'%num_index
             born_string+=born_charges[i]
 
     except Exception,e:

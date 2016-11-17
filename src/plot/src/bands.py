@@ -293,7 +293,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
 	if tight_banding==True:
-		AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
+		try:
+			AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
+		except:
+			return
 		filebands = os.path.join(subdir,'%s_bands_want_cleaned.dat'%calcID)
 		if not os.path.exists(filebands):
 

@@ -3121,11 +3121,11 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if ibrav==7:
         matrix = numpy.matrix((
-                ( 1,-1,celldm3),
-                ( 1, 1,celldm3),
-                (-1,-1,celldm3),
+                ( 1.0,-1.0,celldm3),
+                ( 1.0, 1.0,celldm3),
+                (-1.0,-1.0,celldm3),
                 ))
-        matrix*=celldm1/2.0
+        matrix/=2.0
 
     if ibrav==8:
         matrix = celldm1*numpy.matrix(((1.0, 0.0     , 0.0    ,),
@@ -5051,7 +5051,7 @@ def _convertCartesian(symMatrix,cellMatrix,scaleFactor=1.0):
     for entry in range(len(returnMatrix)):
         returnMatrix[entry]=cellMatrix.dot(returnMatrix[entry].T).T
 
-    in_cart = numpy.matrix(numpy.round(numpy.matrix(returnMatrix).astype(numpy.float),decimals=6))
+    in_cart = numpy.matrix(numpy.round(numpy.matrix(returnMatrix).astype(numpy.float),decimals=8))
 
     return in_cart
 

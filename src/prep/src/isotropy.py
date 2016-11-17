@@ -8,7 +8,7 @@ import copy
 
 class isotropy():
 
-    def __init__(self,input_str,accuracy=0.000,output=False):
+    def __init__(self,input_str,accuracy=0.001,output=False):
 
         if os.path.exists(input_str):
             with open(input_str,'r') as fo:
@@ -184,17 +184,21 @@ class isotropy():
 
 
         std_prim_basis_str = re.findall('Vectors a,b,c:\s*\n(.*\n.*\n.*)\n',self.output)[0]
-        iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
-
+        self.iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
+        iso_conv=self.iso_conv
 #        std_prim_basis = numpy.linalg.inv(AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str))
         std_prim_basis = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
 #        print globals().keys()
 
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-        if input_dict['CELL_PARAMETERS']["__content__"]=='':
+        if 'CELL_PARAMETERS' not in input_dict:
             prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
+
+
         else:
+            if input_dict['CELL_PARAMETERS']["__content__"]=='':
+                prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
             try:
                 prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
             except Exception,e:
@@ -217,13 +221,14 @@ class isotropy():
         a[:,0]*=self.conv_a
         a[:,1]*=self.conv_b
         a[:,2]*=self.conv_c
-        print a
+        
+#        print a
 #        self.iso_basis=a
 #        self.iso_basis=numpy.around(self.iso_basis,decimals=4)
 
         self.axes_flip = iso_conv.dot(self.iso_basis)
         self.axes_flip = numpy.linalg.inv(iso_conv)
-#        print self.axes_flip
+#        self.iso_basis*=self.axes_flip*self.iso_basis
 #        self.iso_basis = self.axes_flip.dot(self.iso_basis)
 #            self.iso_basis = .dot(self.iso_basis))
 #        print numpy.around(numpy.linalg.inv(iso_conv.dot(self.iso_basis)),decimals=5)
@@ -234,13 +239,13 @@ class isotropy():
 #        self.iso_basis[:,2]/=0.529177249
 #        print self.iso_basis
 #        self.iso_basis-=self.origin
- #       print self.iso_basis
+#       print self.iso_basis
 #        raise SystemExit
         return self.iso_basis
 
     def __convert_to_ibrav_matrix(self):
         #passing the wrong basis vectors but it's okay since ibrav=ibrav_num overrides it
-#        print self.ibrav
+        #        print self.ibrav
 
 
         
@@ -266,7 +271,7 @@ class isotropy():
         self.qe_basis[:,1]*=self.conv_b
         self.qe_basis[:,2]*=self.conv_c
 
-        conv = numpy.around(conv,decimals=5)
+#        conv = numpy.around(conv,decimals=5)
         return conv
 #        prim_in = numpy.round(prim_in/0.529177249,decimals=6)
 
@@ -305,17 +310,20 @@ class isotropy():
 #        print self.output        
 #        self.iso_basis = self.iso_basis.dot()
 #        self.conv= self.conv.
-        print self.iso_basis
-        print self.qe_basis
+#        print self.iso_basis
+#        print self.qe_basis
         conv = self.qe_basis.dot(numpy.linalg.inv(self.iso_basis))
-        conv = numpy.around(conv,decimals=4)
+#        conv = numpy.around(conv,decimals=4)
+
+
 
         for i in range(len(self.orig_pos)):
-            self.origin= numpy.matrix(self.origin)
-            mat_pos = numpy.matrix(self.orig_pos[i])
-            second = conv.dot(mat_pos.T).T
-
-            self.qe_pos[i]=second.flatten().tolist()[0]
+#            self.origin= numpy.matrix(self.origin)
+#            mat_pos = numpy.matrix(self.orig_pos[i])
+#            second = conv.dot(mat_pos.T).T
+            second = (numpy.matrix(self.orig_pos[i])*(numpy.linalg.inv(self.iso_basis*numpy.linalg.inv(self.qe_basis)))).T
+#            special_points[k]=tuple(second.flatten().tolist()[0])
+            self.qe_pos[i]=tuple(second.flatten().tolist()[0])
             
 
 #            self.orig_pos[i]-=self.origin
@@ -351,14 +359,31 @@ class isotropy():
 #        input_dict['&system']['celldm(4)']=cdm4
 #        input_dict['&system']['celldm(5)']=cdm5
 #        input_dict['&system']['celldm(6)']=cdm6
+        self.iso_conv= numpy.linalg.inv(self.iso_conv).dot(self.iso_basis)
+        test1=copy.deepcopy(self.iso_conv)
 
+#        as_mat = numpy.matrix([[self.conv_a,0.0,0.0],
+#                               [0.0,self.conv_b,0.0],
+#                               [0.0,0.0,self.conv_c],])
+#        test = self.axes_flip*as_mat
+#        print test
+#        print test[2].dot(test[2].T)[0]
+#        self.conv_a=numpy.sqrt(test[0].dot(test[0].T)[0])
+#        self.conv_b=numpy.sqrt(test[1].dot(test[1].T)[0])
+#        self.conv_c=numpy.sqrt(test[2].dot(test[2].T)[0])
+#        print test
+#        self.iso_conv.dot 
 
         input_dict['&system']['a']=self.conv_a#*0.529177249
-        input_dict['&system']['b']=self.conv_b#*0.529177249
-        input_dict['&system']['c']=self.conv_c#*0.529177249
-        input_dict['&system']['cosAB']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
-        input_dict['&system']['cosAC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
-        input_dict['&system']['cosBC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
+        if self.ibrav in [8,9,10,11,12,13,14]:
+            input_dict['&system']['b']=self.conv_b#*0.529177249
+        if self.ibrav in [4,6,7,8,9,10,11,12,13,14]:
+            input_dict['&system']['c']=self.conv_c#*0.529177249
+        if self.ibrav in [5,12,13,14]:            
+            input_dict['&system']['cosAB']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
+        if self.ibrav in [14]:                        
+            input_dict['&system']['cosAC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
+            input_dict['&system']['cosBC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
 #        input_dict['&system']['']=self.conv_a
 #        input_dict['&system']['A']=self.conv_a
 

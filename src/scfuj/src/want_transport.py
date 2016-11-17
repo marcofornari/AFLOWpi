@@ -202,12 +202,15 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 
 
         try:
-            nscf_ID=ID+'_nscf'
-            Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)+15.0
+		if eShift==-1.0:
+			nscf_ID=ID+'_nscf'
+			Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
+			eShift=5.5
+#			eShift=float(Efermi)+15.0
+		
         except:
             eShift+4.0
-	eShift=5.5
+
 	if temperature==None:
 		temp_temp=300.0
 	else:
@@ -248,7 +251,7 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d
@@ -389,7 +392,7 @@ atmproj_sh      = %f
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01,8.01],ne=160,k_grid=None,compute_ham=False,proj_thr=0.95):
+def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01,8.01],ne=160,k_grid=None,compute_ham=False,proj_thr=0.95,proj_nbnd=None):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -397,6 +400,8 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01
         	 - calc_copy -- dictionary of dictionaries of calculations
 	'''
 
+	if energy_range[0]<=0.0:
+		energy_range[0]=0.01
 
 	compute_ham_str=""
 	if compute_ham==False:
@@ -416,8 +421,10 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01
                 
 #        if temp_dir!='./':
 #            subdir=temp_dir
-
-	nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False)*1.75)
+	if proj_nbnd==None:
+		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False)*1.75)
+	else:
+		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))+proj_nbnd
 
         try:
             nscf_ID=ID+'_nscf'
@@ -454,7 +461,7 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01
 prefix		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d
@@ -549,7 +556,7 @@ atmproj_thr     = %f
 
 
 
-def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=True,run_bands=False,epsilon=False,temperature=300,en_range=[0.05,10.0],ne=1000,compute_ham=False,proj_thr=0.95):
+def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=True,run_bands=False,epsilon=False,temperature=300,en_range=[0.05,10.0],ne=1000,compute_ham=False,proj_thr=0.95,proj_sh=5.5,proj_nbnd=True):
 
 	execPrefix = ''
 	execPostfix = ''
@@ -725,7 +732,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 
 
         if 'want_dos' not in oneCalc['__runList__']:
-            want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,temperature=temperature,num_e=ne,energy_range=en_range,compute_ham=compute_ham,proj_thr=proj_thr)
+            want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,temperature=temperature,num_e=ne,energy_range=en_range,compute_ham=compute_ham,proj_thr=proj_thr,cond_bands=proj_nbnd)
 
             for want_dos_ID,want_dos in want_dos_calc.iteritems():
                 AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_dos.x' )
@@ -752,7 +759,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
             return oneCalc,ID
 
 
-def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,compute_ham=False,proj_thr=0.95):
+def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,compute_ham=False,proj_thr=0.95,proj_sh=5.5,proj_nbnd=None):
 
 	    def abortIFRuntimeError(subdir, ID):
 		    outfile = file(os.path.join(subdir, "%s.out"%ID)).read()
@@ -763,6 +770,8 @@ def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,com
 			    raise SystemExit
 
 
+
+		    
             want_epsilon_calc = AFLOWpi.scfuj.WanT_epsilon(oneCalc,ID,energy_range=en_range,ne=ne,compute_ham=compute_ham,proj_thr=proj_thr)
 
 	    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':

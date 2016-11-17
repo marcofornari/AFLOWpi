@@ -2245,7 +2245,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 	      pseudodir (str): path of pseudopotential files directory 
               workdir (str): a string of the workdir path that be used to override what is in the 
 	         	   config file used when initating the AFLOWpi session
-	      build (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
+
 
 
         Returns:
@@ -2806,7 +2806,7 @@ def _scp_wrapper(from_path,to_path,node=''):
 	 rate=0.0        
 
 
-def _from_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup','.update','.bfgs','.restart','.restart_k','.restart_scf','.ewfcp','.ewfc','.ewfcm'],glob=False,first_node_only=False):
+def _from_local_scratch(oneCalc,ID,ext_list=['.paw','.save','.wfc','.hub','.mix','.occup','.update','.bfgs','.restart','.restart_k','.restart_scf','.ewfcp','.ewfc','.ewfcm'],glob=False,first_node_only=False):
 
     if AFLOWpi.prep._ConfigSectionMap('cluster','local_scratch').lower()=='true':      
         orig_list=copy.deepcopy(ext_list)
@@ -2839,7 +2839,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occu
 
                     try:
                         try:
-				if orig_list[ext] in ['.save','.occup','.update','.bgfs']:
+				if orig_list[ext] in [".paw",'.save','.occup','.update','.bgfs']:
 					file_name=os.path.join(temp_dir,'%s'%(ext_list[ext]))
 					
 				elif orig_list[ext] in ['.restart','.restart_k','.igk','.restart_scf']:
@@ -2861,7 +2861,8 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occu
 
 			if glob==True:
 				file_name=temp_dir+'/'+ext_list[ext]
-				logging.debug(file_name)
+#				logging.debug(file_name)
+
                         res = proc_pool.apply_async(AFLOWpi.prep._scp_wrapper, (file_name,work_dir,proc_by_node[proc])) 
 			if orig_list[ext] in ['.save','.occup','.update','.bgfs',] or first_node_only==True:
 				break
@@ -2880,7 +2881,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occu
 
 
 
-def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup','.update','.bgfs','.restart','.restart_k','.restart_scf','.ewfcp','.ewfc','.ewfcm'],glob=False,first_node_only=False):
+def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup','.update','.bgfs','.restart','.restart_k','.restart_scf','.ewfcp','.ewfc','.ewfcm',".paw",],glob=False,first_node_only=False):
 
     localscratchOpt=AFLOWpi.prep._ConfigSectionMap('cluster','local_scratch')
     localscratchOpt=localscratchOpt.strip().lower()
@@ -2915,7 +2916,7 @@ def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup'
                     try:
 
 			    try:
-				    if orig_list[ext] in ['.save','.occup','.update','.bgfs']:
+				    if orig_list[ext] in [".paw",'.save','.occup','.update','.bgfs']:
 					    file_name=os.path.join(work_dir,'%s'%(ext_list[ext]))
 				    elif orig_list[ext] in ['.restart','.restart_k','.igk','.restart_scf']:
 					    if proc==0:
@@ -3046,7 +3047,7 @@ def build_calcs(PARAM_VARS,build_type='product'):
 	
 
 
-def scfs(aflowkeys,allAFLOWpiVars, refFile,build=True,pseudodir=None,build_type='product',convert=False):
+def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',convert=False):
 	"""
 	Read a reference input file, and construct a set of calculations from the allAFLOWpiVars 
 	dictionary defining values for the keywords in the reference input file. This will
@@ -3075,13 +3076,16 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,build=True,pseudodir=None,build_type=
 				      | another with 4 and a third with 10, there would be 2000
 			 	      | calculations in the set formed from them via product mode.  
 
-	      build (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
+
 	
 	Returns:
               A dictionary of dictionaries containing the set of calculations.
 			 
 	"""
+
 	filterFunction=None
+	build=True
+
         try:
             with open(refFile,'r') as refFileObj:
                 refFile = refFileObj.read()
@@ -3360,7 +3364,7 @@ def extractvars(refFile):
 
 
 
-def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,build=True,workdir=None,keep_name=False,clean_input=True):
+def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,keep_name=False,clean_input=True,ref_override=False):
 	"""
 	Reads in a string of an QE input file path, a string of an QE input, a file object of a 
 	QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -3380,12 +3384,14 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,build=True,workd
 	                      config file used when initating the AFLOWpi session
 	      pseudodir (str): a string of the pseudodir path that be used to override what is in 
 	                        the config file used when initating the AFLOWpi session
-	      build (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
+
 
 	"""
 
         returnDict=collections.OrderedDict()
         index=0
+
+	build=True
 
         if type(fileList)==type('aString'):
             fileList=[fileList]
@@ -3509,7 +3515,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,build=True,workd
 	    except:
 		    pass
                     
-	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC']
+	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC','IBRAV','CALCULATION']
 
             for namelist,entries in refDict.iteritems():
                 try:
@@ -3517,11 +3523,18 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,build=True,workd
                         '''if an input namelist from the ref isn't in the input file add it '''
                         inputCalc[namelist]=collections.OrderedDict()
                     for variable,value in entries.iteritems():
-                        if variable not in inputCalc[namelist].keys():
-                            '''don't replace the celldm and A,B,C in the input files with ones from ref'''
-                            if variable.upper() not in do_not_replace_list:
-				    '''if a variable from the namelist in the ref isn't in the input file add it'''
-				    inputCalc[namelist][variable]=value
+                        #replace entries in input from ref input when both in ref and input
+                        #only if we have the ref_override flag set to True.
+                        if ref_override == True:
+				if variable.upper() not in do_not_replace_list:
+					'''if a variable from the namelist in the ref isn't in the input file add it'''
+					inputCalc[namelist][variable]=value
+			else:
+                                if variable not in inputCalc[namelist].keys():
+					'''don't replace the celldm and A,B,C in the input files with ones from ref'''
+					if variable.upper() not in do_not_replace_list:
+					     inputCalc[namelist][variable]=value
+
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
@@ -3901,7 +3914,7 @@ class init:
 
 
 
-	def scfs(self,allAFLOWpiVars, refFile,name='first',pseudodir=None,build_type='product',build=True,run=True,convert=True):
+	def scfs(self,allAFLOWpiVars, refFile,name='first',pseudodir=None,build_type='product',convert=True):
 		"""
 		A wrapper method to call AFLOWpi.prep.scfs to form the calculation set. This will
 		also create directory within the set directory for every calculation in the set.
@@ -3929,19 +3942,20 @@ class init:
 					      | another with 4 and a third with 10, there would be 2000
 					      | calculations in the set formed from them via product mode.  
 
-		      build (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
-		      run (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
+
+
 
 		Returns:
 		      A dictionary of dictionaries containing the set of calculations.
 
 		"""
 
-		scfs = AFLOWpi.prep.scfs(self.keys,allAFLOWpiVars, refFile,pseudodir=pseudodir,build_type=build_type,build=build,convert=convert)
+		scfs = AFLOWpi.prep.scfs(self.keys,allAFLOWpiVars,refFile,pseudodir=pseudodir,
+					 build_type=build_type,convert=convert)
 		return scfs
 
 
-	def from_file(self,fileList,reffile=None,pseudodir=None,build=True,workdir=None):
+	def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,ref_override=True):
 		"""
 		Reads in a string of an QE input file path, a string of an QE input, a file object of a 
 		QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -3960,11 +3974,15 @@ class init:
 				   config file used when initating the AFLOWpi session
 		      pseudodir (str): a string of the pseudodir path that be used to override what is in 
 				     the config file used when initating the AFLOWpi session
-		      build (bool): <DEFUNCT OPTION. NEEDS REMOVAL>
 
+		      ref_override (bool): Option to override values in the input file(s) with values in the reference
+		                           input file. If no reference input file is included then this is ignored.
+                                           (Default: True)
 		"""
-#		if os.path.exists(reffile)
-		scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,build=build,workdir=workdir)
+
+
+		scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
+					       workdir=workdir,ref_override=ref_override)
 		return calcs_container(scfs)
 
 	def load(self,step=1):
@@ -3992,9 +4010,12 @@ class init:
 		#set the step in the calcs_container object to the step loaded
 		loaded_calcs.step_index=step
 		#get the previously done workflow
-		for ID,oneCalc in loaded_calcs.iteritems():
-			workflow = oneCalc['_AFLOWPI_WORKFLOW_']
-			break
+		try:
+			for ID,oneCalc in loaded_calcs.iteritems():
+				workflow = oneCalc['_AFLOWPI_WORKFLOW_']
+				break
+		except:
+			workflow=[]
 
 		#add it to this newly created calcs_container object
 		loaded_calcs.workflow=workflow
@@ -4568,7 +4589,7 @@ EXITING.
 
 
 
-	def tight_binding(self,cond_bands=True,proj_thr=0.95,kp_factor=2.0):
+	def tight_binding(self,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,cond_bands_proj=True):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4585,7 +4606,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,cond_bands_proj=cond_bands_proj)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -4702,7 +4723,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=True,disp_sym=False,atom_sym=False,field_strength=0.003,field_cycles=3):
+	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=True,disp_sym=False,atom_sym=False,field_strength=0.003,field_cycles=3,proj_phDOS=True):
 		#disable raman for this release
 		raman=False
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -4716,7 +4737,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		#sets up a new ID.py, ID.qsub (if applicable) and ID.in
 		self.new_step(update_positions=True,update_structure=True)
 		#adds prep_fd to be run to every calculation in the set
-		loadModString = '''AFLOWpi.run.prep_fd(__submitNodeName__,oneCalc,ID,nrx1=%i,nrx2=%i,nrx3=%i,innx=%i,de=%f,atom_sym=%s,disp_sym=%s)'''%(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym)
+		loadModString = '''AFLOWpi.run.prep_fd(__submitNodeName__,oneCalc,ID,nrx1=%i,nrx2=%i,nrx3=%i,innx=%i,de=%f,atom_sym=%s,disp_sym=%s,proj_phDOS=%s)'''%(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,proj_phDOS)
 		self.addToAll(block='PREPROCESSING',addition=loadModString)		
 		#adds the command to pull the forces from the calculations in the subset
 		#after they've finished. All tasks that are to be performed on the subset
@@ -4746,7 +4767,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 							   clean_input=False)
 		#after all the calculations in the subset have finshed we do some kind of postprocessing 
 		#routine(s) to extract/process data
-		loadModString = '''AFLOWpi.run._pp_phonon(__submitNodeName__,oneCalc,ID,de=%s,raman=%s,LOTO=%s,field_strength=%s)'''%(de,raman,LOTO,field_strength)
+		loadModString = '''AFLOWpi.run._pp_phonon(__submitNodeName__,oneCalc,ID,de=%s,raman=%s,LOTO=%s,field_strength=%s,project_phDOS=%s)'''%(de,raman,LOTO,field_strength,proj_phDOS)
 		self.addToAll(block='POSTPROCESSING',addition=loadModString)		
 		#displays that this step has been added to the workflow. Nothing special but nice to have
 		#this so that the user can verify their workflow is as they expect it to be.

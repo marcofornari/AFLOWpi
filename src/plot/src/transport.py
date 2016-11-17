@@ -274,7 +274,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             x_vals=sorted_all[temp_index][1][0]
                             y_vals=sorted_all[temp_index][1][1]
 
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=4),AFLOWpi.plot.__smoothGauss(y_vals,degree=4)
+
 
 			    if Type=='kappa':
 				    y_vals=numpy.asarray(y_vals)/1.0e17
@@ -289,8 +289,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    min_x=x_range[0]
 				    max_x=x_range[1]
 
-			    if epsilon==True:
-				    min_x=0.5
+
 
 
                             for i in [y_vals]:
@@ -305,7 +304,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                 if set_min<min_val:
                                     min_val=set_min
 
-			    
+			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 
@@ -333,7 +332,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             marker_choice = markers[temp_index%len(markers)]
                             x_vals=sorted_dn[temp_index][1][0]
                             y_vals=sorted_dn[temp_index][1][1]
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=4),AFLOWpi.plot.__smoothGauss(y_vals,degree=4)
+
 
 			    if Type=='kappa':
 				    y_vals=numpy.asarray(y_vals)/1.0e17
@@ -350,7 +349,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    max_x=x_range[1]
 
 			    if epsilon==True:
-				    min_x=0.5
+				    if min_x<=0.2:
+					    min_x=0.2
 
                             for i in [y_vals]:
                                 set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
@@ -361,7 +361,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                 if set_min<min_val:
                                     min_val=set_min
 
+			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax1.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
+
 			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 
                             
@@ -369,7 +371,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                     pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
 #                    ax1.legend(loc=0,fontsize=26)
                     ax1.legend(loc=0)
-		    if Type in ['epsilon','ZT']:
+		    if Type in ['ZT']:
 			    ax1.yaxis.set_ticks([0],)
 
 
@@ -392,7 +394,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             ls_choice  = lines[temp_index%len(lines)]
                             x_vals=sorted_up[temp_index][1][0]
                             y_vals=sorted_up[temp_index][1][1]
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=4),AFLOWpi.plot.__smoothGauss(y_vals,degree=4)
+
 
 			    if x_range==None:
 				    max_x=max(x_vals)
@@ -402,7 +404,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    max_x=x_range[1]
 
 			    if epsilon==True:
-				    min_x=0.5
+				    if min_x<=0.2:
+					    min_x=0.2
 
 			    if Type=='kappa':
 				    y_vals=numpy.asarray(y_vals)/1.0e17
@@ -426,7 +429,11 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 #[left,bottom,width,height]
 
 #			    ax2.tick_params(axis='both', which='major', labelsize=2)
+
+
+			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
+
 			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 			    ax1.set_position([0.04,0.465,0.96,0.435]) 
 			    ax2.set_position([0.04,0.02,0.96,0.435]) 
@@ -443,8 +450,10 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 		else:
 			min_x=x_range[0]
 			max_x=x_range[1]
+
 		if epsilon==True:
-			min_x=0.5
+			if min_x<=0.2:
+				min_x=0.2
 
 			
 
@@ -462,11 +471,14 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                         ax1.set_ylim([min_val*mult_min,max_val*mult_max])
                         ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) 
 
-			if Type in ['epsilon','epsilon','ZT']:
+			if Type in ['ZT']:
 				ax1.yaxis.set_ticks([0.0])
 
                         ax1.xaxis.set_ticks([])
 
+			if epsilon==True:
+				if min_x<=0.2:
+					min_x=0.2
                         ax1.set_xlim([min_x,max_x])
 
                     except:
@@ -482,8 +494,11 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 #                ax2.legend(loc=0,fontsize=26)
                 ax2.legend(loc=0)
 
+		if epsilon==True:
+			if min_x<=0.2:
+				min_x=0.2
                 ax2.set_xlim([min_x,max_x])
-		if Type in ['epsilon','epsilon','ZT']:
+		if Type in ['ZT']:
 			ax2.yaxis.set_ticks([0.0])
 
 #                pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
@@ -494,7 +509,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 #                ax2.legend(loc=0,fontsize=26)
                 ax2.legend(loc=0)
 
-		if Type in ['epsilon','epsilon','ZT']:
+		if Type in ['ZT']:
 			ax2.yaxis.set_ticks([0])
 
 #                ax2.axes.yaxis.set_ticks_position('right')
@@ -549,7 +564,7 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
 	with open(ep_data_file,'r') as epsilon_data_file:
 		ep_data_string=epsilon_data_file.read()
 
-	lines=ep_data_string.split('\n')[1:]
+	lines=ep_data_string.split('\n')[2:]
 	en_array=[]
 	val_array=[]
 

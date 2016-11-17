@@ -43,7 +43,9 @@ calcs.plot.bands(DOSPlot='APDOS')
 calcs.phonon(mult_jobs=True,LOTO=True,field_strength=0.001)
 calcs.plot.phonon()
 #do transport properties
-calcs.transport(temperature=[300,400])
-calcs.plot.transport()
+tb_ham.transport(temperature=[300,400])
+tb_ham.plot.transport()
+tb_ham.optical()
+tb_ham.plot.optical()
 #submit the calcs to run
 calcs.submit()

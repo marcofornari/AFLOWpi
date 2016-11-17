@@ -613,7 +613,7 @@ def projwfc(oneCalc,ID=None,paw=False):
   filpdos='./%s_acbn0'
   outdir='%s'
   lwrite_overlaps=.TRUE.
-  lbinary_data  = .FALSE.
+  lbinary_data  = .TRUE.
   %s
 /
 """%(prefix,ID,temp_dir,paw_str,)
@@ -640,7 +640,7 @@ def projwfc(oneCalc,ID=None,paw=False):
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.90):
+def WanT_bands(oneCalc,ID=None,eShift=5.5,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.90):
 	'''
 		Make input files for  WanT bands calculation
 
@@ -715,7 +715,7 @@ def WanT_bands(oneCalc,ID=None,eShift=5.0,num_points=1000,cond_bands=True,comput
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
 nkpts_in        = %d                 
 nkpts_max	= %s		 
 do_orthoovp	= %s
