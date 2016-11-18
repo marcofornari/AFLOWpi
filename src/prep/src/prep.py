@@ -4661,7 +4661,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 				break
 
 		if do_first_phon==True:
-			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,disp_sym=disp_sym,atom_sym=disp_sym,field_strength=field_strength,field_cycles=field_cycles,LOTO=LOTO)
+			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,disp_sym=disp_sym,atom_sym=atom_sym,field_strength=field_strength,field_cycles=field_cycles,LOTO=LOTO)
 			print '''                 NOTE: Phonon calculation at initial volume not completed or
                  structure will change between Initial and volume expanded phonon 
                  calculation. Initial phonon at regular volume will be calculated.'''
@@ -4699,7 +4699,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.load_index+=1
 		self.initial_calcs.append(self.int_dict)
 
-		self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=disp_sym,)
+		self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=atom_sym,)
 
 		#fixing the loading index to make sure the previous step won't get loaded later
 		self.load_index-=1

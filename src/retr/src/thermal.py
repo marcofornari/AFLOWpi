@@ -45,7 +45,8 @@ def _get_gruneisen(oneCalc,ID,band=True):
     if band==True:
         extension='phBAND.gp'
     else:
-        extension='phDOS.gp'
+#        extension='phDOS.gp'
+        extension='eig.ap'
 
     norm_freq,q_point_old = AFLOWpi.retr._get_ph_data(oneCalc,norm_ID,extension=extension)
     expn_freq,q_point_old = AFLOWpi.retr._get_ph_data(oneCalc,expn_ID,extension=extension)
@@ -155,8 +156,19 @@ def _get_ph_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
     data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
 
 
-    data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    #data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    data = []
 
+    with open(data_file_name,'r') as fo:
+        fs=fo.read()
+    fs=fs.split('\n')
+    labels=fs[0]
+    fs=fs[1:]
+    for line in fs:
+        if len(line.strip())!=0:
+            data.append(map(float,line.split()))
+    data = numpy.asarray(data)
+    print data
     return data[:,1:],data[:,0]
 
 

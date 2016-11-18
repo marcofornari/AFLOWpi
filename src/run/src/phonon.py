@@ -622,42 +622,7 @@ def _project_phDOS(oneCalc,ID):
 
 def _sum_aproj_phDOS(appdos_fn,de=1.0):
 
-
-    with open(appdos_fn,"r") as fo:
-        data = fo.read()
-
-    data=data.split('\n')
-    at_labels = data[0].split()[4:]
-
-    data = numpy.asarray([map(float,x.split()[3:]) for x in data[1:] if len(x.strip())!=0])
-    species=list(set(at_labels))
-
-    species=list(collections.OrderedDict.fromkeys(at_labels))
-
-    col_of_each_spec=collections.OrderedDict()
-    for spec in species:
-        for ind in range(len(at_labels)):
-            if spec==at_labels[ind]:
-                try:
-                    col_of_each_spec[spec].append(ind+1)
-                except:
-                    col_of_each_spec[spec]=[ind+1]
-
-
-
-    num_entries = data.shape[0]
-    num_spec=len(species)
-    summed_weights = numpy.zeros([num_entries,num_spec+1])
-
-    summed_weights[:,0]=data[:,0]
-
-    for spec in range(len(species)):
-        cols = col_of_each_spec[species[spec]]
-
-        
-        for spec_col in cols:        
-            
-            summed_weights[:,spec+1]+=data[:,spec_col]
+    data,summed_weights,species = AFLOWpi.run._get_ph_weights(appdos_fn)
 
     data_min=numpy.min(data[:,0])*1.2
     data_max=numpy.max(data[:,0])*1.2
@@ -702,4 +667,42 @@ def _sum_aproj_phDOS(appdos_fn,de=1.0):
 
 
 
+def _get_ph_weights(appdos_fn):
 
+    with open(appdos_fn,"r") as fo:
+        data = fo.read()
+
+    data=data.split('\n')
+    at_labels = data[0].split()[4:]
+
+    data = numpy.asarray([map(float,x.split()[3:]) for x in data[1:] if len(x.strip())!=0])
+    species=list(set(at_labels))
+
+    species=list(collections.OrderedDict.fromkeys(at_labels))
+
+    col_of_each_spec=collections.OrderedDict()
+    for spec in species:
+        for ind in range(len(at_labels)):
+            if spec==at_labels[ind]:
+                try:
+                    col_of_each_spec[spec].append(ind+1)
+                except:
+                    col_of_each_spec[spec]=[ind+1]
+
+
+
+    num_entries = data.shape[0]
+    num_spec=len(species)
+    summed_weights = numpy.zeros([num_entries,num_spec+1])
+
+    summed_weights[:,0]=data[:,0]
+
+    for spec in range(len(species)):
+        cols = col_of_each_spec[species[spec]]
+
+        
+        for spec_col in cols:        
+            
+            summed_weights[:,spec+1]+=data[:,spec_col]
+
+    return data,summed_weights,species
