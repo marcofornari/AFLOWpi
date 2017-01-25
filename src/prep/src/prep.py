@@ -1965,7 +1965,7 @@ def _cleanCalcs(ID,oneCalc):
 #####################################################################################################################
 
 
-def bands(calcs,dk=None,nk=None):
+def bands(calcs,dk=None,nk=None,n_conduction=None):
 	'''
 	Wrapper function to write the function AFLOWpi.prep._oneBands to the _ID.py
 
@@ -1981,14 +1981,14 @@ def bands(calcs,dk=None,nk=None):
 
 	'''
 
-	loadModString = 'AFLOWpi.prep._oneBands(oneCalc,ID,dk=%s,nk=%s)'%(dk,nk)
+	loadModString = 'AFLOWpi.prep._oneBands(oneCalc,ID,dk=%s,nk=%s,n_conduction=%s)'%(dk,nk,n_conduction)
 	AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
 	return calcs
 
 
 
 @newstepWrapper(_check_lock)
-def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None):
+def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 	"""
 	Add the ncsf with the electronic band structure path k points input to each 
 	subdir and update the master dictionary.
@@ -2037,7 +2037,13 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None):
 #                    match1 = re.findall(r'Kohn-Sham states\s*=\s*([0-9]*)',outfile)[-1]
 		    match1 = float(re.findall(r'number of electrons\s*=\s*([.0-9]*)',outfile)[-1])/2.0
 		    nbnd = AFLOWpi.prep._num_bands(oneCalc)
-                    nbnd = int(1.75*int(match1))
+
+		    if n_conduction==None:
+			    nbnd = AFLOWpi.prep._num_bands(oneCalc)
+		    else:
+			    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
+
+
                     prevID_str=prev_calc
                     break
                 except Exception,e:
@@ -4879,7 +4885,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.initial_calcs.append(self.int_dict)
 
 
-        def dos(self,kpFactor=2,project=True,n_valence=None):
+        def dos(self,kpFactor=2,project=True,n_conduction=None):
 		'''
 		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
 		Adds a new step to the workflow.
@@ -4898,7 +4904,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.tight_banding=False
 		self.type='dos'
 		self.new_step(update_positions=True,update_structure=True)
-		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_valence=n_valence)
+		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
 		postfix = ConfigSectionMap('run','exec_postfix')
 
 		if len(re.findall(r'npool',postfix))!=0 or len(re.findall(r'nk',postfix))!=0:
@@ -4916,7 +4922,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-        def bands(self,dk=None,nk=100):
+        def bands(self,dk=None,nk=100,n_conduction=None):
 		'''
 		Wrapper method to write call AFLOWpi.prep.bands for calculating the Electronic Band
 		Structure. 
@@ -4947,7 +4953,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 	
 		AFLOWpi.run.scf(self)
 
-		self.int_dict = bands(self.int_dict,dk=dk,nk=nk)
+		self.int_dict = AFLOWpi.prep.bands(self.int_dict,dk=dk,nk=nk,n_conduction=n_conduction)
 		AFLOWpi.run.bands(self)
 
 		calc_type='Electronic Band Structure'
@@ -5173,7 +5179,7 @@ def _num_bands(oneCalc,mult=True):
     return nbnd
 
 
-def doss(calcs,kpFactor=1.5,n_valence=None):
+def doss(calcs,kpFactor=1.5,n_conduction=None):
 	'''
 	Wrapper function to write the functio n AFLOWpi.prep._oneDoss to the _ID.py
 
@@ -5188,7 +5194,7 @@ def doss(calcs,kpFactor=1.5,n_valence=None):
 
 	'''
 
-	loadModString = 'AFLOWpi.prep._oneDoss(oneCalc,ID,kpFactor=%s,n_valence=%s)'%(kpFactor,n_valence)
+	loadModString = 'AFLOWpi.prep._oneDoss(oneCalc,ID,kpFactor=%s,n_conduction=%s)'%(kpFactor,n_conduction)
 	AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
 	'''get the fermi level from here'''
 	AFLOWpi.prep._addToAll(calcs,block='POSTPROCESSING',addition='AFLOWpi.retr._writeEfermi(oneCalc,ID)')
@@ -5197,7 +5203,7 @@ def doss(calcs,kpFactor=1.5,n_valence=None):
 
 import math
 @newstepWrapper(_check_lock)
-def _oneDoss(oneCalc,ID,kpFactor=1.5,n_valence=None):
+def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
     '''
     Converts an scf calculation to an nscf for calculating DOS.
 
@@ -5232,10 +5238,10 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_valence=None):
     inputDict=AFLOWpi.retr._splitInput(inputfile)
     inputDict['&control']['calculation']="'nscf'"
     
-    if n_valence==None:
+    if n_conduction==None:
 	    nbnd = AFLOWpi.prep._num_bands(oneCalc)
     else:
-	    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_valence
+	    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
 
     try:
 	    '''adds nbnd to input file'''

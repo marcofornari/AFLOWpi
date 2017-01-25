@@ -68,14 +68,14 @@ def _recordDeath(signal,frame):
 
     logging.debug('Job Killed.')
 
-    index=globals()["__TEMP__INDEX__COUNTER__"]
+#    index=globals()["__TEMP__INDEX__COUNTER__"]
     try:
-        if int(__main__.oneCalc['_AFLOWPI_INDEX_'])==index:
+#        if int(__main__.oneCalc['_AFLOWPI_INDEX_'])==index:
             __main__.oneCalc['__status__']['Error']="Killed"
             AFLOWpi.prep._saveOneCalc(__main__.oneCalc,__main__.ID)
     except:
         pass
-    
+    sys.exit(0)
 def cleanup(calcs):
     """
     Deletes all files a calculation set's  directory
@@ -1228,6 +1228,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
 
             logging.info('submitted %s to the queue' % submit_ID)
         except Exception,e:
+            AFLOWpi.run._fancy_error_log(e)
             logging.info("Trying to submit job with no -N option")
 
             try:
@@ -2687,7 +2688,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 !       Emax=20
 !       Emin=-20
        outdir='%s'
-       degauss=0.01
+       degauss=0.001
     !    kresolveddos=.true.
        filpdos='%s'
 

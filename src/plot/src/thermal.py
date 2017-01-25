@@ -59,7 +59,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 
        #to set figure size and default fonts
 	matplotlib.rc("font", family="serif")      #to set the font type
-	matplotlib.rc("font", size=10)             #to set the font size
+	matplotlib.rc("font", size=14)             #to set the font size
 
         
         width = 20
@@ -387,29 +387,54 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 
 
 
-def __gruneisen_of_omega(oneCalc,ID):
+def __gruneisen_of_omega(oneCalc,ID,projected=True):
+    matplotlib.rc("font", size=24)             #to set the font size
 
     therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
 
     therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.gp'%therm_ID)
+#    therm_data =numpy.loadtxt(therm_file_name,dtype=numpy.float64,)
+
+    therm_data=[]
+
+    with open(therm_file_name,"r") as fo:
+        data = fo.read()
+
+    data=data.split('\n')
+    therm_data = numpy.asarray([map(float,x.split()) for x in data if len(x.strip())!=0])
+    
+    therm_data=numpy.asarray(therm_data)
+    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=0)
+    therm_data[:,1]=numpy.around(therm_data[:,1],decimals=2)
+
+#    therm_data = numpy.unique(b).view(therm_data.dtype).reshape(-1, therm_data.shape[1])
+    
+    therm_data  = numpy.vstack({tuple(row) for row in therm_data})
+#   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
+    for i in range(len(therm_data)):
+	    if therm_data[i][0]<1.1:
+		    therm_data[i][1]=0.0
+	    
 
 
-    therm_data =numpy.loadtxt(therm_file_name,dtype=numpy.float64,)
 
     therm_data[:,1] = numpy.ma.masked_equal(therm_data[:,1],0.0)
+#    therm_data = numpy.ma.masked_equal(therm_data,0.0)
     therm_data[:,1] = numpy.ma.masked_greater(therm_data[:,1],100.0)
+#    therm_data[:,0] = numpy.ma.masked_less_equal(therm_data[:,0],1.0)
+    print therm_data.shape
     width = 10.0
     height = 8.0
     pylab.figure(figsize=(width, height))#to adjust the figure size
     
     ax1=pylab.subplot(111)	
     pylab.ylabel('$\gamma^{2}$')
-    pylab.xlabel('$\omega$')
-    pylab.plot(therm_data[:,0],therm_data[:,1],linestyle=' ',marker='^')
+    pylab.xlabel('$\omega$ $(cm^{-1})$')
+    pylab.plot(therm_data[:,0],therm_data[:,1],'k',linestyle=' ',marker='o',fillstyle='none')
 
-    figtitle = '$Gr\ddotuneisen$ $Parameter$: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
-
+    figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
+    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
+    pylab.xlim([0.0,numpy.amax(therm_data[:,0])])
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
 	
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
@@ -448,7 +473,7 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 	matplotlib.pyplot.xlim(temp_range)
 	matplotlib.pyplot.xlabel('T (K)')
 
-	figtitle = 'Lattice Thermal Conductivity: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)) 
+	figtitle = 'Lattice Thermal Conductivity: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
 	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
 	matplotlib.pyplot.ylabel('$\kappa_{lat}$ $(\frac{W}{m\cdotK})$')

@@ -1146,7 +1146,7 @@ def _getHighSymPoints(oneCalc,ID=None):
                                     [-1.0, 1.0, 1.0],
                                     [-1.0,-1.0, 1.0],])/2.0
         
-        for k,v in special_points_copy.iteritems():
+        for k,v in special_points.iteritems():
             second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
             special_points[k]=tuple(second.flatten().tolist()[0])
 

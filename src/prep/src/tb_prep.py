@@ -190,11 +190,11 @@ class tight_binding:
 
 def _form_TB_dir(oneCalc,ID,from_ls=True):
     if from_ls:
-#        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['%s.save/atom_proj.dat'%oneCalc['_AFLOWPI_PREFIX_']],
-                                         glob=True,first_node_only=True)
-        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['%s.save/data-file.xml'%oneCalc['_AFLOWPI_PREFIX_']],
-                                         glob=True,first_node_only=True)
+        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
+#        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save/atom_proj.dat'],#%oneCalc['_AFLOWPI_PREFIX_']],
+#                                         glob=True,first_node_only=True)
+#        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save/data-file.xml'],#%oneCalc['_AFLOWPI_PREFIX_']],
+#                                         glob=True,first_node_only=True)
     try:
         save_dir = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],oneCalc['_AFLOWPI_PREFIX_']+'.save')
         TB_dir = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_TB.save'%ID)

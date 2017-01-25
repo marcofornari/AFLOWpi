@@ -622,30 +622,18 @@ def _project_phDOS(oneCalc,ID):
 
 def _sum_aproj_phDOS(appdos_fn,de=1.0):
 
-    data,summed_weights,species = AFLOWpi.run._get_ph_weights(appdos_fn)
+    kpts,data,summed_weights,species = AFLOWpi.run._get_ph_weights(appdos_fn)
 
     data_min=numpy.min(data[:,0])*1.2
     data_max=numpy.max(data[:,0])*1.2
 
-
-
     num_bins=(data_max-data_min)/de
     new_bins=numpy.linspace(data_min, data_max, num=num_bins, endpoint=True)
- 
-
-    
-    
     #do a new array for the bins with density,total,then a col for each species
     dos_data = numpy.zeros([len(new_bins)-1,len(species)+2])
-
     total_phDOS = numpy.histogram(data[:,0], bins=new_bins, )
-
     dos_data[:,0] = total_phDOS[1][:-1]
-
-
-
 #    dos_data[:,1] = total_phDOS[0]
-
     for spec in range(1,len(species)+1):
 
         projected_phDOS = numpy.histogram(data[:,0], bins=new_bins, weights=summed_weights[:,spec])[0]
@@ -675,8 +663,10 @@ def _get_ph_weights(appdos_fn):
     data=data.split('\n')
     at_labels = data[0].split()[4:]
 
-    data = numpy.asarray([map(float,x.split()[3:]) for x in data[1:] if len(x.strip())!=0])
-    species=list(set(at_labels))
+    data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
+    
+    kpts=data[:3]
+    data=data[:,3:]
 
     species=list(collections.OrderedDict.fromkeys(at_labels))
 
@@ -705,4 +695,4 @@ def _get_ph_weights(appdos_fn):
             
             summed_weights[:,spec+1]+=data[:,spec_col]
 
-    return data,summed_weights,species
+    return kpts,data,summed_weights,species

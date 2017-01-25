@@ -69,8 +69,10 @@ class isotropy():
             cm_string = AFLOWpi.qe.regex.cell_parameters(self.input,'content') 
 
             alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*.*alat[\D]*([0-9.]*)',re.M)
-            alat = float(alatSearch.findall(self.input)[-1])
-            
+            try:
+                alat = float(alatSearch.findall(self.input)[-1])
+            except:
+                alat=1.0
 
 
             cell_matrix = AFLOWpi.retr._cellStringToMatrix(cm_string)

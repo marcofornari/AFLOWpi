@@ -1,5 +1,5 @@
 import sys, subprocess
-import PySide
+
 import matplotlib
 matplotlib.use('Agg')
 import fitsubs

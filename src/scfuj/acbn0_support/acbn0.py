@@ -503,6 +503,12 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
 if __name__ == '__main__':
     Bohr2Angs =  0.529177249
     inputfile = sys.argv[1]
+    do_sk=True
+    try:
+        if sys.argv[2]=="skip_sk":
+            do_sk=False
+    except:
+        pass
     input_data = {}
     f = open(inputfile)
     data = f.readlines()

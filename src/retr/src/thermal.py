@@ -42,14 +42,17 @@ def _get_gruneisen(oneCalc,ID,band=True):
 
 #    print expn_vol/norm_vol
 #    print 
+ 
     if band==True:
-        extension='phBAND.gp'
+       print band
+       raise SystemExit
+       extension='phBAND.gp'
     else:
-#        extension='phDOS.gp'
+#        extension=''
         extension='eig.ap'
 
-    norm_freq,q_point_old = AFLOWpi.retr._get_ph_data(oneCalc,norm_ID,extension=extension)
-    expn_freq,q_point_old = AFLOWpi.retr._get_ph_data(oneCalc,expn_ID,extension=extension)
+    norm_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,norm_ID,extension=extension)
+    expn_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,expn_ID,extension=extension)
 
 
 
@@ -151,7 +154,38 @@ def _get_gruneisen(oneCalc,ID,band=True):
 
 #    frequency = 
 #    delta_vol_frequency= 
-def _get_ph_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
+def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
+
+    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
+
+
+    #data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    data = []
+
+    with open(data_file_name,'r') as fo:
+        fs=fo.read()
+    fs=fs.split('\n')
+    labels=fs[0]
+    fs=fs[1:]
+    for line in fs:
+        if len(line.strip())!=0:
+            dat_temp = map(float,line.split())
+            temp_one = [dat_temp[3]]
+            temp_one.extend(dat_temp[4:])
+            data.append(temp_one)
+    data = numpy.asarray(data)
+#    print data
+
+    ret_dat=numpy.zeros(data.shape)
+    print ret_dat
+    ret_dat[:,0]=data[:,0]
+    for i in range(1,ret_dat.shape[1]):
+        ret_dat[:,i] = data[:,0]*data[:,i]
+    print ret_dat
+    return ret_dat,ret_dat[1]
+
+
+def _get_ph_band_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
 
     data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
 
@@ -185,7 +219,7 @@ def _get_debye_freq(oneCalc,ID):
 
     path_pts_list = [int(i.split()[1]) for i in path_str.split('\n')[1:] if len(i.strip())!=0]
 #    print path_pts_list
-    freq,q_vals = AFLOWpi.retr._get_ph_data(oneCalc,ID)
+    freq,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
     TA       = freq[:,0]
     TA_prime = freq[:,1]
     LA       = freq[:,2]
@@ -215,7 +249,7 @@ def _get_debye_freq(oneCalc,ID):
 
 def _get_debye_temp(oneCalc,ID):
     #get the frequencies for TA, TA', and LA
-    frequencies,q_vals = AFLOWpi.retr._get_ph_data(oneCalc,ID)
+    frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
 
     #q vals so we can find v_debye near gamma
 #    q_vals = frequencies[-1]
@@ -261,7 +295,8 @@ def _get_debye_temp(oneCalc,ID):
 
 
 def _therm_pp(oneCalc,ID):
-    grun_i  = AFLOWpi.retr._get_gruneisen(oneCalc,ID)
+#    grun_i  = AFLOWpi.retr._get_gruneisen(oneCalc,ID)
+    grun_i=[0.0,0.0,0.0]
     AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
 
     theta_i = AFLOWpi.retr._get_debye_temp(oneCalc,ID)
@@ -286,7 +321,7 @@ def _therm_pp(oneCalc,ID):
     Vol=V/float(N)
 
     #get the frequencies for TA, TA', and LA
-    frequencies,q_vals = AFLOWpi.retr._get_ph_data(oneCalc,ID)
+    frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
 
     v_i=AFLOWpi.retr._get_debye_freq(oneCalc,ID)
 
@@ -548,21 +583,30 @@ def _do_therm(v_i,theta_i,grun_i,Mass,Vol,T):
     
     ##################################################################################
     #calculate the three integrals for TA phonon and find lattice k for TA
-    TA_1 =  scipy.integrate.quad(first_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
-    TA_2 =  scipy.integrate.quad(second_int,0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
-    TA_3 =  scipy.integrate.quad(third_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
+    TA_1 =  scipy.integrate.quad(first_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    TA_2 =  scipy.integrate.quad(second_int,0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    TA_3 =  scipy.integrate.quad(third_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
 
     klattice_TA  = C_TA * (TA_1 + TA_2**2.0/TA_3)           
     #calculate the three integrals for TA' phonon and find lattice k for TA'
-    T1_1 = scipy.integrate.quad(first_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
-    T1_2 = scipy.integrate.quad(second_int,0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
-    T1_3 = scipy.integrate.quad(third_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),epsabs=0, epsrel=1.49e-6)[0]
+    T1_1 = scipy.integrate.quad(first_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
+    T1_2 = scipy.integrate.quad(second_int,0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
+    T1_3 = scipy.integrate.quad(third_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
 
     klattice_T1  = C_T1 * (T1_1 + T1_2**2.0/T1_3)           
     #calculate the three integrals for LA phonon and find lattice k for LA
-    LA_1 =  scipy.integrate.quad(first_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),epsabs=0, epsrel=1.49e-6)[0]
-    LA_2 =  scipy.integrate.quad(second_int,0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),epsabs=0, epsrel=1.49e-6)[0]
-    LA_3 =  scipy.integrate.quad(third_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),epsabs=0, epsrel=1.49e-6)[0]
+    LA_1 =  scipy.integrate.quad(first_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    LA_2 =  scipy.integrate.quad(second_int,0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    LA_3 =  scipy.integrate.quad(third_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
 
 #   LA_3 =  scipy.integrate.quad(third_int, 0.001,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),epsabs=1.49e-20, epsrel=1.49e-20)[
 #   print LA_3.message
