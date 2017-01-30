@@ -777,11 +777,11 @@ def _transformParamsInput(inputString):
 
 		    param=param.upper()
                     if param=='COSAB':
-                        paramName='celldm(6)'
+                        paramName='celldm(4)'
                     if param=='COSAC':
                         paramName='celldm(5)'
                     if param=='COSBC':
-                        paramName='celldm(4)'
+                        paramName='celldm(6)'
                     if param=='A':
                         paramName='celldm(1)'
                         paramFloat=numpy.around((paramFloat/0.529177249),decimals=5)

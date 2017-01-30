@@ -6,6 +6,9 @@ import StringIO
 import re
 import copy
 
+
+
+numpy.set_printoptions(precision=4, threshold=200, edgeitems=200, linewidth=250, suppress=True)                   
 class isotropy():
 
     def __init__(self,input_str,accuracy=0.001,output=False):
@@ -162,7 +165,7 @@ class isotropy():
             search = 'Lattice vectors in cartesian coordinates:\s*\n(.*\n.*\n.*)\n'
             std_prim_basis_str = re.findall(search,self.output)[0]
             self.iso_pr_car    = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)#*
-#            print self.iso_pr_car
+
             return self.iso_pr_car
             
 
@@ -187,16 +190,19 @@ class isotropy():
 
         std_prim_basis_str = re.findall('Vectors a,b,c:\s*\n(.*\n.*\n.*)\n',self.output)[0]
         self.iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
-        iso_conv=self.iso_conv
-#        std_prim_basis = numpy.linalg.inv(AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str))
-        std_prim_basis = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
-#        print globals().keys()
+
+
+
+
 
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
         if 'CELL_PARAMETERS' not in input_dict:
             prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
-
+            try:
+                prim_in=AFLOWpi.retr._cellStringToMatrix(prim_in)
+            except:
+                pass
 
         else:
             if input_dict['CELL_PARAMETERS']["__content__"]=='':
@@ -206,42 +212,53 @@ class isotropy():
             except Exception,e:
                 print e
                 raise SystemExit
-#$        iso_conv
 
-#        print prim_in*numpy.linalg.inv(iso_conv)
+        
+
 
         self.iso_basis=prim_in
-#        self.iso_basis=AFLOWpi.retr._cellStringToMatrix(prim_in)
-
-        
 
 
-#        self.iso_basis[:,0]/=self.conv_a
-#        self.iso_basis[:,1]/=self.conv_b
-#        self.iso_basis[:,2]/=self.conv_c
-        a= numpy.linalg.inv(iso_conv)
-        a[:,0]*=self.conv_a
-        a[:,1]*=self.conv_b
-        a[:,2]*=self.conv_c
-        
-#        print a
-#        self.iso_basis=a
-#        self.iso_basis=numpy.around(self.iso_basis,decimals=4)
 
-        self.axes_flip = iso_conv.dot(self.iso_basis)
-        self.axes_flip = numpy.linalg.inv(iso_conv)
-#        self.iso_basis*=self.axes_flip*self.iso_basis
-#        self.iso_basis = self.axes_flip.dot(self.iso_basis)
-#            self.iso_basis = .dot(self.iso_basis))
-#        print numpy.around(numpy.linalg.inv(iso_conv.dot(self.iso_basis)),decimals=5)
-#        raise SystemExit
+        a=numpy.array([[self.conv_a,],
+                       [self.conv_b,],
+                       [self.conv_c,],])
 
-#        self.iso_basis[:,0]/=0.529177249
-#        self.iso_basis[:,1]/=0.529177249
-#        self.iso_basis[:,2]/=0.529177249
 #        print self.iso_basis
-#        self.iso_basis-=self.origin
-#       print self.iso_basis
+#        print a
+        a=numpy.abs((self.iso_conv).dot(self.iso_basis))
+
+        if self.ibrav in [8,9,10,11]:
+            self.conv_a=numpy.sum(a[:,0])
+            self.conv_b=numpy.sum(a[:,1])
+            self.conv_c=numpy.sum(a[:,2])
+
+#        print self.iso_basis.dot(self.iso_conv)
+        
+        prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
+        prim_abc=map(float,prim_abc)
+#        print prim_abc
+
+#        self.iso_conv[0]*=prim_abc[0]
+#        self.iso_conv[1]*=prim_abc[1]
+#        self.iso_conv[2]*=prim_abc[2]
+
+#        print a.dot(prim_in)
+        
+#        self.iso_conv[0]/=self.conv_a
+#        self.iso_conv[1]/=self.conv_b
+#        self.iso_conv[2]/=self.conv_c
+
+#        print self.iso_basis
+        
+        self.axes_flip = numpy.linalg.inv(self.iso_conv)
+
+#        self.axes_flip[0]*=self.conv_a
+#        self.axes_flip[1]*=self.conv_b
+#        self.axes_flip[2]*=self.conv_c
+
+        self.axes_flip=numpy.around(self.axes_flip,decimals=3)
+
 #        raise SystemExit
         return self.iso_basis
 
@@ -252,80 +269,91 @@ class isotropy():
 
         
 
-        qe_basis_inv = AFLOWpi.retr._prim2ConvMatrix(self.iso_basis,ibrav=self.ibrav)
 
-        qe_conv2prim = numpy.linalg.inv(qe_basis_inv)
-#       self.qe_basis = qe_conv2prim
-#        print AFLOWpi.retr.getCellMatrixFromInput(self.input,string=False)
 
-        
 
-#        self.qe_basis =  AFLOWpi.retr.abc2free(self.conv_a,self.conv_b,self.conv_c,self.conv_alpha,self.conv_beta,self.conv_gamma,ibrav=self.ibrav,returnString=False)
-#        self.qe_basis =  AFLOWpi.retr.abc2free(self.conv_a,self.conv_b,self.conv_c,self.conv_alpha,self.conv_beta,self.conv_gamma,ibrav=self.ibrav,returnString=False)
-        
-        self.qe_basis = AFLOWpi.retr._prim2ConvMatrix(self.iso_basis,ibrav=self.ibrav)
+
+
 
         
 
-        self.qe_basis = numpy.linalg.inv(self.qe_basis)
+
+
+        
+ #       self.qe_basis = AFLOWpi.retr._conv2PrimVec(self.iso_basis,ibrav=self.ibrav)
+        self.qe_basis = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,alpha=self.conv_alpha,beta=self.conv_beta,gamma=self.conv_gamma,ibrav=self.ibrav,returnString=False)
+    
+
+
         conv=self.qe_basis*numpy.linalg.inv(self.iso_basis)
-        self.qe_basis[:,0]*=self.conv_a
-        self.qe_basis[:,1]*=self.conv_b
-        self.qe_basis[:,2]*=self.conv_c
+#        self.qe_basis[:,0]/=self.conv_a
+#        self.qe_basis[:,1]/=self.conv_b
+#        self.qe_basis[:,2]/=self.conv_c
 
-#        conv = numpy.around(conv,decimals=5)
+
         return conv
-#        prim_in = numpy.round(prim_in/0.529177249,decimals=6)
-
-#        conv = self.qe_basis.dot(numpy.linalg.inv(prim_in))
 
 
-#        return conv
 
     def convert(self,ibrav=True):
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-#        t= numpy.linalg.inv(self.iso_basis)
-#        t[:,0] = t[:,0]*self.conv_a*0.529177249
-#        t[:,1] = t[:,1]*self.conv_b*0.529177249
-#        t[:,2] = t[:,2]*self.conv_c*0.529177249
-#        asdf = AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
-#        print asdf
-#        print t
-#        print AFLOWpi.retr._cellMatrixToString(asdf.dot(numpy.linalg.inv(t)))
-        
-#        print self.qe_basis
-
-#        print self.conv
-
-
-#        self.conv = conv_conv.dot(self.conv)
-#        print self.iso_basis
-#        print self.qe_basis
-
-#        print trans
             
         self.qe_pos = copy.deepcopy(self.orig_pos)
-#        print self.conv
-#        print self.conv
-#        self.iso_babsis= self.axes_flip
-#        print self.output        
-#        self.iso_basis = self.iso_basis.dot()
-#        self.conv= self.conv.
-#        print self.iso_basis
-#        print self.qe_basis
-        conv = self.qe_basis.dot(numpy.linalg.inv(self.iso_basis))
-#        conv = numpy.around(conv,decimals=4)
 
 
 
-        for i in range(len(self.orig_pos)):
-#            self.origin= numpy.matrix(self.origin)
-#            mat_pos = numpy.matrix(self.orig_pos[i])
-#            second = conv.dot(mat_pos.T).T
-            second = (numpy.matrix(self.orig_pos[i])*(numpy.linalg.inv(self.iso_basis*numpy.linalg.inv(self.qe_basis)))).T
-#            special_points[k]=tuple(second.flatten().tolist()[0])
-            self.qe_pos[i]=tuple(second.flatten().tolist()[0])
+
+
+
+
+
+        if self.ibrav==12 or self.ibrav==13:
+#            print self.conv_alpha,self.conv_beta
+            
+#            print self.qe_basis
+            if numpy.around(self.conv_beta,decimals=3)!=90.0:
+
+
+                 temp_angle      = self.conv_beta
+                 self.conv_beta  = self.conv_gamma
+                 self.conv_gamma = temp_angle
+                 temp_len        = self.conv_b
+                 self.conv_b     = self.conv_c
+                 self.conv_c     = temp_len
+
+            elif numpy.around(self.conv_alpha,decimals=3)!=90.0:
+
+
+                 temp_angle      = self.conv_alpha
+                 self.conv_alpha = self.conv_gamma
+                 self.conv_gamma = temp_angle
+                 temp_len        = self.conv_a
+                 self.conv_a     = self.conv_c
+                 self.conv_c     = temp_len
+
+
+
+        conv_len = self.axes_flip.T.dot(numpy.array([self.conv_a,self.conv_b,self.conv_c,]).T).tolist()
+#        print self.conv_a,self.conv_b,self.conv_c
+#        print self.axes_flip
+#        self.conv_a,self.conv_b,self.conv_c = numpy.abs(conv_len)
+
+        self.orig_pos  -= self.origin
+        trans = self.iso_basis.dot(numpy.linalg.inv(self.qe_basis))
+        self.qe_pos = (self.orig_pos.dot(trans))
+        
+        
+
+
+        # if self.ibrav==12 or self.ibrav==13:            
+        #     if numpy.around(self.conv_beta,decimals=3)!=90.0:
+        #         self.qe_pos  = self.qe_pos[:,[0,2,1]]
+
+        #     elif numpy.around(self.conv_alpha,decimals=3)!=90.0:
+        #         self.qe_pos   = self.qe_pos[:,[2,1,0]]
+
+
             
 
 #            self.orig_pos[i]-=self.origin
@@ -352,38 +380,20 @@ class isotropy():
             del input_dict['CELL_PARAMETERS']
         except:
             pass
-
-#        ibrav,cdm1,cdm2,cdm3,cdm4,cdm5,cdm6 =  AFLOWpi.retr.abc2celldm(self.conv_a,self.conv_b,self.conv_c,self.conv_alpha,self.conv_beta,self.conv_gamma,ibrav=self.ibrav,)
-#        input_dict['CELL_PARAMETERS']['__content__']= AFLOWpi.retr._cellMatrixToString(
-#        input_dict['&system']['celldm(1)']=cdm1
-#        input_dict['&system']['celldm(2)']=cdm2
-#        input_dict['&system']['celldm(3)']=cdm3
-#        input_dict['&system']['celldm(4)']=cdm4
-#        input_dict['&system']['celldm(5)']=cdm5
-#        input_dict['&system']['celldm(6)']=cdm6
-        self.iso_conv= numpy.linalg.inv(self.iso_conv).dot(self.iso_basis)
-        test1=copy.deepcopy(self.iso_conv)
-
-#        as_mat = numpy.matrix([[self.conv_a,0.0,0.0],
-#                               [0.0,self.conv_b,0.0],
-#                               [0.0,0.0,self.conv_c],])
-#        test = self.axes_flip*as_mat
-#        print test
-#        print test[2].dot(test[2].T)[0]
-#        self.conv_a=numpy.sqrt(test[0].dot(test[0].T)[0])
-#        self.conv_b=numpy.sqrt(test[1].dot(test[1].T)[0])
-#        self.conv_c=numpy.sqrt(test[2].dot(test[2].T)[0])
-#        print test
-#        self.iso_conv.dot 
+            
 
         input_dict['&system']['a']=self.conv_a#*0.529177249
-        if self.ibrav in [8,9,10,11,12,13,14]:
+ #       if self.ibrav in [8,9,10,11,12,13,14]:
+        if True:
             input_dict['&system']['b']=self.conv_b#*0.529177249
-        if self.ibrav in [4,6,7,8,9,10,11,12,13,14]:
+#        if self.ibrav in [4,6,7,8,9,10,11,12,13,14]:
             input_dict['&system']['c']=self.conv_c#*0.529177249
-        if self.ibrav in [5,12,13,14]:            
+#        if self.ibrav in [12,13,14]:            
             input_dict['&system']['cosAB']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
-        if self.ibrav in [14]:                        
+
+#        if self.ibrav in [5]:            
+#            input_dict['&system']['cosBC']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
+#        if self.ibrav in [14]:                        
             input_dict['&system']['cosAC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
             input_dict['&system']['cosBC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
 #        input_dict['&system']['']=self.conv_a
@@ -402,7 +412,9 @@ class isotropy():
 #        print qe_convention_input
 #        print qe_convention_input
         if ibrav==True:
+#            print qe_convention_input
             qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
+#            print qe_convention_input 
             return qe_convention_input
         else:
 
@@ -422,10 +434,15 @@ class isotropy():
                      180,181,182,183,184,185,186,187,188,189,190,191,
                      192,193,194]:
             return 4
-        elif self.sgn in [143,144,145,146,147,148,149,150,151,152,153,154,
-                     155,156,157,158,159,160,161,162,163,164,165,166,
-                     167]:
+
+
+        elif self.sgn in [143,144,145,147,149,150,151,152,153,154,
+                     156,157,158,159,162,163,164,165,]:
+            return 4
+
+        elif self.sgn in [146,148,155,160,161,166,167]:
             return 5
+                     
         elif self.sgn in [75,76,77,78,81,83,84,85,86,89,91,92,93,94,
                      95,96,99,100,101,102,103,104,105,106,111,112,
                      113,114,115,116,117,118,123,124,125,126,127,
@@ -434,15 +451,13 @@ class isotropy():
         elif self.sgn in [79,80,82,87,88,90,97,98,107,108,109,110,119,
                      120,121,122,139,140,141,142]:
             return 7
+
         elif self.sgn in [16,17,18,19,25,26,27,28,29,30,31,32,33,34,47,
                      48,49,50,51,52,53,54,55,56,57,58,59,60,61,62]:
             return 8
         elif self.sgn in [38,39,40,41,20,21,35,36,37,63,64,65,66,67,68]:
             return 9
-#       elif self.sgn in [38,39,40,41]:
-#           return 9
-#       elif self.sgn in [20,21,35,36,37,63,64,65,66,67,68]:
-#           return -9
+
         elif self.sgn in [22,42,43,69,70]:
             return 10
         elif self.sgn in [23,24,44,45,46,71,72,73,74]:
@@ -463,14 +478,194 @@ class isotropy():
             print 'SG num not found:',self.sgn
             raise SystemExit
 
-    
 
-#    def __qe_conventional(self):
-#        if self.ibrav in [1,2,3,6,7,8,-9,9,10,11]:
-#            qe_conv = numpy.asarray([[self.conv_a,0.0,0.0,],
-#                                     [0.0,self.conv_b,0.0,],
-#                                     [0.0,0.0,self.conv_c,],])
 
-    
-#        return qe_conv
 
+
+    def cif2qe(self):
+
+
+        input_dict = AFLOWpi.retr._splitInput(self.input)
+
+        ############################################################
+        ############################################################
+        def process_shift(symops):
+            re_shift = re.compile('[+-]*\d\/\d')
+            addition = re_shift.findall(symops)[0].strip(' ')
+            sign=1.0
+            try:
+                minus = addition.index('-')
+                sign=-1.0
+            except:
+                pass
+            numer=float(addition[addition.index('/')-1])
+            denom=float(addition[addition.index('/')+1])
+
+            
+            return sign*numer/denom
+        ############################################################
+        ############################################################
+
+        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=self.conv_alpha,beta=self.conv_beta,gamma=self.conv_gamma,ibrav=self.ibrav,returnString=False)
+
+        ins= self.cif.lower()
+
+        re_symops=re.compile(r'_space_group_symop_operation_xyz\s*\n((?:\s*\d+.*\n)+)\s*',re.M)
+
+        symops = [x for x in re_symops.findall(ins)[0].split('\n') if (len(x.strip())!=0 )]
+
+        re_sym_ops_remove_numbering = re.compile('\d+\s+(.*)')
+        for i in  range(len(symops)):
+            symops[i] = re_sym_ops_remove_numbering.findall(symops[i])[0]
+
+        symops_aux=[]
+        for i in  range(len(symops)):
+            sym_aux_temp = [x.strip().lower() for x in symops[i].split(',') ]
+            if len(sym_aux_temp)!=0:
+                symops_aux.append(sym_aux_temp)
+
+        symops=symops_aux
+        ident = numpy.identity(3,dtype=numpy.float64)
+
+        operations = numpy.zeros((len(symops),3,3))
+        operations[:,]=ident
+        shift = numpy.zeros((len(symops),3))
+
+
+        for i in range(len(symops)):
+            if 'y' in symops[i][0]:
+                operations[i]=ident[[1,0,2]]
+            if 'z' in symops[i][0]:
+                operations[i]=ident[[2,1,0]]
+            if 'y' in symops[i][2]:
+                operations[i]=ident[[0,2,1]]
+
+            if '-' in symops[i][0]:
+                operations[i][0]*=-1.0
+            if '-' in symops[i][1]:
+                operations[i][1]*=-1.0
+            if '-' in symops[i][2]:
+                operations[i][2]*=-1.0
+
+            if '/' in symops[i][0]:
+                shift[i][0]=process_shift(symops[i][0])
+            if '/' in symops[i][1]:
+                shift[i][1]=process_shift(symops[i][1])
+            if '/' in symops[i][2]:
+                shift[i][2]=process_shift(symops[i][2])
+
+
+        re_atom_pos=re.compile(r'(_atom_site_label.*\n(?:(?:[a-z_\s])*\n))((?:.*\n)*)')
+        atom_pos=re_atom_pos.findall(ins)[0]
+
+        loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
+
+        spec_lab =  loop_list.index('_atom_site_label')
+
+        x_loc =  loop_list.index('_atom_site_fract_x')
+        y_loc =  loop_list.index('_atom_site_fract_y')
+        z_loc =  loop_list.index('_atom_site_fract_z')
+
+
+        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if len(x.strip())!=0]
+
+        pos_array=numpy.zeros((len(positions),3))
+
+
+        labels=[]
+        for i in range(len(positions)):
+            pos_array[i][0] = float(positions[i][x_loc])
+            pos_array[i][1] = float(positions[i][y_loc])
+            pos_array[i][2] = float(positions[i][z_loc])
+
+            labels.append(positions[i][spec_lab].strip('0123456789').title())
+
+
+        labels = labels*len(operations)
+        all_eq_pos=numpy.zeros((pos_array.shape[0]*operations.shape[0],3))
+
+        for i in xrange(operations.shape[0]):
+            pos_copy=numpy.copy(pos_array)
+            temp_pos   = pos_copy.dot(operations[i])
+
+            temp_pos[:,0]+=shift[i][0]
+            temp_pos[:,1]+=shift[i][1]
+            temp_pos[:,2]+=shift[i][2]
+            all_eq_pos[i*pos_array.shape[0]:(i+1)*pos_array.shape[0]]=temp_pos
+
+            
+        all_eq_pos%=1.0
+
+
+        all_eq_pos=(numpy.linalg.inv(convert.getA()).dot(all_eq_pos.T)).T%1.0
+
+        b = numpy.ascontiguousarray( all_eq_pos).view(numpy.dtype((numpy.void,  all_eq_pos.dtype.itemsize * all_eq_pos.shape[1])))
+        _, idx = numpy.unique(b, return_index=True)
+
+        labels_arr=numpy.array(labels)
+        labels_arr=labels_arr[idx]
+        all_eq_pos=all_eq_pos[idx]
+
+        spec_sort = numpy.argsort(labels_arr)
+        labels_arr=labels_arr[spec_sort]
+        all_eq_pos=all_eq_pos[spec_sort]
+
+
+
+
+        atm_pos_str=""
+        for i in xrange(all_eq_pos.shape[0]):
+            atm_pos_str+= ('%3.3s'% labels_arr[i]) +(' % 9.9f % 9.9f % 9.9f '%tuple(all_eq_pos[i].tolist()))+"\n"
+
+
+
+        input_dict['&system']['ibrav']=self.ibrav
+
+        input_dict['&system']['A']=self.conv_a
+        input_dict['&system']['B']=self.conv_b
+        input_dict['&system']['C']=self.conv_c
+        input_dict['&system']['cosAB']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
+        input_dict['&system']['cosAC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
+        input_dict['&system']['cosBC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
+
+
+        try:
+            del input_dict['CELL_PARAMETERS']
+        except:
+            pass
+
+
+
+
+        input_dict['ATOMIC_POSITIONS']['__content__']=atm_pos_str
+
+        qe_convention_input=AFLOWpi.retr._joinInput(input_dict)
+
+        qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
+        return qe_convention_input
+        #        from scipy.spatial import Delaunay as CH
+
+#         def inside_prim_lat(labels,points,conv,prim):
+             
+#             labs,ss = AFLOWpi.retr._expandBoundaries(labels,points,2,2,2)
+#             ss=ss*2.0-1.0
+#  #           prim+=shift
+#             prim_hull = numpy.zeros((8,3),dtype=numpy.float64)
+# #            prim_hull[0] =
+#             prim_hull[1] = prim[0]
+#             prim_hull[2] = prim[1]
+#             prim_hull[3] = prim[2]
+#             prim_hull[4] = prim[0]+prim[1]
+#             prim_hull[5] = prim[0]+prim[1]+prim[2]
+#             prim_hull[6] = prim[0]+prim[2]
+#             prim_hull[7] = prim[1]+prim[2]
+            
+
+#             hull=CH(prim_hull)
+#             print  hull.find_simplex(ss)
+#             in_hull_mask= hull.find_simplex(ss)>=0
+#             return labs[in_hull_mask],ss[in_hull_mask]%1.0
+
+
+#        labels_arr,all_eq_pos= inside_prim_lat(labels_arr,all_eq_pos,ident,convert)
+        

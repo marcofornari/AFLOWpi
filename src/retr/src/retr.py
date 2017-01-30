@@ -1,4 +1,3 @@
-
 import AFLOWpi.run
 import AFLOWpi.prep
 import os
@@ -1260,12 +1259,12 @@ def _getHighSymPoints(oneCalc,ID=None):
        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0,],
                                    [ 1.0,-1.0, 1.0],
                                    [ 1.0, 1.0,-1.0],])/2.0
-       qe_conv    = numpy.asarray([[-1.0, 1.0, 1.0,],
+       qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0,],
                                    [ 1.0, 1.0, 1.0],
                                    [-1.0,-1.0, 1.0],])/2.0
 
-       for k,v in special_points_copy.iteritems():
-            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+       for k,v in special_points.iteritems():
+            second = (aflow_conv.dot(numpy.linalg.inv(qe_conv))).dot(numpy.matrix(v).T)
             special_points[k]=tuple(second.flatten().tolist()[0])        
 
 
@@ -1276,8 +1275,8 @@ def _getHighSymPoints(oneCalc,ID=None):
 
     def BCT2(cellOld):
 
-       a = cellOld[1][0]*2
-       c = cellOld[1][2]*2
+       a = cellOld[0][0]*2
+       c = cellOld[2][2]*2*a
        if a==c:
            return BCC(cellOld)
 
@@ -1298,14 +1297,14 @@ def _getHighSymPoints(oneCalc,ID=None):
        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0,],
                                    [ 1.0,-1.0, 1.0],
                                    [ 1.0, 1.0,-1.0],])/2.0
-       qe_conv    = numpy.asarray([[-1.0, 1.0, 1.0,],
+       qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0,],
                                    [ 1.0, 1.0, 1.0],
                                    [-1.0,-1.0, 1.0],])/2.0
         
 
-       for k,v in special_points_copy.iteritems():
-            second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
-            special_points[k]=tuple(second.flatten().tolist()[0])        
+       for k,v in special_points.iteritems():
+            second = (numpy.linalg.inv(qe_conv.dot(numpy.linalg.inv(aflow_conv))).dot(numpy.asarray(v).T)).T
+            special_points[k]=tuple(second.flatten().tolist())        
 
 
 
@@ -2891,8 +2890,8 @@ def inputDict2params(inputDict):
         gamma = 120.0
     if ibrav == 5 or ibrav == -5:
         b = a
-        beta = alpha
-        gamma = 120.0
+#        beta = alpha
+#        gamma = 120.0
     if ibrav == 6:
         b = a
         alpha,beta,gamma = (90.0,90.0,90.0)
@@ -3087,12 +3086,22 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                                (-celldm1,-celldm1, celldm1)))/2.0
         
     if ibrav==4:
-        matrix = numpy.matrix(((1        ,0               , 0      ),
-                               (-0.5     ,numpy.sqrt(3)/2 , 0      ),
-                               (0        ,0               , celldm3)))*celldm1
+        matrix = numpy.matrix((( 1.        ,0.               , 0.      ),
+                               (-0.5       ,numpy.sqrt(3)/2  , 0.      ),
+                               ( 0.        ,0.               , celldm3)))*celldm1
 
+        # if numpy.abs(celldm4-celldm5)<0.01 and numpy.abs(celldm4-celldm6)<0.01 and numpy.abs(celldm6-celldm5)<0.01:
+        #     c=celldm4
+        #     tx=numpy.sqrt((1-c)/2)
+        #     ty=numpy.sqrt((1-c)/6)
+        #     tz=numpy.sqrt((1+2*c)/3)
+
+        #     matrix = celldm1*numpy.matrix(((tx  ,-ty  , tz),
+        #                                    (0   , 2*ty, tz),
+        #                                    (-tx ,-ty  , tz)))
 
     if ibrav==5:
+
         c=celldm4
         tx=numpy.sqrt((1-c)/2)
         ty=numpy.sqrt((1-c)/6)
@@ -3101,6 +3110,13 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
         matrix = celldm1*numpy.matrix(((tx  ,-ty  , tz),
                                        (0   , 2*ty, tz),
                                        (-tx ,-ty  , tz)))
+
+        # if numpy.abs(celldm4+0.5)<0.01 or numpy.abs(celldm5+0.5)<0.01 or numpy.abs(celldm6+0.5)<0.01:
+        #     matrix = numpy.matrix((( 1.        ,0.               , 0.      ),
+        #                            (-0.5       ,numpy.sqrt(3)/2  , 0.      ),
+        #                            ( 0.        ,0.               , celldm3)))*celldm1
+
+
 
                     
     if ibrav==-5:
@@ -3124,7 +3140,7 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                 ( 1.0,-1.0,celldm3),
                 ( 1.0, 1.0,celldm3),
                 (-1.0,-1.0,celldm3),
-                ))
+                ))*celldm1
         matrix/=2.0
 
     if ibrav==8:
@@ -3151,13 +3167,13 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if ibrav==-9:
         matrix=numpy.matrix(((a/2,-b/2,0),
-                             (a/2,-b/2,0),
+                             (a/2, b/2,0),
                              (0,   0,  c)))
 
     if ibrav==10:
-        matrix = numpy.matrix(((a,  0,  c  ),
-                               (a,  b,  0  ),  
-                               (0,  b,  c  )))/2.0
+        matrix = numpy.matrix(((a,   0.,  c   ),
+                               (a,   b,   0.  ),  
+                               (0.,  b,   c   )))/2.0
 
 
 
@@ -3168,19 +3184,13 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                              (-a/2,-b/2, c/2)))
 
     if ibrav==12:
-
         gamma=numpy.arccos(celldm4)
-
         matrix = numpy.matrix(((a,           0,           0),
                                (b*numpy.cos(gamma),b*numpy.sin(gamma),0),
                                (0,           0,           c)))
 
-    if ibrav==-12:
-        beta=numpy.arccos(celldm5)
-        matrix=numpy.matrix(((a,0,0),
-                             (0,b,0),
-                             (c*numpy.sin(beta),0,c*numpy.sin(beta))))
     if ibrav==13:
+        print celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,
         gamma=numpy.arccos(celldm4)
         matrix=numpy.matrix(((a/2,                0,                -c/2),
                              (b*numpy.cos(gamma), b*numpy.sin(gamma),0),
@@ -3389,9 +3399,9 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
     celldm_2 = b/a
     celldm_3 = c/a
 
-    celldm_4 = cellParamMatrixConv[1].dot(cellParamMatrixConv[2].T)/(b*c)
+    celldm_6 = cellParamMatrixConv[1].dot(cellParamMatrixConv[2].T)/(b*c)
     celldm_5 = cellParamMatrixConv[0].dot(cellParamMatrixConv[2].T)/(a*c)
-    celldm_6 = cellParamMatrixConv[0].dot(cellParamMatrixConv[1].T)/(a*b)
+    celldm_4 = cellParamMatrixConv[0].dot(cellParamMatrixConv[1].T)/(a*b)
 
 
     ibravStr = ""
@@ -3408,21 +3418,21 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
         if ibrav==1 or ibrav==2 or ibrav==3:
                 ibravStr = "ibrav=%s, celldm(1)=%f\n"%(ibrav,celldm_1)
 
-        elif ibrav == 4 or ibrav == 6 or ibrav==7:
+        elif ibrav==4 or ibrav==6 or ibrav==7:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(3)=%f\n"%(ibrav,celldm_1, celldm_3) 
-        elif ibrav == 5:
+        elif ibrav==5:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_4) 
 
 
-        elif ibrav == 8 or ibrav==9 or ibrav==-9 or ibrav ==10 or ibrav==11:
+        elif ibrav==8 or ibrav==9 or ibrav==-9 or ibrav ==10 or ibrav==11:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3)
-        elif ibrav == 12:
+        elif ibrav==12:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4)
-        elif ibrav == -12:
+        elif ibrav==-12:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(5)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_5)
-        elif ibrav == 13:
+        elif ibrav==13:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4)
-        elif ibrav == 14:
+        elif ibrav==14:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4, celldm_5, celldm_6)
         else:
             logging.error('ibrav %s is not a valid option.' % ibrav)
@@ -3659,20 +3669,21 @@ def abc2celldm(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None):
         gamma = 120.0
     if ibrav == 5 or ibrav == -5:
         b = a
-        beta = alpha
-        gamma = alpha
+#        beta = alpha
+#        gamma = alpha
     if ibrav == 6 or ibrav==7:
         b = a
-    if ibrav==12:
-        gamma=90.0
+    if ibrav==12 or ibrav==13:
+        alpha=90.0
         beta=90.0
 
     celldm1 = a
     celldm2 = b/a
     celldm3 = c/a
-    celldm4 = numpy.cos(alpha*numpy.pi/180.0)
+    celldm4 = numpy.cos(gamma*numpy.pi/180.0)
     celldm5 = numpy.cos(beta*numpy.pi/180.0)
-    celldm6 = numpy.cos(gamma*numpy.pi/180.0)
+    celldm6 = numpy.cos(alpha*numpy.pi/180.0)
+
 
     celldm1=numpy.around(celldm1,decimals=5)
     celldm2=numpy.around(celldm2,decimals=5)
@@ -3743,45 +3754,45 @@ def abc2free(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None,ret
     cell_vectors = AFLOWpi.retr.celldm2free(ibrav,celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,returnString=returnString)
     return cell_vectors
 
-def ibrav2String(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,celldm5=None,celldm6=None):
-    '''
-    DEFUNCT <CONSIDER FOR REMOVAL>
+# def ibrav2String(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,celldm5=None,celldm6=None):
+#     '''
+#     DEFUNCT <CONSIDER FOR REMOVAL>
 
-    Arguments:
-
-
-    Keyword Arguments:
+#     Arguments:
 
 
-    Returns:
+#     Keyword Arguments:
 
 
-    '''        
+#     Returns:
 
-    ibravStr = ""
 
-    try:
-        if ibrav == 1 or ibrav == 2 or ibrav ==3:
-                ibravStr = "ibrav=1, celldm(1)=%f\n"%celldm1
-        elif ibrav == 5:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f\n"%(celldm1, celldm2) 
-        elif ibrav == 4 or ibrav == 6 or ibrav ==7:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(3)=%f\n"%(celldm1, celldm3)
-        elif ibrav == 8 or ibrav == 9 or ibrav == 10 or ibrav == 11:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(celldm1, celldm2, celldm3)
-        elif ibrav == 12 or ibrav == 13:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(celldm1, celldm2, celldm3, celldm4)
-        elif ibrav == 14:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(celldm1, celldm2, celldm3, celldm4, celldm5, celldm6)
-        else:
-            logging.error('ibrav %s is not a valid option.' % ibrav)
-            print 'ibrav %s is not a valid option.' % ibrav
-            return 
+#     '''        
 
-    except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+#     ibravStr = ""
 
-    return ibravStr
+#     try:
+#         if ibrav == 1 or ibrav == 2 or ibrav ==3:
+#                 ibravStr = "ibrav=1, celldm(1)=%f\n"%celldm1
+#         elif ibrav == 5:
+#                 ibravStr = "ibrav=5, celldm(1)=%f, celldm(4)=%f\n"%(celldm1, celldm2) 
+#         elif ibrav == 4 or ibrav == 6 or ibrav ==7:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(3)=%f\n"%(celldm1, celldm3)
+#         elif ibrav == 8 or ibrav == 9 or ibrav == 10 or ibrav == 11:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(celldm1, celldm2, celldm3)
+#         elif ibrav == 12 or ibrav == 13:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(celldm1, celldm2, celldm3, celldm4)
+#         elif ibrav == 14:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(celldm1, celldm2, celldm3, celldm4, celldm5, celldm6)
+#         else:
+#             logging.error('ibrav %s is not a valid option.' % ibrav)
+#             print 'ibrav %s is not a valid option.' % ibrav
+#             return 
+
+#     except Exception,e:
+#         AFLOWpi.run._fancy_error_log(e)
+
+#     return ibravStr
 
 
 
@@ -4159,8 +4170,8 @@ def _prim2ConvVec(cellParamMatrix,ibrav=0):
 
     prim2conv = AFLOWpi.retr._prim2ConvMatrix(cellParamMatrix,ibrav=ibrav)
     cellParamMatrixCopy=copy.deepcopy(cellParamMatrix)
-    conv=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
-    return conv
+#    conv=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
+    return prim2conv
 
 def _conv2PrimVec(cellParamMatrix,ibrav=0):
     '''
@@ -4177,10 +4188,10 @@ def _conv2PrimVec(cellParamMatrix,ibrav=0):
 
     '''        
 
-    prim2conv = numpy.linalg.inv(__prim2ConvMatrix(cellParamMatrix,ibrav=ibrav))
+    prim2conv = numpy.linalg.inv(_prim2ConvMatrix(cellParamMatrix,ibrav=ibrav))
     cellParamMatrixCopy=copy.deepcopy(cellParamMatrix)
-    prim=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
-    return prim
+#    prim=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
+    return prim2conv
 
 def _getConventionalCellFromInput(oneCalc,ID):
     '''

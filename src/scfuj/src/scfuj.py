@@ -502,7 +502,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
 			'''Add nosym = .true. and noinv = .true. to file '''
 
                         try:
-                            splitInput['&electrons']['conv_thr']='1.0D-8'
+                            splitInput['&electrons']['conv_thr']='1.0D-6'
                             splitInput['&system']['nosym']='.True.'
                             splitInput['&system']['noinv']='.True.'
                             splitInput['&control']['verbosity']='"high"'
