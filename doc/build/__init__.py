@@ -6,3 +6,4 @@ import AFLOWpi.retr
 import AFLOWpi.pseudo
 import AFLOWpi.db
 import AFLOWpi.scfuj
+import AFLOWpi.aflowlib

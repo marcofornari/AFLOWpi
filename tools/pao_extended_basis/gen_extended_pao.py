@@ -262,6 +262,7 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll):
     wfc_ae  = np.loadtxt(wfc_ae_fullpath,skiprows=1)
 
     nwfcs   = wfc_ae.shape[1]-1
+
     size    = wfc_ae.shape[0]
 
     #Check that the meshes and radial parts are the same
@@ -366,7 +367,7 @@ workdir="./"
 
 def pseudizeWFC(ld1FileString, UPF_file):
 
-        import radial_integral as radial
+#        import radial_integral as radial
 
 	wfc_ae_fullpath = os.path.join(workdir,"wfc_ae.txt")
 	
@@ -378,8 +379,9 @@ def pseudizeWFC(ld1FileString, UPF_file):
 		nPAO_RE = re.compile(r"/\n(\d+)\s*\n")
 		nPAO = int(float(nPAO_RE.findall(ld1FileString)[0]));print("Total No. of PAOs found:", nPAO)
 
-		paoRE = re.compile(r"([0-9][A-Z])\s*\d\s*(\d)\s*(\d+\.\d+)\s*(\d+\.\d+)\s*\d+\.\d+\s*(\d+\.\d+)\s*\d+\.\d+.*\n")
+		paoRE = re.compile(r"([0-9][A-Z])\s*\d\s*(\d)\s*([-]*\d+\.\d+)\s*([-]*\d+\.\d+)\s*\d+\.\d+\s*(\d+\.\d+)\s*\d+\.\d+.*\n")
 		paoList = paoRE.findall(ld1FileString)
+
 
 		llabels	= [x[0] for i,x in enumerate(paoList)];print("llabels:", llabels)
 		ll	= map(int,[x[1] for i,x in enumerate(paoList)]);print("ll:", ll)

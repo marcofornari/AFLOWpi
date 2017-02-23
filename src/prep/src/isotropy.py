@@ -51,7 +51,7 @@ class isotropy():
             self.conv      = self.__convert_to_ibrav_matrix()
             
 
-            self.qe   = self.convert()
+#            self.qe   = self.convert()
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
             pass
@@ -237,19 +237,6 @@ class isotropy():
         
         prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
         prim_abc=map(float,prim_abc)
-#        print prim_abc
-
-#        self.iso_conv[0]*=prim_abc[0]
-#        self.iso_conv[1]*=prim_abc[1]
-#        self.iso_conv[2]*=prim_abc[2]
-
-#        print a.dot(prim_in)
-        
-#        self.iso_conv[0]/=self.conv_a
-#        self.iso_conv[1]/=self.conv_b
-#        self.iso_conv[2]/=self.conv_c
-
-#        print self.iso_basis
         
         self.axes_flip = numpy.linalg.inv(self.iso_conv)
 
@@ -302,56 +289,17 @@ class isotropy():
         self.qe_pos = copy.deepcopy(self.orig_pos)
 
 
-
-
-
-
-
-
-        if self.ibrav==12 or self.ibrav==13:
-#            print self.conv_alpha,self.conv_beta
-            
-#            print self.qe_basis
-            if numpy.around(self.conv_beta,decimals=3)!=90.0:
-
-
-                 temp_angle      = self.conv_beta
-                 self.conv_beta  = self.conv_gamma
-                 self.conv_gamma = temp_angle
-                 temp_len        = self.conv_b
-                 self.conv_b     = self.conv_c
-                 self.conv_c     = temp_len
-
-            elif numpy.around(self.conv_alpha,decimals=3)!=90.0:
-
-
-                 temp_angle      = self.conv_alpha
-                 self.conv_alpha = self.conv_gamma
-                 self.conv_gamma = temp_angle
-                 temp_len        = self.conv_a
-                 self.conv_a     = self.conv_c
-                 self.conv_c     = temp_len
-
-
-
         conv_len = self.axes_flip.T.dot(numpy.array([self.conv_a,self.conv_b,self.conv_c,]).T).tolist()
 #        print self.conv_a,self.conv_b,self.conv_c
 #        print self.axes_flip
 #        self.conv_a,self.conv_b,self.conv_c = numpy.abs(conv_len)
 
-        self.orig_pos  -= self.origin
+#        self.orig_pos  -= self.origin
         trans = self.iso_basis.dot(numpy.linalg.inv(self.qe_basis))
         self.qe_pos = (self.orig_pos.dot(trans))
         
         
 
-
-        # if self.ibrav==12 or self.ibrav==13:            
-        #     if numpy.around(self.conv_beta,decimals=3)!=90.0:
-        #         self.qe_pos  = self.qe_pos[:,[0,2,1]]
-
-        #     elif numpy.around(self.conv_alpha,decimals=3)!=90.0:
-        #         self.qe_pos   = self.qe_pos[:,[2,1,0]]
 
 
             
@@ -438,10 +386,10 @@ class isotropy():
 
         elif self.sgn in [143,144,145,147,149,150,151,152,153,154,
                      156,157,158,159,162,163,164,165,]:
-            return 4
+            return 5
 
         elif self.sgn in [146,148,155,160,161,166,167]:
-            return 5
+            return 4
                      
         elif self.sgn in [75,76,77,78,81,83,84,85,86,89,91,92,93,94,
                      95,96,99,100,101,102,103,104,105,106,111,112,
@@ -487,26 +435,10 @@ class isotropy():
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
 
-        ############################################################
-        ############################################################
-        def process_shift(symops):
-            re_shift = re.compile('[+-]*\d\/\d')
-            addition = re_shift.findall(symops)[0].strip(' ')
-            sign=1.0
-            try:
-                minus = addition.index('-')
-                sign=-1.0
-            except:
-                pass
-            numer=float(addition[addition.index('/')-1])
-            denom=float(addition[addition.index('/')+1])
 
-            
-            return sign*numer/denom
-        ############################################################
-        ############################################################
 
-        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=self.conv_alpha,beta=self.conv_beta,gamma=self.conv_gamma,ibrav=self.ibrav,returnString=False)
+
+        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,gamma=90.0,ibrav=self.ibrav,returnString=False)
 
         ins= self.cif.lower()
 
@@ -527,34 +459,8 @@ class isotropy():
         symops=symops_aux
         ident = numpy.identity(3,dtype=numpy.float64)
 
-        operations = numpy.zeros((len(symops),3,3))
-        operations[:,]=ident
-        shift = numpy.zeros((len(symops),3))
 
-
-        for i in range(len(symops)):
-            if 'y' in symops[i][0]:
-                operations[i]=ident[[1,0,2]]
-            if 'z' in symops[i][0]:
-                operations[i]=ident[[2,1,0]]
-            if 'y' in symops[i][2]:
-                operations[i]=ident[[0,2,1]]
-
-            if '-' in symops[i][0]:
-                operations[i][0]*=-1.0
-            if '-' in symops[i][1]:
-                operations[i][1]*=-1.0
-            if '-' in symops[i][2]:
-                operations[i][2]*=-1.0
-
-            if '/' in symops[i][0]:
-                shift[i][0]=process_shift(symops[i][0])
-            if '/' in symops[i][1]:
-                shift[i][1]=process_shift(symops[i][1])
-            if '/' in symops[i][2]:
-                shift[i][2]=process_shift(symops[i][2])
-
-
+        shift,operations = AFLOWpi.prep._process_cif_sym(symops)
         re_atom_pos=re.compile(r'(_atom_site_label.*\n(?:(?:[a-z_\s])*\n))((?:.*\n)*)')
         atom_pos=re_atom_pos.findall(ins)[0]
 
@@ -581,23 +487,42 @@ class isotropy():
             labels.append(positions[i][spec_lab].strip('0123456789').title())
 
 
+
+#
+
+
+
         labels = labels*len(operations)
         all_eq_pos=numpy.zeros((pos_array.shape[0]*operations.shape[0],3))
 
         for i in xrange(operations.shape[0]):
-            pos_copy=numpy.copy(pos_array)
-            temp_pos   = pos_copy.dot(operations[i])
+            temp_pos=numpy.copy(pos_array)
+            temp_pos   = temp_pos.dot(operations[i])
 
             temp_pos[:,0]+=shift[i][0]
             temp_pos[:,1]+=shift[i][1]
             temp_pos[:,2]+=shift[i][2]
+
+
             all_eq_pos[i*pos_array.shape[0]:(i+1)*pos_array.shape[0]]=temp_pos
 
-            
+#$        all_eq_pos-=self.origin            
         all_eq_pos%=1.0
 
 
-        all_eq_pos=(numpy.linalg.inv(convert.getA()).dot(all_eq_pos.T)).T%1.0
+
+
+        if self.ibrav in [12,13]:
+            if numpy.isclose(self.conv_beta,self.conv_gamma):
+                all_eq_pos=all_eq_pos[:,[1,2,0]]
+
+            if numpy.isclose(self.conv_alpha,self.conv_gamma):
+                all_eq_pos=all_eq_pos[:,[2,0,1]]
+
+            print numpy.linalg.inv(convert.getA())
+
+
+
 
         b = numpy.ascontiguousarray( all_eq_pos).view(numpy.dtype((numpy.void,  all_eq_pos.dtype.itemsize * all_eq_pos.shape[1])))
         _, idx = numpy.unique(b, return_index=True)
@@ -606,9 +531,56 @@ class isotropy():
         labels_arr=labels_arr[idx]
         all_eq_pos=all_eq_pos[idx]
 
+
+        if self.ibrav==5:
+
+            convert=numpy.identity(3)
+
+#            beta  = numpy.sqrt((3.0+(self.conv_c/self.conv_a)**2.0))
+#            rho_a = beta*self.conv_a/3.0
+#            alpha = 2.0*numpy.arcsin(3.0/(2.0*beta))
+
+            convert=self.conv_a*numpy.matrix([[1.0,-1.0*numpy.sqrt(3), 0.0],
+                                              [1.0, 1.0*numpy.sqrt(3), 0.0],
+                                              [0.0, 0.0           , 2.0*self.conv_c/self.conv_a],])/2.0
+
+
+            convert=numpy.matrix([[1.0,-1.0*numpy.sqrt(3), 0.0],
+                                  [1.0, 1.0*numpy.sqrt(3), 0.0],
+                                  [0.0, 0.0           , 2.0],])/2.0
+
+
+
+            AH = 1.0#
+            CH = 1.0*self.conv_c/self.conv_a
+            convert=AH*numpy.matrix([[ 0.0       , AH*numpy.sqrt(3)/1.0, CH],
+                                     [ 3.0*AH/2.0,-AH*numpy.sqrt(3)/2.0, CH],
+                                     [-3.0*AH/2.0,-AH*numpy.sqrt(3)/2.0, CH],])/3.0
+            
+#            convert=numpy.linalg.inv(convert)
+
+
+#        all_eq_pos = numpy.around(all_eq_pos,decimals=10)
+
+        try:
+            all_eq_pos=(numpy.linalg.inv(convert.getA()).dot(all_eq_pos.T)).T%1.0
+        except:
+            all_eq_pos=(numpy.linalg.inv(convert).dot(all_eq_pos.T)).T%1.0
+
+        b = numpy.ascontiguousarray( all_eq_pos).view(numpy.dtype((numpy.void,  all_eq_pos.dtype.itemsize * all_eq_pos.shape[1])))
+        _, idx = numpy.unique(b, return_index=True)
+
+        labels_arr=labels_arr[idx]
+        all_eq_pos=all_eq_pos[idx]
+
         spec_sort = numpy.argsort(labels_arr)
         labels_arr=labels_arr[spec_sort]
         all_eq_pos=all_eq_pos[spec_sort]
+
+
+
+
+
 
 
 
@@ -628,7 +600,42 @@ class isotropy():
         input_dict['&system']['cosAC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
         input_dict['&system']['cosBC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
 
+        if self.ibrav in [4]:
+                del input_dict['&system']['cosBC']
+                del input_dict['&system']['cosAC']
+                del input_dict['&system']['cosAB']
+        if self.ibrav in [12,13]:
+            if numpy.isclose(self.conv_alpha,self.conv_gamma):
+                input_dict['&system']['A']=self.conv_b
+                input_dict['&system']['B']=self.conv_c
+                input_dict['&system']['C']=self.conv_a
+                input_dict['&system']['cosBC']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
+                input_dict['&system']['cosAC']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
+                input_dict['&system']['cosAB']=numpy.cos(self.conv_beta/180.0*numpy.pi)
+            if numpy.isclose(self.conv_beta,self.conv_gamma):
+                input_dict['&system']['A']=self.conv_c
+                input_dict['&system']['B']=self.conv_a
+                input_dict['&system']['C']=self.conv_b
+                input_dict['&system']['cosBC']=numpy.cos(self.conv_beta/180.0*numpy.pi)
+                input_dict['&system']['cosAC']=numpy.cos(self.conv_gamma/180.0*numpy.pi)
+                input_dict['&system']['cosAB']=numpy.cos(self.conv_alpha/180.0*numpy.pi)
 
+    
+
+
+        if self.ibrav==5:
+                    input_dict['&system']['ibrav']=self.ibrav
+                    beta  = numpy.sqrt((3.0+(self.conv_c/self.conv_a)**2.0))
+                    rho_a = beta*self.conv_a/3.0
+                    alpha = 2.0*numpy.arcsin(3.0/(2.0*beta))
+                    input_dict['&system']['A']=rho_a
+                    input_dict['&system']['B']=rho_a
+                    input_dict['&system']['C']=rho_a
+                    input_dict['&system']['cosAB']=numpy.cos(alpha)
+                    input_dict['&system']['cosAC']=numpy.cos(alpha)
+                    input_dict['&system']['cosBC']=numpy.cos(alpha)
+        
+                
         try:
             del input_dict['CELL_PARAMETERS']
         except:
@@ -636,10 +643,12 @@ class isotropy():
 
 
 
-
         input_dict['ATOMIC_POSITIONS']['__content__']=atm_pos_str
-
+        
         qe_convention_input=AFLOWpi.retr._joinInput(input_dict)
+#        if self.ibrav==5:
+#            print qe_convention_input
+            
 
         qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
         return qe_convention_input

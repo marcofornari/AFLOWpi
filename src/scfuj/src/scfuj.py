@@ -613,7 +613,7 @@ def projwfc(oneCalc,ID=None,paw=False):
   filpdos='./%s_acbn0'
   outdir='%s'
   lwrite_overlaps=.TRUE.
-  lbinary_data  = .TRUE.
+  lbinary_data  = .FALSE.
   %s
 /
 """%(prefix,ID,temp_dir,paw_str,)
@@ -811,10 +811,14 @@ def chkSpinCalc(oneCalc,ID=None):
 		--oneCalc : dictionary of a single calculation.
 
 	'''
+        si=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         try:
-            nspin = int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nspin'])
+            nspin = int(si['&system']['nspin'])
             return nspin
         except Exception,e:
+        #    if "noncolin" in si['&system'].keys():
+        #        if "magnetization" in " ".join(si['&system'].keys()):
+        #            return 2
             return 1
 
         oneCalcID = ID#oneCalc['_AFLOWPI_PREFIX_'][1:]

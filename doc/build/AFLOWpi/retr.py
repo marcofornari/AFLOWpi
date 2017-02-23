@@ -1,3 +1,1099 @@
+import AFLOWpi
+import re
+import numpy
+import scipy.integrate
+import collections
+import os
+
+
+def _increase_celldm1(oneCalc,ID,amount):
+    if ID in oneCalc['prev']:
+        return oneCalc,ID
+
+    #change prefix in input file so it doesn't conflict with later calculations after thermal
+
+    oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','prefix','"%s_vol"'%oneCalc['_AFLOWPI_PREFIX_'])
+    oneCalc["_AFLOWPI_PREFIX_"]=oneCalc["_AFLOWPI_PREFIX_"]+"_vol"
+
+    inp_file = AFLOWpi.retr._getInputFileString(oneCalc,ID)
+    celldm1 = float(AFLOWpi.retr._splitInput(inp_file)['&system']['celldm(1)'])
+
+    new_celldm1=celldm1*amount
+
+
+    oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&system','celldm(1)',new_celldm1)
+
+    return oneCalc,ID
+
+
+def _get_gruneisen(oneCalc,ID,band=True):
+    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+
+    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax')
+
+    norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    expn_vol = AFLOWpi.retr.getCellVolume(oneCalc,expn_vol_ID,string=False,conventional=False)
+
+    bohr2meter=5.29177e-11
+    norm_vol*=bohr2meter**3.0
+    expn_vol*=bohr2meter**3.0
+
+
+#    print expn_vol/norm_vol
+#    print 
+ 
+    if band==True:
+       print band
+       raise SystemExit
+       extension='phBAND.gp'
+    else:
+#        extension=''
+        extension='eig.ap'
+
+    norm_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,norm_ID,extension=extension)
+    expn_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,expn_ID,extension=extension)
+
+
+
+    grun=[]
+    q_point=[]
+    omega=[]
+
+    for i in range(len(norm_freq)):
+        if band:
+            q_point.append(q_point_old[i])
+        for j in range(len(norm_freq[i])):
+            try:
+                    deriv  = (expn_freq[i][j]-norm_freq[i][j])/(expn_vol-norm_vol)
+                    deriv *= -1.0*norm_vol/norm_freq[i][j]
+                    if not numpy.isnan(deriv) and not numpy.isinf(deriv):
+                        try:
+                            grun[i].append(deriv)
+                        except Exception,e:
+                            grun.append([])
+                            grun[i].append(deriv)
+                        try:
+                            omega[i].append(norm_freq[i][j])
+                        except Exception,e:
+                            omega.append([])
+                            omega[i].append(norm_freq[i][j])
+                    else:
+
+                        try:
+                            grun[i].append(0.0)
+                        except Exception,e:
+                            grun.append([])
+                            grun[i].append(0.0)
+                        try:
+                            omega[i].append(norm_freq[i][j])
+                        except Exception,e:
+                            omega.append([])
+                            omega[i].append(norm_freq[i][j])
+                        continue
+            except Exception,e:
+                AFLOWpi.run._fancy_error_log(e)
+
+#                print e
+
+
+#    print len(grun)
+#    print len(q_point_old)
+#    print len(q_point)
+
+
+#   raise SystemExit
+    if band:
+        grun_data_str='%s          %s                  %s                 %s'%('q','TA',"TA'",'LA')
+        for i in range(len(grun)):
+            try:
+                if len(grun[i]) == len(grun[12]):
+                    grun_data_str+='\n%10.8f '%q_point[i]
+
+                    for j in range(len(grun[i])):
+                        grun_data_str+='%16.16f '%grun[i][j]
+            except:
+                continue
+    else:
+        grun_data_str=""
+        for i in range(len(grun)):
+            try:
+                for j in range(len(grun[i])):
+#                    print grun[i][j]
+#                    print grun[i][j]**2.0
+                    grun_data_str+='%16.16f %16.16f\n'%(omega[i][j],grun[i][j]**2.0)
+            except:
+                continue
+ #   if len(grun)==3:
+ #       pass
+    # else:
+    #     for i in range(len(grun[0][3:-1])):
+    #         grun_data_str+='Optical             '
+    #     for i in range(len(q_point)):
+    #         grun_data_str+='\n%10.8f %16.16f %16.16f  %16.16f'%(q_point[i],grun[0][i],grun[1][i],grun[2][i])
+    #         for j in range(len(grun[i][3:-1])):
+    #             grun_data_str+='%16.16f'%(grun[i][j])
+        
+
+    if band:
+        grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phGRUN.gp'%ID)
+    else:
+        grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.gp'%ID)
+
+    with open(grun_file_name,'w') as gpfo:
+        gpfo.write(grun_data_str)
+    
+    av_TA       = sum(grun[0])/len(grun[0])
+    av_TA_prime = sum(grun[1])/len(grun[1])
+    av_LA      = sum(grun[2])/len(grun[2])
+        
+    return [av_TA,av_TA_prime,av_LA]
+        
+    
+            
+
+#    frequency = 
+#    delta_vol_frequency= 
+def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
+
+    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
+
+
+    #data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    data = []
+
+    with open(data_file_name,'r') as fo:
+        fs=fo.read()
+    fs=fs.split('\n')
+    labels=fs[0]
+    fs=fs[1:]
+    for line in fs:
+        if len(line.strip())!=0:
+            dat_temp = map(float,line.split())
+            temp_one = [dat_temp[3]]
+            temp_one.extend(dat_temp[4:])
+            data.append(temp_one)
+    data = numpy.asarray(data)
+#    print data
+
+    ret_dat=numpy.zeros(data.shape)
+    print ret_dat
+    ret_dat[:,0]=data[:,0]
+    for i in range(1,ret_dat.shape[1]):
+        ret_dat[:,i] = data[:,0]*data[:,i]
+    print ret_dat
+    return ret_dat,ret_dat[1]
+
+
+def _get_ph_band_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
+
+    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
+
+
+    #data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    data = []
+
+    with open(data_file_name,'r') as fo:
+        fs=fo.read()
+    fs=fs.split('\n')
+    labels=fs[0]
+    fs=fs[1:]
+    for line in fs:
+        if len(line.strip())!=0:
+            data.append(map(float,line.split()))
+    data = numpy.asarray(data)
+    print data
+    return data[:,1:],data[:,0]
+
+
+
+    
+
+def _get_gamma_velocity(freq,q):
+    return (freq[0]-freq[10])/(q[0]-q[10])
+
+def _get_debye_freq(oneCalc,ID):
+
+
+    path_str = AFLOWpi.run._phonon_band_path(oneCalc,ID)
+
+    path_pts_list = [int(i.split()[1]) for i in path_str.split('\n')[1:] if len(i.strip())!=0]
+#    print path_pts_list
+    freq,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
+    TA       = freq[:,0]
+    TA_prime = freq[:,1]
+    LA       = freq[:,2]
+#    q_vals   = freq[-1]
+
+    total=0
+#    for i in range(len(path_pts_list)):
+    path_index= []
+    for i in range(len(path_pts_list)):
+        if path_pts_list[i]==0:
+            continue
+        if path_pts_list[i+1]==0:
+            path_index.append([sum(path_pts_list[:i]),sum(path_pts_list[:i+1])+1])
+        else:
+            path_index.append([sum(path_pts_list[:i]),sum(path_pts_list[:i+1])])
+    
+
+
+    
+#    index = for i in path_pts_list
+#    print path_index
+#    print TA
+    average_freq_TA       = numpy.average([max(TA[i[0]:i[1]]) for i in path_index])
+    average_freq_TA_prime = numpy.average([max(TA_prime[i[0]:i[1]]) for i in path_index])
+    average_freq_LA       = numpy.average([max(LA[i[0]:i[1]]) for i in path_index])
+    return average_freq_TA,average_freq_TA_prime,average_freq_LA
+
+def _get_debye_temp(oneCalc,ID):
+    #get the frequencies for TA, TA', and LA
+    frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
+
+    #q vals so we can find v_debye near gamma
+#    q_vals = frequencies[-1]
+
+    
+#    frequencies[0] = [i*0.0299792458 for i in frequencies[0]]
+#    frequencies[1] = [i*0.0299792458 for i in frequencies[1]]
+#    frequencies[2] = [i*0.0299792458 for i in frequencies[2]]
+    #get volume of original cell
+    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+    cell_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    #convert to meters
+    bohr2meter=5.29177e-11
+    V=cell_vol*bohr2meter**3.0
+
+    #get num atoms in cell
+    N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
+
+    #some constants
+    h_bar=1.0545718*10**-34 
+    k_b=1.38064852*10**-23
+
+    #get v_debye for each branch
+    v_i = AFLOWpi.retr._get_debye_freq(oneCalc,ID)
+    v_s_TA       = v_i[0]
+    v_s_TA_prime = v_i[1]
+    v_s_LA       = v_i[2]
+
+
+    #calculate debye temperature for each branch
+    wo_v           = 2.0*numpy.pi*h_bar/k_b#*(6.0*numpy.pi**2.0*N/V)**(1.0/3.0)
+    debye_TA       = wo_v*v_s_TA
+    debye_TA_prime = wo_v*v_s_TA_prime
+    debye_LA       = wo_v*v_s_LA
+
+
+#    print debye_TA
+#    print debye_TA_prime
+#    print debye_LA
+
+    return debye_TA,debye_TA_prime,debye_LA
+
+
+
+def _therm_pp(oneCalc,ID):
+#    grun_i  = AFLOWpi.retr._get_gruneisen(oneCalc,ID)
+    grun_i=[0.0,0.0,0.0]
+    AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
+
+    theta_i = AFLOWpi.retr._get_debye_temp(oneCalc,ID)
+#    print theta_i
+    #get volume of original cell
+    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+    cell_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    #convert to meters
+    bohr2meter=5.29177e-11
+    V=cell_vol*bohr2meter**3.0
+
+
+    #get num atoms in cell
+    N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
+
+
+    cell_mass = AFLOWpi.retr._get_cell_mass(oneCalc,ID)
+    
+    #convert amu to kg
+    M=cell_mass*1.66054e-27
+    Mass=M/float(N)
+    Vol=V/float(N)
+
+    #get the frequencies for TA, TA', and LA
+    frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
+
+    v_i=AFLOWpi.retr._get_debye_freq(oneCalc,ID)
+
+    print Vol
+    print Mass
+    print grun_i
+    print v_i
+    print theta_i
+
+
+    therm_cond_data_str="T       Total        TA           TA'          La"
+    TEMP = numpy.linspace(0.0,2000.0,400.0)
+
+    Vol   = 375.60264000000006 # volume of one cell in angstrom^3                                                      
+    Vol  *= 10.0**(-30.0) # convert angstrom to m^3                                                                    
+    Vol  /= 8.0 # do volume per atom                                                                                   
+
+    Mass   = 63.5463*3.0  # 3 Cu                                                                                       
+    Mass += 78.9718*4.0  # 4 Se                                                                                        
+    Mass += 121.760*1.0  # 1 Antimony                                                                                  
+    Mass *= 1.66054e-27 # convert amu to kg                                                                            
+    Mass /= 8.0        # average mass per atom      
+
+    v_i     = [1485.0, 1699.0, 3643.0] #TA, TA', LA                                                                         
+    theta_i = [60.0,   65.0,   78.0  ] #TA, TA', LA                                                                      
+    grun_i  = [1.27,   1.14,   1.26, ] #TA, TA', LA     
+
+
+    for T in TEMP:
+        total,TA_cont,TA_prime_cont,LA_cont = AFLOWpi.retr._do_therm(v_i,theta_i,grun_i,Mass,Vol,T)
+        
+        therm_cond_data_str+='\n%7.1f %12.3f %12.3f %12.3f %12.3f'%(T,total,TA_cont,TA_prime_cont,LA_cont)
+
+    therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_thermal_cond.dat'%ID)
+    with open(therm_file_name,'w') as tcfo:
+        tcfo.write(therm_cond_data_str) 
+
+
+def _test_therm_pp():
+
+    therm_cond_data_str="T       Total        TA           TA'          La"
+#   TEMP = numpy.linspace(1.0,2001.0,2000.0)
+    TEMP = [80.0,
+            87.3333333333333,
+            94.6666666666667 ,
+            102,
+            109.333333333333,
+            116.666666666667,
+            124,
+            131.333333333333,
+            138.666666666667,
+            146,
+            153.333333333333,
+            160.666666666667,
+            168,
+            175.333333333333,
+            182.666666666667,
+            190,
+            197.333333333333,
+            204.666666666667,
+            212,
+            219.333333333333,
+            226.666666666667,
+            234,
+            241.333333333333,
+            248.666666666667,
+            256,
+            263.333333333333,
+            270.666666666667,
+            278,
+            285.333333333333,
+            292.666666666667,
+            300,
+            ]
+
+    Vol   = 375.60264000000006 # volume of one cell in angstrom^3                                                      
+    Vol  *= 10.0**(-30.0) # convert angstrom to m^3                                                                    
+    Vol  /= 8.0 # do volume per atom                                                                                   
+
+    Mass   = 63.5463*3.0  # 3 Cu                                                                                       
+    Mass += 78.9718*4.0  # 4 Se                                                                                        
+    Mass += 121.760*1.0  # 1 Antimony                                                                                  
+    Mass *= 1.66054e-27 # convert amu to kg                                                                            
+    Mass /= 8.0        # average mass per atom      
+
+    v_i     = [1485.0, 1699.0, 3643.0] #TA, TA', LA                                                                         
+    theta_i = [60.0,   65.0,   78.0  ] #TA, TA', LA                                                                      
+    grun_i  = [1.27,   1.14,   1.26, ] #TA, TA', LA     
+
+
+    for T in TEMP:
+        total,TA_cont,TA_prime_cont,LA_cont = AFLOWpi.retr._do_therm(v_i,theta_i,grun_i,Mass,Vol,T)
+        
+        therm_cond_data_str+='\n%7.1f %12.3f %12.3f %12.3f %12.3f'%(T,total,TA_cont,TA_prime_cont,LA_cont)
+
+    therm_file_name = os.path.join('./','test_thermal_cond.dat')
+    with open(therm_file_name,'w') as tcfo:
+        tcfo.write(therm_cond_data_str) 
+
+
+######################################################################################################################                                                                                               
+######################################################################################################################                                                                                               
+
+def _do_therm(v_i,theta_i,grun_i,Mass,Vol,T):
+    ######################################################################################################################
+    def calc_tau_N_TA(x,grun,velocity,vol,mass,T):
+        #Relax Temp Scattering TA'                                                                                                                                          
+        h_bar = numpy.float64(1.0545718*(10.0**(-34.0))) # hbar
+        k_b   = numpy.float64(1.38064852*(10.0**(-23.0))) #boltzmann                                               
+
+        one_over_tau_N_TA  = k_b**4.0
+        one_over_tau_N_TA *= grun**2.0
+        one_over_tau_N_TA *= vol
+        one_over_tau_N_TA /= mass
+        one_over_tau_N_TA /= h_bar**3.0
+        one_over_tau_N_TA /= velocity**5.0
+
+        one_over_tau_N_TA *= k_b/h_bar
+        one_over_tau_N_TA *= x
+        one_over_tau_N_TA *= T**5.0
+
+        tau_N_TA  = 1.0/one_over_tau_N_TA
+
+        return tau_N_TA
+    ######################################################################################################################
+    def calc_tau_N_LA(x,grun,velocity,vol,mass,T):
+        #Relax Temp Scattering LA                                                                                                         
+        h_bar = numpy.float64(1.0545718*(10.0**(-34.0))) # hbar
+        k_b   = numpy.float64(1.38064852*(10.0**(-23.0))) #boltzmann                                                                                                                                                                                                      
+        one_over_tau_N_LA  = k_b**3.0
+        one_over_tau_N_LA *= grun**2.0
+        one_over_tau_N_LA *= vol
+        one_over_tau_N_LA /= mass
+        one_over_tau_N_LA /= h_bar**2.0
+        one_over_tau_N_LA /= velocity**5.0
+
+        one_over_tau_N_LA *= (k_b/h_bar)**2.0
+        one_over_tau_N_LA *= x**2.0
+        one_over_tau_N_LA *= T**5.0
+
+        tau_N_LA  = 1.0/one_over_tau_N_LA
+
+        return tau_N_LA
+    ######################################################################################################################                                                                                   
+    def calc_tau_U(x,grun,velocity,debye_temp,mass,T):
+        #Relax Temp Umklamp LA                                                                                     
+        h_bar = numpy.float64(1.0545718*(10.0**(-34.0))) # hbar
+        k_b   = numpy.float64(1.38064852*(10.0**(-23.0))) #boltzmann                                                                                            
+
+        one_over_tau_U  = h_bar
+        one_over_tau_U *= grun**2.0
+        one_over_tau_U /= mass
+        one_over_tau_U /= velocity**2.0
+        one_over_tau_U /= debye_temp
+
+        one_over_tau_U *= (k_b/h_bar)**2.0
+        one_over_tau_U *= x**2.0
+        one_over_tau_U *= T**3.0
+
+        one_over_tau_U *= numpy.exp(-1.0*debye_temp/(3.0*T))
+
+        tau_U = 1.0/one_over_tau_U
+
+        return tau_U
+    ######################################################################################################################
+    def first_int(x,grun,velocity,debye_temp,vol,mass,T,trans):
+        #do first integral in DB model
+        tau_U=calc_tau_U(x,grun,velocity,debye_temp,mass,T)
+        if trans:
+            tau_N=calc_tau_N_TA(x,grun,velocity,vol,mass,T)
+        else:
+            tau_N=calc_tau_N_LA(x,grun,velocity,vol,mass,T)
+
+        Tc = 1.0/(1.0/tau_U + 1.0/tau_N)
+
+        sol  = Tc
+        sol *= x**4.0
+        sol *= numpy.exp(x)/(numpy.exp(x)-1.0)**2.0
+
+
+        return sol
+    ######################################################################################################################      
+    def second_int(x,grun,velocity,debye_temp,vol,mass,T,trans):
+        #do second integral in DB model
+        tau_U=calc_tau_U(x,grun,velocity,debye_temp,mass,T)
+        if trans:
+            tau_N=calc_tau_N_TA(x,grun,velocity,vol,mass,T)
+        else:
+            tau_N=calc_tau_N_LA(x,grun,velocity,vol,mass,T)
+
+        Tc = 1.0/(1.0/tau_U + 1.0/tau_N)
+
+        #Tc/tau_N
+        Tc_mod = tau_U/(tau_U + tau_N)
+
+
+        sol  = Tc_mod
+        sol *= x**4.0
+        sol *= numpy.exp(x)/(numpy.exp(x)-1.0)**2.0
+
+
+        return sol
+    ######################################################################################################################
+    def third_int(x,grun,velocity,debye_temp,vol,mass,T,trans):
+        #do third integral in DB model
+        tau_U=calc_tau_U(x,grun,velocity,debye_temp,mass,T)
+        if trans:
+            tau_N=calc_tau_N_TA(x,grun,velocity,vol,mass,T)
+        else:
+            tau_N=calc_tau_N_LA(x,grun,velocity,vol,mass,T)
+
+
+        #Tc/(tau_U*tau_N)
+        Tc_mod = 1.0/(tau_U + tau_N)
+
+        sol  = Tc_mod
+        sol *= x**4.0
+        sol *= numpy.exp(x)/(numpy.exp(x)-1.0)**2.0
+
+        return sol
+
+
+
+    ######################################################################################################################
+    #define constants
+    h_bar = numpy.float64(1.0545718*(10.0**(-34.0))) # hbar
+    k_b   = numpy.float64(1.38064852*(10.0**(-23.0))) #boltzmann  
+
+    #define a constant from other constants
+    C_PHON_CONST  = 1.0/3.0
+    C_PHON_CONST *= k_b**4.0
+    C_PHON_CONST *= T**3.0
+    C_PHON_CONST /= 2.0*numpy.pi**2.0
+    C_PHON_CONST /= h_bar**3.0
+
+    #speed of sound for each accoustic branch
+    vel_TA    = v_i[0]
+    vel_TA1   = v_i[1]
+    vel_LA    = v_i[2]
+    #scaling constants for each accoustic branch
+    C_TA      = C_PHON_CONST/vel_TA
+    C_T1      = C_PHON_CONST/vel_TA1
+    C_LA      = C_PHON_CONST/vel_LA
+    #debye temp for each accoustic branch
+    theta_TA  = theta_i[0]
+    theta_TA1 = theta_i[1]
+    theta_LA  = theta_i[2]
+    #gruneisen parameter for each accoustic branch
+    grun_TA   = grun_i[0]
+    grun_TA1  = grun_i[1]
+    grun_LA   = grun_i[2]
+    #upper limit of integration for a given T for the integrals for each accoustic branch
+    max_TA    = theta_TA/T
+    max_TA1   = theta_TA1/T
+    max_LA    = theta_LA/T
+    print max_TA,max_TA1,max_LA
+    print 
+    print 
+    
+    ##################################################################################
+    #calculate the three integrals for TA phonon and find lattice k for TA
+    TA_1 =  scipy.integrate.quad(first_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    TA_2 =  scipy.integrate.quad(second_int,0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    TA_3 =  scipy.integrate.quad(third_int, 0.00,max_TA,(grun_TA,vel_TA,theta_TA,Vol,Mass,T,True),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+
+    klattice_TA  = C_TA * (TA_1 + TA_2**2.0/TA_3)           
+    #calculate the three integrals for TA' phonon and find lattice k for TA'
+    T1_1 = scipy.integrate.quad(first_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
+    T1_2 = scipy.integrate.quad(second_int,0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
+    T1_3 = scipy.integrate.quad(third_int, 0.00,max_TA1,(grun_TA1,vel_TA1,theta_TA1,Vol,Mass,T,True),
+                                epsabs=0, epsrel=1.49e-6)[0]
+
+    klattice_T1  = C_T1 * (T1_1 + T1_2**2.0/T1_3)           
+    #calculate the three integrals for LA phonon and find lattice k for LA
+    LA_1 =  scipy.integrate.quad(first_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    LA_2 =  scipy.integrate.quad(second_int,0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+    LA_3 =  scipy.integrate.quad(third_int, 0.00,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),
+                                 epsabs=0, epsrel=1.49e-6)[0]
+
+#   LA_3 =  scipy.integrate.quad(third_int, 0.001,max_LA,(grun_LA,vel_LA,theta_LA,Vol,Mass,T,False),epsabs=1.49e-20, epsrel=1.49e-20)[
+#   print LA_3.message
+#   LA_3 = LA_3[0]
+
+
+    klattice_LA  =  C_LA * (LA_1 + LA_2**2.0/LA_3)
+    ##################################################################################                                           
+    #sum over all contibutions for lattice k at Temp T 
+    klattice_total  = 0.0
+    klattice_total += klattice_TA
+    klattice_total += klattice_T1
+    klattice_total += klattice_LA
+
+    return klattice_total,klattice_TA,klattice_T1,klattice_LA
+
+#def  _get_long_phon(oneCalc,ID,optical=True):
+
+#     band_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phBAND.gp'%ID)
+
+#     with open(band_file_name,'r') as bdfo:
+#         bdfs = bdfo.read()
+
+
+
+#     gg=re.findall('^\s*0.00.*\n',bdfs,re.M)
+#     split_at_gamma = gg[0].split()[1:]
+
+#     long_phon_ind = [i+1 for i in range(len(split_at_gamma)) if abs(float(split_at_gamma[i]))==0.00]
+# #    print long_phon_ind 
+# #    print long_phon_ind 
+# #    print long_phon_ind 
+
+#     phon=[list(),list(),list()]
+#     q_vals=[]
+#     opt=[[]]
+# #     for i in bdfs.split('\n'):
+# # #        print i
+
+# #         per_q = [float(j) for j in i.split() ]
+# #         try:
+# # #            phon[0].append(per_q[long_phon_ind[0]])
+# # #            phon[1].append(per_q[long_phon_ind[1]])
+# # #            phon[2].append(per_q[long_phon_ind[2]]) 
+# #             q_vals.append(per_q[0])
+# #             phon[0].append(per_q[1])
+# #             phon[1].append(per_q[2])
+# #             phon[2].append(per_q[3]) 
+
+
+# #             if optical==True:
+# #                 for k in range(len(per_q))[4:]:
+# #                     try:
+# # #                        print k-4
+# #                         opt[k-4].append(per_q[k])
+# #                     except Exception,e:
+# #                         opt[k-4]=[]
+# #                         opt[k-4]=[per_q[k]]
+
+# #         except:
+# #             pass
+
+
+# #     v0 = _get_gamma_velocity(phon[0],q_vals)
+# #     v1 = _get_gamma_velocity(phon[1],q_vals)
+# #     v2 = _get_gamma_velocity(phon[2],q_vals)
+# # #    grad_first_phon  = numpy.gradient(phon[0])
+# # #    grad_second_phon  =numpy.gradient(phon[1])
+# # #    grad_third_phon  = numpy.gradient(phon[2])
+
+
+# #   #  sums= {0:sum(grad_first_phon[:30]),1:sum(grad_second_phon[:30]),2:sum(grad_third_phon[:30]),}
+# #     sums = {0:v0,1:v1,2:v2}
+# # #    print grad_first_phon[:50]
+# # #    print grad_second_phon[:50]
+# # #    print grad_third_phon[:50]
+
+
+# #     sorted_ind = [i[0] for i in  sorted(sums.items())]
+
+# #     #convert cm^-1 to rad/s
+#      sf = 0.0299792458*10.0**12
+# # #    print sf
+# # #    print sf
+# # #    print sf
+# #     #scale frequencies to meters
+#      phon[sorted_ind[0]]=[i*sf for i in phon[sorted_ind[0]]]
+#      phon[sorted_ind[1]]=[i*sf for i in phon[sorted_ind[1]]]
+#      phon[sorted_ind[2]]=[i*sf for i in phon[sorted_ind[2]]]
+# # #    print q_vals
+# # #    return [phon[0],phon[1],phon[2],q_vals]
+# #     if optical==True:
+# #         ret_list = [phon[sorted_ind[0]],phon[sorted_ind[1]],phon[sorted_ind[2]],]
+# #         ret_list.extend(opt)
+# #         ret_list.append(q_vals)
+# #         return ret_list
+# #     else:
+# #         return [phon[sorted_ind[0]],phon[sorted_ind[1]],phon[sorted_ind[2]],q_vals]
+
+
+import AFLOWpi
+import os
+import numpy
+
+def gap_size(oneCalc,ID):
+    try:
+        bandgap_type=gap_type(oneCalc,ID)
+
+        if bandgap_type not in ['p-type','n-type','insulator']:
+            print 'conductor..no gap'
+            return 0.0
+        elif bandgap_type=='p-type':
+            en,dos=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=[0.1,40.0])
+            start=0.1
+            end=0.1
+            for i in range(len(dos))[:-2]:
+#            for i in range(len(dos)):
+                if dos[i]>0.00001:
+                    end=en[i]
+                    break
+            return end-start
+
+
+        elif bandgap_type=='n-type':
+            en,dos=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=[-40.0,-0.1])
+            start=-0.1
+            end=0.1
+            for i in reversed(range(len(dos))[:-2]):
+#            for i in reversed(range(len(dos))):
+                if dos[i]>0.00001:
+                    end=en[i]
+                    break
+            return numpy.abs(end-start)
+
+
+        elif bandgap_type=='insulator':
+            en,dos_down=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=[-40.0,-0.1])
+            en,dos_up=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=[0.1,40.0])
+            start=-0.1
+            end=0.1
+            for i in reversed(range(len(dos_down))[:-2]):
+                if dos_down[i]>0.00001:
+                    end=en[i]
+                    break
+            for i in range(len(dos_up)[-2]):
+                if dos_down[i]>0.00001:
+                    start=en[i]
+                    break
+
+            return numpy.abs(end-start)
+
+
+
+                       
+    except Exception,e:
+        print e
+        return 0.0
+
+def gap_type(oneCalc,ID):
+    try:
+        dos_range = 0.1
+        range_up=[0.05,dos_range]
+        range_down=[-1.0*dos_range,-0.05]
+        en_above,dos_above=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=range_up)
+        en_below,dos_below=AFLOWpi.retr._get_dos(oneCalc,ID,dos_range=range_down)
+        dos_above_found=False
+        dos_below_found=False
+
+        for i in reversed(range(len(dos_above))[2:]):
+
+            if dos_above[i]>0.0001:
+                dos_above_found=True
+        
+        for i in reversed(range(len(dos_below))[2:]):
+
+            if dos_below[i]>0.0001:
+                dos_below_found=True
+
+        if dos_above_found==True and dos_below_found==True:
+            return 'conductor'
+        elif dos_above_found==False and dos_below_found==True:
+            return 'p-type'
+        elif dos_above_found==True and dos_below_found==False:
+            return 'n-type'
+        elif dos_above_found==False and dos_below_found==False:
+            return 'insulator'
+    except:
+        return 'None'
+
+
+def _get_dos(oneCalc,ID,LSDA=False,dos_range=[-0.1,0,1],normalize=True):
+    try:
+        dos_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='dos',last=True)
+
+	'''extracts HOMO from nscf calculation output file as input to the plotting'''
+
+	try:
+		Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
+		if type(Efermi)!=type(0.5):
+			LSDA=True
+			
+	except:
+		Efermi=0.0
+	subdir=oneCalc['_AFLOWPI_FOLDER_']
+
+	"""get the path to the subdirectory of the calc that you are making plots for"""
+
+
+	'''name of file of the DOS plots is dosBandPlot_<_AFLOWPI_PREFIX_>'''
+	fileplot = os.path.join(subdir,'DOS_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),oneCalc['_AFLOWPI_PREFIX_']))
+
+	#to set figure size and default fonts
+
+
+	"""get the path to the subdirectory of the calc that you are making plots for"""
+        filedos = os.path.join(subdir,'%s_dos.dat'%dos_ID)
+        
+	try:
+		data = open(filedos,'r').readlines()
+	except Exception:
+            pass
+
+	en = []
+	enup = []
+	endown = []
+	dos = []
+	dosdw = []
+        scaling_dosup=[]
+        scaling_downdw=[]
+        scaling_dos=[]
+	for i in range(1, len(data)):      #append DOS data to en,dos,dosw lists
+		try:
+			if LSDA==True:
+                            val_up   = float(data[i].split()[0])-Efermi[0]
+                            val_down = float(data[i].split()[0])-Efermi[1]
+ #                           if val_up < dos_range[1] and valZ_up > dos_range[0]:
+                            enup.append(val_up)
+#                            if val_down <dos_range[1] and val_down > dos_range[0]:
+                            endown.append(val_down)
+				
+			else:
+                            val=float(data[i].split()[0])-Efermi
+
+                        try:
+                            scaling_dosdw.append(-1*float(data[i].split()[2]))
+                            scaling_dosup.append(float(data[i].split()[1]))
+
+                            if val_down <dos_range[1] and val_down > dos_range[0]:
+                                dosdw.append(-1*float(data[i].split()[2]))
+                                en_down.append(val_down) #to shift all the y values with respect to the Fermi level
+                            if val_up <dos_range[1] and val_up > dos_range[0]:
+                                dos.append(float(data[i].split()[1]))
+                                en_up.append(val_up) #to shift all the y values with respect to the Fermi level
+                        except:
+                            scaling_dos.append(float(data[i].split()[1]))
+                            if val > dos_range[0] and val <dos_range[1]:
+                                dos.append(float(data[i].split()[1]))
+                                en.append(val) #to shift all the y values with respect to the Fermi level
+		
+		except Exception, e:
+			pass
+	if LSDA==True:
+		enup  = map(float,enup)
+		endown= map(float,endown)
+
+                floatdosDOWN=map(float,dosdw)
+                floatdos=map(float,dos)
+
+#                renormalize_dw=1.0/sum(scaling_dosdw)
+#                renormalize_up=1.0/sum(scaling_dosup)
+                renormalize_dw=1.0/sum(dosdw)
+                renormalize_up=1.0/sum(dosup)
+
+                array_dosup = numpy.asarray(floatdos)*renormalize_up
+                floatdos=array_dos.tolist()
+
+                array_dosdw = numpy.asarray(floatdosDOWN)*renormalize_dw
+                floatdosDOWN=array_dosdw.tolist()
+
+	else:
+		endos=map(float,en)  #to convert the list x from float to numbers
+#                renormalize=1.0/sum(scaling_dos)
+                renormalize=1.0/sum(dos)                
+                floatdos=map(float,dos)
+                array_dos = numpy.asarray(floatdos)*renormalize
+                floatdos=array_dos.tolist()
+
+	enshift = numpy.array(endos) #to treat the list b as an array?
+
+        
+        if LSDA==True:
+            return enshift,floatdos,floatdosDOWN
+        else:
+            return enshift,floatdos
+
+    except:
+        return None
+
+import numpy
+import AFLOWpi
+import copy
+import decimal
+
+
+def supercell(inputString,numX=1,numY=1,numZ=1):
+    inputString = AFLOWpi.prep._transformInput(inputString)    
+    return AFLOWpi.retr._constructSupercell(inputString,numX=numX,numY=numY,numZ=numZ)
+
+
+
+
+def _expandBoundaries(labels,symMatrix,numX,numY,numZ,beginX=0,beginY=0,beginZ=0):
+    superList=[]
+    try:
+        symMatrix=symMatrix.getA()
+    except:
+        pass
+
+    for entry in range(len(symMatrix)):
+        for x in range(0,numX):
+            first  = (symMatrix[entry][0]+x)/float(abs(numX))
+            second = symMatrix[entry][1]
+            third  = symMatrix[entry][2]
+            superList.append([labels[entry],first,second,third])
+
+    newPos=[x[1:] for x in superList]
+    labels=[x[0] for x in superList]
+    superList=[]
+    #################################################################
+    #################################################################
+    for entry in range(len(newPos)):
+        for y in range(0,numY):
+            first  = newPos[entry][0]
+            second = (newPos[entry][1]+y)/float(abs(numY))
+            third  = newPos[entry][2]
+            superList.append([labels[entry],first,second,third])
+
+    labels=[x[0] for x in superList]
+    newPos=[x[1:] for x in superList]
+    superList=[]
+    #################################################################
+    #################################################################
+    for entry in range(len(newPos)):
+        for z in range(0,numZ):
+            first  = newPos[entry][0]
+            second = newPos[entry][1]
+            third  = (newPos[entry][2]+z)/float(abs(numZ))
+            superList.append([labels[entry],first,second,third])
+
+    labels=[x[0] for x in superList]
+    newPos=[x[1:] for x in superList]
+
+    orig_list=[]
+    orig_atom_ss_index = [(x-1)*numX*numY*numZ for x in range(1,len(symMatrix)+1)]
+
+
+    for i in range(len(orig_atom_ss_index)):
+        
+        popped=superList.pop(orig_atom_ss_index[i])
+        superList.insert(i,popped)
+
+    symMatrix= numpy.array([x[1:] for x in superList])
+    labels = numpy.array([x[0] for x in superList])
+
+    return labels,symMatrix
+
+def _constructSupercell(inputString,numX=1,numY=1,numZ=1,stringOrMatrix='String',newVectors=True):
+    splitInput =  AFLOWpi.retr._splitInput(inputString)
+    
+    if '{crystal}' != splitInput['ATOMIC_POSITIONS']['__modifier__']:
+        logging.error('unit in AFLOWpi.retr._constructSupercell not for ATOMIC_POSITIONS MUST BE {crystal}')
+        return inputString
+    cellParamMatrix = AFLOWpi.retr.getCellMatrixFromInput(inputString)
+
+    labels =  AFLOWpi.retr._getPosLabels(inputString)
+    symMatrix = AFLOWpi.retr._getPositions(inputString)
+
+    symMatrix_orig=copy.deepcopy(symMatrix)
+    labels_orig=copy.deepcopy(labels)
+
+    coordold,flags = AFLOWpi.retr.detachPosFlags(AFLOWpi.qe.regex.atomic_positions(inputString))
+
+    outputString=''
+    superList=[]
+
+    if newVectors==True:
+        labels,symMatrix=AFLOWpi.retr._expandBoundaries(labels,symMatrix,numX,numY,numZ)
+    else:
+        labels,symMatrix=AFLOWpi.retr._expandBoundariesNoScale(labels,symMatrix,numX,numY,numZ)
+
+    for entry in range(len(symMatrix)):
+        posLineStr = ' '.join(['%20.14f' % (decimal.Decimal(str(numpy.around(i,9)))) for i in symMatrix[entry]])+'\n'
+        outputString+='%4s %8s' % (labels[entry],posLineStr)
+
+    
+    splitInput['&system']['nat']=str(len(labels))
+
+    splitInput['&system']['celldm(1)']=str(float(splitInput['&system']['celldm(1)'])*numX)
+    if 'celldm(2)' in splitInput['&system'].keys():
+        scaleY = float(numY)/float(numX)
+        splitInput['&system']['celldm(2)']=str(float(splitInput['&system']['celldm(2)'])*scaleY)
+    if 'celldm(3)' in splitInput['&system'].keys():
+        scaleZ = float(numZ)/float(numX)
+        splitInput['&system']['celldm(3)']=str(float(splitInput['&system']['celldm(3)'])*scaleZ)
+
+
+    splitInput['ATOMIC_POSITIONS']['__content__']=outputString
+
+    returnString=AFLOWpi.retr._joinInput(splitInput)
+
+    return returnString
+
+
+
+import AFLOWpi
+import os
+import shutil
+import subprocess
+
+def atomicDistances(calcs,runlocal=False,inpt=False,outp=True):
+    engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')	
+    if os.path.isabs(engineDir) == False:
+        configFileLocation = AFLOWpi.prep._getConfigFile()
+        engineDir =  os.path.join(configFileLocation, enginedir)
+    distXPath = os.path.join(engineDir,'dist.x')
+    try:
+        if AFLOWpi.prep._ConfigSectionMap('prep','copy_exec').lower()!='false':
+            AFLOWpi.prep.totree(distXPath,calcs)
+        for ID,oneCalc in calcs.iteritems():
+            if runlocal:
+                if outp==True:
+                    AFLOWpi.retr._getDist(oneCalc,ID,outp=True)
+                if inpt==True:
+                    AFLOWpi.retr._getDist(oneCalc,ID,outp=False)
+            else:
+                if outp==True:
+                    AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._getDist(oneCalc,ID,outp=True)\n')
+                if inpt==True:
+                    AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._getDist(oneCalc,ID,outp=False)\n')
+
+    except Exception,e:
+        AFLOWpi.run._fancy_error_log(e)
+
+
+def _getDist(oneCalc,ID,outp=True):
+    try:
+        if outp==True:
+            AFLOWpi.retr._writeInputFromOutput(oneCalc,ID)
+            os.rename(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_new.in'),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_dist.in')) 
+        else:
+            shutil.copyfile('%s.in'%ID,'%s_dist.in'%ID)
+
+    except Exception,e:
+        AFLOWpi.run._fancy_error_log(e)
+
+    #fix to clear restart_mode in input file to avoid error with dist.x
+    dist_ID='%s_dist'%ID        
+    infil = AFLOWpi.retr._getInputFileString(oneCalc,dist_ID)
+    inDict=AFLOWpi.retr._splitInput(infil)
+    inDict['&control']['restart_mode']='"from_scratch"'
+    infil = AFLOWpi.retr._joinInput(inDict)
+    dest_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_dist.in')
+
+    with open(dest_file,'w') as fo:
+        fo.write(infil)
+
+    if AFLOWpi.prep._ConfigSectionMap('prep','copy_exec').lower()=='false':
+        engineDir = AFLOWpi.prep._ConfigSectionMap('prep','engine_dir')
+        if os.path.isabs(enginedir) == False:
+            configFileLocation = AFLOWpi.prep._getConfigFile()
+            enginedir =  os.path.join(configFileLocation, enginedir)
+
+        execPath=os.path.join(engineDir,'dist.x')
+    else:
+        execPath='./dist.x'
+    try:
+        subprocess.Popen('%s < %s_dist.in > /dev/null' % (execPath,ID),cwd=oneCalc['_AFLOWPI_FOLDER_'],shell=True).wait()
+        if outp==True:
+            os.rename(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'dist.out'),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_output_dist.out'))
+        else:
+            os.rename(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'dist.out'),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_input_dist.out'))
+
+    except Exception,e:
+        logging.error('dist.x did not run properly')
+        print 'ERROR: dist.x did not run properly'
+
+
 import AFLOWpi.run
 import AFLOWpi.prep
 import os
@@ -12,13 +1108,23 @@ import traceback
 import sys 
 import AFLOWpi.qe
 import decimal
+import contextlib
+import cStringIO
+
+@contextlib.contextmanager
+def nostdout():
+    save_stdout = sys.stdout
+    sys.stdout = cStringIO.StringIO()
+    yield
+    sys.stdout = save_stdout
+
 
 ##############################################################################################################################
 ##############################################################################################################################
 ## auto k point
 ##############################################################################################################################
 ##############################################################################################################################
-def __find_numkpoints(outputFile):
+def _find_numkpoints(outputFile):
     '''
     DEFUNCT <TAGGED FOR REMOVAL>
 
@@ -39,7 +1145,7 @@ def __find_numkpoints(outputFile):
     except Exception,e:
         return 1
 
-def __get_pool_num(oneCalc,ID):
+def _get_pool_num(oneCalc,ID):
     '''
     Gets number of pools requested for this particular execution for engine.
 
@@ -59,8 +1165,8 @@ def __get_pool_num(oneCalc,ID):
     try:
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out'%ID),'r') as outputFile:
             outputFileString=outputFile.read()
-        n_reduced_k = AFLOWpi.retr.__find_numkpoints(outputFileString)
-        execPrefix=AFLOWpi.prep.__ConfigSectionMap('run','execprefix')
+        n_reduced_k = AFLOWpi.retr._find_numkpoints(outputFileString)
+        execPrefix=AFLOWpi.prep._ConfigSectionMap('run','exec_prefix')
         if n_reduced_k!=1:
             num_mpi_procs = int(re.findall(r'np\s*(\d*)',execPrefix)[-1])
             npool=1
@@ -153,17 +1259,19 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
           negate_status (bool): Whether to take the calculations with that status or without it
 
     Returns:
-          calcsList (list) list of each step of the calculations you
+          calcsList (list): list of each step of the calculations you
                            selected that satisfay the status criteria
 
     '''
-    print 'step',step
+
     calcsList=[]    
     if step==0:    
         while True:
             step+=1
             try:
-                calcsList.append(AFLOWpi.prep.loadlogs(PROJECT, SET,'step_%02d' % step,config=config))
+                one_step = AFLOWpi.prep.loadlogs(PROJECT, SET,'step_%02d' % step,config=config,suppress_warning=True)
+                calcsList.append(one_step)
+
             except:
                 break
     else:
@@ -213,10 +1321,10 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
             #copy back for return of subset
             calcsList[step]=copy.deepcopy(calcCopy)
 
-    print outString
+
     return calcsList
             
-def __getOutputString(oneCalc,ID):
+def _getOutputString(oneCalc,ID):
     '''
     Gets string of output for that particular step in the workflow for a single calcualtion
 
@@ -259,25 +1367,38 @@ def getCellVolume(oneCalc,ID,conventional=True,string=True):
 
     '''
 
-    outFileString = __getOutputString(oneCalc,ID)
+
     try:
+        print ID
+        outFileString = AFLOWpi.retr._getOutputString(oneCalc,ID)
         vol = float(re.findall(ur'unit-cell volume\s*=\s*([0-9.-]*)',outFileString)[-1])
-        ibrav=int(__splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
-        if conventional==True:
-
-            if ibrav in [3,7,9,11,13]:
-                vol*=2.0
-            if ibrav in [2,10]:
-                vol*=4.0
 
 
-        if string==True:
-            return str(vol)
-        else:
-            return vol
+
+
     except:
-        logging.warning('could not get volume from output')
-        print 'could not get volume from output'
+        try:
+            input_str= AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],ID)['_AFLOWPI_INPUT_']
+            cell_vec = AFLOWpi.retr.getCellMatrixFromInput(input_str)
+            vol =  AFLOWpi.retr.getCellVolumeFromVectors(cell_vec)
+
+        except Exception,e:
+            print e
+            raise SystemExit
+            logging.warning('could not get volume from output')
+            print 'could not get volume from output'
+
+    if conventional==True:
+        ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
+        if ibrav in [3,7,9,11,13]:
+            vol*=2.0
+        if ibrav in [2,10]:
+            vol*=4.0
+
+    if string==True:
+        return str(vol)
+    else:
+        return vol
 
 
 def getCellVolumeFromVectors(cellInput):
@@ -297,7 +1418,7 @@ def getCellVolumeFromVectors(cellInput):
     vol = numpy.cross(cellInput[0],cellInput[1]).dot(cellInput[2].T).getA()[0][0]
     return vol
 
-def __getInputFileString(oneCalc,ID):
+def _getInputFileString(oneCalc,ID):
     '''
     Gets the string of the input that step of the calculation
 
@@ -313,13 +1434,13 @@ def __getInputFileString(oneCalc,ID):
 
     '''
 
-    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],oneCalc['_AFLOWPI_PREFIX_'][1:]+'.in'),'r') as inFile:
+    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.in'),'r') as inFile:
         inFileString = inFile.read()
-        
+    
     return inFileString 
 
 
-def __getInitialInputString(oneCalc):
+def _getInitialInputString(oneCalc):
     '''
     Gets initial input to the workflow 
 
@@ -340,7 +1461,7 @@ def __getInitialInputString(oneCalc):
     return inFileString 
 
 
-def __getInitialOutputString(oneCalc):
+def _getInitialOutputString(oneCalc):
     '''
     Gets initial output to the workflow 
 
@@ -363,7 +1484,7 @@ def __getInitialOutputString(oneCalc):
 
 
 
-def __getSymList(ID,oneCalc):
+def _getSymList(ID,oneCalc):
     '''
     Gets symmetry operations from output if available
 
@@ -385,7 +1506,7 @@ def __getSymList(ID,oneCalc):
     joinedList = "Symmetry Operations:\n"+joinedList
     return joinedList
 
-def __moveToSavedir(filePath):
+def _moveToSavedir(filePath):
     '''
     Move a file to the savedir specified in the config file
 
@@ -401,10 +1522,10 @@ def __moveToSavedir(filePath):
     '''
 
     try:
-        if AFLOWpi.prep.__ConfigSectionMap('prep','savedir') != '':
+        if AFLOWpi.prep._ConfigSectionMap('prep','save_dir') != '':
             try:
-                savedir = AFLOWpi.prep.__ConfigSectionMap('prep','savedir')
-                workdir = AFLOWpi.prep.__ConfigSectionMap('prep','workdir')
+                savedir = AFLOWpi.prep._ConfigSectionMap('prep','save_dir')
+                workdir = AFLOWpi.prep._ConfigSectionMap('prep','work_dir')
 
                 try:
                     workdir=os.path.realpath(workdir)
@@ -424,7 +1545,7 @@ def __moveToSavedir(filePath):
 
 
                 if os.path.isabs(savedir) == False:
-                    configFileLocation = AFLOWpi.prep.__getConfigFile()
+                    configFileLocation = AFLOWpi.prep._getConfigFile()
                     savedir =  os.path.join(configFileLocation, savedir)
 
 
@@ -527,7 +1648,8 @@ def grabEnergyOut(calcs):
             if os.path.exists(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID)):
                 with file(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID),'r') as outFile:
                     outFileString=outFile.read()
-                    #searches for either total energy or final energy in the scf output and adds it to the output dictionary
+                    #searches for either total energy or final energy in the scf output and 
+                    #adds it to the output dictionary
                     finalEnergy=energyRegex.findall(outFileString)
 
                     if len(finalEnergy):
@@ -553,7 +1675,7 @@ def grabEnergyOut(calcs):
 
 
 
-def getForce(oneCalc,ID):
+def getForce(oneCalc,ID,string=True):
     '''
     Gets last entry of the total force in the calculation from the engine output.
 
@@ -569,13 +1691,28 @@ def getForce(oneCalc,ID):
 
     '''
 
-    output = __getOutputString(oneCalc,ID)
+    output = AFLOWpi.retr._getOutputString(oneCalc,ID)
     forceRegex = re.compile(r'(Total force =\s+[0-9.]+)')
     try:
         force_string = forceRegex.findall(output)[-1]
-        return force_string
+
+        if string==False:
+            return float(force_string.strip().split()[-1])
+        else:
+            return force_string
     except:
         return ''
+
+
+def getStress(oneCalc,ID):
+    stressRegex = re.compile(r'(\s+total\s+stress.+(?:\(kbar\).+\n)(?:.+\n)*)')
+    output = AFLOWpi.retr._getOutputString(oneCalc,ID)
+    try:
+        stress_string = stressRegex.findall(output)[-1]
+        return stress_string
+    except:
+        return ''
+
 
 def getCellOutput(oneCalc,ID):
     '''
@@ -640,7 +1777,7 @@ def getCellOutput(oneCalc,ID):
 
 
     try:
-        symList = __getSymList(ID,oneCalc)
+        symList = AFLOWpi.retr._getSymList(ID,oneCalc)
         outputStr+=symList+'\n\n'
     except:
         pass
@@ -756,7 +1893,7 @@ def getCellOutput(oneCalc,ID):
 
     return outputStr
 
-def __getCellParams(oneCalc,ID):
+def _getCellParams(oneCalc,ID):
     '''
     Reads the output from the SCF or relax calculation to get the primitive cell parameters
     produced by the calculation. If it fails it defaults to the input lattice vectors
@@ -776,7 +1913,6 @@ def __getCellParams(oneCalc,ID):
 
     try:
         scfOutput = '%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:]
-        #scfoutput = '%s.out' % ID
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
                 lines = outFile.read()
 
@@ -784,9 +1920,9 @@ def __getCellParams(oneCalc,ID):
 
 
         cellParams = AFLOWpi.qe.regex.cell_parameters(lines,'content')
-        splitInput = AFLOWpi.retr.__splitInput(oneCalc['_AFLOWPI_INPUT_'])
+        splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         alat=float(splitInput['&system']['celldm(1)'])
-        paramMatrix=__cellStringToMatrix(cellParams)
+        paramMatrix=_cellStringToMatrix(cellParams)
 
         if len(cellParams):
 
@@ -810,21 +1946,25 @@ def __getCellParams(oneCalc,ID):
                 return AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
     except Exception,e:
+        AFLOWpi.run._fancy_error_log(e)
+     
+        paramMatrix = AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
+        alat = AFLOWpi.retr._getAlatFromInput(oneCalc['_AFLOWPI_INPUT_']) 
+        paramMatrix/=alat
 
-        return __getAlatFromInput(oneCalc['_AFLOWPI_INPUT_']), AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
+        return alat,paramMatrix 
 
 def get_parameters(oneCalc,ID,conventional=True):
     if conventional:
-        cell = AFLOWpi.retr.__getConventionalCellFromInput(oneCalc,ID)[2]
-#        print cell
-#        print type(cell)
+        cell = AFLOWpi.retr._getConventionalCellFromInput(oneCalc,ID)[2]
+
     else:
         cell = AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
     return AFLOWpi.retr.free2abc(cell,cosine=False,bohr=False,string=False)
         
-def __getAlatFromInput(inputString):
+def _getAlatFromInput(inputString):
     '''
     Grabs the value of alat from the QE pwscf input
 
@@ -839,7 +1979,7 @@ def __getAlatFromInput(inputString):
 
     '''
 
-    splitInput = AFLOWpi.retr.__splitInput(inputString)
+    splitInput = AFLOWpi.retr._splitInput(inputString)
     try:
         return float(splitInput['&system']['celldm(1)'])
     except:
@@ -895,7 +2035,7 @@ def getRecipParams(oneCalc):
                     return alat,[[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]]
 	
 
-def __getAtomNum(inputString,strip=False):
+def _getAtomNum(inputString,strip=False):
     '''
     Gets the number of atoms from a QE pwscf input file
 
@@ -926,7 +2066,7 @@ def __getAtomNum(inputString,strip=False):
     return numOfEach
 
 from collections import OrderedDict
-def __getStoicName(oneCalc,strip=False,latex=False):
+def _getStoicName(oneCalc,strip=False,latex=False,order=True):
     '''
     Determines the name of the compound by looking at the input and
     finds the stoichiometric number of species in the compound
@@ -944,7 +2084,7 @@ def __getStoicName(oneCalc,strip=False,latex=False):
     '''
 
     inputString = oneCalc['_AFLOWPI_INPUT_']
-    numOfEach = AFLOWpi.retr.__getAtomNum(inputString,strip=strip) 
+    numOfEach = AFLOWpi.retr._getAtomNum(inputString,strip=strip) 
     '''get GCD of it'''
     def GCD(a, b):
 
@@ -970,7 +2110,13 @@ def __getStoicName(oneCalc,strip=False,latex=False):
 
     if latex==True:
         name+='$'
-    for key,value in sorted(numOfEachCopy.items()):
+
+    if order==True:
+        iterator = sorted(numOfEachCopy.items())
+    else:
+        iterator = numOfEachCopy.items()
+
+    for key,value in iterator:
         number=value
         if strip==True and value==1:
             number=''
@@ -988,7 +2134,7 @@ def __getStoicName(oneCalc,strip=False,latex=False):
     return name
 
 
-def __getPathFromFile(oneCalc):
+def _getPathFromFile(oneCalc):
     '''
     Reads the input file for the band structure calculation and retrieves the 
     k point path from the file
@@ -1021,8 +2167,9 @@ def __getPathFromFile(oneCalc):
             print 'Did you run ppBands and did it complete properly?'
             return 
 
-
-def __getHighSymPoints(oneCalc,ID=None):
+###############################################################################
+###############################################################################
+def _getHighSymPoints(oneCalc,ID=None):
     '''
     Searching for the ibrav number in the input file for the calculation
     to determine the path for the band structure calculation
@@ -1039,289 +2186,301 @@ def __getHighSymPoints(oneCalc,ID=None):
 
     '''
 
-    def CUB(cellOld):
-         special_points = {
-           'gG'   : (0, 0, 0),
-           'M'   : (0.5, 0.5, 0.0),
-           'R'   : (0.5, 0.5, 0.5),
-           'X'   : (0.0, 0.5, 0.0)
-         }
-
-         default_band_path = 'gG-X-M-gG-R-X|M-R'
-         band_path = default_band_path
-         return special_points, band_path
-    def FCC(cellOld):
-         special_points = {
-           'gG'   : (0, 0, 0),
-           'K'    : (0.375, 0.375, 0.750),
-           'L'    : (0.5, 0.5, 0.5),
-           'U'    : (0.625, 0.250, 0.625),
-           'W'    : (0.5, 0.25, 0.75),
-           'X'    : (0.5, 0.0, 0.5)
-         }
-
-         default_band_path = 'gG-X-W-K-gG-L-U-W-L-K|U-X'
-         band_path = default_band_path
-         return special_points, band_path
-    def BCC(cellOld):
-         special_points = {
-           'gG'   : (0, 0, 0),
-           'H'   : (0.5, -0.5, 0.5),
-           'P'   : (0.25, 0.25, 0.25),
-           'N'   : (0.0, 0.0, 0.5)
-         }
-
-         default_band_path = 'gG-H-N-gG-P-H|P-N'
-         band_path = default_band_path
-         return special_points, band_path
 
 
-    def BCT1(cellOld):
-       a = cellOld[1][0]*2
-       c = cellOld[1][2]*2
+    ibrav = 0
+    ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
+
+    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
+
+    if ibrav==0:
+            return
+    if ibrav < 0:
+        print 'Lattice type %s is not implemented' % ibrav
+        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
+        raise Exception
 
 
-       eta = (1 + c**2/a**2)/4
+    alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
+    a,b,c,alpha,beta,gamma =  free2abc(cellOld,cosine=False,bohr=False,string=False)
+###############################################################################
+###############################################################################
+    if   ibrav==1:  ibrav_var =  'CUB'
+    elif ibrav==2:  ibrav_var =  'FCC'
+    elif ibrav==3:  ibrav_var =  'BCC'
+    elif ibrav==4:  ibrav_var =  'HEX'
+    elif ibrav==6:  ibrav_var =  'TET'
+    elif ibrav==8:  ibrav_var =  'ORC'
+    elif ibrav==9:  ibrav_var =  'ORCC'
+    elif ibrav==11: ibrav_var =  'ORCI'
+    elif ibrav==5:
+        if alpha < numpy.pi/2.0:   ibrav_var =  'RHL1'
+        elif alpha > numpy.pi/2.0: ibrav_var =  'RHL2'
+    elif ibrav==7:
+        if(c < a):   ibrav_var =  'BCT1'
+        elif(c > a): ibrav_var =  'BCT2'
+        else:        ibrav_var =  'BCC'
+    elif ibrav==10:
+        if (1.0/a**2 >1.0/b**2+1.0/c**2):  ibrav_var =  'ORCF1'
+        elif (1.0/a**2<1.0/b**2+1.0/c**2): ibrav_var =  'ORCF2'
+        else:                              ibrav_var =  'ORCF2'
+    elif(int(ibrav)==14):
+        minAngle = numpy.amin([alpha,beta,gamma])
+        maxAngle = numpy.amax([alpha,beta,gamma])
+        if alpha==90.0 or beta==90.0 or gamma==90.0:
+            if alpha>=90.0 or beta>=90.0 or gamma>=90.0: ibrav_var =  'TRI2A'
+            if alpha<=90.0 or beta<=90.0 or gamma<=90.0: ibrav_var =  'TRI2B'
+        elif minAngle>90.0:                              ibrav_var =  'TRI1A'
+        elif maxAngle<90:                                ibrav_var =  'TRI1B'
+###############################################################################
+###############################################################################
+    if ibrav_var=='CUB':
+        band_path = 'gG-X-M-gG-R-X|M-R'
+        special_points = {'gG'   : (0.0, 0.0, 0.0),
+                           'M'   : (0.5, 0.5, 0.0),
+                           'R'   : (0.5, 0.5, 0.5),
+                           'X'   : (0.0, 0.5, 0.0)}
+                           
+    if ibrav_var=='FCC':
+        default_band_path = 'gG-X-W-K-gG-L-U-W-L-K|U-X'
+        special_points = {'gG'   : (0.0, 0.0, 0.0),
+                          'K'    : (0.375, 0.375, 0.750),
+                          'L'    : (0.5, 0.5, 0.5),
+                          'U'    : (0.625, 0.250, 0.625),
+                          'W'    : (0.5, 0.25, 0.75),
+                          'X'    : (0.5, 0.0, 0.5)}
+                          
+    if ibrav_var=='BCC':
+        band_path = 'gG-H-N-gG-P-H|P-N'
+        special_points = {'gG'   : (0, 0, 0),
+                          'H'    : (0.5, -0.5, 0.5),
+                          'P'    : (0.25, 0.25, 0.25,), 
+                          'N'    : (0.0, 0.0, 0.5)}
+            
+    if ibrav_var=='HEX':
+        band_path = 'gG-M-K-gG-A-L-H-A|L-M|K-H'
+        special_points = {'gG'   : (0, 0, 0),
+                          'A'    : (0.0, 0.0, 0.5),
+                          'H'    : (1.0/3.0, 1.0/3.0, 0.5),
+                          'K'    : (1.0/3.0, 1.0/3.0, 0.0),
+                          'L'    : (0.5, 0.0, 0.5),
+                          'M'    : (0.5, 0.0, 0.0)}
+        
+    if ibrav_var=='RHL1':
+        eta1 = 1.0 + 4.0*numpy.cos(alpha)
+        eta2 = eta1+1.0
+        eta=eta1/eta2
+        nu =0.75-eta/2.0
+        band_path = 'gG-L-B1|B-Z-gG-X|Q-F-P1-Z|L-P'
+        special_points = {'gG'   : (0.0, 0.0, 0.0),
+                          'B'    : (eta, 0.5, 1.0-eta),
+                          'B1'   : (0.5, 1.0-eta, eta-1.0),
+                          'F'    : (0.5, 0.5, 0.0),
+                          'L'    : (0.5, 0.0, 0.0),
+                          'L1'   : (0.0, 0.0, -0.5),
+                          'P'    : (eta, nu, nu),
+                          'P1'   : (1.0-nu, 1.0-nu, 1.0-eta),
+                          'P2'   : (nu, nu, eta-1.0),
+                          'Q'    : (1.0-nu, nu, 0.0),
+                          'X'    : (nu, 0.0, -nu),
+                          'Z'    : (0.5, 0.5, 0.5)}
+         
+    if ibrav_var=='RHL2':
+        eta=1.0/(2*numpy.tan(alpha/2.0)**2)
+        nu =0.75-eta/2.0
+        band_path = 'gG-P-Z-Q-gG-F-P1-Q1-L-Z'
+        special_points = {'gG'   : (0.0, 0.0, 0.0),
+                          'F'    : (0.5, -0.5, 0.0),
+                          'L'    : (0.5, 0.0, 0.0),
+                          'P'    : (1.0-nu, -nu, 1.0-nu),
+                          'P1'   : (nu, nu-1.0, nu-1.0),
+                          'Q'    : (eta, eta, eta),
+                          'Q1'   : (1.0-eta, -eta, -eta),
+                          'Z'    : (0.5, -0.5, 0.5)} 
 
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'M'    : (-0.5, 0.5, 0.5),
-           'N'    : (0.0, 0.5, 0.0),
-           'P'    : (0.25, 0.25, 0.25),
-           'X'    : (0.0, 0.0, 0.5),
-           'Z'    : (eta, eta, -eta),
-           'Z1'    : (-eta, 1.0-eta, eta)
-         }
+    if ibrav_var=='TET':
+        band_path = 'gG-X-M-gG-Z-R-A-Z|X-R|M-A'
+        special_points = {'gG'   : (0.0, 0.0, 0.0),
+                          'A'    : (0.5, 0.5, 0.5),
+                          'M'    : (0.5, 0.5, 0.0),
+                          'R'    : (0.0, 0.5, 0.5),
+                          'X'    : (0.0, 0.5, 0.0),
+                          'Z'    : (0.0, 0.0, 0.5)}
 
-       default_band_path = 'gG-X-M-gG-Z-P-N-Z1-M|X-P'
-       band_path = default_band_path
-       return special_points, band_path
-
-
-    def BCT2(cellOld):
-
-       a = cellOld[1][0]*2
-       c = cellOld[1][2]*2
-
-
+    if ibrav_var=='BCT1':
+       eta = (1+c**2/a**2)/4
+       band_path = 'gG-X-M-gG-Z-P-N-Z1-M|X-P'
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'M'     : (-0.5, 0.5, 0.5),
+                         'N'     : (0.0, 0.5, 0.0),
+                         'P'     : (0.25, 0.25, 0.25),
+                         'X'     : (0.0, 0.0, 0.5),
+                         'Z'     : (eta, eta, -eta),
+                         'Z1'    : (-eta, 1.0-eta, eta)}
+         
+    if ibrav_var=='BCT2':
+       band_path = 'gG-X-Y-gS-gG-Z-gS1-N-P-Y1-Z|X-P'
        eta = (1 + a**2/c**2)/4.0
        zeta = a**2/(2.0*c**2)
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'N'    : (0.0, 0.5, 0.0),
-           'P'    : (0.25, 0.25, 0.25),
-           'gS'    : (-eta, eta, eta),
-           'gS1'    : (eta, 1-eta, -eta),
-           'X'    : (0.0, 0.0, 0.5),
-           'Y'    : (-zeta, zeta, 0.5),
-           'Y1'   : (0.5, 0.5, -zeta),
-           'Z'    : (0.5, 0.5, -0.5)
-         }
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'N'     : (0.0, 0.5, 0.0),
+                         'P'     : (0.25, 0.25, 0.25),
+                         'gS'    : (-eta, eta, eta),
+                         'gS1'   : (eta, 1-eta, -eta),
+                         'X'     : (0.0, 0.0, 0.5),
+                         'Y'     : (-zeta, zeta, 0.5),
+                         'Y1'    : (0.5, 0.5, -zeta),
+                         'Z'     : (0.5, 0.5, -0.5)}
+         
+    if ibrav_var=='ORC':
+         band_path = 'gG-X-S-Y-gG-Z-U-R-T-Z|Y-T|U-X|S-R'
+         special_points = {'gG'  : (0.0, 0.0, 0.0),
+                           'R'   : (0.5, 0.5, 0.5),
+                           'S'   : (0.5, 0.5, 0.0),
+                           'T'   : (0.0, 0.5, 0.5),
+                           'U'   : (0.5, 0.0, 0.5),
+                           'X'   : (0.5, 0.0, 0.0),
+                           'Y'   : (0.0, 0.5, 0.0),
+                           'Z'   : (0.0, 0.0, 0.5)}
 
-       default_band_path = 'gG-X-Y-gS-gG-Z-gS1-N-P-Y1-Z|X-P'
-       band_path = default_band_path
-       return special_points, band_path
+    if ibrav_var=='ORCF1':
+       band_path = 'gG-Y-T-Z-gG-X-A1-Y|T-X1|X-A-Z|L-gG'
+       eta = (1+a**2/b**2+a**2/c**2)/4
+       zeta =(1+a**2/b**2-a**2/c**2)/4
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'A'     : (0.5, 0.5 + zeta, zeta),
+                         'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
+                         'L'     : (0.5, 0.5, 0.5),
+                         'T'     : (1.0, 0.5, 0.5),
+                         'X'     : (0.0, eta, eta),
+                         'X1'    : (1.0, 1.0-eta, 1.0-eta),
+                         'Y'     : (0.5, 0.0, 0.5),
+                         'Z'     : (0.5, 0.5, 0.0)}
 
+    if ibrav_var=='ORCF2':
+       band_path = 'gG-Y-C-D-X-gG-Z-D1-H-C|C1-Z|X-H1|H-Y|L-gG'
+       eta = (1+a**2/b**2-a**2/c**2)/4
+       phi = (1+c**2/b**2-c**2/a**2)/4
+       delta=(1+b**2/a**2-b**2/c**2)/4
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'C'     : (0.5, 0.5-eta, 1.0-eta),
+                         'C1'    : (0.5, 0.5+eta, eta),
+                         'D'     : (0.5-delta, 0.5, 1.0-delta),
+                         'D1'    : (0.5+delta, 0.5, delta),
+                         'L'     : (0.5, 0.5, 0.5),
+                         'H'     : (1.0-phi, 0.5-phi, 0.5),
+                         'H1'    : (phi, 0.5+phi, 0.5),
+                         'X'     : (0.0, 0.5, 0.5),
+                         'Y'     : (0.5, 0.0, 0.5),
+                         'Z'     : (0.5, 0.5, 0.0),}
 
-    def TET(cellOld):
-         special_points = {
-           'gG'    : (0, 0, 0),
-           'A'    : (0.5, 0.5, 0.5),
-           'M'    : (0.5, 0.5, 0.0),
-           'R'    : (0.0, 0.5, 0.5),
-           'X'    : (0.0, 0.5, 0.0),
-           'Z'    : (0.0, 0.0, 0.5)
-         }
-         default_band_path = 'gG-X-M-gG-Z-R-A-Z|X-R|M-A'
-         band_path = default_band_path
-         return special_points, band_path
+    if ibrav_var=='ORCF3':
+       band_path = 'gG-Y-T-Z-gG-X-A1-Y|X-A-Z|L-R'
+       eta =(1+a**2/b**2+a**2/c**2)/4
+       zeta=(1+a**2/b**2-a**2/c**2)/4
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'A'     : (0.5, 0.5 + zeta, zeta),
+                         'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
+                         'L'     : (0.5, 0.5, 0.5),
+                         'T'     : (1.0, 0.5, 0.5),
+                         'X'     : (0.0, eta, eta),
+                         'X1'    : (1.0, 1.0-eta, 1.0-eta),
+                         'Y'     : (0.5, 0.0, 0.5),
+                         'Z'     : (0.5, 0.5, 0.0)}
 
-    def ORC(cellOld):
-         special_points = {
-           'gG'    : (0, 0, 0),
-           'R'    : (0.5, 0.5, 0.5),
-           'S'    : (0.5, 0.5, 0.0),
-           'T'    : (0.0, 0.5, 0.5),
-           'U'    : (0.5, 0.0, 0.5),
-           'X'    : (0.5, 0.0, 0.0),
-           'Y'    : (0.0, 0.5, 0.0),
-           'Z'    : (0.0, 0.0, 0.5)
-         }
-
-         default_band_path = 'gG-X-S-Y-gG-Z-U-R-T-Z|Y-T|U-X|S-R'
-         band_path = default_band_path
-         return special_points, band_path
-
-    def ORCF1(cellOld):
-
-       a1 = cellOld[0][0]*2
-       b1 = cellOld[1][1]*2
-       c1 = cellOld[2][2]*2
-       myList = [a1, b1, c1]
-       c = max(myList)
-       a = min(myList)
-       myList.remove(a)
-       myList.remove(c)
-       b = myList[0]
-
-       eta = (1 + a**2/b**2 + a**2/c**2)/4
-       zeta = (1 + a**2/b**2 - a**2/c**2)/4
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'A'    : (0.5, 0.5 + zeta, zeta),
-           'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
-           'L'    : (0.5, 0.5, 0.5),
-           'T'    : (1.0, 0.5, 0.5),
-           'X'    : (0.0, eta, eta),
-           'X1'    : (1.0, 1.0-eta, 1.0-eta),
-           'Y'    : (0.5, 0.0, 0.5),
-           'Z'    : (0.5, 0.5, 0.0)
-         }
-
-       default_band_path = 'gG-Y-T-Z-gG-X-A1-Y|T-X1|X-A-Z|L-gG'
-       band_path = default_band_path
-       return special_points, band_path
-
-    def ORCF2(cellOld):
-
-       a1 = cellOld[0][0]*2
-       b1 = cellOld[1][1]*2
-       c1 = cellOld[2][2]*2
-       myList = [a1, b1, c1]
-       c = max(myList)
-       a = min(myList)
-       myList.remove(a)
-       myList.remove(c)
-       b = myList[0]
-
-       eta = (1 + a**2/b**2 - a**2/c**2)/4
-       phi = (1 + c**2/b**2 - c**2/a**2)/4
-       delta = (1 + b**2/a**2 - b**2/c**2)/4
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'C'    : (0.5, 0.5-eta, 1.0-eta),
-           'C1'    : (0.5, 0.5+eta, eta),
-           'D'    : (0.5-delta, 0.5, 1.0-delta),
-           'D1'    : (0.5+delta, 0.5, delta),
-           'L'    : (0.5, 0.5, 0.5),
-           'H'    : (1.0-phi, 0.5-phi, 0.5),
-           'H1'    : (phi, 0.5+phi, 0.5),
-           'X'    : (0.0, 0.5, 0.5),
-           'Y'    : (0.5, 0.0, 0.5),
-           'Z'    : (0.5, 0.5, 0.0)
-         }
-
-       default_band_path = 'gG-Y-C-D-X-gG-Z-D1-H-C|C1-Z|X-H1|H-Y|L-gG'
-       band_path = default_band_path
-       return special_points, band_path
-
-
-    def ORCF3(cellOld):
-
-       a1 = cellOld[0][0]*2
-       b1 = cellOld[1][1]*2
-       c1 = cellOld[2][2]*2
-       myList = [a1, b1, c1]
-       c = max(myList)
-       a = min(myList)
-       myList.remove(a)
-       myList.remove(c)
-       b = myList[0]
-
-       eta = (1 + a**2/b**2 + a**2/c**2)/4
-       zeta = (1 + a**2/b**2 - a**2/c**2)/4
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'A'    : (0.5, 0.5 + zeta, zeta),
-           'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
-           'L'    : (0.5, 0.5, 0.5),
-           'T'    : (1.0, 0.5, 0.5),
-           'X'    : (0.0, eta, eta),
-           'X1'    : (1.0, 1.0-eta, 1.0-eta),
-           'Y'    : (0.5, 0.0, 0.5),
-           'Z'    : (0.5, 0.5, 0.0)
-         }
-
-       default_band_path = 'gG-Y-T-Z-gG-X-A1-Y|X-A-Z|L-R'
-       band_path = default_band_path
-       return special_points, band_path
-
-    def ORCC(cellOld):
-       a = cell[0][0]*2
-       b = cell[1][1]*2
-       c = cell[2][2]
-       myList = [a, b,c]
-       c = max(myList)
-       a = min(myList)
-       myList.remove(a)
-       myList.remove(c)
-       b = myList[0]
-
-       zeta = (1 + a**2/b**2)/4.0
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'A'    : (zeta, zeta, 0.5),
-           'A1'    : (-zeta, 1.0-zeta, 0.5),
-           'R'    : (0.0, 0.5, 0.5),
-           'S'    : (0.0, 0.5, 0.0),
-           'T'    : (-0.5, 0.5, 0.5),
-           'X'    : (zeta, zeta, 0.0),
-           'X1'    : (-zeta, 1.0-zeta, 0.0),
-           'Y'    : (-0.5, 0.5, 0.0),
-           'Z'    : (0.0, 0.0, 0.5)
-         }
-
-       default_band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
-       band_path = default_band_path
-       return special_points, band_path
-
-    def ORCI(cellOld):
-         a1 = cellOld[0][0]*2
-         b1 = cellOld[1][1]*2
-         c1 = cellOld[2][2]*2
-         myList = [a1, b1, c1]
-         c = max(myList)
-         a = min(myList)
-         myList.remove(a)
-         myList.remove(c)
-         b = myList[0]
-
+    if ibrav_var=='ORCC':
+       band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
+       zeta=(1+a**2/b**2)/4.0
+       special_points = {'gG'    : (0.0, 0.0, 0.0),
+                         'A'     : (zeta, zeta, 0.5),
+                         'A1'    : (-zeta, 1.0-zeta, 0.5),
+                         'R'     : (0.0, 0.5, 0.5),
+                         'S'     : (0.0, 0.5, 0.0),
+                         'T'     : (-0.5, 0.5, 0.5),
+                         'X'     : (zeta, zeta, 0.0),
+                         'X1'    : (-zeta, 1.0-zeta, 0.0),
+                         'Y'     : (-0.5, 0.5, 0.0),
+                         'Z'     : (0.0, 0.0, 0.5)}
+         
+    if ibrav_var=='ORCI':
+         band_path = 'gG-X-L-T-W-R-X1-Z-gG-Y-S-W|L1-Y|Y1-Z'
          chi = (1.0 + (a/c)**2)/4.0
          eta = (1.0 + (b/c)**2)/4.0
          delta = (b*b - a*a)/(4*c*c)
          mu = (b*b + a*a)/(4*c*c)
-         special_points = {
-           'gG'    : (0, 0, 0),
-           'L'    : (-mu, mu, 0.5-delta),
-           'L1'   : (mu, -mu, 0.5+delta),
-           'L2'   : (0.5-delta, 0.5+delta, -mu),
-           'R'    : (0.0, 0.5, 0.0),
-           'S'    : (0.5, 0.0, 0.0),
-           'T'    : (0.0, 0.0, 0.5),
-           'W'    : (0.25,0.25,0.25),
-           'X'    : (-chi, chi, chi),
-           'X1'   : (chi, 1.0-chi, -chi),
-           'Y'    : (eta, -eta, eta),
-           'Y1'   : (1.0-eta, eta, -eta),
-           'Z'    : (0.5, 0.5, -0.5)
-         }
-         default_band_path = 'gG-X-L-T-W-R-X1-Z-gG-Y-S-W|L1-Y|Y1-Z'
-         band_path = default_band_path
-         return special_points, band_path
+         special_points = {'gG'   : (0, 0, 0),
+                           'L'    : (-mu, mu, 0.5-delta),
+                           'L1'   : (mu, -mu, 0.5+delta),
+                           'L2'   : (0.5-delta, 0.5+delta, -mu),
+                           'R'    : (0.0, 0.5, 0.0),
+                           'S'    : (0.5, 0.0, 0.0),
+                           'T'    : (0.0, 0.0, 0.5),
+                           'W'    : (0.25,0.25,0.25),
+                           'X'    : (-chi, chi, chi),
+                           'X1'   : (chi, 1.0-chi, -chi),
+                           'Y'    : (eta, -eta, eta),
+                           'Y1'   : (1.0-eta, eta, -eta),
+                           'Z'    : (0.5, 0.5, -0.5)}
+   
+    if ibrav_var=='TRI1A':        
+        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG' 
+        special_points = {'gG'    : (0.0,0.0,0.0),
+                          'L'     : (0.5,0.5,0.0),
+                          'M'     : (0.0,0.5,0.5),
+                          'N'     : (0.5,0.0,0.5),
+                          'R'     : (0.5,0.5,0.5),
+                          'X'     : (0.5,0.0,0.0),
+                          'Y'     : (0.0,0.5,0.0),
+                          'Z'     : (0.0,0.0,0.5),}
+        
+    if ibrav_var=='TRI2A':        
+        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
+        special_points = {'gG'    : (0.0,0.0,0.0),
+                          'L'     : (0.5,0.5,0.0),
+                          'M'     : (0.0,0.5,0.5),
+                          'N'     : (0.5,0.0,0.5),
+                          'R'     : (0.5,0.5,0.5),
+                          'X'     : (0.5,0.0,0.0),
+                          'Y'     : (0.0,0.5,0.0),
+                          'Z'     : (0.0,0.0,0.5),}
+ 
+    if ibrav_var=='TRI1B':        
+        band_path = "X-gG-Y|L-gG-Z|N-gG-M|R-gG"
+        special_points = {'gG'    : ( 0.0, 0.0,0.0),
+                          'L'     : ( 0.5,-0.5,0.0),
+                          'M'     : ( 0.0, 0.0,0.5),
+                          'N'     : (-0.5,-0.5,0.5),
+                          'R'     : ( 0.0,-0.5,0.5),
+                          'X'     : ( 0.0,-0.5,0.0),
+                          'Y'     : ( 0.5, 0.0,0.0),
+                          'Z'     : (-0.5, 0.0,0.5),}
 
-    def HEX(cellOld):
-         special_points = {
-           'gG'    : (0, 0, 0),
-           'A'    : (0.0, 0.0, 0.5),
-           'H'    : (1.0/3.0, 1.0/3.0, 0.5),
-           'K'    : (1.0/3.0, 1.0/3.0, 0.0),
-           'L'    : (0.5, 0.0, 0.5),
-           'M'    : (0.5, 0.0, 0.0)
-         }
+    if ibrav_var=='TRI2B':        
+        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
+        special_points = {'gG'    : ( 0.0, 0.0,0.0),
+                          'L'     : ( 0.5,-0.5,0.0),
+                          'M'     : ( 0.0, 0.0,0.5),
+                          'N'     : (-0.5,-0.5,0.5),
+                          'R'     : ( 0.0,-0.5,0.5),
+                          'X'     : ( 0.0,-0.5,0.0),
+                          'Y'     : ( 0.5, 0.0,0.0),
+                          'Z'     : (-0.5, 0.0,0.5),}
+            
+    if ibrav_var=='MCLC':
+       sin_gamma = numpy.sin(numpy.arccos(cos_gamma)) 
+       mu        = (1+(b/a)**2.0)/4.0
+       delta     = b*c*cos_gamma/(2.0*a**2.0)
+       xi        = mu -0.25*+(1.0 - b*cos_gamma/c)*(4.0*(sin_gamma**2.0))
+       eta       = 0.5 + 2.0*xi*c*cos_gamma/b
+       phi       = 1.0 + xi - 2.0*mu
+       psi       = eta - 2.0*delta
 
-         default_band_path = 'gG-M-K-gG-A-L-H-A|L-M|K-H'
-         band_path = default_band_path
-         return special_points, band_path
+    if ibrav_var=='MCLC2':        
+        pass
+
+    if ibrav_var=='MCLC5':        
+        pass
+
     '''
     def MCL(cellOld):
        a1 = cellOld[0][0]
@@ -1361,271 +2520,47 @@ def __getHighSymPoints(oneCalc,ID=None):
        band_path = default_band_path
        return special_points, band_path
     '''
+###############################################################################
+###############################################################################           
+    aflow_conv = numpy.identity(3)
+    qe_conv    = numpy.identity(3)
 
+    if ibrav==2:
+        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0                       
+        qe_conv    = numpy.asarray([[-1.0, 0.0, 1.0],[ 0.0, 1.0, 1.0],[-1.0, 1.0, 0.0]])/2.0
+    if ibrav==3:
+        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0                    
+        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0                    
+    if ibrav==7:
+        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
+        qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0],[ 1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
+    if ibrav==9:
+        aflow_conv = numpy.asarray([[ 1.0,-1.0, 0.0],[ 1.0, 1.0, 0.0],[ 0.0, 0.0, 2.0]])/2.0
+        qe_conv    = numpy.asarray([[ 1.0, 1.0, 0.0],[-1.0, 1.0, 0.0],[ 0.0, 0.0, 2.0]])/2.0
+    if ibrav==10:
+        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0
+        qe_conv    = numpy.asarray([[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0],[ 0.0, 1.0, 1.0]])/2.0  
+    if ibrav==11:
+        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
+        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
 
-    def RHL1(cellOld):
+                                   
+    for k,v in special_points.iteritems():
+        second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+        special_points[k]=tuple(second.flatten().tolist()[0])
 
-       tx = cellOld[0][0]
-       c = (((tx**2)*2)-1.0)
-       c = -c
-       alpha = numpy.arccos(c)
-       eta1 = 1.0 + 4.0*numpy.cos(alpha)
-       eta2 = 2.0 + 4.0*numpy.cos(alpha)
-       eta = eta1/eta2
-       nu = 0.75 - eta/2.0
-       special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'B'    : (eta, 0.5, 1.0-eta),
-           'B1'    : (0.5, 1.0-eta, eta-1.0),
-           'F'    : (0.5, 0.5, 0.0),
-           'L'    : (0.5, 0.0, 0.0),
-           'L1'    : (0.0, 0.0, -0.5),
-           'P'    : (eta, nu, nu),
-           'P1'    : (1.0-nu, 1.0-nu, 1.0-eta),
-           'P2'    : (nu, nu, eta-1.0),
-           'Q'    : (1.0-nu, nu, 0.0),
-           'X'    : (nu, 0.0, -nu),
-           'Z'    : (0.5, 0.5, 0.5)
-         }
-       default_band_path = 'gG-L-B1|B-Z-gG-X|Q-F-P1-Z|L-P'
-       band_path = default_band_path
-       return special_points, band_path
-
-    def RHL2(cellOld):           
-
-        tx = cellOld[0][0]
-        c = (((tx**2)*2)-1.0)
-        c = -c
-        alpha = numpy.arccos(c)
-        eta = 1.0/(2*numpy.tan(alpha/2.0)**2)
-        nu = 0.75 - eta/2.0
-
-        special_points = {
-           'gG'    : (0.0, 0.0, 0.0),
-           'F'    : (0.5, -0.5, 0.0),
-           'L'    : (0.5, 0.0, 0.0),
-           'P'    : (1.0-nu, -nu, 1.0-nu),
-           'P1'    : (nu, nu-1.0, nu-1.0),
-           'Q'    : (eta, eta, eta),
-           'Q1'    : (1.0-eta, -eta, -eta),
-           'Z'    : (0.5, -0.5, 0.5)
-         } 
-        default_band_path = 'gG-P-Z-Q-gG-F-P1-Q1-L-Z'
-        band_path = default_band_path
-        return special_points, band_path
-
-
-    def TRI1A(cellOld):
-        special_points = {
-           'gG'   : (0.0,0.0,0.0),
-           'L'    : (0.5,0.5,0.0),
-           'M'    : (0.0,0.5,0.5),
-           'N'    : (0.5,0.0,0.5),
-           'R'    : (0.5,0.5,0.5),
-           'X'    : (0.5,0.0,0.0),
-           'Y'    : (0.0,0.5,0.0),
-           'Z'    : (0.0,0.0,0.5),
-           }
-
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-        return special_points, band_path
-    def TRI2A(cellOld):
-        special_points = {
-           'gG'   : (0.0,0.0,0.0),
-           'L'    : (0.5,0.5,0.0),
-           'M'    : (0.0,0.5,0.5),
-           'N'    : (0.5,0.0,0.5),
-           'R'    : (0.5,0.5,0.5),
-           'X'    : (0.5,0.0,0.0),
-           'Y'    : (0.0,0.5,0.0),
-           'Z'    : (0.0,0.0,0.5),
-           }
-
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-
-        return special_points, band_path
-
-    def TRI1B(cellOld):
-        special_points = {
-           'gG'   : ( 0.0, 0.0,0.0),
-           'L'    : ( 0.5,-0.5,0.0),
-           'M'    : ( 0.0, 0.0,0.5),
-           'N'    : (-0.5,-0.5,0.5),
-           'R'    : ( 0.0,-0.5,0.5),
-           'X'    : ( 0.0,-0.5,0.0),
-           'Y'    : ( 0.5, 0.0,0.0),
-           'Z'    : (-0.5, 0.0,0.5),
-           }
-
-
-        band_path = str("X-gG-Y|L-gG-Z|N-gG-M|R-gG")
-        return special_points, band_path
-
-    def TRI2B(cellOld):
-        special_points = {
-           'gG'   : ( 0.0, 0.0,0.0),
-           'L'    : ( 0.5,-0.5,0.0),
-           'M'    : ( 0.0, 0.0,0.5),
-           'N'    : (-0.5,-0.5,0.5),
-           'R'    : ( 0.0,-0.5,0.5),
-           'X'    : ( 0.0,-0.5,0.0),
-           'Y'    : ( 0.5, 0.0,0.0),
-           'Z'    : (-0.5, 0.0,0.5),
-           }
-
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-        return special_points, band_path
-
-    ########################################################################################################################################
-
-    def choose_lattice(ibrav, cellOld):                        
-        if(int(ibrav)==1):
-            var1, var2 = CUB(cellOld)
-            return var1, var2
-
-        elif(int(ibrav)==2):
-            var1, var2 = FCC(cellOld)
-            return var1, var2
-
-        elif(int(ibrav)==3):
-           var1, var2 = BCC(cellOld)
-           return var1, var2
-
-        elif(int(ibrav)==4):
-            var1, var2 = HEX(cellOld)
-            return var1, var2
-
-        elif(int(ibrav)==5):
-            try:
-                cellOld = cellOld.getA()
-            except:
-                pass
-
-
-            tx = cellOld[0][0]
-
-            c = (((tx**2)*2)-1.0)
-            c = -c
-
-
-
-            alpha=numpy.arccos(c)
-
-
-            if alpha < numpy.pi/2.0:
-                var1, var2 = RHL1(cellOld)
-                return var1, var2
-
-            elif alpha > numpy.pi/2.0:
-                var1, var2 = RHL2(cellOld)
-                return var1, var2
-
-
-        elif(int(ibrav)==6):
-           var1, var2 = TET(cellOld)
-           return var1, var2
-
-        elif(int(ibrav)==7):
-            try:
-                cellOld = cellOld.getA()
-            except:
-                pass
-            a = cellOld[1][0]*2
-            c = cellOld[1][2]*2
-
-            if(c < a):
-              var1, var2 = BCT1(cellOld)
-              return var1, var2
-
-            elif(c > a):
-              var1, var2 = BCT2(cellOld)
-              return var1, var2
-
-
-        elif(int(ibrav)==8):
-           var1, var2 = ORC(cellOld)
-           return var1, var2
-
-        elif(int(ibrav)==9):
-           var1, var2 = ORCC(cellOld)
-           return var1, var2
-
-        elif(int(ibrav)==10):
-
-            a1 = cellOld[0][0]*2
-            b1 = cellOld[1][1]*2
-            c1 = cellOld[2][2]*2
-            myList = [a1, b1, c1]
-            c = max(myList)
-            a = min(myList)
-            myList.remove(a)
-            myList.remove(c)
-            b = myList[0]
-
-            if(1.0/a**2 > 1.0/b**2 + 1.0/c**2):
-                var1, var2 = ORCF1(cellOld)
-                return var1, var2
-
-            elif(1.0/a**2 < 1.0/b**2 + 1.0/c**2):
-                var1, var2 = ORCF2(cellOld)
-                return var1, var2
-
-            elif(1.0/a**2 == 1.0/b**2 + 1.0/c**2):
-                '''
-                var1, var2 = ORCF3(cellOld)
-                return var1, var2
-                '''
-                raise Exception
-        elif(int(ibrav)==11):
-
-            var1, var2 = ORCI(cellOld)
-            return var1, var2
-        elif(int(ibrav)==14):
-
-            a,b,c,alpha,beta,gamma =  free2abc(cellOld,cosine=False,bohr=False,string=False)
-
-            minAngle = min([float(alpha),float(beta),float(gamma)])
-            maxAngle = max([float(alpha),float(beta),float(gamma)])
-            if alpha==90.0 or beta==90.0 or gamma==90.0:
-                if alpha>=90.0 or beta>=90.0 or gamma>=90.0:
-                    var1,var2 = TRI2A(cellOld)
-                    return var1,var2
-                if alpha<=90.0 or beta<=90.0 or gamma<=90.0:
-                    var1,var2 = TRI2B(cellOld)
-                    return var1,var2
-            elif minAngle>90.0:
-                var1,var2 = TRI1A(cellOld)
-                return var1,var2
-            elif maxAngle<90:
-                var1,var2 = TRI1B(cellOld)
-                return var1,var2
-
-        '''
-        elif(int(ibrav)==12):
-            var1, var2 = MCL(cellOld)
-            return var1, var2
-        '''                
-    #######################################################################
-    ibrav = 0
-    ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
-
-    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
-
-    if ibrav==0:
-            return
-    if ibrav < 0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
-
-    alat,cellOld = __getCellParams(oneCalc,ID)        
-
-    if ibrav==5:
-        cellOld/=alat
-
-    special_points, band_path = choose_lattice(ibrav, cellOld)
 
     return special_points, band_path	
+#############################################################################################################
+#############################################################################################################
+#############################################################################################################
+
+
+
+
+
+
+
 
 
 
@@ -1647,11 +2582,11 @@ def writeInputFromOutput(calcs,replace=False,runlocal=False):
 
     for ID,oneCalc in calcs.iteritems():
         if runlocal==False:
-            AFLOWpi.prep.__addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr.__writeInputFromOutput(oneCalc,ID,replace=%s)\n' % replace)
+            AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._writeInputFromOutput(oneCalc,ID,replace=%s)\n' % replace)
         else:
-            AFLOWpi.retr.__writeInputFromOutput(oneCalc,ID,replace=replace)
+            AFLOWpi.retr._writeInputFromOutput(oneCalc,ID,replace=replace)
         
-def __writeInputFromOutputString(oneCalc,ID):
+def _writeInputFromOutputString(oneCalc,ID):
     '''
     Generates an input of that step updated with the positions and lattice vectors of its output
 
@@ -1715,7 +2650,7 @@ def __writeInputFromOutputString(oneCalc,ID):
         
     try:
         
-        tokenizedInput =  __splitInput(newInput)
+        tokenizedInput =  AFLOWpi.retr._splitInput(newInput)
         tokenCopy = copy.deepcopy(tokenizedInput)
 
         for nameList,nameListDict in tokenizedInput.iteritems():
@@ -1739,7 +2674,7 @@ def __writeInputFromOutputString(oneCalc,ID):
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
-        newInput = __joinInput(tokenCopy)        
+        newInput = AFLOWpi.retr._joinInput(tokenCopy)        
         
         if len(cellParamRegex.findall(engineOutput))!=0:
             newInput = re.sub('ibrav\s*=\s*[0-9]*','ibrav = 0',newInput)
@@ -1763,7 +2698,7 @@ def __writeInputFromOutputString(oneCalc,ID):
     return newInput
 
 
-def __prefixFromInput(inputString):
+def _prefixFromInput(inputString):
     '''
     DEFUNCT <CONSIDER FOR REMOVAL>
 
@@ -1778,14 +2713,14 @@ def __prefixFromInput(inputString):
 
     '''
 
-    prefix = AFLOWpi.retr.__splitInput(inputString)['&control']['prefix']
+    prefix = AFLOWpi.retr._splitInput(inputString)['&control']['prefix']
     prefix=prefix.replace("'","")
     prefix=prefix.replace('"','')
 
     return prefix
     
 
-def __writeInputFromOutput(oneCalc,ID,replace=False):
+def _writeInputFromOutput(oneCalc,ID,replace=False):
     '''
     Writes an input file of that step updated with the positions and lattice vectors of its output
 
@@ -1802,7 +2737,7 @@ def __writeInputFromOutput(oneCalc,ID,replace=False):
     '''
 
     outFileName = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_new.in')
-    newInput = __writeInputFromOutputString(oneCalc,ID)
+    newInput = AFLOWpi.retr._writeInputFromOutputString(oneCalc,ID)
     if newInput!=None:
         with open(outFileName,'w') as outFile:
             outFile.write(newInput)
@@ -1818,7 +2753,7 @@ def __writeInputFromOutput(oneCalc,ID,replace=False):
 
 
 
-def __writeEfermi(oneCalc,ID):
+def _writeEfermi(oneCalc,ID):
     '''
     Grabs the fermi enery or HOMO energy from the output files of the dos calculations
     and converts into rydberg then writes it to file <ID>.efermi
@@ -1882,7 +2817,7 @@ def __writeEfermi(oneCalc,ID):
             outFileObj.write(str(Efermi))
         
 
-def __getEfermi(oneCalc,ID):
+def _getEfermi(oneCalc,ID,directID=False):
     '''
     Grabs fermi level from <ID>.efermi file. if there is none returns 0.0
 
@@ -1897,7 +2832,10 @@ def __getEfermi(oneCalc,ID):
           efermi (float): fermi level 
    
     '''
-    glob_ID=  AFLOWpi.prep.__return_ID(oneCalc,ID,step_type='dos',last=True,straight=False)
+    if directID==True:
+        glob_ID=ID
+    else:
+        glob_ID=  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='dos',last=True,straight=False)
 
     fermi_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.efermi'%glob_ID)
     try:
@@ -1909,9 +2847,9 @@ def __getEfermi(oneCalc,ID):
         return 0.0
 
 
-def __joinInput(inputDict):
+def _joinInput(inputDict):
     '''
-    Joins input tokenized by AFLOWpi.retr.__splitInput and returns a string of a QE pwscf input file
+    Joins input tokenized by AFLOWpi.retr._splitInput and returns a string of a QE pwscf input file
 
     Arguments:
           inputDict (dict): tokenized input file
@@ -1948,26 +2886,7 @@ def __joinInput(inputDict):
     return newInputString
 
 
-
-# def __getDistOutput(inputFile,distance=20.0):
-#     '''
-    
-
-#     Arguments:
-
-
-#     Keyword Arguments:
-
-
-#     Returns:
-
-
-#     '''
-
-#     pass
-
-
-def __getPath(dk, oneCalc,ID=None,points=False):
+def _getPath(dk, oneCalc,ID=None,points=False):
     '''
     Get path between HSP
 
@@ -2017,12 +2936,12 @@ def __getPath(dk, oneCalc,ID=None,points=False):
         logging.error('The ibrav value from expresso has not yet been implemented to the framework')
         raise Exception
 
-    alat,cell = AFLOWpi.retr.__getCellParams(oneCalc,ID)
+    alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
 
 
     totalK=0
-    special_points, band_path = __getHighSymPoints(oneCalc,ID=ID)
+    special_points, band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID=ID)
     hs = 2*numpy.pi*numpy.linalg.inv(cell)  # reciprocal lattice
     segs = getSegments(band_path)
 
@@ -2066,9 +2985,12 @@ def __getPath(dk, oneCalc,ID=None,points=False):
 
 
                 else:
-                    numPointsStr += '%s %s \n' % (point1.rjust(2),numK) 
+                    sp1 = special_points[point1]
+                    sp2 = special_points[point2]
+
+                    numPointsStr += '%s %s %s %s ! %s\n' % (sp1[0],sp1[1],sp1[2],numK,point1.rjust(2))
                     if(index2 == len(a)-2):
-                        numPointsStr += '%s %s \n' % (point2.rjust(2),str(0))     
+                        numPointsStr += '%s %s %s %s ! %s\n' % (sp2[0],sp2[1],sp2[2],str(0),point2.rjust(2))
 
             except Exception,e:
                 print e
@@ -2079,7 +3001,7 @@ def __getPath(dk, oneCalc,ID=None,points=False):
     return numPointsStr
 
 
-def __joinMatrixLabels(labels,matrix):
+def _joinMatrixLabels(labels,matrix):
     '''
     Joins a list of the atomic position species labels with a list or array of their atomic positions
 
@@ -2095,12 +3017,12 @@ def __joinMatrixLabels(labels,matrix):
 
     '''
     
-    matrixString = __cellMatrixToString(matrix)
+    matrixString = AFLOWpi.retr._cellMatrixToString(matrix)
 
     outString = '\n'.join( [' '.join(x) for x  in zip(labels,matrixString.split('\n'))])
     return outString
 
-def __orderSplitInput(inputCalc):
+def _orderSplitInput(inputCalc):
     '''
     Order tokenized input as QE needs it
 
@@ -2128,7 +3050,7 @@ def __orderSplitInput(inputCalc):
 
     return newOrderedDict
 
-def __splitInput(inFileString):
+def _splitInput(inFileString):
     '''
     Tokenizes the QE pwscf input file
 
@@ -2210,8 +3132,11 @@ def __splitInput(inFileString):
         if len(cellParamRegex.findall(inFileString)):
             paramUnits=unitsRegex.findall(inFileString)[-1].strip()
             paramUnits = paramUnits.lower()
-            if len(paramUnits.strip()):
-                paramUnits = '{%s}' % paramUnits
+            if paramUnits in ['cubic','crystal','angstrom','bohr']:
+                if len(paramUnits.strip()):
+                    paramUnits = '{%s}' % paramUnits
+                else:
+                    paramUnits=''
             else:
                 paramUnits=''
 
@@ -2318,7 +3243,7 @@ def pw2cif(calcs,inpt=True,outp=True,runlocal=False,outputFolder=None,filePrefix
             if runlocal:
                 inOrOut=eval(inpt_or_outp)
                 try:
-                    AFLOWpi.retr.__pw2cif(oneCalc,ID,inOrOut=inOrOut,outputFolder=outputFolder,filePrefix=filePrefix)
+                    AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=inOrOut,outputFolder=outputFolder,filePrefix=filePrefix)
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
                     continue
@@ -2326,14 +3251,14 @@ def pw2cif(calcs,inpt=True,outp=True,runlocal=False,outputFolder=None,filePrefix
                 inOrOut=inpt_or_outp
                 if outputFolder==None:
 
-                    AFLOWpi.prep.__addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr.__pw2cif(oneCalc,ID,inOrOut=%s,outputFolder=None,filePrefix="%s")\n' % (inOrOut,filePrefix))
+                    AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=%s,outputFolder=None,filePrefix="%s")\n' % (inOrOut,filePrefix))
                 else:
-                    AFLOWpi.prep.__addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr.__pw2cif(oneCalc,ID,inOrOut=%s,outputFolder="%s",filePrefix="%s")\n' % (inOrOut,outputFolder,filePrefix))
+                    AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=%s,outputFolder="%s",filePrefix="%s")\n' % (inOrOut,outputFolder,filePrefix))
 
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
 
-def __pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
+def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
     '''
     Generates the CIF from input or output of single calculation at that step
 
@@ -2445,13 +3370,13 @@ def __pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
 
     if inOrOut.lower()=='input' or inOrOut.lower()=='both':
 
-        labels,atomicPositions,cellParamVec = __getConventionalCellFromInput(oneCalc,ID)
+        labels,atomicPositions,cellParamVec = AFLOWpi.retr._getConventionalCellFromInput(oneCalc,ID)
 
         input_suffix='.in'
         cif_suffix='.in.cif'
         
 
-        inputDict = __splitInput(inputFileString)
+        inputDict = AFLOWpi.retr._splitInput(inputFileString)
         ibravRegex= re.compile(r'ibrav\s*=\s*([0-9]{1,2})')
 
         try:
@@ -2459,7 +3384,7 @@ def __pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
             ibrav=int(ibravOrig)
             if ibrav==5:
 
-                labels,atomicPositions,cellParamVec = __rho2hex(cellParamVec,atomicPositions,labels)
+                labels,atomicPositions,cellParamVec = AFLOWpi.retr._rho2hex(cellParamVec,atomicPositions,labels)
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -2477,7 +3402,7 @@ _cell_angle_beta %s
 _cell_angle_gamma %s
 """ % (cif_prefix[:-1],a,b,c,alpha,beta,gamma)
 
-        atomicPositions = __cellMatrixToString(atomicPositions)
+        atomicPositions = AFLOWpi.retr._cellMatrixToString(atomicPositions)
         atomicPositions = '\n'.join( [' '.join(x) for x  in zip(labels,atomicPositions.split('\n'))])        
         outFileString += atomPosPretty(atomicPositions,ibravOrig)
         outFileString += '\n'
@@ -2497,9 +3422,11 @@ _cell_angle_gamma %s
 
 
         try:
-
-            labels,positions,cell = __getConventionalCellFromOutput(oneCalc,ID)
-
+#            labels,positions,cell = AFLOWpi.retr._getConventionalCellFromOutput(oneCalc,ID)
+            labels=AFLOWpi.retr._getPosLabels(inputString)
+            alat,cellParamMatrix = AFLOWpi.retr._getCellParams(oneCalc,ID)
+            cell=cellParamMatrix*float(alat)
+            positions = AFLOWpi.retr.getPositionsFromOutput(oneCalc,ID)
             
 
             ibrav = AFLOWpi.retr.getIbravFromVectors(cell)        
@@ -2520,8 +3447,10 @@ _cell_angle_gamma %s
                 print "Error finding ATOMIC_POSITIONS from output"
                 logging.warning("Error finding ATOMIC_POSITIONS from output")
                 return
-        
-        cellParamVec = __getCellOutDim(oneCalc,ID)
+        try:
+            cellParamVec = AFLOWpi.retr._getCellOutDim(oneCalc,ID)
+        except:
+            return
 
 
         a = cellParamVec['a']
@@ -2545,7 +3474,7 @@ _cell_angle_beta %s
 _cell_angle_gamma %s
 """ % (cif_prefix[:-1],a,b,c,alpha,beta,gamma)
         
-        positions= __joinMatrixLabels(labels,positions)
+        positions= AFLOWpi.retr._joinMatrixLabels(labels,positions)
 
 
         outFileString += atomPosPretty(positions,ibrav)
@@ -2642,8 +3571,8 @@ def inputDict2params(inputDict):
         gamma = 120.0
     if ibrav == 5 or ibrav == -5:
         b = a
-        beta = alpha
-        gamma = 120.0
+#        beta = alpha
+#        gamma = 120.0
     if ibrav == 6:
         b = a
         alpha,beta,gamma = (90.0,90.0,90.0)
@@ -2669,7 +3598,7 @@ def inputDict2params(inputDict):
 
     return a,b,c,alpha,beta,gamma
 
-def __getCellOutDim(oneCalc,ID):
+def _getCellOutDim(oneCalc,ID,cosine=True,degrees=True):
     '''
     Returns the cell parameters a,b,c,alpha,beta,gamma of the primitive lattice from the output.
     If the primitive lattice does not change during the calculation it takes it from the input
@@ -2707,7 +3636,7 @@ def __getCellOutDim(oneCalc,ID):
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
-    alat,cellOld = __getCellParams(oneCalc,ID)
+    alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
     paramList = []
     alat,cellParaMatrix=__getCellParams(oneCalc,ID)
@@ -2715,7 +3644,7 @@ def __getCellOutDim(oneCalc,ID):
 
     alatRegex = re.compile(r'(?:CELL_PARAMETERS)\s*\(alat\s*=\s*([0-9.]*)\)',re.MULTILINE)
 
-    splitInput  = __splitInput(oneCalc['_AFLOWPI_INPUT_'])
+    splitInput  = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 
     string= free2abc(cellParaMatrix)
     cellParams=[float(x.split('=')[1]) for x in string.split(',')]
@@ -2725,6 +3654,7 @@ def __getCellOutDim(oneCalc,ID):
 
 
 
+        
 
     ibravOrig = int(splitInput['&system']['ibrav'])
 
@@ -2733,9 +3663,24 @@ def __getCellOutDim(oneCalc,ID):
     celldmDict['ibrav']=ibravOrig
 
     out_params = {'a':cellParams[0],'b':cellParams[1],'c':cellParams[2],'alpha':cellParams[3],'beta':cellParams[4],'gamma':cellParams[5]}
+
+    if cosine==False:
+        out_params['alpha']=numpy.arccos(out_params['alpha'])
+        out_params['beta']=numpy.arccos(out_params['beta'])
+        out_params['gamma']=numpy.arccos(out_params['gamma'])
+        
+        if degrees==True:
+            out_params['alpha']*=180.0/numpy.pi
+            out_params['beta']*=180.0/numpy.pi
+            out_params['gamma']*=180.0/numpy.pi
+
+
+    for k,v in out_params.iteritems():
+        out_params[k]=float('%10.5e'%numpy.around(v,decimals=5))
+
     return out_params
 
-def __getInputParams(oneCalc,ID):
+def _getInputParams(oneCalc,ID):
     '''
     Returns the cell parameters a,b,c,alpha,beta,gamma of the primitive lattice from the input.
 
@@ -2754,7 +3699,7 @@ def __getInputParams(oneCalc,ID):
 
     inputFileString  = oneCalc['_AFLOWPI_INPUT_']
 
-    inputDict = __splitInput(inputFileString)['&system']
+    inputDict = AFLOWpi.retr._splitInput(inputFileString)['&system']
     
     for key in inputDict.keys():
         if re.match(r'celldm',key): 
@@ -2822,12 +3767,22 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                                (-celldm1,-celldm1, celldm1)))/2.0
         
     if ibrav==4:
-        matrix = numpy.matrix(((1        ,0               , 0      ),
-                               (-0.5     ,numpy.sqrt(3)/2 , 0      ),
-                               (0        ,0               , celldm3)))*celldm1
+        matrix = numpy.matrix((( 1.        ,0.               , 0.      ),
+                               (-0.5       ,numpy.sqrt(3)/2  , 0.      ),
+                               ( 0.        ,0.               , celldm3)))*celldm1
 
+        # if numpy.abs(celldm4-celldm5)<0.01 and numpy.abs(celldm4-celldm6)<0.01 and numpy.abs(celldm6-celldm5)<0.01:
+        #     c=celldm4
+        #     tx=numpy.sqrt((1-c)/2)
+        #     ty=numpy.sqrt((1-c)/6)
+        #     tz=numpy.sqrt((1+2*c)/3)
+
+        #     matrix = celldm1*numpy.matrix(((tx  ,-ty  , tz),
+        #                                    (0   , 2*ty, tz),
+        #                                    (-tx ,-ty  , tz)))
 
     if ibrav==5:
+        print celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,
         c=celldm4
         tx=numpy.sqrt((1-c)/2)
         ty=numpy.sqrt((1-c)/6)
@@ -2836,6 +3791,16 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
         matrix = celldm1*numpy.matrix(((tx  ,-ty  , tz),
                                        (0   , 2*ty, tz),
                                        (-tx ,-ty  , tz)))
+
+
+
+
+        # if numpy.abs(celldm4+0.5)<0.01 or numpy.abs(celldm5+0.5)<0.01 or numpy.abs(celldm6+0.5)<0.01:
+        #     matrix = numpy.matrix((( 1.        ,0.               , 0.      ),
+        #                            (-0.5       ,numpy.sqrt(3)/2  , 0.      ),
+        #                            ( 0.        ,0.               , celldm3)))*celldm1
+
+
 
                     
     if ibrav==-5:
@@ -2856,11 +3821,11 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if ibrav==7:
         matrix = numpy.matrix((
-                ( 1,-1,celldm3),
-                ( 1, 1,celldm3),
-                (-1,-1,celldm3),
-                ))
-        matrix*=celldm1/2.0
+                ( 1.0,-1.0,celldm3),
+                ( 1.0, 1.0,celldm3),
+                (-1.0,-1.0,celldm3),
+                ))*celldm1
+        matrix/=2.0
 
     if ibrav==8:
         matrix = celldm1*numpy.matrix(((1.0, 0.0     , 0.0    ,),
@@ -2886,13 +3851,13 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if ibrav==-9:
         matrix=numpy.matrix(((a/2,-b/2,0),
-                             (a/2,-b/2,0),
+                             (a/2, b/2,0),
                              (0,   0,  c)))
 
     if ibrav==10:
-        matrix = numpy.matrix(((a,  0,  c  ),
-                               (a,  b,  0  ),  
-                               (0,  b,  c  )))/2.0
+        matrix = numpy.matrix(((a,   0.,  c   ),
+                               (a,   b,   0.  ),  
+                               (0.,  b,   c   )))/2.0
 
 
 
@@ -2908,12 +3873,8 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                                (b*numpy.cos(gamma),b*numpy.sin(gamma),0),
                                (0,           0,           c)))
 
-    if ibrav==-12:
-        beta=numpy.arccos(celldm5)
-        matrix=numpy.matrix(((a,0,0),
-                             (0,b,0),
-                             (c*numpy.sin(beta),0,c*numpy.sin(beta))))
     if ibrav==13:
+        print celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,
         gamma=numpy.arccos(celldm4)
         matrix=numpy.matrix(((a/2,                0,                -c/2),
                              (b*numpy.cos(gamma), b*numpy.sin(gamma),0),
@@ -2943,7 +3904,7 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
     else:
         return matrix
 
-def __pw2aflowConvention(cellParamMatrix,symMatrix):
+def _pw2aflowConvention(cellParamMatrix,symMatrix):
     '''
     DEFUNCT <CONSIDER FOR REMOVAL>
 
@@ -2959,13 +3920,13 @@ def __pw2aflowConvention(cellParamMatrix,symMatrix):
     '''        
 
     '''transform the positions first with the pre-transformed vectors'''
-    newSymMatrix       = __pw2aflowPositions(cellParamMatrix,symMatrix)
+    newSymMatrix       = AFLOWpi.retr._pw2aflowPositions(cellParamMatrix,symMatrix)
     '''now get the transformed cell vectors'''
-    newCellParamMatrix = __pw2aflowConventionVec(cellParamMatrix)
+    newCellParamMatrix = AFLOWpi.retr._pw2aflowConventionVec(cellParamMatrix)
     
     return newCellParamMatrix,newSymMatrix
 
-def __pw2aflowConventionVec(cellParamMatrix):
+def _pw2aflowConventionVec(cellParamMatrix):
     '''
     DEFUNCT <CONSIDER FOR REMOVAL>
 
@@ -3000,7 +3961,7 @@ def __pw2aflowConventionVec(cellParamMatrix):
 
 
 
-def __pw2aflowPositions(cellParamMatrix,symMatrix):
+def _pw2aflowPositions(cellParamMatrix,symMatrix):
     '''
     DEFUNCT <CONSIDER FOR REMOVAL>    
 
@@ -3041,7 +4002,7 @@ def __pw2aflowPositions(cellParamMatrix,symMatrix):
     return returnMatrix.T
 
 
-def __free2celldm(cellparamatrix,ibrav=0,primitive=True):
+def _free2celldm(cellparamatrix,ibrav=0,primitive=True):
     '''
     Convert lattice vectors to celldm
 
@@ -3091,7 +4052,7 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
     '''        
     
     if primitive==True:
-        cellParamMatrixConv = __prim2ConvVec(cellparamatrix,ibrav=ibrav)        
+        cellParamMatrixConv = AFLOWpi.retr._prim2ConvVec(cellparamatrix,ibrav=ibrav)        
 
     else:
         cellParamMatrixConv = cellparamatrix
@@ -3122,9 +4083,9 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
     celldm_2 = b/a
     celldm_3 = c/a
 
-    celldm_4 = cellParamMatrixConv[1].dot(cellParamMatrixConv[2].T)/(b*c)
+    celldm_6 = cellParamMatrixConv[1].dot(cellParamMatrixConv[2].T)/(b*c)
     celldm_5 = cellParamMatrixConv[0].dot(cellParamMatrixConv[2].T)/(a*c)
-    celldm_6 = cellParamMatrixConv[0].dot(cellParamMatrixConv[1].T)/(a*b)
+    celldm_4 = cellParamMatrixConv[0].dot(cellParamMatrixConv[1].T)/(a*b)
 
 
     ibravStr = ""
@@ -3141,21 +4102,21 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
         if ibrav==1 or ibrav==2 or ibrav==3:
                 ibravStr = "ibrav=%s, celldm(1)=%f\n"%(ibrav,celldm_1)
 
-        elif ibrav == 4 or ibrav == 6 or ibrav==7:
+        elif ibrav==4 or ibrav==6 or ibrav==7:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(3)=%f\n"%(ibrav,celldm_1, celldm_3) 
-        elif ibrav == 5:
+        elif ibrav==5:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_4) 
 
 
-        elif ibrav == 8 or ibrav==9 or ibrav==-9 or ibrav ==10 or ibrav==11:
+        elif ibrav==8 or ibrav==9 or ibrav==-9 or ibrav ==10 or ibrav==11:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3)
-        elif ibrav == 12:
+        elif ibrav==12:
             ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4)
-        elif ibrav == -12:
+        elif ibrav==-12:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(5)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_5)
-        elif ibrav == 13:
+        elif ibrav==13:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4)
-        elif ibrav == 14:
+        elif ibrav==14:
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4, celldm_5, celldm_6)
         else:
             logging.error('ibrav %s is not a valid option.' % ibrav)
@@ -3193,7 +4154,8 @@ def free2abc(cellparamatrix,cosine=True,degrees=True,string=True,bohr=False):
     try:
         cellparamatrix=cellparamatrix.getA()
     except Exception,e:
-        print e
+        pass
+#        print e
     try:
         a = numpy.sqrt(cellparamatrix[0].dot(cellparamatrix[0].T))
         b = numpy.sqrt(cellparamatrix[1].dot(cellparamatrix[1].T))
@@ -3207,7 +4169,7 @@ def free2abc(cellparamatrix,cosine=True,degrees=True,string=True,bohr=False):
     degree2radian = numpy.pi/180
     alpha,beta,gamma=(0.0,0.0,0.0)
 
-    ibrav = getIbravFromVectors(cellparamatrix)
+
     alpha = numpy.arccos(cellparamatrix[1].dot(cellparamatrix[2].T)/(b*c))
     beta  = numpy.arccos(cellparamatrix[0].dot(cellparamatrix[2].T)/(a*c))
     gamma = numpy.arccos(cellparamatrix[0].dot(cellparamatrix[1].T)/(a*b))
@@ -3227,11 +4189,21 @@ def free2abc(cellparamatrix,cosine=True,degrees=True,string=True,bohr=False):
         b*=BohrToAngstrom
         c*=BohrToAngstrom
 
+        a=float('%10.5e'%numpy.around(a,decimals=5))
+        b=float('%10.5e'%numpy.around(b,decimals=5))
+        c=float('%10.5e'%numpy.around(c,decimals=5))
+
     if cosine==True:
         cosBC=numpy.cos(alpha)
         cosAC=numpy.cos(beta)
         cosAB=numpy.cos(gamma)
         paramArray = [a,b,c,cosBC,cosAC,cosAB]
+
+        param_list=[]
+        for v in range(len(paramArray)):
+            param_list.append(float('%10.5e'%numpy.around(paramArray[v],decimals=5)))
+        paramArray=tuple(param_list)
+
         returnString = 'a=%s,b=%s,c=%s,cos(alpha)=%s,cos(beta)=%s,cos(gamma)=%s' % tuple(paramArray)
 
     if degrees==True:
@@ -3241,6 +4213,12 @@ def free2abc(cellparamatrix,cosine=True,degrees=True,string=True,bohr=False):
 
     if cosine!=True:
         paramArray = (a,b,c,alpha,beta,gamma)
+
+        param_list=[]
+        for v in range(len(paramArray)):
+            param_list.append(float('%10.5e'%numpy.around(paramArray[v],decimals=5)))
+        paramArray=tuple(param_list)
+            
         returnString = 'A=%s,B=%s,C=%s,alpha=%s,beta=%s,gamma=%s' % tuple(paramArray)
 
     if string==True:
@@ -3375,20 +4353,22 @@ def abc2celldm(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None):
         gamma = 120.0
     if ibrav == 5 or ibrav == -5:
         b = a
-        beta = alpha
-        gamma = alpha
+        c = b
+#        beta = alpha
+#        gamma = alpha
     if ibrav == 6 or ibrav==7:
         b = a
-    if ibrav==12:
-        gamma=90.0
+    if ibrav==12 or ibrav==13:
+        alpha=90.0
         beta=90.0
 
     celldm1 = a
     celldm2 = b/a
     celldm3 = c/a
-    celldm4 = numpy.cos(alpha*numpy.pi/180.0)
+    celldm4 = numpy.cos(gamma*numpy.pi/180.0)
     celldm5 = numpy.cos(beta*numpy.pi/180.0)
-    celldm6 = numpy.cos(gamma*numpy.pi/180.0)
+    celldm6 = numpy.cos(alpha*numpy.pi/180.0)
+
 
     celldm1=numpy.around(celldm1,decimals=5)
     celldm2=numpy.around(celldm2,decimals=5)
@@ -3431,7 +4411,7 @@ def abcVol(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None):
 
     cellParamMatrix = abc2free(a=a,b=b,c=c,alpha=alpha,beta=beta,gamma=gamma,ibrav=ibrav,returnString=False)
 
-    return getCellVolumeFromVectors(cellParamMatrix)
+    return AFLOWpi.retr.getCellVolumeFromVectors(cellParamMatrix)
 
 def abc2free(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None,returnString=True):
     '''
@@ -3459,45 +4439,45 @@ def abc2free(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None,ret
     cell_vectors = AFLOWpi.retr.celldm2free(ibrav,celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,returnString=returnString)
     return cell_vectors
 
-def ibrav2String(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,celldm5=None,celldm6=None):
-    '''
-    DEFUNCT <CONSIDER FOR REMOVAL>
+# def ibrav2String(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,celldm5=None,celldm6=None):
+#     '''
+#     DEFUNCT <CONSIDER FOR REMOVAL>
 
-    Arguments:
-
-
-    Keyword Arguments:
+#     Arguments:
 
 
-    Returns:
+#     Keyword Arguments:
 
 
-    '''        
+#     Returns:
 
-    ibravStr = ""
 
-    try:
-        if ibrav == 1 or ibrav == 2 or ibrav ==3:
-                ibravStr = "ibrav=1, celldm(1)=%f\n"%celldm1
-        elif ibrav == 5:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f\n"%(celldm1, celldm2) 
-        elif ibrav == 4 or ibrav == 6 or ibrav ==7:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(3)=%f\n"%(celldm1, celldm3)
-        elif ibrav == 8 or ibrav == 9 or ibrav == 10 or ibrav == 11:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(celldm1, celldm2, celldm3)
-        elif ibrav == 12 or ibrav == 13:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(celldm1, celldm2, celldm3, celldm4)
-        elif ibrav == 14:
-                ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(celldm1, celldm2, celldm3, celldm4, celldm5, celldm6)
-        else:
-            logging.error('ibrav %s is not a valid option.' % ibrav)
-            print 'ibrav %s is not a valid option.' % ibrav
-            return 
+#     '''        
 
-    except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+#     ibravStr = ""
 
-    return ibravStr
+#     try:
+#         if ibrav == 1 or ibrav == 2 or ibrav ==3:
+#                 ibravStr = "ibrav=1, celldm(1)=%f\n"%celldm1
+#         elif ibrav == 5:
+#                 ibravStr = "ibrav=5, celldm(1)=%f, celldm(4)=%f\n"%(celldm1, celldm2) 
+#         elif ibrav == 4 or ibrav == 6 or ibrav ==7:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(3)=%f\n"%(celldm1, celldm3)
+#         elif ibrav == 8 or ibrav == 9 or ibrav == 10 or ibrav == 11:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f\n"%(celldm1, celldm2, celldm3)
+#         elif ibrav == 12 or ibrav == 13:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f\n"%(celldm1, celldm2, celldm3, celldm4)
+#         elif ibrav == 14:
+#                 ibravStr = "ibrav=2, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(celldm1, celldm2, celldm3, celldm4, celldm5, celldm6)
+#         else:
+#             logging.error('ibrav %s is not a valid option.' % ibrav)
+#             print 'ibrav %s is not a valid option.' % ibrav
+#             return 
+
+#     except Exception,e:
+#         AFLOWpi.run._fancy_error_log(e)
+
+#     return ibravStr
 
 
 
@@ -3522,14 +4502,14 @@ def getPositionsFromOutput(oneCalc,ID):
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.out'),'r') as outFileObj:
             outFileString  = outFileObj.read()
 
-        pos= __getPositions(outFileString)
+        pos= AFLOWpi.retr._getPositions(outFileString)
 
         return pos
 
         if len(pos)==0:
             with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.in'),'r') as outFileObj:
                 outFileString  = outFileObj.read()
-            pos = __getPositions(outFileString)
+            pos = AFLOWpi.retr._getPositions(outFileString)
 
             return pos 
     except:
@@ -3537,7 +4517,7 @@ def getPositionsFromOutput(oneCalc,ID):
             with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.in'),'r') as outFileObj:
                 outFileString  = outFileObj.read()
 
-            pos = __getPositions(outFileString)
+            pos = AFLOWpi.retr._getPositions(outFileString)
 
             return pos 
         except Exception,e:
@@ -3562,7 +4542,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
 
     '''        
 
-    splitInput = AFLOWpi.retr.__splitInput(inputString)
+    splitInput = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in splitInput.keys():
         '''sanitize the modifier'''
         modifier=splitInput['CELL_PARAMETERS']['__modifier__'].strip('(){}')
@@ -3571,7 +4551,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
             if modifier=='angstrom':
                 cellTimes=1.0/0.529177249
         cellParamString = splitInput['CELL_PARAMETERS']['__content__']
-        cellParamMatrix = __cellStringToMatrix(cellParamString)*cellTimes
+        cellParamMatrix = AFLOWpi.retr._cellStringToMatrix(cellParamString)*cellTimes
 
         return cellParamMatrix
     celldm2freeDict={'ibrav':splitInput['&system']['ibrav'],'returnString':string}
@@ -3589,7 +4569,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
     return pos
 
 
-def __getCelldm2freeDict(free2celldm_output_dict):
+def _getCelldm2freeDict(free2celldm_output_dict):
     '''
     Cleans fortran array format into a format for python ex. celldm(1) to celldm1
 
@@ -3636,10 +4616,10 @@ def getPositionsFromInput(oneCalc,ID):
             inFileString  = inFileObj.read()
     except:
         return
-    return __getPositions(inFileString)
+    return AFLOWpi.retr._getPositions(inFileString)
 
 
-def __getPositions(inputString,matrix=True):
+def _getPositions(inputString,matrix=True):
     '''
 
 
@@ -3681,10 +4661,7 @@ def __getPositions(inputString,matrix=True):
         return outputMatrix
 
 
-
-
-
-def __getPosLabels(inputString):
+def _getPosLabels(inputString):
     '''
 
 
@@ -3698,7 +4675,6 @@ def __getPosLabels(inputString):
 
 
     '''        
-
 
     try:
         atomicPos     = AFLOWpi.qe.regex.atomic_positions(inputString)
@@ -3715,13 +4691,13 @@ def __getPosLabels(inputString):
     return labels
 
 
-##############################################################################################################################
-##############################################################################################################################
+#################################################################################################################
+#################################################################################################################
 ## prim to conv cell transform
-##############################################################################################################################
-##############################################################################################################################
+#################################################################################################################
+#################################################################################################################
 
-def __rho2hex(cellParamMatrix,symMatrix,labels):
+def _rho2hex(cellParamMatrix,symMatrix,labels):
     '''
 
 
@@ -3774,7 +4750,7 @@ def __rho2hex(cellParamMatrix,symMatrix,labels):
 
     return labels,symMatrix,hex_vec
 
-def __prim2ConvMatrix(cellParamMatrix,ibrav=0):
+def _prim2ConvMatrix(cellParamMatrix,ibrav=0):
     '''
 
 
@@ -3851,7 +4827,7 @@ def __prim2ConvMatrix(cellParamMatrix,ibrav=0):
 
     if ibrav==13:
         conv2prim=numpy.matrix([[ 0.5  , 0.0 ,-0.5 ],
-                                [ 1.0  , 1.0 , 0.0 ],
+                                [ 0.0  , 1.0 , 0.0 ],
                                 [ 0.5  , 0.0 , 0.5 ]])
 
     
@@ -3862,7 +4838,7 @@ def __prim2ConvMatrix(cellParamMatrix,ibrav=0):
 
 
 
-def __prim2ConvVec(cellParamMatrix,ibrav=0):
+def _prim2ConvVec(cellParamMatrix,ibrav=0):
     '''
 
 
@@ -3877,12 +4853,12 @@ def __prim2ConvVec(cellParamMatrix,ibrav=0):
 
     '''        
 
-    prim2conv = __prim2ConvMatrix(cellParamMatrix,ibrav=ibrav)
+    prim2conv = AFLOWpi.retr._prim2ConvMatrix(cellParamMatrix,ibrav=ibrav)
     cellParamMatrixCopy=copy.deepcopy(cellParamMatrix)
-    conv=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
-    return conv
+#    conv=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
+    return prim2conv
 
-def __conv2PrimVec(cellParamMatrix,ibrav=0):
+def _conv2PrimVec(cellParamMatrix,ibrav=0):
     '''
 
 
@@ -3897,12 +4873,12 @@ def __conv2PrimVec(cellParamMatrix,ibrav=0):
 
     '''        
 
-    prim2conv = numpy.linalg.inv(__prim2ConvMatrix(cellParamMatrix,ibrav=ibrav))
+    prim2conv = numpy.linalg.inv(_prim2ConvMatrix(cellParamMatrix,ibrav=ibrav))
     cellParamMatrixCopy=copy.deepcopy(cellParamMatrix)
-    prim=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
-    return prim
+#    prim=prim2conv.dot(cellParamMatrixCopy).astype(numpy.float32)
+    return prim2conv
 
-def __getConventionalCellFromInput(oneCalc,ID):
+def _getConventionalCellFromInput(oneCalc,ID):
     '''
 
 
@@ -3921,18 +4897,18 @@ def __getConventionalCellFromInput(oneCalc,ID):
     inputString = oneCalc['_AFLOWPI_INPUT_']
     cellParamMatrix = AFLOWpi.retr.getCellMatrixFromInput(inputString)
 
-    convCell= AFLOWpi.retr.__prim2ConvVec(cellParamMatrix).getA()
+    convCell= AFLOWpi.retr._prim2ConvVec(cellParamMatrix).getA()
     '''for aflow integration'''
         
     symMatrix = AFLOWpi.retr.getPositionsFromInput(oneCalc,ID)
-    labels=AFLOWpi.retr.__getPosLabels(inputString)
-    labels,transformedPos = AFLOWpi.retr.__prim2convPositions(labels,symMatrix,cellParamMatrix)
+    labels=AFLOWpi.retr._getPosLabels(inputString)
+    labels,transformedPos = AFLOWpi.retr._prim2convPositions(labels,symMatrix,cellParamMatrix)
     convCell = numpy.matrix(convCell)
 
     return labels,transformedPos,convCell
 
 
-def __getConventionalCellFromOutput(oneCalc,ID):
+def _getConventionalCellFromOutput(oneCalc,ID):
     '''
 
 
@@ -3948,17 +4924,18 @@ def __getConventionalCellFromOutput(oneCalc,ID):
 
     '''        
 
-    outputString = AFLOWpi.retr.__getOutputString(oneCalc,ID)
-    alat,cellParamMatrix = __getCellParams(oneCalc,ID)
+    outputString = AFLOWpi.retr._getOutputString(oneCalc,ID)
+    alat,cellParamMatrix = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
-    convCell= AFLOWpi.retr.__prim2ConvVec(cellParamMatrix).getA()
+    convCell= AFLOWpi.retr._prim2ConvVec(cellParamMatrix*alat).getA()
 
     '''for aflow integration'''
 
+
     symMatrix = AFLOWpi.retr.getPositionsFromOutput(oneCalc,ID)
     inputString=oneCalc['_AFLOWPI_INPUT_']
-    labels=AFLOWpi.retr.__getPosLabels(inputString)
-    labels,transformedPos = AFLOWpi.retr.__prim2convPositions(labels,symMatrix,cellParamMatrix)
+    labels=AFLOWpi.retr._getPosLabels(inputString)
+    labels,transformedPos = AFLOWpi.retr._prim2convPositions(labels,symMatrix,cellParamMatrix)
 
 
 
@@ -3982,12 +4959,12 @@ def transform_input_conv(oneCalc,ID):
 
     '''        
 
-    labels,transformedPos,convCell = AFLOWpi.retr.__getConventionalCellFromInput(oneCalc,ID)
+    labels,transformedPos,convCell = AFLOWpi.retr._getConventionalCellFromInput(oneCalc,ID)
     
-    atomic_pos = AFLOWpi.retr.__joinMatrixLabels(labels,transformedPos)
-    celldmDict  = AFLOWpi.retr.__free2celldm(convCell)
+    atomic_pos = AFLOWpi.retr._joinMatrixLabels(labels,transformedPos)
+    celldmDict  = AFLOWpi.retr._free2celldm(convCell)
     
-    splitInput = AFLOWpi.retr.__splitInput(oneCalc['_AFLOWPI_INPUT_'])
+    splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 
     for k,v in splitInput['&system'].iteritems():
         try:
@@ -3996,13 +4973,13 @@ def transform_input_conv(oneCalc,ID):
             pass
     splitInput['ATOMIC_POSITIONS']['__content__']=atomic_pos
     splitInput['&system']['nat']=len(labels)
-    newInput  = AFLOWpi.retr.__joinInput(splitInput)
+    newInput  = AFLOWpi.retr._joinInput(splitInput)
 
     return newInput
 
 
 
-def __prim2convPositions(labels,symMatrix,cellParamMatrix):
+def _prim2convPositions(labels,symMatrix,cellParamMatrix):
     '''
 
 
@@ -4017,11 +4994,20 @@ def __prim2convPositions(labels,symMatrix,cellParamMatrix):
 
     '''        
 
+    try:
+        symMatrix=symMatrix.getA()
+    except:
+        pass
+
+    symMatrix = AFLOWpi.retr._shiftAfter(symMatrix)
     returnMatrix=copy.deepcopy(symMatrix)
     ibrav = getIbravFromVectors(cellParamMatrix)
 
     #'''primative=conv'''
-    symMatrix = AFLOWpi.retr.__shiftAfter(symMatrix)
+
+
+
+
 
     if ibrav==1 or ibrav==6 or ibrav==8 or ibrav==12 or ibrav==14 or ibrav==5:
         return labels,symMatrix
@@ -4044,12 +5030,13 @@ def __prim2convPositions(labels,symMatrix,cellParamMatrix):
     #'''hexagonal'''    
 
 
-    prim2Conv = AFLOWpi.retr.__prim2ConvMatrix(cellParamMatrix).getA()
+    prim2Conv = AFLOWpi.retr._prim2ConvMatrix(cellParamMatrix)
 
 
 
 
-    if ibrav==3 or ibrav==11:
+    if ibrav==3 or ibrav==9:
+
         largerReturn=numpy.zeros(shape=(symMatrix.shape[0]*2,3))
         #double length of labels
         labels.extend(labels)
@@ -4057,20 +5044,32 @@ def __prim2convPositions(labels,symMatrix,cellParamMatrix):
         lat1=copy.deepcopy(returnMatrix)
         lat2=copy.deepcopy(returnMatrix)
 
-        for entry in range(len(lat1)):
-            largerReturn[entry]=AFLOWpi.retr.__shiftAfter(lat1[entry])
-        for entry in range(len(lat2)):
-            lat2[entry] = AFLOWpi.retr.__shiftX(lat2[entry],0.5)
-            lat2[entry] = AFLOWpi.retr.__shiftY(lat2[entry],0.5)
-            lat2[entry] = AFLOWpi.retr.__shiftZ(lat2[entry],0.5)
-            largerReturn[entry+1*len(lat1)]= AFLOWpi.retr.__shiftAfter(lat2[entry])
-
 
         returnMatrix = largerReturn
 
-        for entry in range(len(largerReturn)):
-            pos = largerReturn[entry]
+
+        returnMatrix = AFLOWpi.retr._shiftAfter(returnMatrix)
+
+        for entry in range(len(symMatrix)):
+            pos = symMatrix[entry]
             returnMatrix[entry] = prim2Conv.dot(pos.T).T
+            returnMatrix[entry] = pos
+
+#        for entry in range(len(lat1)):
+#            largerReturn[entry]=AFLOWpi.retr._shiftAfter(lat1[entry])
+
+        for entry in range(len(lat1)):
+            lat1[entry] = AFLOWpi.retr._shiftX(returnMatrix[entry],0.5)
+            lat1[entry] = AFLOWpi.retr._shiftY(lat1[entry],0.5)
+            lat1[entry] = AFLOWpi.retr._shiftZ(lat1[entry],0.5)
+
+#            largerReturn[entry+1*len(lat1)]= AFLOWpi.retr._shiftAfter(lat1[entry])
+#            returnMatrix[entry+1*len(lat1)]= lat1[entry]
+
+
+
+
+
 
 
     if ibrav==2  or ibrav==10:
@@ -4085,25 +5084,25 @@ def __prim2convPositions(labels,symMatrix,cellParamMatrix):
         lat4=copy.deepcopy(returnMatrix)
 
         for entry in range(len(lat1)):
-            largerReturn[entry]=AFLOWpi.retr.__shiftAfter(lat1[entry])
+            largerReturn[entry]=AFLOWpi.retr._shiftAfter(lat1[entry])
             
         for entry in range(len(lat2)):
-            lat2[entry] = AFLOWpi.retr.__shiftY(lat2[entry],0.5)
-            lat2[entry] = AFLOWpi.retr.__shiftZ(lat2[entry],0.5)
-            largerReturn[entry+1*len(lat1)]= AFLOWpi.retr.__shiftAfter(lat2[entry])
+            lat2[entry] = AFLOWpi.retr._shiftY(lat2[entry],0.5)
+            lat2[entry] = AFLOWpi.retr._shiftZ(lat2[entry],0.5)
+            largerReturn[entry+1*len(lat1)]= AFLOWpi.retr._shiftAfter(lat2[entry])
 
         for entry in range(len(lat3)):
-            lat3[entry] = AFLOWpi.retr.__shiftX(lat3[entry],0.5)
-            lat3[entry] = AFLOWpi.retr.__shiftZ(lat3[entry],0.5)
-            largerReturn[entry+2*len(lat1)]= AFLOWpi.retr.__shiftAfter(lat3[entry])
+            lat3[entry] = AFLOWpi.retr._shiftX(lat3[entry],0.5)
+            lat3[entry] = AFLOWpi.retr._shiftZ(lat3[entry],0.5)
+            largerReturn[entry+2*len(lat1)]= AFLOWpi.retr._shiftAfter(lat3[entry])
 
         for entry in range(len(lat4)):
-            lat4[entry] = AFLOWpi.retr.__shiftY(lat4[entry],0.5)
-            lat4[entry] = AFLOWpi.retr.__shiftZ(lat4[entry],0.5)
-            largerReturn[entry+3*len(lat1)]= AFLOWpi.retr.__shiftAfter(lat4[entry])
+            lat4[entry] = AFLOWpi.retr._shiftY(lat4[entry],0.5)
+            lat4[entry] = AFLOWpi.retr._shiftZ(lat4[entry],0.5)
+            largerReturn[entry+3*len(lat1)]= AFLOWpi.retr._shiftAfter(lat4[entry])
 
         
-        largerReturn = AFLOWpi.retr.__shiftAfter(numpy.matrix(largerReturn))
+        largerReturn = AFLOWpi.retr._shiftAfter(numpy.matrix(largerReturn))
         returnMatrix = largerReturn
         
 
@@ -4121,7 +5120,7 @@ def __prim2convPositions(labels,symMatrix,cellParamMatrix):
     return labels,returnMatrix
 
 
-def __conv2primPositions(symMatrix,cellParamMatrix):
+def _conv2primPositions(symMatrix,cellParamMatrix):
     '''
 
 
@@ -4137,7 +5136,7 @@ def __conv2primPositions(symMatrix,cellParamMatrix):
     '''        
 
     returnMatrix=copy.deepcopy(symMatrix)
-    prim2Conv = __prim2ConvMatrix(cellParamMatrix)
+    prim2Conv = AFLOWpi.retr._prim2ConvMatrix(cellParamMatrix)
     symMatrix=symMatrix.getA()
 
     for entry in range(len(symMatrix)):
@@ -4169,15 +5168,15 @@ def convertFCC(oneCalc,ID):
     except:
         return
 
-    labels = __getPosLabels(inputString)
-    cellVectors =  __getCellInput(oneCalc,ID,scaled=False)
+    labels = AFLOWpi.retr._getPosLabels(inputString)
+    cellVectors =  AFLOWpi.retr._getCellInput(oneCalc,ID,scaled=False)
     positions = getPositionsFromInput(oneCalc,ID)
     posNew=[]
 
     for atom in range(len(positions)):
 
-        posTemp = __duplicateEdgeAtoms(positions[atom])
-        posTemp =  __reduceDuplicates(posTemp)
+        posTemp = AFLOWpi.retr._duplicateEdgeAtoms(positions[atom])
+        posTemp =  AFLOWpi.retr._reduceDuplicates(posTemp)
         posNew.extend([labels[atom],x] for x in posTemp.tolist())
 
     labels = [x[0] for x in posNew]
@@ -4251,25 +5250,25 @@ def convertFCC(oneCalc,ID):
 # def QE_AFLOW(inputString):
 
 #     cellParamMatrix = AFLOWpi.retr.getCellMatrixFromInput(inputString,scale=False)
-#     to_prim=numpy.linalg.inv(AFLOWpi.retr.__prim2ConvMatrix(cellParamMatrix,ibrav+1))
+#     to_prim=numpy.linalg.inv(AFLOWpi.retr._prim2ConvMatrix(cellParamMatrix,ibrav+1))
 
-#     symMatrix = AFLOWpi.retr.__getPositions(inputString).astype(numpy.float16)
+#     symMatrix = AFLOWpi.retr._getPositions(inputString).astype(numpy.float16)
 
-#     input_dict = AFLOWpi.retr.__splitInput(inputString)
+#     input_dict = AFLOWpi.retr._splitInput(inputString)
 #     cellParamMatrix = to_prim.dot(get_conv_aflow(cellParamMatrix,ibrav=ibrav+1))
-#     cellParamMatrix = AFLOWpi.retr.__cellMatrixToString(cellParamMatrix)
+#     cellParamMatrix = AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
 
 #     input_dict['CELL_PARAMETERS']['__content__']=cellParamMatrix
 
 #     pos_conv_aflow = get_conv_aflow(symMatrix.T,ibrav=ibrav+1)
 #     symMatrix = to_prim.dot(pos_conv_aflow).T
-#     symMatrix = AFLOWpi.retr.__shiftAfter(symMatrix)
-#     labels = AFLOWpi.retr.__getPosLabels(inputString)
-#     symMatrix = AFLOWpi.retr.__joinMatrixLabels(labels,symMatrix)
+#     symMatrix = AFLOWpi.retr._shiftAfter(symMatrix)
+#     labels = AFLOWpi.retr._getPosLabels(inputString)
+#     symMatrix = AFLOWpi.retr._joinMatrixLabels(labels,symMatrix)
 
 #     input_dict['ATOMIC_POSITIONS']['__content__']=symMatrix
 #     input_dict['ATOMIC_SPECIES']['__content__']='\n'.join(list(set(labels)))+'\n'
-#     inputString = AFLOWpi.retr.__joinInput(input_dict)
+#     inputString = AFLOWpi.retr._joinInput(input_dict)
 
 #     return inputString
 
@@ -4327,16 +5326,16 @@ def getIbravFromVectors(cellVectors):
 
     
 
-#    print a
-#    print b
-#    print c
-#    print alphaDegrees
-#    print betaDegrees
-#    print gammaDegrees
+    # print a
+    # print b
+    # print c
+    # print alphaDegrees
+    # print betaDegrees
+    # print gammaDegrees
 
     if numpy.abs(a-c)<0.01 and numpy.abs(a-b)<0.01 and numpy.abs(c-b)<0.01 and numpy.abs(alphaDegrees-betaDegrees)<0.01 and numpy.abs(gammaDegrees-betaDegrees)<0.01 and numpy.abs(gammaDegrees-alphaDegrees)<0.01:
 
-        sortedVec =  __sortMatrix(cellVectors)
+        sortedVec =  AFLOWpi.retr._sortMatrix(cellVectors)
 
         reversedMat = numpy.matrix([x for x in reversed(sortedVec.getA())]).getA()
         '''in the case of FCC'''
@@ -4350,7 +5349,11 @@ def getIbravFromVectors(cellVectors):
 
 
         elif  numpy.abs(a-b)<0.01  and numpy.abs(b-c)<0.01 and numpy.abs(c-a)<0.01 and numpy.abs(alphaDegrees-betaDegrees)<0.01 and numpy.abs(alphaDegrees-gammaDegrees)<0.01 and numpy.abs(gammaDegrees-betaDegrees)<0.01 and not numpy.abs(gammaDegrees-90.0)<0.01:
-            return 5            
+
+            if numpy.abs(gammaDegrees-109.471225753)<0.01:
+                return 3
+            else:
+                return 5            
             
         '''in the case of hexagonal'''
     elif numpy.abs(gammaDegrees-120.0)<0.01:
@@ -4398,7 +5401,7 @@ def getIbravFromVectors(cellVectors):
         '''in the case of simple ortho'''
     elif  numpy.abs(a-b)>0.01  and numpy.abs(b-c)>0.01 and numpy.abs(c-a)>0.01:
 
-        sortedVec =  __sortMatrix(cellVectors)
+        sortedVec =  AFLOWpi.retr._sortMatrix(cellVectors)
         reversedMat = numpy.matrix([x for x in reversed(sortedVec.getA())]).getA()
 
         if  numpy.abs(alphaDegrees-gammaDegrees)<0.01 and numpy.abs(gammaDegrees-betaDegrees)<0.01 and numpy.abs(gammaDegrees-90.0)<0.01:
@@ -4417,9 +5420,7 @@ def getIbravFromVectors(cellVectors):
 
 
         elif  numpy.abs(gammaDegrees-alphaDegrees)>0.01 and numpy.abs(betaDegrees-alphaDegrees)>0.01:
-            ORCFtest = __convertCellBC(cellVectors)
-
-#            ORCFtest =  potentialConv(cellVectors)
+            ORCFtest = AFLOWpi.retr._convertCellBC(cellVectors)
 
             aTest = numpy.sqrt(ORCFtest[0].dot(ORCFtest[0].T))
             bTest = numpy.sqrt(ORCFtest[1].dot(ORCFtest[1].T))
@@ -4447,7 +5448,7 @@ def getIbravFromVectors(cellVectors):
 
         'in the case of ORCI body centered ortho'
 
-def __convertCellBC(cellVectors,toPrimOrConv='conv'):
+def _convertCellBC(cellVectors,toPrimOrConv='conv'):
     '''
 
 
@@ -4482,7 +5483,7 @@ def __convertCellBC(cellVectors,toPrimOrConv='conv'):
     '''needs to be removed sometime soon'''
     '''needs to be removed sometime soon'''
 
-def __cellStringToMatrix(cellParamString):
+def _cellStringToMatrix(cellParamString):
     '''
 
 
@@ -4506,7 +5507,7 @@ def __cellStringToMatrix(cellParamString):
 
     return symMatrix
 
-def __cellMatrixToString(cellMatrix):
+def _cellMatrixToString(cellMatrix,indent=True):
     '''
 
 
@@ -4526,13 +5527,16 @@ def __cellMatrixToString(cellMatrix):
     except:
         pass
     outputString = ''
-    for entry in range(len(cellMatrix)):
-        outputString+=' '.join(['%16.10f' % x for x in cellMatrix[entry]])+'\n'
-        
+    if indent:
+        for entry in range(len(cellMatrix)):
+            outputString+=' '.join(['%16.10f' % x for x in cellMatrix[entry]])+'\n'
+    else:
+        for entry in range(len(cellMatrix)):
+            outputString+=' '.join(['%10.10f' % x for x in cellMatrix[entry]])+'\n'
 
     return outputString
 
-def __getCellInput(oneCalc,ID,scaled=True):
+def _getCellInput(oneCalc,ID,scaled=True):
     '''
     Gets the primitive cell vectors from the input file
 
@@ -4549,7 +5553,7 @@ def __getCellInput(oneCalc,ID,scaled=True):
     '''
 
     try:
-        cellParamMatrixDict = AFLOWpi.retr.__splitInput(oneCalc['_AFLOWPI_INPUT_'])
+        cellParamMatrixDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         ibrav=cellParamMatrixDict['&system']['ibrav']
         celldmDict={'ibrav':int(ibrav)}
         for y in  [(x[0],float(x[1])) for x in cellParamMatrixDict['&system'].items() if len(re.findall('celldm',x[0])) !=0 ]:
@@ -4564,7 +5568,7 @@ def __getCellInput(oneCalc,ID,scaled=True):
         print 'no CELL_PARAMETERS in input'
         return
 
-    symMatrix = __cellStringToMatrix(cellParams)
+    symMatrix = AFLOWpi.retr._cellStringToMatrix(cellParams)
 
     a = numpy.sqrt(symMatrix[0].dot(symMatrix[0].T))
 
@@ -4574,13 +5578,13 @@ def __getCellInput(oneCalc,ID,scaled=True):
     return symMatrix
 
 
-##############################################################################################################################
-##############################################################################################################################
+#####################################################################################################################
+#####################################################################################################################
 ## cell and position transform
-##############################################################################################################################
-##############################################################################################################################
+#####################################################################################################################
+#####################################################################################################################
 
-def __getSymmInput(oneCalc,ID):
+def _getSymmInput(oneCalc,ID):
     '''
 
 
@@ -4601,7 +5605,7 @@ def __getSymmInput(oneCalc,ID):
     return orig
 
 
-def __duplicateEdgeAtoms(symMatrix):
+def _duplicateEdgeAtoms(symMatrix):
     '''
 
 
@@ -4663,7 +5667,7 @@ def __duplicateEdgeAtoms(symMatrix):
     return symMatrix
 
 
-def __getCartConvMatrix(symMatrix,cellMatrix):
+def _getCartConvMatrix(symMatrix,cellMatrix):
     '''
 
 
@@ -4710,7 +5714,7 @@ def __getCartConvMatrix(symMatrix,cellMatrix):
 
     return cartMatrix
 
-def __convertCartesian(symMatrix,cellMatrix,scaleFactor=1):
+def _convertCartesian(symMatrix,cellMatrix,scaleFactor=1.0):
     '''
     Converts atomic positions from crystal to cartesian coordinates
 
@@ -4726,16 +5730,28 @@ def __convertCartesian(symMatrix,cellMatrix,scaleFactor=1):
 
     '''
 
-    returnMatrix=copy.deepcopy(symMatrix)
-    cartMatrix = __getCartConvMatrix(returnMatrix,cellMatrix)
-    for entry in range(len(returnMatrix)):
-        returnMatrix[entry]=cartMatrix.dot(returnMatrix[entry].T).T
+    try:
+        cellMatrix = cellMatrix.getA()
+    except:
+        pass 
 
-    in_cart = numpy.matrix(numpy.round(numpy.matrix(returnMatrix).astype(numpy.float16),decimals=10))
+    try:
+        symMatrix = symMatrix.getA()
+    except:
+        pass 
+
+    cellMatrix=cellMatrix.astype(numpy.float)
+    symMatrix=symMatrix.astype(numpy.float)
+    returnMatrix=copy.deepcopy(symMatrix)
+
+    for entry in range(len(returnMatrix)):
+        returnMatrix[entry]=cellMatrix.dot(returnMatrix[entry].T).T
+
+    in_cart = numpy.matrix(numpy.round(numpy.matrix(returnMatrix).astype(numpy.float),decimals=8))
 
     return in_cart
 
-def __convertFractional(symMatrix,cellMatrix,scaleFactor=1):
+def _convertFractional(symMatrix,cellMatrix,scaleFactor=1):
     '''
     Converts atomic positions from cartesian to crystal coordinates
 
@@ -4761,7 +5777,7 @@ def __convertFractional(symMatrix,cellMatrix,scaleFactor=1):
         pass
 
 
-    cartMatrix = __getCartConvMatrix(symMatrix,cellMatrix)
+    cartMatrix = AFLOWpi.retr._getCartConvMatrix(symMatrix,cellMatrix)
 
     cartMatrixInv=numpy.linalg.inv(cartMatrix).getA()
     cartMatrixInv=numpy.linalg.inv(cellMatrix).T
@@ -4776,7 +5792,7 @@ def __convertFractional(symMatrix,cellMatrix,scaleFactor=1):
 
 
 
-def __expandBoundariesNoScale(labels,symMatrix,numX,numY,numZ,inList=False,expand=True):
+def _expandBoundariesNoScale(labels,symMatrix,numX,numY,numZ,inList=False,expand=True):
     '''
 
 
@@ -4813,7 +5829,7 @@ def __expandBoundariesNoScale(labels,symMatrix,numX,numY,numZ,inList=False,expan
     return labels,symMatrix
 
 
-def __shiftX(coordVec,shift):
+def _shiftX(coordVec,shift):
     '''
 
 
@@ -4829,12 +5845,24 @@ def __shiftX(coordVec,shift):
     '''
 
     coordVec=copy.deepcopy(coordVec)
-    arrayVec = coordVec.getA()
-    arrayVec[0][0]+=shift
+
+    try:
+        arrayVec = coordVec.getA()
+    except:
+        arrayVec=coordVec
+
+    try:
+        arrayVec[0][0]
+        arrayVec=arrayVec[0]
+    except:
+        pass
+
+    arrayVec[0]+=shift
+
 
     return numpy.matrix(arrayVec)
 
-def __shiftY(coordVec,shift):
+def _shiftY(coordVec,shift):
     '''
 
 
@@ -4850,14 +5878,25 @@ def __shiftY(coordVec,shift):
     '''
 
     coordVec=copy.deepcopy(coordVec)
-    arrayVec = coordVec.getA()
-    arrayVec[0][1]+=shift
-    if arrayVec[0][1]==1:
-        arrayVec[0][1]-=1
+
+    try:
+        arrayVec = coordVec.getA()
+    except:
+        arrayVec=coordVec
+
+    try:
+        arrayVec[0][0]
+        arrayVec=arrayVec[0]
+    except:
+        pass
+
+
+
+    arrayVec[1]+=shift
 
     return numpy.matrix(arrayVec)
 
-def __shiftZ(coordVec,shift):
+def _shiftZ(coordVec,shift):
     '''
 
 
@@ -4873,12 +5912,24 @@ def __shiftZ(coordVec,shift):
     '''
 
     coordVec=copy.deepcopy(coordVec)
-    arrayVec = coordVec.getA()
-    arrayVec[0][2]+=shift
+
+    try:
+        arrayVec = coordVec.getA()
+    except:
+        arrayVec=coordVec
+
+    try:
+        arrayVec[0][0]
+        arrayVec=arrayVec[0]
+    except:
+        pass
+
+    arrayVec[2]+=shift
+
 
     return numpy.matrix(arrayVec)
 
-def __checkEqualPoint(oldMatrix,newMatrix):
+def _checkEqualPoint(oldMatrix,newMatrix):
     '''
 
 
@@ -4896,7 +5947,7 @@ def __checkEqualPoint(oldMatrix,newMatrix):
     return oldMatrix==newMatrix
 
 
-def __shiftAfterRotation(coordVec):
+def _shiftAfterRotation(coordVec):
     '''
 
 
@@ -4947,11 +5998,11 @@ def getPointGroup(oneCalc,ID,source='input'):
         logging.error('source must equal "input" or "output"')
         return 
     if source=='input':
-        cellInput = AFLOWpi.retr.__getCellInput(oneCalc,ID)
-        symInput = AFLOWpi.retr.__getSymmInput(oneCalc,ID)
+        cellInput = AFLOWpi.retr._getCellInput(oneCalc,ID)
+        symInput = AFLOWpi.retr._getSymmInput(oneCalc,ID)
     if source=='output':
         symInput = getPositionsFromOutput(oneCalc,ID)
-        alat,symInput = __getCellParams(oneCalc,ID)
+        alat,symInput = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
 
         
@@ -4962,7 +6013,7 @@ def getPointGroup(oneCalc,ID,source='input'):
     
 
     
-def __sortMatrix(matrix):
+def _sortMatrix(matrix):
     '''
 
 
@@ -4988,7 +6039,7 @@ def __sortMatrix(matrix):
     sortedMatrix = sorted(sortedMatrix)
     return numpy.matrix(sortedMatrix)
 
-def __shiftAfter(matrix):
+def _shiftAfter(matrix):
     '''
 
 
@@ -5004,27 +6055,35 @@ def __shiftAfter(matrix):
     '''
 
     arrayList=[]
+    try:
+        matrix=matrix.getA()
+    except:
+        matrix=matrix
 
-    
+
 
     for arrayVec in matrix:
         arrayVec=arrayVec.tolist()
-        '''shift positions in cell to account for sides of cell'''
-        if arrayVec[0][0]>=1:
-            arrayVec[0][0]-=numpy.floor(arrayVec[0][0])/1.0
-        if arrayVec[0][1]>=1:
-            arrayVec[0][1]-=numpy.floor(arrayVec[0][1])/1.0
-        if arrayVec[0][2]>=1:
-            arrayVec[0][2]-=numpy.floor(arrayVec[0][2])/1.0
 
-        if arrayVec[0][0]<0:
-            arrayVec[0][0]+=numpy.abs(numpy.floor(arrayVec[0][0]))/1.0
-        if arrayVec[0][1]<0:
-            arrayVec[0][1]+=numpy.abs(numpy.floor(arrayVec[0][1]))/1.0
-        if arrayVec[0][2]<0:
-            arrayVec[0][2]+=numpy.abs(numpy.floor(arrayVec[0][2]))/1.0
-        arrayList.append(tuple(arrayVec[0]))
+        '''shift positions in cell to account for sides of cell'''
+        if arrayVec[0]>=1:
+            arrayVec[0]-=numpy.floor(arrayVec[0])/1.0
+        if arrayVec[1]>=1:
+            arrayVec[1]-=numpy.floor(arrayVec[1])/1.0
+        if arrayVec[2]>=1:
+            arrayVec[2]-=numpy.floor(arrayVec[2])/1.0
+
+        if arrayVec[0]<0:
+            arrayVec[0]+=numpy.abs(numpy.floor(arrayVec[0]))/1.0
+        if arrayVec[1]<0:
+            arrayVec[1]+=numpy.abs(numpy.floor(arrayVec[1]))/1.0
+        if arrayVec[2]<0:
+            arrayVec[2]+=numpy.abs(numpy.floor(arrayVec[2]))/1.0
+        arrayList.append(arrayVec)
     
+
+    MATRIX=numpy.matrix(numpy.round(numpy.matrix(arrayList).astype(numpy.float32),decimals=8))
+
     return numpy.matrix(numpy.round(numpy.matrix(arrayList).astype(numpy.float32),decimals=8))
 
 
@@ -5044,25 +6103,25 @@ def compMatrices(matrix1,matrix2):
 
     '''
 
-    matrix1 =  __shiftCell(matrix1)
-    matrix2 =  __shiftCell(matrix2)
+    matrix1 =  AFLOWpi.retr._shiftCell(matrix1)
+    matrix2 =  AFLOWpi.retr._shiftCell(matrix2)
 
-    matrix1 = __reduceDuplicates(matrix1)
-    matrix2 = __reduceDuplicates(matrix2)
+    matrix1 = AFLOWpi.retr._reduceDuplicates(matrix1)
+    matrix2 = AFLOWpi.retr._reduceDuplicates(matrix2)
 
-    sortedMatrix1 = __sortMatrix(matrix1)
-    sortedMatrix2 =  __sortMatrix(matrix2)
+    sortedMatrix1 = AFLOWpi.retr._sortMatrix(matrix1)
+    sortedMatrix2 =  AFLOWpi.retr._sortMatrix(matrix2)
 
     try:
         equalBool = numpy.matrix(sortedMatrix1 == sortedMatrix2).all()
         if equalBool==False:
-            matrix1 = __duplicateEdgeAtoms(matrix1)
-            matrix2 = __duplicateEdgeAtoms(matrix2)
-            matrix1 = __reduceDuplicates(matrix1)
-            matrix2 = __reduceDuplicates(matrix2)
+            matrix1 = AFLOWpi.retr._duplicateEdgeAtoms(matrix1)
+            matrix2 = AFLOWpi.retr._duplicateEdgeAtoms(matrix2)
+            matrix1 = AFLOWpi.retr._reduceDuplicates(matrix1)
+            matrix2 = AFLOWpi.retr._reduceDuplicates(matrix2)
 
-            sortedMatrix1 = __sortMatrix(matrix1)
-            sortedMatrix2 =  __sortMatrix(matrix2)
+            sortedMatrix1 = AFLOWpi.retr._sortMatrix(matrix1)
+            sortedMatrix2 =  AFLOWpi.retr._sortMatrix(matrix2)
             equalBool = numpy.matrix(sortedMatrix1 == sortedMatrix2).all()
 
         return equalBool
@@ -5091,14 +6150,14 @@ def invertXYZ(symMatrix,cellMatrix):
 
     '''
 
-    symMatrix = __convertCartesian(symMatrix,cellMatrix)
+    symMatrix = AFLOWpi.retr._convertCartesian(symMatrix,cellMatrix)
     outputMatrix=[]
     for coordMatrix in symMatrix:
         outputMatrix.append(__invertXYZ(coordMatrix).tolist()[0])
 
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(numpy.float32),decimals=10))
-    symMatrix = __convertFractional(outputMatrix,cellMatrix)
+    symMatrix = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     return symMatrix
 
@@ -5124,20 +6183,20 @@ def invertX(symMatrix,cellMatrix):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__invertX(coordMatrix).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._invertX(coordMatrix).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
-    outputMatrix = __convertFractional(outputMatrix,cellMatrix)
+    outputMatrix = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(outputMatrix)):
-        outputMatrix[coordMatrix] = __shiftAfterRotation(outputMatrix[coordMatrix])
+        outputMatrix[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(outputMatrix[coordMatrix])
 
 
     return outputMatrix
@@ -5160,20 +6219,20 @@ def invertY(symMatrix,cellMatrix):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__invertY(coordMatrix).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._invertY(coordMatrix).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
-    outputMatrix = __convertFractional(outputMatrix,cellMatrix)
+    outputMatrix = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(outputMatrix)):
-        outputMatrix[coordMatrix] = __shiftAfterRotation(outputMatrix[coordMatrix])
+        outputMatrix[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(outputMatrix[coordMatrix])
 
 
     return outputMatrix
@@ -5197,20 +6256,20 @@ def invertZ(symMatrix,cellMatrix):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__invertZ(coordMatrix).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._invertZ(coordMatrix).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
-    outputMatrix = __convertFractional(outputMatrix,cellMatrix)
+    outputMatrix = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(outputMatrix)):
-        outputMatrix[coordMatrix] = __shiftAfterRotation(outputMatrix[coordMatrix])
+        outputMatrix[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(outputMatrix[coordMatrix])
 
 
     return outputMatrix
@@ -5236,21 +6295,21 @@ def shiftX(symMatrix,cellMatrix,shift):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     a = numpy.sqrt(cellMatrix[0].dot(cellMatrix[0].T))
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__shiftX(coordMatrix,shift*a).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._shiftX(coordMatrix,shift*a).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
-    symMatrixCopy = __convertFractional(outputMatrix,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
 
     return symMatrixCopy
@@ -5275,21 +6334,21 @@ def shiftY(symMatrix,cellMatrix,shift):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     b = numpy.sqrt(cellMatrix[1].dot(cellMatrix[1].T))
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__shiftY(coordMatrix,shift*b).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._shiftY(coordMatrix,shift*b).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
-    symMatrixCopy = __convertFractional(outputMatrix,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
 
     return symMatrixCopy
@@ -5316,21 +6375,21 @@ def shiftZ(symMatrix,cellMatrix,shift):
 
     symMatrixCopy=copy.deepcopy(symMatrix)
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
     outputMatrix=[]
 
     c = numpy.sqrt(cellMatrix[2].dot(cellMatrix[2].T))
 
     for coordMatrix in symMatrixCopy:
-        outputMatrix.append(__shiftZ(coordMatrix,shift*c).tolist()[0])
+        outputMatrix.append(AFLOWpi.retr._shiftZ(coordMatrix,shift*c).tolist()[0])
 
     outputMatrix = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
-    symMatrixCopy = __convertFractional(outputMatrix,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(outputMatrix,cellMatrix)
 
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
 
     return symMatrixCopy
@@ -5374,26 +6433,26 @@ def rotateAlpha(symMatrix,cellMatrix,angle):
     symMatrixCopy=copy.deepcopy(symMatrix)
     'shift fractional coords to center around 0,0,0'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
     'convert to cartesian'
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
 
     'rotate in cartesian around z axis'
     for coordMatrix in symMatrixCopy:
-        coordMatrix = __rotateAlpha(coordMatrix,angle)
+        coordMatrix = AFLOWpi.retr._rotateAlpha(coordMatrix,angle)
         outputMatrix.append(coordMatrix.tolist()[0])
 
     symMatrixCopy = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
     'transform back to fractional coords'
-    symMatrixCopy = __convertFractional(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(symMatrixCopy,cellMatrix)
 
 
 
     'shift back to center around 0.5,0.5,0.5'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
     return symMatrixCopy
 
@@ -5417,26 +6476,26 @@ def rotateBeta(symMatrix,cellMatrix,angle):
     symMatrixCopy=copy.deepcopy(symMatrix)
     'shift fractional coords to center around 0,0,0'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
     'convert to cartesian'
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
 
     'rotate in cartesian around z axis'
     for coordMatrix in symMatrixCopy:
-        coordMatrix = __rotateBeta(coordMatrix,angle)
+        coordMatrix = AFLOWpi.retr._rotateBeta(coordMatrix,angle)
         outputMatrix.append(coordMatrix.tolist()[0])
 
     symMatrixCopy = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
     'transform back to fractional coords'
-    symMatrixCopy = __convertFractional(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(symMatrixCopy,cellMatrix)
 
 
 
     'shift back to center around 0.5,0.5,0.5'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
     return symMatrixCopy
 
@@ -5461,31 +6520,31 @@ def rotateGamma(symMatrix,cellMatrix,angle):
     symMatrixCopy=copy.deepcopy(symMatrix)
     'shift fractional coords to center around 0,0,0'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftBeforeRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftBeforeRotation(symMatrixCopy[coordMatrix])
 
     'convert to cartesian'
-    symMatrixCopy = __convertCartesian(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertCartesian(symMatrixCopy,cellMatrix)
 
     'rotate in cartesian around z axis'
     for coordMatrix in symMatrixCopy:
-        coordMatrix = __rotateGamma(coordMatrix,angle)
+        coordMatrix = AFLOWpi.retr._rotateGamma(coordMatrix,angle)
         outputMatrix.append(coordMatrix.tolist()[0])
 
     symMatrixCopy = numpy.matrix(numpy.round(numpy.matrix(outputMatrix).astype(float),decimals=10))
 
     'transform back to fractional coords'
-    symMatrixCopy = __convertFractional(symMatrixCopy,cellMatrix)
+    symMatrixCopy = AFLOWpi.retr._convertFractional(symMatrixCopy,cellMatrix)
 
 
 
     'shift back to center around 0.5,0.5,0.5'
     for coordMatrix in range(len(symMatrixCopy)):
-        symMatrixCopy[coordMatrix] = __shiftAfterRotation(symMatrixCopy[coordMatrix])
+        symMatrixCopy[coordMatrix] = AFLOWpi.retr._shiftAfterRotation(symMatrixCopy[coordMatrix])
 
     return symMatrixCopy
         
 
-def __invertXYZ(coordVec,xScale,yScale,zScale):
+def _invertXYZ(coordVec,xScale,yScale,zScale):
     '''
 
 
@@ -5508,7 +6567,7 @@ def __invertXYZ(coordVec,xScale,yScale,zScale):
 
     return numpy.matrix(arrayVec)
 
-def __invertX(coordVec,xScale=1):
+def _invertX(coordVec,xScale=1):
     '''
 
 
@@ -5528,7 +6587,7 @@ def __invertX(coordVec,xScale=1):
     arrayVec[0][0]=-(arrayVec[0][0])
     return numpy.matrix(arrayVec)
 
-def __invertY(coordVec,yScale=1):
+def _invertY(coordVec,yScale=1):
     '''
 
 
@@ -5548,7 +6607,7 @@ def __invertY(coordVec,yScale=1):
     arrayVec[0][1]=-(arrayVec[0][1])
     return numpy.matrix(arrayVec)
 
-def __invertZ(coordVec,zScale=1):
+def _invertZ(coordVec,zScale=1):
     '''
 
 
@@ -5570,7 +6629,7 @@ def __invertZ(coordVec,zScale=1):
 
 
                       
-def __rotateAlpha(coordVec,angle):
+def _rotateAlpha(coordVec,angle):
     '''
 
 
@@ -5601,7 +6660,7 @@ def __rotateAlpha(coordVec,angle):
 
 
 
-def __rotateBeta(coordVec,angle):
+def _rotateBeta(coordVec,angle):
     '''
 
 
@@ -5637,7 +6696,7 @@ def __rotateBeta(coordVec,angle):
     
 
 
-def __rotateGamma(coordVec,angle):
+def _rotateGamma(coordVec,angle):
     '''
 
 
@@ -5663,7 +6722,7 @@ def __rotateGamma(coordVec,angle):
     coordVec = rotationMatrix.dot(coordVec.T).T
     return coordVec
 
-def __shiftBeforeRotation(coordVec):
+def _shiftBeforeRotation(coordVec):
     '''
 
 
@@ -5686,7 +6745,7 @@ def __shiftBeforeRotation(coordVec):
     arrayVec[0][2]-=0.5
     return numpy.matrix(arrayVec)
 
-def __shiftCell(symMatrix):
+def _shiftCell(symMatrix):
     '''
 
 
@@ -5704,7 +6763,6 @@ def __shiftCell(symMatrix):
     arrayList=[]
     for arrayMat in symMatrix:
         arrayVec = arrayMat.getA()
- #       arrayVec=arrayVec.tolist()
         '''shift positions in cell to account for sides of cell'''
         if arrayVec[0][0]>1:
             shift = numpy.floor(arrayVec[0][0])
@@ -5754,20 +6812,18 @@ def shiftCell(symMatrix):
 
     '''
 
-    outMatrix = __shiftAfter(symMatrix)
+    outMatrix = AFLOWpi.retr._shiftAfter(symMatrix)
 
-    outMatrix = __reduceDuplicates(outMatrix)
+    outMatrix = AFLOWpi.retr._reduceDuplicates(outMatrix)
 
-    outMatrix = __duplicateEdgeAtoms(outMatrix)
-    outMatrix = __reduceDuplicates(outMatrix)
-    outMatrix = __shiftAfter(outMatrix)
-    outMatrix = __reduceDuplicates(outMatrix)
-
-
+    outMatrix = AFLOWpi.retr._duplicateEdgeAtoms(outMatrix)
+    outMatrix = AFLOWpi.retr._reduceDuplicates(outMatrix)
+    outMatrix = AFLOWpi.retr._shiftAfter(outMatrix)
+    outMatrix = AFLOWpi.retr._reduceDuplicates(outMatrix)
 
     return outMatrix
 
-def __reduceDuplicates(symMatrix):
+def _reduceDuplicates(symMatrix):
     '''
 
 
@@ -5793,12 +6849,19 @@ def __reduceDuplicates(symMatrix):
     return outMatrix
 
 
+def _get_cell_mass(oneCalc,ID):
+    num_of_each = AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=True)
 
-##############################################################################################################################
-##############################################################################################################################
+    total_mass=0.0
+    for atom,number in num_of_each.iteritems():
+        total_mass+=float(AFLOWpi.prep._getAMass(atom))*float(number)
+
+    return total_mass
+#####################################################################################################################
+#####################################################################################################################
 ## misc
-##############################################################################################################################
-##############################################################################################################################
+#####################################################################################################################
+#####################################################################################################################
 def chemAsKeys(calcs):
     '''
     For sets of calcs that only differ by chemistry you can replace the
@@ -5819,7 +6882,7 @@ def chemAsKeys(calcs):
     calcsCopy = OrderedDict()
     stoicNameList=[]
     for ID,oneCalc in OrderedDict(calcs).iteritems():
-        newKey=AFLOWpi.retr.__getStoicName(oneCalc)
+        newKey=AFLOWpi.retr._getStoicName(oneCalc)
         stoicNameList.append(newKey)
         calcsCopy[newKey]=oneCalc
 
@@ -5830,4 +6893,489 @@ def chemAsKeys(calcs):
     
 
     return calcsCopy
+
+import functools
+
+import numpy as np
+from numpy import linalg as la
+
+
+__all__ = ('aflow_prim2conv', 'aflow_conv2prim', 'qe_prim2conv', 'qe_conv2prim',
+           'conv_aflow2qe', 'conv_qe2aflow', 'prim_aflow2qe', 'prim_qe2aflow',
+           'InvalidIbravError')
+
+
+class InvalidIBravError(ValueError):
+    """Supplied Bravais lattice index (ibrav) is not valid.
+    
+    Attributes:
+        value: The invalid Bravais lattice index that caused this error.
+    """
+    
+    def __init__(self, value):
+        self.value = value
+        super(ValueError, self).__init__('%s is not a valid Bravais lattice' % value)
+
+
+def validate_ibrav(func):
+    """Decorates a basis transformation function to validate the Bravais lattice
+    index in the range [0, 14].
+    
+    Arguments:
+        func: The decorated function of two arguments, cell and ibrav.
+    
+    Returns:
+        Decorated function that raises `InvalidIBravError` when bad values are
+        encountered.
+    """
+    @functools.wraps(func)
+    def decorator(*args, **kwargs):
+        
+        ibrav = args[1]
+        
+        try:
+            assert ibrav in range(15)
+        
+        except AssertionError:
+            raise InvalidIBravError(ibrav)
+        
+        return func(*args, **kwargs)
+    
+    return decorator
+
+
+def matmul(a, b, *others):
+    """Calculates the accumulated matrix or dot product of the arguments."""
+    args = (a, b) + others
+    return functools.reduce(np.dot, args)
+
+
+class IBrav(object):
+    """ibrav namespace"""
+    FREE = 0
+    CUB = 1
+    FCC = 2
+    BCC = 3
+    HEX = 4
+    RHL = 5
+    TET = 6
+    BCT = 7
+    ORC = 8
+    ORCC = 9
+    ORCF = 10
+    ORCI = 11
+    MCL = 12
+    MCLC = 13
+    TRI = 14
+
+
+def aflow_primitive_to_aflow_conventional_transform(ibrav):
+    """
+    Builds a transformation matrix for converting primtive cell vectors to
+    conventional cell vectors using AFLOW convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    # face-centered lattices
+    if ibrav in (IBrav.FCC, IBrav.ORCF):
+        transform = np.matrix([[-1.,  1.,  1.],
+                               [ 1., -1.,  1.],
+                               [ 1.,  1., -1.]])
+        
+    # body-centered lattices
+    elif ibrav in (IBrav.BCC, IBrav.BCT, IBrav.ORCI):
+        transform = np.matrix([[ 0.,  1.,  1.],
+                               [ 1.,  0.,  1.],
+                               [ 1.,  1.,  0.]])
+        
+    # orthorhombic base-centered lattice
+    elif ibrav == IBrav.ORCC:
+        transform = np.matrix([[ 1.,  1.,  0.],
+                               [-1.,  1.,  0.],
+                               [ 0.,  0.,  1.]])
+        
+    # monoclinic base-centered lattice
+    elif ibrav == IBrav.MCLC:
+        transform = np.matrix([[ 1., -1.,  0.],
+                               [ 1.,  1.,  0.],
+                               [ 0.,  0.,  1.]])
+        
+    # lattices without centering share the same cell vectors between
+    # their primitive cells and conventional cells, so no change is necessary
+    else:
+        transform = np.matrix(np.identity(3))
+    
+    return transform
+    
+    
+def aflow_conventional_to_aflow_primitive_transform(ibrav):
+    """
+    Builds a transformation matrix for converting conventional cell vectors to
+    primitive cell vectors using AFLOW convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    # primitive to conventional is the inverse of the transform we want to do
+    inverse_transform = aflow_primitive_to_aflow_conventional_transform(ibrav)
+    
+    # invert the inverse transform
+    return la.inv(inverse_transform)
+
+
+def qe_primitive_to_qe_conventional_transform(ibrav):
+    """
+    Builds a transformation matrix for converting primitive cell vectors to
+    conventional cell vectors using Quantum Espresso convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    if ibrav == IBrav.FCC:
+        transform = np.matrix([[-1.,  1., -1.],
+                               [-1.,  1.,  1.],
+                               [ 1.,  1., -1.]])
+        
+    # body-centered lattices
+    elif ibrav in (IBrav.BCC, IBrav.ORCI):
+        transform = np.matrix([[ 1., -1.,  0.],
+                               [ 0.,  1., -1.],
+                               [ 1.,  0.,  1.]])
+        
+    # can't stuff BCT in with the other body-centered lattices
+    # like in AFLOW because QE uniquely defines its lattice vectors
+    elif ibrav == IBrav.BCT:
+        transform = np.matrix([[ 1.,  0., -1.],
+                               [-1.,  1.,  0.],
+                               [ 0.,  1.,  1.]])
+    
+    # orthorhombic base-centered lattice
+    elif ibrav == IBrav.ORCC:
+        transform = np.matrix([[ 1., -1.,  0.],
+                               [ 1.,  1.,  0.],
+                               [ 0.,  0.,  1.]])
+        
+    # orthorhombic face-centered lattice
+    elif ibrav == IBrav.ORCF:
+        transform = np.matrix([[ 1.,  1., -1.],
+                               [-1.,  1.,  1.],
+                               [ 1., -1.,  1.]])
+    
+    # monoclinic base-centered lattice
+    elif ibrav == IBrav.MCLC:
+        transform = np.matrix([[ 1.,  0.,  1.],
+                               [ 0.,  1.,  0.],
+                               [-1.,  0.,  1.]])
+        
+    # lattices without centering share the same cell vectors between
+    # their primitive cells and conventional cells, so no change is necessary
+    else:
+        transform = np.matrix(np.identity(3))
+    
+    return transform
+
+
+def qe_conventional_to_qe_primitive_transform(ibrav):
+    """
+    Builds a transformation matrix for converting conventional cell vectors to
+    primitive cell vectors using Quantum Espresso convention.
+    """
+    # primitive to conventional is the inverse of the transform we want to do
+    inverse_transform = qe_primitive_to_qe_conventional_transform(ibrav)
+    
+    # invert the inverse transform
+    return la.inv(inverse_transform)
+
+
+def aflow_conventional_to_qe_conventional_transform(ibrav, angle=None):
+    """
+    Builds a transformation matrix for converting conventional cell vectors
+    using AFLOW convention to conventional cell vectors using Quantum Espresso
+    convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        angle (float): Characteristic angle for the lattice structure, only
+                       necessary for rhombohedral (RHL) lattices
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    if ibrav == IBrav.HEX:
+        transform = np.matrix([[ 1.,  1.,  0.],
+                               [-1.,  0.,  0.],
+                               [ 0.,  0.,  1.]])
+    
+    elif ibrav == IBrav.RHL:
+        raise NotImplementedError
+        
+        assert angle is not None, "characteristic angle must be supplied for RHL"
+        
+        cos = np.cos(angle)
+        cos_half = np.cos(angle / 2)
+        sin_half = np.sin(angle / 2)
+        
+        aflow = np.matrix([
+            [      cos_half, -sin_half,                                0],
+            [      cos_half,  sin_half,                                0],
+            [cos / cos_half,         0, np.sqrt(1 - (cos / cos_half)**2)]
+        ])
+        
+        tx = np.sqrt((1 - cos) / 2)
+        ty = np.sqrt((1 - cos) / 6)
+        tz = np.sqrt((1 + 2*cos) / 3)
+        
+        qe = np.matrix([
+            [ tx,  -ty, tz],
+            [  0, 2*ty, tz],
+            [-tx,  -ty, tz]
+        ])
+        
+        transform = matmul(qe, la.inv(aflow))
+    
+    elif ibrav in (IBrav.MCL, IBrav.MCLC):
+        raise NotImplementedError
+    
+    else:
+        transform = np.identity(3)
+    
+    return transform
+
+
+def qe_conventional_to_aflow_conventional_transform(ibrav, angle=None):
+    """
+    Builds a transformation matrix for converting conventional cell vectors
+    using Quantum Espresso convention to conventional cell vectors using AFLOW
+    convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        angle (float): Characteristic angle for the lattice structure, only
+                       necessary for rhombohedral (RHL) lattices
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    inverse_transform = aflow_conventional_to_qe_conventional_transform(ibrav, angle)
+    return la.inv(inverse_transform)
+
+
+def aflow_primitive_to_qe_primitive_transform(ibrav, angle=None):
+    """
+    Builds a transformation matrix for converting primitive cell vectors using
+    AFLOW convention to primitive cell vectors using Quantum Espresso convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    # successive transforms AFLOW prim -> AFLOW conv -> QE conv -> QE prim
+    transforms = (aflow_primitive_to_aflow_conventional_transform(ibrav),
+                  aflow_conventional_to_qe_conventional_transform(ibrav, angle),
+                  qe_conventional_to_qe_primitive_transform(ibrav))
+    
+    return matmul(*reversed(transforms))
+
+
+def qe_primitive_to_aflow_primitive_transform(ibrav, angle=None):
+    """
+    Builds a transformation matrix for converting primitive cell vectors using
+    Quantum Espresso convention to primitive cell vectors using AFLOW convention.
+    
+    Arguments:
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        
+    Returns:
+        3x3 `numpy.matrix` transformation matrix.
+    """
+    # successive transforms QE prim -> QE conv -> AFLOW conv -> AFLOW prim
+    transforms = (qe_primitive_to_qe_conventional_transform(ibrav),
+                  qe_conventional_to_aflow_conventional_transform(ibrav, angle),
+                  aflow_conventional_to_aflow_primitive_transform(ibrav))
+    
+    return matmul(*reversed(transforms))
+
+
+@validate_ibrav
+def aflow_primitive_to_aflow_conventional(cell, ibrav):
+    """
+    Converts primitive cell vectors to conventional cell vectors using AFLOW
+    convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 AFLOW primitive cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in AFLOW conventional lattice vectors.
+    """
+    transform = aflow_primitive_to_aflow_conventional_transform(ibrav)
+    return matmul(transform, cell)
+    
+
+@validate_ibrav
+def aflow_conventional_to_aflow_primitive(cell, ibrav):
+    """
+    Converts conventional cell vectors to primitive cell vectors using AFLOW
+    convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 AFLOW conventional cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in AFLOW primitive lattice vectors.
+    """
+    transform = aflow_conventional_to_aflow_primitive_transform(ibrav)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def qe_primitive_to_qe_conventional(cell, ibrav):
+    """
+    Converts primitive cell vectors to conventional cell vectors using Quantum
+    Espresso convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 Quantum Espresso conventional cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in Quantum Espresso primitive lattice
+        vectors.
+    """
+    transform = qe_primitive_to_qe_conventional_transform(ibrav)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def qe_conventional_to_qe_primitive(cell, ibrav):
+    """
+    Converts conventional cell vectors to primitive cell vectors using Quantum
+    Espresso convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 Quantum Espresso conventional cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in Quantum Espresso primitive lattice
+        vectors.
+    """
+    transform = qe_conventional_to_qe_primitive_transform(ibrav)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def aflow_conventional_to_qe_conventional(cell, ibrav, angle=None):
+    """
+    Converts conventional cell vectors using AFLOW convention to conventional
+    cell vectors using Quantum Espresso convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 AFLOW conventional cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        angle (float): Characteristic angle for the lattice structure, only
+                       necessary for rhombohedral (RHL) lattices
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in Quantum Espresso conventional lattice
+        vectors.
+    """
+    transform = aflow_conventional_to_qe_conventional_transform(ibrav, angle)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def qe_conventional_to_aflow_conventional(cell, ibrav, angle=None):
+    """
+    Converts conventional cell vectors using Quantum Espresso convention to
+    conventional cell vectors using AFLOW convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 Quantum Espresso conventional cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+        angle (float): Characteristic angle for the lattice structure, only
+                       necessary for rhombohedral (RHL) lattices
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in AFLOW conventional lattice vectors.
+    """
+    transform = qe_conventional_to_aflow_conventional_transform(ibrav, angle)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def aflow_primitive_to_qe_primitive(cell, ibrav, angle=None):
+    """
+    Converts primitive cell vectors using AFLOW convention to primitive cell
+    vectors using Quantum Espresso convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 AFLOW primitive cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in Quantum Espresso primitive lattice
+        vectors.
+    """
+    transform = aflow_primitive_to_qe_primitive_transform(ibrav, angle)
+    return matmul(transform, cell)
+
+
+@validate_ibrav
+def qe_primitive_to_aflow_primitive(cell, ibrav, angle=None):
+    """
+    Converts primitive cell vectors using Quantum Espresso convention to
+    primitive cell vectors using AFLOW convention.
+    
+    Arguments:
+        cell (numpy.matrix): 3x3 AFLOW primitive cell vectors
+        ibrav (int): Quantum Espresso Bravais lattice index of the crystal
+                     structure
+    
+    Returns:
+        3x3 `numpy.matrix` of the cell in Quantum Espresso primitive lattice
+        vectors.
+    """
+    transform = qe_primitive_to_aflow_primitive_transform(ibrav, angle)
+    return matmul(transform, cell)
+
+
+# aliases
+aflow_prim2conv = aflow_primitive_to_aflow_conventional
+aflow_conv2prim = aflow_conventional_to_aflow_primitive
+conv_aflow2qe = aflow_conventional_to_qe_conventional
+conv_qe2aflow = qe_conventional_to_aflow_conventional
+qe_prim2conv = qe_primitive_to_qe_conventional
+qe_conv2prim = qe_conventional_to_qe_primitive
+prim_aflow2qe = aflow2qe = aflow_primitive_to_qe_primitive
+prim_qe2aflow = qe2aflow = qe_primitive_to_aflow_primitive
+
 

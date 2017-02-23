@@ -2097,7 +2097,8 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 		
 
             inputSplit=AFLOWpi.retr._splitInput(inputfile)
-
+            if "noncolin" in inputSplit['&system'].keys():
+		    nbnd*=2
 
             inputSplit['&control']['calculation']="'nscf'"
             inputSplit['&system']['noinv']=".true."
@@ -5243,6 +5244,10 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
     else:
 	    nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
 
+
+    if "noncolin" in inputDict['&system'].keys():
+	    nbnd*=2
+
     try:
 	    '''adds nbnd to input file'''
 	    inputDict['&system']['nbnd']=str(nbnd)
@@ -5655,8 +5660,10 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
                     alatFind = alatSearch.findall(outputfile)
 		    try:
 			    alat = float(alatFind[-1])
+			    
 		    except:
-			    alat=1.0
+			    print "cant find alat from output. getting it from input"
+			    alat=float(inputDict["&system"]["celldm(1)"])
                     #Get ibrav
                     splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
                     try:

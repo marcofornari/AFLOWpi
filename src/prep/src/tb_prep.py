@@ -201,7 +201,7 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
         if not os.path.exists(TB_dir):
             os.mkdir(TB_dir)
         data_file_dft = os.path.join(save_dir,'data-file.xml')
-        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.dat')
+        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.xml')
         shutil.copy(data_file_dft,TB_dir)
         shutil.copy(atomic_proj_dat,TB_dir)
     except Exception,e:

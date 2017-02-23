@@ -1,359 +1,164 @@
-\indexentry{plot (module)|hyperpage}{3}
-\indexentry{\_\_bandPlot() (in module plot)|hyperpage}{3}
-\indexentry{\_\_bands() (in module plot)|hyperpage}{3}
-\indexentry{\_\_distortionEnergy() (in module plot)|hyperpage}{4}
-\indexentry{\_\_dosPlot() (in module plot)|hyperpage}{4}
-\indexentry{\_\_getPath\_WanT() (in module plot)|hyperpage}{4}
-\indexentry{\_\_plotByAtom() (in module plot)|hyperpage}{4}
-\indexentry{\_\_plot\_phonon() (in module plot)|hyperpage}{5}
-\indexentry{\_\_radialPDF() (in module plot)|hyperpage}{5}
-\indexentry{\_\_smoothGauss() (in module plot)|hyperpage}{5}
-\indexentry{\_\_sumpdos() (in module plot)|hyperpage}{5}
-\indexentry{\_\_transport\_plot() (in module plot)|hyperpage}{5}
-\indexentry{bands() (in module plot)|hyperpage}{5}
-\indexentry{distortionEnergy() (in module plot)|hyperpage}{6}
-\indexentry{dos() (in module plot)|hyperpage}{6}
-\indexentry{grid\_plot() (in module plot)|hyperpage}{6}
-\indexentry{interpolatePlot() (in module plot)|hyperpage}{6}
-\indexentry{interpolatePlot1D() (in module plot)|hyperpage}{7}
-\indexentry{opdos() (in module plot)|hyperpage}{8}
-\indexentry{phonon() (in module plot)|hyperpage}{8}
-\indexentry{radialPDF() (in module plot)|hyperpage}{8}
-\indexentry{read\_transport\_datafile() (in module plot)|hyperpage}{8}
-\indexentry{transport\_plots() (in module plot)|hyperpage}{8}
-\indexentry{prep (module)|hyperpage}{9}
-\indexentry{ConfigSectionMap() (in module prep)|hyperpage}{9}
-\indexentry{\_\_addToAll() (in module prep)|hyperpage}{9}
-\indexentry{\_\_addToBlock() (in module prep)|hyperpage}{9}
-\indexentry{\_\_announcePrint() (in module prep)|hyperpage}{9}
-\indexentry{\_\_calcsFromCalcList() (in module prep)|hyperpage}{9}
-\indexentry{\_\_checkSuccessCompletion() (in module prep)|hyperpage}{9}
-\indexentry{\_\_check\_lock() (in module prep)|hyperpage}{10}
-\indexentry{\_\_check\_restart() (in module prep)|hyperpage}{10}
-\indexentry{\_\_cleanCalcs() (in module prep)|hyperpage}{10}
-\indexentry{\_\_cleanInputStringSCF() (in module prep)|hyperpage}{10}
-\indexentry{\_\_copyConfig() (in module prep)|hyperpage}{10}
-\indexentry{\_\_crc64digest() (in module prep)|hyperpage}{10}
-\indexentry{\_\_fillTemplate() (in module prep)|hyperpage}{10}
-\indexentry{\_\_findInBlock() (in module prep)|hyperpage}{11}
-\indexentry{\_\_forceSubmitNodeIP() (in module prep)|hyperpage}{11}
-\indexentry{\_\_freezeAtoms() (in module prep)|hyperpage}{11}
-\indexentry{\_\_getAMass() (in module prep)|hyperpage}{11}
-\indexentry{\_\_getLoglevel() (in module prep)|hyperpage}{11}
-\indexentry{\_\_getNextOneCalcVarName() (in module prep)|hyperpage}{11}
-\indexentry{\_\_getPseudofilename() (in module prep)|hyperpage}{12}
-\indexentry{\_\_hash64String() (in module prep)|hyperpage}{12}
-\indexentry{\_\_incrementFileValue() (in module prep)|hyperpage}{12}
-\indexentry{\_\_loadCalcsFromOneCalc() (in module prep)|hyperpage}{12}
-\indexentry{\_\_lock\_transform() (in module prep)|hyperpage}{12}
-\indexentry{\_\_modifyInputPrefixPW() (in module prep)|hyperpage}{13}
-\indexentry{\_\_modifyNamelistPW() (in module prep)|hyperpage}{13}
-\indexentry{\_\_modifyVarVal() (in module prep)|hyperpage}{13}
-\indexentry{\_\_null\_\_() (in module prep)|hyperpage}{13}
-\indexentry{\_\_num\_bands() (in module prep)|hyperpage}{13}
-\indexentry{\_\_parseRef() (in module prep)|hyperpage}{13}
-\indexentry{\_\_passGlobalVar() (in module prep)|hyperpage}{14}
-\indexentry{\_\_removeComments() (in module prep)|hyperpage}{14}
-\indexentry{\_\_removeFromBlock() (in module prep)|hyperpage}{14}
-\indexentry{\_\_resolveEqualities() (in module prep)|hyperpage}{14}
-\indexentry{\_\_temp\_executable() (in module prep)|hyperpage}{14}
-\indexentry{\_\_transformInput() (in module prep)|hyperpage}{15}
-\indexentry{\_\_transformParamsInput() (in module prep)|hyperpage}{15}
-\indexentry{\_\_transformPositionsInput() (in module prep)|hyperpage}{15}
-\indexentry{\_\_unfreezeAtoms() (in module prep)|hyperpage}{15}
-\indexentry{\_\_updatecalclogs() (in module prep)|hyperpage}{15}
-\indexentry{\_\_writeLoggingBlock() (in module prep)|hyperpage}{15}
-\indexentry{\_\_writeTemplate() (in module prep)|hyperpage}{16}
-\indexentry{\_\_writeToScript() (in module prep)|hyperpage}{16}
-\indexentry{\_\_write\_scratch\_meta\_data\_file() (in module prep)|hyperpage}{16}
-\indexentry{addToBlockWrapper() (in module prep)|hyperpage}{16}
-\indexentry{askAFLOWpiVars() (in module prep)|hyperpage}{16}
-\indexentry{bands() (in module prep)|hyperpage}{16}
-\indexentry{bandsAflow() (in module prep)|hyperpage}{17}
-\indexentry{build\_calcs() (in module prep)|hyperpage}{17}
-\indexentry{calcFromFile() (in module prep)|hyperpage}{17}
-\indexentry{calcs\_container (class in prep)|hyperpage}{17}
-\indexentry{addToAll() (prep.calcs\_container method)|hyperpage}{17}
-\indexentry{bands() (prep.calcs\_container method)|hyperpage}{17}
-\indexentry{change\_input() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{change\_pseudos() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{conventional\_cell\_input() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{crawl\_min() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{dos() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{evCurve\_min() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{get\_initial\_inputs() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{increase\_step() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{items() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{iteritems() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{keys() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{new\_step() (prep.calcs\_container method)|hyperpage}{18}
-\indexentry{phonon() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{pseudo\_test\_brute() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{relax() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{resubmit() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{scf() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{scfuj() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{split\_chain() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{submit() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{transport() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{values() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{vcrelax() (prep.calcs\_container method)|hyperpage}{19}
-\indexentry{changeCalcs() (in module prep)|hyperpage}{19}
-\indexentry{cleanCalcs() (in module prep)|hyperpage}{19}
-\indexentry{construct\_and\_run() (in module prep)|hyperpage}{20}
-\indexentry{doss() (in module prep)|hyperpage}{20}
-\indexentry{extractvars() (in module prep)|hyperpage}{20}
-\indexentry{generateAnotherCalc() (in module prep)|hyperpage}{20}
-\indexentry{getMPGrid() (in module prep)|hyperpage}{20}
-\indexentry{init (class in prep)|hyperpage}{20}
-\indexentry{from\_file() (prep.init method)|hyperpage}{20}
-\indexentry{items() (prep.init method)|hyperpage}{21}
-\indexentry{iteritems() (prep.init method)|hyperpage}{21}
-\indexentry{keys() (prep.init method)|hyperpage}{21}
-\indexentry{load() (prep.init method)|hyperpage}{21}
-\indexentry{scfs() (prep.init method)|hyperpage}{21}
-\indexentry{status() (prep.init method)|hyperpage}{21}
-\indexentry{values() (prep.init method)|hyperpage}{22}
-\indexentry{init\_\_() (in module prep)|hyperpage}{22}
-\indexentry{line\_prepender() (in module prep)|hyperpage}{22}
-\indexentry{loadlogs() (in module prep)|hyperpage}{22}
-\indexentry{lockAtomMovement() (in module prep)|hyperpage}{22}
-\indexentry{maketree() (in module prep)|hyperpage}{22}
-\indexentry{modifyCalcs() (in module prep)|hyperpage}{22}
-\indexentry{modifyInputPrefixPW() (in module prep)|hyperpage}{23}
-\indexentry{modifyNamelistPW() (in module prep)|hyperpage}{23}
-\indexentry{newstepWrapper() (in module prep)|hyperpage}{23}
-\indexentry{plotter (class in prep)|hyperpage}{23}
-\indexentry{bands() (prep.plotter method)|hyperpage}{23}
-\indexentry{dos() (prep.plotter method)|hyperpage}{24}
-\indexentry{opdos() (prep.plotter method)|hyperpage}{24}
-\indexentry{phonon() (prep.plotter method)|hyperpage}{24}
-\indexentry{transport() (prep.plotter method)|hyperpage}{24}
-\indexentry{prep\_split\_step() (in module prep)|hyperpage}{25}
-\indexentry{remove\_blank\_lines() (in module prep)|hyperpage}{25}
-\indexentry{runAfterAllDone() (in module prep)|hyperpage}{25}
-\indexentry{scfs() (in module prep)|hyperpage}{25}
-\indexentry{totree() (in module prep)|hyperpage}{25}
-\indexentry{unlockAtomMovement() (in module prep)|hyperpage}{26}
-\indexentry{updateStructs() (in module prep)|hyperpage}{26}
-\indexentry{updatelogs() (in module prep)|hyperpage}{26}
-\indexentry{varyCellParams() (in module prep)|hyperpage}{26}
-\indexentry{writeToScript() (in module prep)|hyperpage}{26}
-\indexentry{pseudo (module)|hyperpage}{29}
-\indexentry{\_\_crawlingMinimization() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_cubicInterpolation() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_cubicInterpolation\_onePoint() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_getCutOffs() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_getMin() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_getMinimization() (in module pseudo)|hyperpage}{29}
-\indexentry{\_\_grabEnergyOut() (in module pseudo)|hyperpage}{30}
-\indexentry{\_\_plotOne() (in module pseudo)|hyperpage}{30}
-\indexentry{\_\_shiftGrid() (in module pseudo)|hyperpage}{30}
-\indexentry{\_\_splitCalcs() (in module pseudo)|hyperpage}{30}
-\indexentry{brute\_test() (in module pseudo)|hyperpage}{30}
-\indexentry{crawlingMinimization() (in module pseudo)|hyperpage}{30}
-\indexentry{getMinimization() (in module pseudo)|hyperpage}{30}
-\indexentry{plot() (in module pseudo)|hyperpage}{31}
-\indexentry{retr (module)|hyperpage}{33}
-\indexentry{\_\_cellMatrixToString() (in module retr)|hyperpage}{33}
-\indexentry{\_\_cellStringToMatrix() (in module retr)|hyperpage}{33}
-\indexentry{\_\_checkEqualPoint() (in module retr)|hyperpage}{33}
-\indexentry{\_\_conv2PrimVec() (in module retr)|hyperpage}{33}
-\indexentry{\_\_conv2primPositions() (in module retr)|hyperpage}{33}
-\indexentry{\_\_convertCartesian() (in module retr)|hyperpage}{33}
-\indexentry{\_\_convertCellBC() (in module retr)|hyperpage}{33}
-\indexentry{\_\_convertFractional() (in module retr)|hyperpage}{34}
-\indexentry{\_\_duplicateEdgeAtoms() (in module retr)|hyperpage}{34}
-\indexentry{\_\_expandBoundariesNoScale() (in module retr)|hyperpage}{34}
-\indexentry{\_\_find\_numkpoints() (in module retr)|hyperpage}{34}
-\indexentry{\_\_free2celldm() (in module retr)|hyperpage}{34}
-\indexentry{\_\_getAlatFromInput() (in module retr)|hyperpage}{34}
-\indexentry{\_\_getAtomNum() (in module retr)|hyperpage}{34}
-\indexentry{\_\_getCartConvMatrix() (in module retr)|hyperpage}{35}
-\indexentry{\_\_getCellInput() (in module retr)|hyperpage}{35}
-\indexentry{\_\_getCellOutDim() (in module retr)|hyperpage}{35}
-\indexentry{\_\_getCellParams() (in module retr)|hyperpage}{35}
-\indexentry{\_\_getCelldm2freeDict() (in module retr)|hyperpage}{35}
-\indexentry{\_\_getConventionalCellFromInput() (in module retr)|hyperpage}{36}
-\indexentry{\_\_getConventionalCellFromOutput() (in module retr)|hyperpage}{36}
-\indexentry{\_\_getEfermi() (in module retr)|hyperpage}{36}
-\indexentry{\_\_getHighSymPoints() (in module retr)|hyperpage}{36}
-\indexentry{\_\_getInitialInputString() (in module retr)|hyperpage}{36}
-\indexentry{\_\_getInitialOutputString() (in module retr)|hyperpage}{37}
-\indexentry{\_\_getInputFileString() (in module retr)|hyperpage}{37}
-\indexentry{\_\_getInputParams() (in module retr)|hyperpage}{37}
-\indexentry{\_\_getOutputString() (in module retr)|hyperpage}{37}
-\indexentry{\_\_getPath() (in module retr)|hyperpage}{37}
-\indexentry{\_\_getPathFromFile() (in module retr)|hyperpage}{38}
-\indexentry{\_\_getPosLabels() (in module retr)|hyperpage}{38}
-\indexentry{\_\_getPositions() (in module retr)|hyperpage}{38}
-\indexentry{\_\_getStoicName() (in module retr)|hyperpage}{38}
-\indexentry{\_\_getSymList() (in module retr)|hyperpage}{38}
-\indexentry{\_\_getSymmInput() (in module retr)|hyperpage}{38}
-\indexentry{\_\_get\_pool\_num() (in module retr)|hyperpage}{39}
-\indexentry{\_\_invertX() (in module retr)|hyperpage}{39}
-\indexentry{\_\_invertXYZ() (in module retr)|hyperpage}{39}
-\indexentry{\_\_invertY() (in module retr)|hyperpage}{39}
-\indexentry{\_\_invertZ() (in module retr)|hyperpage}{39}
-\indexentry{\_\_joinInput() (in module retr)|hyperpage}{39}
-\indexentry{\_\_joinMatrixLabels() (in module retr)|hyperpage}{39}
-\indexentry{\_\_moveToSavedir() (in module retr)|hyperpage}{40}
-\indexentry{\_\_orderSplitInput() (in module retr)|hyperpage}{40}
-\indexentry{\_\_prefixFromInput() (in module retr)|hyperpage}{40}
-\indexentry{\_\_prim2ConvMatrix() (in module retr)|hyperpage}{40}
-\indexentry{\_\_prim2ConvVec() (in module retr)|hyperpage}{40}
-\indexentry{\_\_prim2convPositions() (in module retr)|hyperpage}{40}
-\indexentry{\_\_pw2aflowConvention() (in module retr)|hyperpage}{40}
-\indexentry{\_\_pw2aflowConventionVec() (in module retr)|hyperpage}{40}
-\indexentry{\_\_pw2aflowPositions() (in module retr)|hyperpage}{41}
-\indexentry{\_\_pw2cif() (in module retr)|hyperpage}{41}
-\indexentry{\_\_reduceDuplicates() (in module retr)|hyperpage}{41}
-\indexentry{\_\_rho2hex() (in module retr)|hyperpage}{41}
-\indexentry{\_\_rotateAlpha() (in module retr)|hyperpage}{41}
-\indexentry{\_\_rotateBeta() (in module retr)|hyperpage}{41}
-\indexentry{\_\_rotateGamma() (in module retr)|hyperpage}{41}
-\indexentry{\_\_shiftAfter() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftAfterRotation() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftBeforeRotation() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftCell() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftX() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftY() (in module retr)|hyperpage}{42}
-\indexentry{\_\_shiftZ() (in module retr)|hyperpage}{42}
-\indexentry{\_\_sortMatrix() (in module retr)|hyperpage}{42}
-\indexentry{\_\_splitInput() (in module retr)|hyperpage}{42}
-\indexentry{\_\_writeEfermi() (in module retr)|hyperpage}{43}
-\indexentry{\_\_writeInputFromOutput() (in module retr)|hyperpage}{43}
-\indexentry{\_\_writeInputFromOutputString() (in module retr)|hyperpage}{43}
-\indexentry{abc2celldm() (in module retr)|hyperpage}{43}
-\indexentry{abc2free() (in module retr)|hyperpage}{44}
-\indexentry{abcVol() (in module retr)|hyperpage}{44}
-\indexentry{attachPosFlags() (in module retr)|hyperpage}{44}
-\indexentry{celldm2abc() (in module retr)|hyperpage}{44}
-\indexentry{celldm2free() (in module retr)|hyperpage}{45}
-\indexentry{celldm2params() (in module retr)|hyperpage}{45}
-\indexentry{checkStatus() (in module retr)|hyperpage}{45}
-\indexentry{chemAsKeys() (in module retr)|hyperpage}{45}
-\indexentry{compMatrices() (in module retr)|hyperpage}{46}
-\indexentry{convertFCC() (in module retr)|hyperpage}{46}
-\indexentry{detachPosFlags() (in module retr)|hyperpage}{46}
-\indexentry{free2abc() (in module retr)|hyperpage}{46}
-\indexentry{free2ibrav() (in module retr)|hyperpage}{47}
-\indexentry{getBravaisLatticeName() (in module retr)|hyperpage}{47}
-\indexentry{getCellMatrixFromInput() (in module retr)|hyperpage}{47}
-\indexentry{getCellOutput() (in module retr)|hyperpage}{47}
-\indexentry{getCellVolume() (in module retr)|hyperpage}{47}
-\indexentry{getCellVolumeFromVectors() (in module retr)|hyperpage}{48}
-\indexentry{getForce() (in module retr)|hyperpage}{48}
-\indexentry{getIbravFromVectors() (in module retr)|hyperpage}{48}
-\indexentry{getPointGroup() (in module retr)|hyperpage}{48}
-\indexentry{getPositionsFromInput() (in module retr)|hyperpage}{48}
-\indexentry{getPositionsFromOutput() (in module retr)|hyperpage}{49}
-\indexentry{getRecipParams() (in module retr)|hyperpage}{49}
-\indexentry{get\_parameters() (in module retr)|hyperpage}{49}
-\indexentry{glideXshiftY() (in module retr)|hyperpage}{49}
-\indexentry{glideXshiftZ() (in module retr)|hyperpage}{49}
-\indexentry{glideYshiftX() (in module retr)|hyperpage}{49}
-\indexentry{glideYshiftZ() (in module retr)|hyperpage}{49}
-\indexentry{glideZshiftX() (in module retr)|hyperpage}{49}
-\indexentry{glideZshiftY() (in module retr)|hyperpage}{49}
-\indexentry{grabEnergy() (in module retr)|hyperpage}{49}
-\indexentry{grabEnergyOut() (in module retr)|hyperpage}{49}
-\indexentry{ibrav2String() (in module retr)|hyperpage}{50}
-\indexentry{inputDict2params() (in module retr)|hyperpage}{50}
-\indexentry{invertX() (in module retr)|hyperpage}{50}
-\indexentry{invertXYZ() (in module retr)|hyperpage}{50}
-\indexentry{invertY() (in module retr)|hyperpage}{50}
-\indexentry{invertZ() (in module retr)|hyperpage}{50}
-\indexentry{pw2cif() (in module retr)|hyperpage}{51}
-\indexentry{rotateAlpha() (in module retr)|hyperpage}{51}
-\indexentry{rotateBeta() (in module retr)|hyperpage}{51}
-\indexentry{rotateGamma() (in module retr)|hyperpage}{51}
-\indexentry{shiftCell() (in module retr)|hyperpage}{51}
-\indexentry{shiftX() (in module retr)|hyperpage}{51}
-\indexentry{shiftY() (in module retr)|hyperpage}{52}
-\indexentry{shiftZ() (in module retr)|hyperpage}{52}
-\indexentry{transform\_input\_conv() (in module retr)|hyperpage}{52}
-\indexentry{writeInputFromOutput() (in module retr)|hyperpage}{52}
-\indexentry{run (module)|hyperpage}{53}
-\indexentry{\_\_PW\_bands\_fix() (in module run)|hyperpage}{53}
-\indexentry{\_\_collect\_fd\_field\_forces() (in module run)|hyperpage}{53}
-\indexentry{\_\_colorize\_message() (in module run)|hyperpage}{53}
-\indexentry{\_\_convert\_fortran\_double() (in module run)|hyperpage}{53}
-\indexentry{\_\_exitClean() (in module run)|hyperpage}{53}
-\indexentry{\_\_field\_factory() (in module run)|hyperpage}{54}
-\indexentry{\_\_gen\_fd\_input() (in module run)|hyperpage}{54}
-\indexentry{\_\_generic\_restart\_check() (in module run)|hyperpage}{54}
-\indexentry{\_\_getEnginePath() (in module run)|hyperpage}{54}
-\indexentry{\_\_getExecutable() (in module run)|hyperpage}{55}
-\indexentry{\_\_getWalltime() (in module run)|hyperpage}{55}
-\indexentry{\_\_get\_index\_from\_pp\_step() (in module run)|hyperpage}{55}
-\indexentry{\_\_get\_qsub\_name() (in module run)|hyperpage}{55}
-\indexentry{\_\_grabWalltime() (in module run)|hyperpage}{55}
-\indexentry{\_\_io\_error\_restart() (in module run)|hyperpage}{56}
-\indexentry{\_\_makeInput() (in module run)|hyperpage}{56}
-\indexentry{\_\_onePrep() (in module run)|hyperpage}{56}
-\indexentry{\_\_oneRun() (in module run)|hyperpage}{56}
-\indexentry{\_\_phonon\_band\_path() (in module run)|hyperpage}{57}
-\indexentry{\_\_pp\_phonon() (in module run)|hyperpage}{57}
-\indexentry{\_\_pull\_born\_out() (in module run)|hyperpage}{57}
-\indexentry{\_\_pull\_eps\_out() (in module run)|hyperpage}{58}
-\indexentry{\_\_pull\_forces() (in module run)|hyperpage}{58}
-\indexentry{\_\_pull\_polarization() (in module run)|hyperpage}{58}
-\indexentry{\_\_qe\_\_pre\_run() (in module run)|hyperpage}{58}
-\indexentry{\_\_qsubGen() (in module run)|hyperpage}{59}
-\indexentry{\_\_readWalltimeLog() (in module run)|hyperpage}{59}
-\indexentry{\_\_recordDeath() (in module run)|hyperpage}{59}
-\indexentry{\_\_restartGIPAW() (in module run)|hyperpage}{59}
-\indexentry{\_\_restartPW() (in module run)|hyperpage}{59}
-\indexentry{\_\_restartScript() (in module run)|hyperpage}{60}
-\indexentry{\_\_setStartTime() (in module run)|hyperpage}{60}
-\indexentry{\_\_setupRestartGIPAW() (in module run)|hyperpage}{60}
-\indexentry{\_\_setupRestartPW() (in module run)|hyperpage}{60}
-\indexentry{\_\_setup\_raman() (in module run)|hyperpage}{60}
-\indexentry{\_\_skeletonRun() (in module run)|hyperpage}{61}
-\indexentry{\_\_submitJob() (in module run)|hyperpage}{61}
-\indexentry{\_\_swap\_scf\_inputs() (in module run)|hyperpage}{61}
-\indexentry{\_\_testOne() (in module run)|hyperpage}{62}
-\indexentry{\_\_vcrelax\_error\_restart() (in module run)|hyperpage}{62}
-\indexentry{\_\_writeWalltimeLog() (in module run)|hyperpage}{62}
-\indexentry{\_fancy\_error\_log() (in module run)|hyperpage}{62}
-\indexentry{addatexit\_\_() (in module run)|hyperpage}{63}
-\indexentry{bands() (in module run)|hyperpage}{63}
-\indexentry{clean\_cell\_params() (in module run)|hyperpage}{63}
-\indexentry{cleanup() (in module run)|hyperpage}{63}
-\indexentry{dos() (in module run)|hyperpage}{63}
-\indexentry{emr() (in module run)|hyperpage}{64}
-\indexentry{generateSubRef() (in module run)|hyperpage}{64}
-\indexentry{gvectors() (in module run)|hyperpage}{64}
-\indexentry{hyperfine() (in module run)|hyperpage}{64}
-\indexentry{nmr() (in module run)|hyperpage}{65}
-\indexentry{pdos() (in module run)|hyperpage}{65}
-\indexentry{prep\_fd() (in module run)|hyperpage}{65}
-\indexentry{reset\_logs() (in module run)|hyperpage}{66}
-\indexentry{resubmit() (in module run)|hyperpage}{66}
-\indexentry{scf() (in module run)|hyperpage}{66}
-\indexentry{submit() (in module run)|hyperpage}{66}
-\indexentry{submitFirstCalcs\_\_() (in module run)|hyperpage}{66}
-\indexentry{testOne() (in module run)|hyperpage}{67}
-\indexentry{write\_fdx\_template() (in module run)|hyperpage}{67}
-\indexentry{scfuj (module)|hyperpage}{69}
-\indexentry{WanT\_bands() (in module scfuj)|hyperpage}{69}
-\indexentry{WanT\_dos() (in module scfuj)|hyperpage}{69}
-\indexentry{WanT\_epsilon() (in module scfuj)|hyperpage}{69}
-\indexentry{\_\_getPAOfilename() (in module scfuj)|hyperpage}{69}
-\indexentry{\_\_oneMinimizeCalcs() (in module scfuj)|hyperpage}{69}
-\indexentry{\_\_oneScfprep() (in module scfuj)|hyperpage}{69}
-\indexentry{acbn0() (in module scfuj)|hyperpage}{70}
-\indexentry{checkOscillation() (in module scfuj)|hyperpage}{70}
-\indexentry{chkSpinCalc() (in module scfuj)|hyperpage}{70}
-\indexentry{chk\_species() (in module scfuj)|hyperpage}{70}
-\indexentry{evCurveMinimize() (in module scfuj)|hyperpage}{70}
-\indexentry{getU\_frmACBN0out() (in module scfuj)|hyperpage}{70}
-\indexentry{maketree() (in module scfuj)|hyperpage}{70}
-\indexentry{nscf\_nosym\_noinv() (in module scfuj)|hyperpage}{70}
-\indexentry{projwfc() (in module scfuj)|hyperpage}{70}
-\indexentry{run() (in module scfuj)|hyperpage}{70}
-\indexentry{run\_transport() (in module scfuj)|hyperpage}{70}
-\indexentry{scfprep() (in module scfuj)|hyperpage}{70}
-\indexentry{transport\_prep() (in module scfuj)|hyperpage}{70}
-\indexentry{updateUvals() (in module scfuj)|hyperpage}{70}
+\indexentry{plot (module)|hyperpage}{1}
+\indexentry{bands() (in module plot)|hyperpage}{1}
+\indexentry{distortionEnergy() (in module plot)|hyperpage}{1}
+\indexentry{dos() (in module plot)|hyperpage}{1}
+\indexentry{grid\_plot() (in module plot)|hyperpage}{2}
+\indexentry{interpolatePlot() (in module plot)|hyperpage}{2}
+\indexentry{interpolatePlot1D() (in module plot)|hyperpage}{3}
+\indexentry{opdos() (in module plot)|hyperpage}{3}
+\indexentry{optical\_plots() (in module plot)|hyperpage}{3}
+\indexentry{phonon() (in module plot)|hyperpage}{3}
+\indexentry{radialPDF() (in module plot)|hyperpage}{4}
+\indexentry{read\_transport\_datafile() (in module plot)|hyperpage}{4}
+\indexentry{transport\_plots() (in module plot)|hyperpage}{4}
+\indexentry{prep (module)|hyperpage}{5}
+\indexentry{ConfigSectionMap() (in module prep)|hyperpage}{5}
+\indexentry{addToAll\_() (in module prep)|hyperpage}{5}
+\indexentry{addToBlockWrapper() (in module prep)|hyperpage}{5}
+\indexentry{askAFLOWpiVars() (in module prep)|hyperpage}{5}
+\indexentry{bands() (in module prep)|hyperpage}{5}
+\indexentry{bandsAflow() (in module prep)|hyperpage}{6}
+\indexentry{build\_calcs() (in module prep)|hyperpage}{6}
+\indexentry{calcFromFile() (in module prep)|hyperpage}{6}
+\indexentry{calcs\_container (class in prep)|hyperpage}{6}
+\indexentry{acbn0() (prep.calcs\_container method)|hyperpage}{6}
+\indexentry{addToAll() (prep.calcs\_container method)|hyperpage}{6}
+\indexentry{bands() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{change\_input() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{change\_pseudos() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{conventional\_cell\_input() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{converge\_smearing() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{crawl\_min() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{dos() (prep.calcs\_container method)|hyperpage}{7}
+\indexentry{elastic() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{evCurve\_min() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{get\_initial\_inputs() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{increase\_step() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{items() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{iteritems() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{keys() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{new\_step() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{phonon() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{pseudo\_test\_brute() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{relax() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{resubmit() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{scf() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{submit() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{thermal() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{tight\_binding() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{values() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{vcrelax() (prep.calcs\_container method)|hyperpage}{8}
+\indexentry{changeCalcs() (in module prep)|hyperpage}{8}
+\indexentry{cleanCalcs() (in module prep)|hyperpage}{8}
+\indexentry{construct\_and\_run() (in module prep)|hyperpage}{8}
+\indexentry{doss() (in module prep)|hyperpage}{9}
+\indexentry{extractvars() (in module prep)|hyperpage}{9}
+\indexentry{generateAnotherCalc() (in module prep)|hyperpage}{9}
+\indexentry{getMPGrid() (in module prep)|hyperpage}{9}
+\indexentry{init (class in prep)|hyperpage}{9}
+\indexentry{from\_file() (prep.init method)|hyperpage}{9}
+\indexentry{items() (prep.init method)|hyperpage}{10}
+\indexentry{iteritems() (prep.init method)|hyperpage}{10}
+\indexentry{keys() (prep.init method)|hyperpage}{10}
+\indexentry{load() (prep.init method)|hyperpage}{10}
+\indexentry{scfs() (prep.init method)|hyperpage}{10}
+\indexentry{status() (prep.init method)|hyperpage}{10}
+\indexentry{values() (prep.init method)|hyperpage}{11}
+\indexentry{init\_\_() (in module prep)|hyperpage}{11}
+\indexentry{isotropy (class in prep)|hyperpage}{11}
+\indexentry{cif2qe() (prep.isotropy method)|hyperpage}{11}
+\indexentry{convert() (prep.isotropy method)|hyperpage}{11}
+\indexentry{get\_cif() (prep.isotropy method)|hyperpage}{11}
+\indexentry{line\_prepender() (in module prep)|hyperpage}{11}
+\indexentry{loadlogs() (in module prep)|hyperpage}{11}
+\indexentry{lockAtomMovement() (in module prep)|hyperpage}{11}
+\indexentry{maketree() (in module prep)|hyperpage}{11}
+\indexentry{modifyCalcs() (in module prep)|hyperpage}{12}
+\indexentry{modifyInputPrefixPW() (in module prep)|hyperpage}{12}
+\indexentry{modifyNamelistPW() (in module prep)|hyperpage}{12}
+\indexentry{newstepWrapper() (in module prep)|hyperpage}{12}
+\indexentry{plotter (class in prep)|hyperpage}{12}
+\indexentry{bands() (prep.plotter method)|hyperpage}{12}
+\indexentry{dos() (prep.plotter method)|hyperpage}{13}
+\indexentry{opdos() (prep.plotter method)|hyperpage}{13}
+\indexentry{phonon() (prep.plotter method)|hyperpage}{13}
+\indexentry{prep\_split\_step() (in module prep)|hyperpage}{13}
+\indexentry{remove\_blank\_lines() (in module prep)|hyperpage}{14}
+\indexentry{runAfterAllDone() (in module prep)|hyperpage}{14}
+\indexentry{scfs() (in module prep)|hyperpage}{14}
+\indexentry{tb\_plotter (class in prep)|hyperpage}{14}
+\indexentry{bands() (prep.tb\_plotter method)|hyperpage}{14}
+\indexentry{dos() (prep.tb\_plotter method)|hyperpage}{15}
+\indexentry{opdos() (prep.tb\_plotter method)|hyperpage}{15}
+\indexentry{optical() (prep.tb\_plotter method)|hyperpage}{15}
+\indexentry{transport() (prep.tb\_plotter method)|hyperpage}{15}
+\indexentry{tight\_binding (class in prep)|hyperpage}{15}
+\indexentry{bands() (prep.tight\_binding method)|hyperpage}{15}
+\indexentry{dos() (prep.tight\_binding method)|hyperpage}{15}
+\indexentry{effmass() (prep.tight\_binding method)|hyperpage}{15}
+\indexentry{optical() (prep.tight\_binding method)|hyperpage}{15}
+\indexentry{transport() (prep.tight\_binding method)|hyperpage}{15}
+\indexentry{totree() (in module prep)|hyperpage}{15}
+\indexentry{unlockAtomMovement() (in module prep)|hyperpage}{16}
+\indexentry{updateStructs() (in module prep)|hyperpage}{16}
+\indexentry{updatelogs() (in module prep)|hyperpage}{16}
+\indexentry{varyCellParams() (in module prep)|hyperpage}{16}
+\indexentry{writeToScript() (in module prep)|hyperpage}{16}
+\indexentry{pseudo (module)|hyperpage}{19}
+\indexentry{brute\_test() (in module pseudo)|hyperpage}{19}
+\indexentry{crawlingMinimization() (in module pseudo)|hyperpage}{19}
+\indexentry{getMinimization() (in module pseudo)|hyperpage}{19}
+\indexentry{plot() (in module pseudo)|hyperpage}{19}
+\indexentry{retr (module)|hyperpage}{21}
+\indexentry{aflow\_prim2conv() (in module retr)|hyperpage}{21}
+\indexentry{aflow\_conv2prim() (in module retr)|hyperpage}{21}
+\indexentry{qe\_prim2conv() (in module retr)|hyperpage}{21}
+\indexentry{qe\_conv2prim() (in module retr)|hyperpage}{21}
+\indexentry{conv\_aflow2qe() (in module retr)|hyperpage}{22}
+\indexentry{conv\_qe2aflow() (in module retr)|hyperpage}{22}
+\indexentry{prim\_aflow2qe() (in module retr)|hyperpage}{22}
+\indexentry{prim\_qe2aflow() (in module retr)|hyperpage}{22}
+\indexentry{run (module)|hyperpage}{23}
+\indexentry{addatexit\_\_() (in module run)|hyperpage}{23}
+\indexentry{bands() (in module run)|hyperpage}{23}
+\indexentry{clean\_cell\_params() (in module run)|hyperpage}{23}
+\indexentry{cleanup() (in module run)|hyperpage}{24}
+\indexentry{dos() (in module run)|hyperpage}{24}
+\indexentry{emr() (in module run)|hyperpage}{24}
+\indexentry{generateSubRef() (in module run)|hyperpage}{24}
+\indexentry{gvectors() (in module run)|hyperpage}{25}
+\indexentry{hyperfine() (in module run)|hyperpage}{25}
+\indexentry{nmr() (in module run)|hyperpage}{25}
+\indexentry{pdos() (in module run)|hyperpage}{25}
+\indexentry{prep\_fd() (in module run)|hyperpage}{26}
+\indexentry{reduce\_kpoints() (in module run)|hyperpage}{26}
+\indexentry{reset\_logs() (in module run)|hyperpage}{26}
+\indexentry{resubmit() (in module run)|hyperpage}{26}
+\indexentry{scf() (in module run)|hyperpage}{26}
+\indexentry{submit() (in module run)|hyperpage}{27}
+\indexentry{submitFirstCalcs\_\_() (in module run)|hyperpage}{27}
+\indexentry{testOne() (in module run)|hyperpage}{27}
+\indexentry{write\_fdx\_template() (in module run)|hyperpage}{27}
+\indexentry{scfuj (module)|hyperpage}{29}
+\indexentry{WanT\_bands() (in module scfuj)|hyperpage}{29}
+\indexentry{WanT\_dos() (in module scfuj)|hyperpage}{29}
+\indexentry{WanT\_epsilon() (in module scfuj)|hyperpage}{29}
+\indexentry{acbn0() (in module scfuj)|hyperpage}{29}
+\indexentry{checkOscillation() (in module scfuj)|hyperpage}{29}
+\indexentry{chkSpinCalc() (in module scfuj)|hyperpage}{29}
+\indexentry{chk\_species() (in module scfuj)|hyperpage}{29}
+\indexentry{evCurveMinimize() (in module scfuj)|hyperpage}{29}
+\indexentry{getU\_frmACBN0out() (in module scfuj)|hyperpage}{29}
+\indexentry{maketree() (in module scfuj)|hyperpage}{29}
+\indexentry{nscf\_nosym\_noinv() (in module scfuj)|hyperpage}{30}
+\indexentry{projwfc() (in module scfuj)|hyperpage}{30}
+\indexentry{run() (in module scfuj)|hyperpage}{30}
+\indexentry{run\_transport() (in module scfuj)|hyperpage}{30}
+\indexentry{scfprep() (in module scfuj)|hyperpage}{30}
+\indexentry{tb\_prep() (in module scfuj)|hyperpage}{30}
+\indexentry{transport\_prep() (in module scfuj)|hyperpage}{30}
+\indexentry{updateUvals() (in module scfuj)|hyperpage}{30}
+\indexentry{want\_bands\_prep() (in module scfuj)|hyperpage}{30}
+\indexentry{want\_dos\_prep() (in module scfuj)|hyperpage}{30}
+\indexentry{want\_eff\_mass\_prep() (in module scfuj)|hyperpage}{30}
+\indexentry{want\_epsilon\_prep() (in module scfuj)|hyperpage}{30}

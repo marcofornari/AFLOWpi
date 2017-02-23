@@ -1,139 +1,154 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>prep module &mdash; AFLOWpi  documentation</title>
+  
 
+  
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+
+  
+  
     
-    <title>prep module &mdash; AFLOWpi  documentation</title>
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="AFLOWpi  documentation" href="index.html"/>
+        <link rel="next" title="pseudo module" href="pseudo.html"/>
+        <link rel="prev" title="plot module" href="plot.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
     
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="AFLOWpi  documentation" href="index.html" />
-    <link rel="next" title="pseudo module" href="pseudo.html" />
-    <link rel="prev" title="plot module" href="plot.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-  </head>
-  <body role="document">
+          
+            <a href="index.html" class="icon icon-home"> AFLOWpi
+          
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html">
-          AFLOWpi</a>
-        <span class="navbar-text navbar-version pull-left"><b></b></span>
-      </div>
+          
+          </a>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="plot.html">plot module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">prep module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">prep module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pseudo.html">pseudo module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="retr.html">retr module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scfuj.html">scfuj module</a></li>
 </ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">prep module</a></li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="plot.html" title="Previous Chapter: plot module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; plot module</span>
-    </a>
-  </li>
-  <li>
-    <a href="pseudo.html" title="Next Chapter: pseudo module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">pseudo module &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/prep.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AFLOWpi</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>prep module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/prep.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
   <div class="section" id="module-prep">
 <span id="prep-module"></span><h1>prep module<a class="headerlink" href="#module-prep" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
@@ -142,14 +157,14 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="prep.__null__">
-<code class="descclassname">prep.</code><code class="descname">__null__</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#__null__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.__null__" title="Permalink to this definition">¶</a></dt>
+<dt id="prep.addToAll_">
+<code class="descclassname">prep.</code><code class="descname">addToAll_</code><span class="sig-paren">(</span><em>calcs</em>, <em>block=None</em>, <em>addition=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#addToAll_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.addToAll_" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="prep.addToBlockWrapper">
 <code class="descclassname">prep.</code><code class="descname">addToBlockWrapper</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>block</em>, <em>addition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#addToBlockWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.addToBlockWrapper" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wraps AFLOWpi.prep.__addToBlock for use inside _calcs_container methods</p>
+<dd><p>Wraps AFLOWpi.prep._addToBlock for use inside _calcs_container methods</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -189,8 +204,8 @@ in the _ID.py for each calculation</li>
 
 <dl class="function">
 <dt id="prep.bands">
-<code class="descclassname">prep.</code><code class="descname">bands</code><span class="sig-paren">(</span><em>calcs</em>, <em>dk=None</em>, <em>nk=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.bands" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper function to write the function AFLOWpi.prep.__oneBands to the _ID.py</p>
+<code class="descclassname">prep.</code><code class="descname">bands</code><span class="sig-paren">(</span><em>calcs</em>, <em>dk=None</em>, <em>nk=None</em>, <em>n_conduction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function to write the function AFLOWpi.prep._oneBands to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -200,10 +215,8 @@ in the _ID.py for each calculation</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>dk</strong> (<em>float</em>) &#8211;
-distance between points for Electronic Band Structure calculation</li>
-<li><strong>nk</strong> (<em>int</em>) &#8211;
-approximate number of k points to be calculated along the path</li>
+<li><strong>dk</strong> (<em>float</em>) &#8211; distance between points for Electronic Band Structure calculation</li>
+<li><strong>nk</strong> (<em>int</em>) &#8211; approximate number of k points to be calculated along the path</li>
 </ul>
 </td>
 </tr>
@@ -229,16 +242,15 @@ approximate number of k points to be calculated along the path</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong> &#8211; </p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>info</strong> &#8211;
-some information
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">some information
 nks (str): number of k points in path
 stringk (str): kpoint path string</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">info (str)</p>
 </td>
 </tr>
 </tbody>
@@ -252,7 +264,7 @@ stringk (str): kpoint path string</p>
 
 <dl class="function">
 <dt id="prep.calcFromFile">
-<code class="descclassname">prep.</code><code class="descname">calcFromFile</code><span class="sig-paren">(</span><em>aflowkeys</em>, <em>fileList</em>, <em>reffile=None</em>, <em>pseudodir=None</em>, <em>build=True</em>, <em>workdir=None</em>, <em>keep_name=False</em>, <em>clean_input=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcFromFile" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">calcFromFile</code><span class="sig-paren">(</span><em>aflowkeys</em>, <em>fileList</em>, <em>reffile=None</em>, <em>pseudodir=None</em>, <em>workdir=None</em>, <em>keep_name=False</em>, <em>clean_input=True</em>, <em>ref_override=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcFromFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcFromFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads in a string of an QE input file path, a string of an QE input, a file object of a
 QE input or a list of them and attempts to fill create a calculation from them. If they
 are missing things such as k_points card, they are automtically generated.</p>
@@ -269,19 +281,14 @@ object of a QE input or a list of them</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
-<li><strong>reffile</strong> (<em>str</em>) &#8211;
-a partially filled QE input file used in case the input(s) in fileList
+<li><strong>reffile</strong> (<em>str</em>) &#8211; a partially filled QE input file used in case the input(s) in fileList
 are missing. i.e. wfc cutoff. If the names of the Pseudopotential files
 are not included in the input(s) in fileList, they are chosen depending
 on the pseudodir chosen and included when the calculation set is formed.</li>
-<li><strong>workdir</strong> (<em>str</em>) &#8211;
-a string of the workdir path that be used to override what is in the
+<li><strong>workdir</strong> (<em>str</em>) &#8211; a string of the workdir path that be used to override what is in the
 config file used when initating the AFLOWpi session</li>
-<li><strong>pseudodir</strong> (<em>str</em>) &#8211;
-a string of the pseudodir path that be used to override what is in
+<li><strong>pseudodir</strong> (<em>str</em>) &#8211; a string of the pseudodir path that be used to override what is in
 the config file used when initating the AFLOWpi session</li>
-<li><strong>build</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</li>
 </ul>
 </td>
 </tr>
@@ -293,13 +300,44 @@ the config file used when initating the AFLOWpi session</li>
 <dt id="prep.calcs_container">
 <em class="property">class </em><code class="descclassname">prep.</code><code class="descname">calcs_container</code><span class="sig-paren">(</span><em>dictionary</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
+<dt id="prep.calcs_container.acbn0">
+<code class="descname">acbn0</code><span class="sig-paren">(</span><em>thresh=0.1</em>, <em>nIters=20</em>, <em>paodir=None</em>, <em>relax='scf'</em>, <em>mixing=0.2</em>, <em>kp_mult=1.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.acbn0"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.acbn0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level
+user interface. Adds a new step to the workflow.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the _calcs_container object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>thresh</strong> (<em>float</em>) &#8211; threshold for self consistent hubbard U convergence</li>
+<li><strong>niters</strong> (<em>int</em>) &#8211; max number of iterations of the acbn0 cycle</li>
+<li><strong>paodir</strong> (<em>string</em>) &#8211; the path of the PAO directory. This will override
+an entry of the paodir in the AFLOWpi config file
+used for the session</li>
+<li><strong>mixing</strong> (<em>float</em>) &#8211; the amount of the previous acbn0 U iteration to mix into
+the current (only needed when there is U val oscillation)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="prep.calcs_container.addToAll">
 <code class="descname">addToAll</code><span class="sig-paren">(</span><em>block=None</em>, <em>addition=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.addToAll"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.addToAll" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="prep.calcs_container.bands">
-<code class="descname">bands</code><span class="sig-paren">(</span><em>dk=None</em>, <em>nk=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.bands" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bands</code><span class="sig-paren">(</span><em>dk=None</em>, <em>nk=100</em>, <em>n_conduction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.bands" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to write call AFLOWpi.prep.bands for calculating the Electronic Band
 Structure.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -311,11 +349,9 @@ Structure.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>dk</strong> (<em>float</em>) &#8211;
-the density in the Brillouin zone of the k point sampling along the
+<li><strong>dk</strong> (<em>float</em>) &#8211; the density in the Brillouin zone of the k point sampling along the
 entirety of the path between high symmetry points.</li>
-<li><strong>nk</strong> (<em>int</em>) &#8211;
-the approximate number of sampling points  in the Brillouin Zone along
+<li><strong>nk</strong> (<em>int</em>) &#8211; the approximate number of sampling points  in the Brillouin Zone along
 the entirety of the path between high symmetry points. Points are
 chosen so that they are equidistant along the entirety of the path.
 The actual number of points will be slightly different than the
@@ -346,6 +382,11 @@ inputted value of nk. nk!=None will override any value for dk.</li>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="prep.calcs_container.converge_smearing">
+<code class="descname">converge_smearing</code><span class="sig-paren">(</span><em>relax='scf'</em>, <em>smear_variance=0.3</em>, <em>num_points=4</em>, <em>smear_type='mp'</em>, <em>mult_jobs=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.converge_smearing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.converge_smearing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="prep.calcs_container.crawl_min">
 <code class="descname">crawl_min</code><span class="sig-paren">(</span><em>mult_jobs=False</em>, <em>grid_density=10</em>, <em>initial_variance=0.02</em>, <em>thresh=0.01</em>, <em>constraint=None</em>, <em>final_minimization='relax'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.crawl_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.crawl_min" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to call AFLOWpi.pseudo.crawlingMinimization in the high level user interface.
@@ -359,27 +400,21 @@ Adds a new step to the workflow.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>mult_jobs</strong> (<em>bool</em>) &#8211;
-if True split the individual scf jobs into separate cluster jobs
+<li><strong>mult_jobs</strong> (<em>bool</em>) &#8211; if True split the individual scf jobs into separate cluster jobs
 if False run them serially</li>
-<li><strong>grid_density</strong> (<em>int</em>) &#8211;
-controls the number of calculations to generate for the minimization
+<li><strong>grid_density</strong> (<em>int</em>) &#8211; controls the number of calculations to generate for the minimization
 num_{calcs}=grid_density^{num_{parameters}-num_{constraints}}</li>
-<li><strong>initial_variance</strong> (<em>float</em>) &#8211;
-amount to vary the values of the parameters from the initial
+<li><strong>initial_variance</strong> (<em>float</em>) &#8211; amount to vary the values of the parameters from the initial
 value. i.e. (0.02 = +/-2% variance)</li>
-<li><strong>thresh</strong> (<em>float</em>) &#8211;
-threshold for $DeltaX$ of the lattice parameters between brute force
+<li><strong>thresh</strong> (<em>float</em>) &#8211; threshold for $DeltaX$ of the lattice parameters between brute force
 minimization iterations.</li>
-<li><strong>constraint</strong> (<em>list</em>) &#8211;
-a list or tuple containing two entry long list or tuples with
+<li><strong>constraint</strong> (<em>list</em>) &#8211; a list or tuple containing two entry long list or tuples with
 the first being the constraint type and the second the free
 parameter in params that its constraining for example in a
 orthorhombic cell: constraint=([&#8220;volume&#8221;,&#8217;c&#8217;],) allows for A and B
 to move freely but C is such that it keeps the cell volume the same
 in all calculations generated by the input oneCalc calculation.</li>
-<li><strong>final_minimization</strong> (<em>str</em>) &#8211;
-calculation to be run at the end of the brute force minimization
+<li><strong>final_minimization</strong> (<em>str</em>) &#8211; calculation to be run at the end of the brute force minimization
 options include &#8220;scf&#8221;, &#8220;relax&#8221;, and &#8220;vcrelax&#8221;</li>
 </ul>
 </td>
@@ -393,7 +428,7 @@ options include &#8220;scf&#8221;, &#8220;relax&#8221;, and &#8220;vcrelax&#8221
 
 <dl class="method">
 <dt id="prep.calcs_container.dos">
-<code class="descname">dos</code><span class="sig-paren">(</span><em>kpFactor=2</em>, <em>project=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.dos" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dos</code><span class="sig-paren">(</span><em>kpFactor=2</em>, <em>project=True</em>, <em>n_conduction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.dos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
 Adds a new step to the workflow.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -405,10 +440,8 @@ Adds a new step to the workflow.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>kpFactor</strong> (<em>float</em>) &#8211;
-factor to which the k-point grid is made denser in each direction</li>
-<li><strong>project</strong> (<em>bool</em>) &#8211;
-if True: do the projected DOS after completing the DOS</li>
+<li><strong>kpFactor</strong> (<em>float</em>) &#8211; factor to which the k-point grid is made denser in each direction</li>
+<li><strong>project</strong> (<em>bool</em>) &#8211; if True: do the projected DOS after completing the DOS</li>
 </ul>
 </td>
 </tr>
@@ -418,6 +451,11 @@ if True: do the projected DOS after completing the DOS</li>
 </tbody>
 </table>
 </dd></dl>
+
+<dl class="method">
+<dt id="prep.calcs_container.elastic">
+<code class="descname">elastic</code><span class="sig-paren">(</span><em>mult_jobs=False</em>, <em>order=2</em>, <em>eta_max=0.005</em>, <em>num_dist=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.elastic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.elastic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="prep.calcs_container.evCurve_min">
@@ -456,7 +494,7 @@ if True: do the projected DOS after completing the DOS</li>
 
 <dl class="method">
 <dt id="prep.calcs_container.phonon">
-<code class="descname">phonon</code><span class="sig-paren">(</span><em>nrx1=2</em>, <em>nrx2=2</em>, <em>nrx3=2</em>, <em>innx=2</em>, <em>de=0.01</em>, <em>mult_jobs=False</em>, <em>raman=False</em>, <em>LOTO=False</em>, <em>disp_sym=True</em>, <em>atom_sym=True</em>, <em>field_strength=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.phonon" title="Permalink to this definition">¶</a></dt>
+<code class="descname">phonon</code><span class="sig-paren">(</span><em>nrx1=2</em>, <em>nrx2=2</em>, <em>nrx3=2</em>, <em>innx=2</em>, <em>de=0.003</em>, <em>mult_jobs=False</em>, <em>LOTO=True</em>, <em>disp_sym=False</em>, <em>atom_sym=False</em>, <em>field_strength=0.003</em>, <em>field_cycles=3</em>, <em>proj_phDOS=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.phonon" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -480,77 +518,19 @@ if True: do the projected DOS after completing the DOS</li>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="prep.calcs_container.scfuj">
-<code class="descname">scfuj</code><span class="sig-paren">(</span><em>thresh=0.1</em>, <em>nIters=20</em>, <em>paodir=None</em>, <em>relax='scf'</em>, <em>mixing=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.scfuj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.scfuj" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level
-user interface. Adds a new step to the workflow.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the _calcs_container object</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>thresh</strong> (<em>float</em>) &#8211;
-threshold for self consistent hubbard U convergence</li>
-<li><strong>niters</strong> (<em>int</em>) &#8211;
-max number of iterations of the acbn0 cycle</li>
-<li><strong>paodir</strong> (<em>string</em>) &#8211;
-the path of the PAO directory. This will override
-an entry of the paodir in the AFLOWpi config file
-used for the session</li>
-<li><strong>mixing</strong> (<em>float</em>) &#8211;
-the amount of the previous acbn0 U iteration to mix into
-the current (only needed when there is U val oscillation)</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="prep.calcs_container.split_chain">
-<code class="descname">split_chain</code><span class="sig-paren">(</span><em>update_positions=True</em>, <em>update_structure=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.split_chain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.split_chain" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="prep.calcs_container.submit">
 <code class="descname">submit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.submit" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="prep.calcs_container.transport">
-<code class="descname">transport</code><span class="sig-paren">(</span><em>temperature=[300], epsilon=True, run_bands=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.transport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport
-in the high level user interface. Adds a new step to the workflow.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the _calcs_container object</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>epsilon</strong> (<em>bool</em>) &#8211;
-if True episilon tensor will be computed</li>
-<li><strong>temperature</strong> (<em>list</em>) &#8211;
-list of temperature(s) at which to calculate transport properties</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<dt id="prep.calcs_container.thermal">
+<code class="descname">thermal</code><span class="sig-paren">(</span><em>delta_volume=0.03</em>, <em>nrx1=2</em>, <em>nrx2=2</em>, <em>nrx3=2</em>, <em>innx=2</em>, <em>de=0.005</em>, <em>mult_jobs=False</em>, <em>disp_sym=False</em>, <em>atom_sym=False</em>, <em>field_strength=0.001</em>, <em>field_cycles=3</em>, <em>LOTO=True</em>, <em>hydrostatic_expansion=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.thermal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.thermal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.calcs_container.tight_binding">
+<code class="descname">tight_binding</code><span class="sig-paren">(</span><em>cond_bands=True</em>, <em>proj_thr=0.95</em>, <em>kp_factor=2.0</em>, <em>proj_sh=5.5</em>, <em>cond_bands_proj=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#calcs_container.tight_binding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.calcs_container.tight_binding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="method">
 <dt id="prep.calcs_container.values">
@@ -567,7 +547,7 @@ list of temperature(s) at which to calculate transport properties</li>
 <dl class="function">
 <dt id="prep.changeCalcs">
 <code class="descclassname">prep.</code><code class="descname">changeCalcs</code><span class="sig-paren">(</span><em>calcs</em>, <em>keyword='calculation'</em>, <em>value='scf'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#changeCalcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.changeCalcs" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that writes the function AFLOWpi.prep.__changeCalcs to the __ID.py</p>
+<dd><p>A Wrapper function that writes the function AFLOWpi.prep._changeCalcs to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -577,10 +557,8 @@ list of temperature(s) at which to calculate transport properties</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>keyword</strong> (<em>str</em>) &#8211;
-a string which signifies the type of change that is to be made</li>
-<li><strong>value</strong> &#8211;
-the value of the choice.</li>
+<li><strong>keyword</strong> (<em>str</em>) &#8211; a string which signifies the type of change that is to be made</li>
+<li><strong>value</strong> &#8211; the value of the choice.</li>
 </ul>
 </td>
 </tr>
@@ -594,7 +572,7 @@ the value of the choice.</li>
 <dl class="function">
 <dt id="prep.cleanCalcs">
 <code class="descclassname">prep.</code><code class="descname">cleanCalcs</code><span class="sig-paren">(</span><em>calcs</em>, <em>runlocal=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#cleanCalcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.cleanCalcs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper function for AFLOWpi.prep.__cleanCalcs</p>
+<dd><p>Wrapper function for AFLOWpi.prep._cleanCalcs</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -602,8 +580,7 @@ the value of the choice.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcs</strong> (<em>dict</em>) &#8211; a dictionary of dicionaries representing the set of calculations</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
 or write it to the _ID.py to run during the workflow</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
@@ -614,14 +591,13 @@ or write it to the _ID.py to run during the workflow</td>
 
 <dl class="function">
 <dt id="prep.construct_and_run">
-<code class="descclassname">prep.</code><code class="descname">construct_and_run</code><span class="sig-paren">(</span><em>__submitNodeName__</em>, <em>oneCalc</em>, <em>ID</em>, <em>build_command=''</em>, <em>subset_tasks=[]</em>, <em>fault_tolerant=False</em>, <em>mult_jobs=True</em>, <em>subset_name='SUBSET'</em>, <em>keep_file_names=False</em>, <em>clean_input=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#construct_and_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.construct_and_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>this is a check to see if we&#8217;re restarting when mult_jobs==True</p>
-</dd></dl>
+<code class="descclassname">prep.</code><code class="descname">construct_and_run</code><span class="sig-paren">(</span><em>__submitNodeName__</em>, <em>oneCalc</em>, <em>ID</em>, <em>build_command=''</em>, <em>subset_tasks=[]</em>, <em>fault_tolerant=False</em>, <em>mult_jobs=True</em>, <em>subset_name='SUBSET'</em>, <em>keep_file_names=False</em>, <em>clean_input=True</em>, <em>check_function=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#construct_and_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.construct_and_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="prep.doss">
-<code class="descclassname">prep.</code><code class="descname">doss</code><span class="sig-paren">(</span><em>calcs</em>, <em>kpFactor=1.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#doss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.doss" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper function to write the functio n AFLOWpi.prep.__oneDoss to the _ID.py</p>
+<code class="descclassname">prep.</code><code class="descname">doss</code><span class="sig-paren">(</span><em>calcs</em>, <em>kpFactor=1.5</em>, <em>n_conduction=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#doss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.doss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper function to write the functio n AFLOWpi.prep._oneDoss to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -629,8 +605,7 @@ or write it to the _ID.py to run during the workflow</td>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcs</strong> (<em>dict</em>) &#8211; a dictionary of dicionaries representing the set of calculations</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>kpFactor</strong> (<em>float</em>) &#8211;
-the factor to which we make each direction in the kpoint grid denser</td>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>kpFactor</strong> (<em>float</em>) &#8211; the factor to which we make each direction in the kpoint grid denser</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The identical &#8220;calcs&#8221; input variable</td>
 </tr>
@@ -684,10 +659,10 @@ as keys with None for values..</td>
 
 <dl class="class">
 <dt id="prep.init">
-<em class="property">class </em><code class="descclassname">prep.</code><code class="descname">init</code><span class="sig-paren">(</span><em>PROJECT</em>, <em>SET=''</em>, <em>AUTHOR=''</em>, <em>CORRESPONDING=''</em>, <em>SPONSOR=''</em>, <em>config=''</em>, <em>workdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">prep.</code><code class="descname">init</code><span class="sig-paren">(</span><em>PROJECT</em>, <em>SET=''</em>, <em>AUTHOR=''</em>, <em>CORRESPONDING=''</em>, <em>SPONSOR=''</em>, <em>config=''</em>, <em>workdir=None</em>, <em>make_symlink=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="prep.init.from_file">
-<code class="descname">from_file</code><span class="sig-paren">(</span><em>fileList</em>, <em>reffile=None</em>, <em>pseudodir=None</em>, <em>build=True</em>, <em>workdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init.from_file" title="Permalink to this definition">¶</a></dt>
+<code class="descname">from_file</code><span class="sig-paren">(</span><em>fileList</em>, <em>reffile=None</em>, <em>pseudodir=None</em>, <em>workdir=None</em>, <em>ref_override=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init.from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads in a string of an QE input file path, a string of an QE input, a file object of a
 QE input or a list of them and attempts to fill create a calculation from them. If they
 are missing things such as k_points card, they are automtically generated.</p>
@@ -704,19 +679,17 @@ object of a QE input or a list of them</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first last simple">
-<li><strong>reffile</strong> (<em>str</em>) &#8211;
-a partially filled QE input file used in case the input(s) in fileList
+<li><strong>reffile</strong> (<em>str</em>) &#8211; a partially filled QE input file used in case the input(s) in fileList
 are missing. i.e. wfc cutoff. If the names of the Pseudopotential files
 are not included in the input(s) in fileList, they are chosen depending
 on the pseudodir chosen and included when the calculation set is formed.</li>
-<li><strong>workdir</strong> (<em>str</em>) &#8211;
-a string of the workdir path that be used to override what is in the
+<li><strong>workdir</strong> (<em>str</em>) &#8211; a string of the workdir path that be used to override what is in the
 config file used when initating the AFLOWpi session</li>
-<li><strong>pseudodir</strong> (<em>str</em>) &#8211;
-a string of the pseudodir path that be used to override what is in
+<li><strong>pseudodir</strong> (<em>str</em>) &#8211; a string of the pseudodir path that be used to override what is in
 the config file used when initating the AFLOWpi session</li>
-<li><strong>build</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</li>
+<li><strong>ref_override</strong> (<em>bool</em>) &#8211; Option to override values in the input file(s) with values in the reference
+input file. If no reference input file is included then this is ignored.
+(Default: True)</li>
 </ul>
 </td>
 </tr>
@@ -749,10 +722,9 @@ the config file used when initating the AFLOWpi session</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>step</strong> (<em>int</em>) &#8211; the step of the calculation for whose calclogs are to be loaded</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>calcs</strong> &#8211;
-the loaded calc logs</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the loaded calc logs</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">calcs (dict)</td>
 </tr>
 </tbody>
 </table>
@@ -760,7 +732,7 @@ the loaded calc logs</td>
 
 <dl class="method">
 <dt id="prep.init.scfs">
-<code class="descname">scfs</code><span class="sig-paren">(</span><em>allAFLOWpiVars</em>, <em>refFile</em>, <em>name='first'</em>, <em>pseudodir=None</em>, <em>build_type='product'</em>, <em>build=True</em>, <em>run=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init.scfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init.scfs" title="Permalink to this definition">¶</a></dt>
+<code class="descname">scfs</code><span class="sig-paren">(</span><em>allAFLOWpiVars</em>, <em>refFile</em>, <em>name='first'</em>, <em>pseudodir=None</em>, <em>build_type='product'</em>, <em>convert=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init.scfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init.scfs" title="Permalink to this definition">¶</a></dt>
 <dd><p>A wrapper method to call AFLOWpi.prep.scfs to form the calculation set. This will
 also create directory within the set directory for every calculation in the set.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -778,13 +750,10 @@ calculations in the set</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first">
-<li><p class="first"><strong>pseudodir</strong> (<em>str</em>) &#8211;
-path of the directory that contains your Pseudopotential files
-The value in the AFLOWpi config file used will override this.</p>
-</li>
-<li><p class="first"><strong>build_type</strong> (<em>str</em>) &#8211;
-how to construct the calculation set from allAFLOWpiVars dictionary:</p>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>pseudodir</strong> (<em>str</em>) &#8211; path of the directory that contains your Pseudopotential files
+The value in the AFLOWpi config file used will override this.</li>
+<li><strong>build_type</strong> (<em>str</em>) &#8211; <p>how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 <dl class="docutils">
 <dt>zip | The first calculation takes the first entry from the list of</dt>
 <dd><div class="first last line-block">
@@ -802,12 +771,6 @@ how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 </div>
 </dd>
 </dl>
-</li>
-<li><p class="first"><strong>build</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</p>
-</li>
-<li><p class="first"><strong>run</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</p>
 </li>
 </ul>
 </td>
@@ -834,19 +797,16 @@ from all steps with the chosen status.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>status</strong> (<em>dict</em>) &#8211;
-key,value pairs for status type and their value to filter on.
+<li><strong>status</strong> (<em>dict</em>) &#8211; key,value pairs for status type and their value to filter on.
 i.e. status={&#8216;Finished&#8217;:False}</li>
-<li><strong>negate_status</strong> (<em>bool</em>) &#8211;
-filter on the opposite of the status filters</li>
+<li><strong>negate_status</strong> (<em>bool</em>) &#8211; filter on the opposite of the status filters</li>
 </ul>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>calcs</strong> &#8211;
-the loaded calcs for one or more steps with the given status</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the loaded calcs for one or more steps with the given status</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">calcs (dict)</p>
 </td>
 </tr>
 </tbody>
@@ -862,7 +822,7 @@ the loaded calcs for one or more steps with the given status</p>
 
 <dl class="function">
 <dt id="prep.init__">
-<code class="descclassname">prep.</code><code class="descname">init__</code><span class="sig-paren">(</span><em>PROJECT</em>, <em>SET=''</em>, <em>AUTHOR=''</em>, <em>CORRESPONDING=''</em>, <em>SPONSOR=''</em>, <em>config=''</em>, <em>workdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init__" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">init__</code><span class="sig-paren">(</span><em>PROJECT</em>, <em>SET=''</em>, <em>AUTHOR=''</em>, <em>CORRESPONDING=''</em>, <em>SPONSOR=''</em>, <em>config=''</em>, <em>workdir=None</em>, <em>make_symlink=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initializes the frame</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -880,6 +840,26 @@ the loaded calcs for one or more steps with the given status</p>
 </tbody>
 </table>
 <p>e.g. initFrame(&#8216;LNTYPE&#8217;,&#8217;&#8216;, &#8216;MF&#8217;, <a class="reference external" href="mailto:'marco&#46;fornari&#37;&#52;&#48;cmich&#46;edu">'marco<span>&#46;</span>fornari<span>&#64;</span>cmich<span>&#46;</span>edu</a>&#8216;,&#8217;DOD-MURI&#8217;). Return the AFLOKEYS dictionary.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="prep.isotropy">
+<em class="property">class </em><code class="descclassname">prep.</code><code class="descname">isotropy</code><span class="sig-paren">(</span><em>input_str</em>, <em>accuracy=0.001</em>, <em>output=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#isotropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.isotropy" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="prep.isotropy.cif2qe">
+<code class="descname">cif2qe</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#isotropy.cif2qe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.isotropy.cif2qe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.isotropy.convert">
+<code class="descname">convert</code><span class="sig-paren">(</span><em>ibrav=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#isotropy.convert"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.isotropy.convert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.isotropy.get_cif">
+<code class="descname">get_cif</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#isotropy.get_cif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.isotropy.get_cif" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -905,13 +885,13 @@ the loaded calcs for one or more steps with the given status</p>
 
 <dl class="function">
 <dt id="prep.loadlogs">
-<code class="descclassname">prep.</code><code class="descname">loadlogs</code><span class="sig-paren">(</span><em>PROJECT=''</em>, <em>SET=''</em>, <em>logname=''</em>, <em>config=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#loadlogs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.loadlogs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">loadlogs</code><span class="sig-paren">(</span><em>PROJECT=''</em>, <em>SET=''</em>, <em>logname=''</em>, <em>config=None</em>, <em>suppress_warning=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#loadlogs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.loadlogs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="prep.lockAtomMovement">
 <code class="descclassname">prep.</code><code class="descname">lockAtomMovement</code><span class="sig-paren">(</span><em>calcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#lockAtomMovement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.lockAtomMovement" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that writes the function AFLOWpi.prep.__freezeAtoms to the __ID.py</p>
+<dd><p>A Wrapper function that writes the function AFLOWpi.prep._freezeAtoms to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -926,7 +906,7 @@ the loaded calcs for one or more steps with the given status</p>
 
 <dl class="function">
 <dt id="prep.maketree">
-<code class="descclassname">prep.</code><code class="descname">maketree</code><span class="sig-paren">(</span><em>calcs</em>, <em>pseudodir=None</em>, <em>build=True</em>, <em>workdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#maketree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.maketree" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">maketree</code><span class="sig-paren">(</span><em>calcs</em>, <em>pseudodir=None</em>, <em>workdir=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#maketree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.maketree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Make the directoy tree and place in the input file there</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -940,13 +920,9 @@ the loaded calcs for one or more steps with the given status</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>pseudodir</strong> (<em>str</em>) &#8211;
-path of pseudopotential files directory</li>
-<li><strong>workdir</strong> (<em>str</em>) &#8211;
-a string of the workdir path that be used to override what is in the
+<li><strong>pseudodir</strong> (<em>str</em>) &#8211; path of pseudopotential files directory</li>
+<li><strong>workdir</strong> (<em>str</em>) &#8211; a string of the workdir path that be used to override what is in the
 config file used when initating the AFLOWpi session</li>
-<li><strong>build</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</li>
 </ul>
 </td>
 </tr>
@@ -979,7 +955,7 @@ config file used when initating the AFLOWpi session</li>
 <dl class="function">
 <dt id="prep.modifyInputPrefixPW">
 <code class="descclassname">prep.</code><code class="descname">modifyInputPrefixPW</code><span class="sig-paren">(</span><em>calcs</em>, <em>pre</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#modifyInputPrefixPW"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.modifyInputPrefixPW" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that is used to write a function to the __ID.py</p>
+<dd><p>A Wrapper function that is used to write a function to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -995,7 +971,7 @@ config file used when initating the AFLOWpi session</li>
 <dl class="function">
 <dt id="prep.modifyNamelistPW">
 <code class="descclassname">prep.</code><code class="descname">modifyNamelistPW</code><span class="sig-paren">(</span><em>calcs</em>, <em>namelist</em>, <em>parameter</em>, <em>value</em>, <em>runlocal=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#modifyNamelistPW"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.modifyNamelistPW" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that is used to write the function AFLOWpi.prep.__modifyNameListPW
+<dd><p>A Wrapper function that is used to write the function AFLOWpi.prep._modifyNameListPW
 to the _ID.py. If the value is intended to be a string in the QE input file, it must
 be dually quoted i.e. value=&#8220;&#8216;scf&#8217;&#8221; will become &#8216;scf&#8217; in the input file.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -1011,8 +987,7 @@ be dually quoted i.e. value=&#8220;&#8216;scf&#8217;&#8221; will become &#8216;s
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
 or write it to the _ID.py to run during the workflow.</p>
 </td>
 </tr>
@@ -1056,7 +1031,7 @@ is skipped entirely.</td>
 interface.</p>
 <dl class="method">
 <dt id="prep.plotter.bands">
-<code class="descname">bands</code><span class="sig-paren">(</span><em>yLim=[-10, 10], DOSPlot='', LSDA=False, runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.bands" title="Permalink to this definition">¶</a></dt>
+<code class="descname">bands</code><span class="sig-paren">(</span><em>yLim=[-10, 10], DOSPlot='', runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.bands" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to call AFLOWpi.plot.bands in the high level user interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1066,13 +1041,10 @@ interface.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first">
-<li><p class="first"><strong>yLim</strong> (<em>list</em>) &#8211;
-a tuple or list of the range of energy around the fermi/Highest
-occupied level energy that is to be included in the plot.</p>
-</li>
-<li><p class="first"><strong>DOSPlot</strong> (<em>str</em>) &#8211;
-a string that flags for the option to have either a DOS plot
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>yLim</strong> (<em>list</em>) &#8211; a tuple or list of the range of energy around the fermi/Highest
+occupied level energy that is to be included in the plot.</li>
+<li><strong>DOSPlot</strong> (<em>str</em>) &#8211; <p>a string that flags for the option to have either a DOS plot
 share the Y-axis of the band structure plot.</p>
 <p>Options include:
 &#8220;&#8221;      | A blank string (default) will cause No Density of</p>
@@ -1084,18 +1056,12 @@ share the Y-axis of the band structure plot.</p>
 <p>&#8220;APDOS&#8221; | Atom Projected Density of States
 &#8220;DOS&#8221;   | Normal Density of States</p>
 </li>
-<li><p class="first"><strong>LSDA</strong> (<em>bool</em>) &#8211;
-Plot the up and down of a spin polarized orbital projected DOS
-calculation.</p>
-</li>
-<li><p class="first"><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
-or write it to the _ID.py to run during the workflow</p>
-</li>
-<li><p class="first"><strong>postfix</strong> (<em>str</em>) &#8211;
-a string of an optional postfix to the plot filename for every
-calculation.</p>
-</li>
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211; Plot the up and down of a spin polarized orbital projected DOS
+calculation.</li>
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
+or write it to the _ID.py to run during the workflow</li>
+<li><strong>postfix</strong> (<em>str</em>) &#8211; a string of an optional postfix to the plot filename for every
+calculation.</li>
 </ul>
 </td>
 </tr>
@@ -1108,7 +1074,7 @@ calculation.</p>
 
 <dl class="method">
 <dt id="prep.plotter.dos">
-<code class="descname">dos</code><span class="sig-paren">(</span><em>yLim=[-10, 10], LSDA=False, runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.dos" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dos</code><span class="sig-paren">(</span><em>yLim=[-10, 10], runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.dos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to call AFLOWpi.plot.dos in the high level user interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1119,17 +1085,13 @@ calculation.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>yLim</strong> (<em>list</em>) &#8211;
-a tuple or list of the range of energy around the fermi/Highest
+<li><strong>yLim</strong> (<em>list</em>) &#8211; a tuple or list of the range of energy around the fermi/Highest
 occupied level energy that is to be included in the plot.</li>
-<li><strong>LSDA</strong> (<em>bool</em>) &#8211;
-Plot the up and down of a spin polarized DOS
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211; Plot the up and down of a spin polarized DOS
 calculation.</li>
-<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
 or write it to the _ID.py to run during the workflow</li>
-<li><strong>postfix</strong> (<em>str</em>) &#8211;
-a string of an optional postfix to the plot filename for every
+<li><strong>postfix</strong> (<em>str</em>) &#8211; a string of an optional postfix to the plot filename for every
 calculation.</li>
 </ul>
 </td>
@@ -1143,7 +1105,7 @@ calculation.</li>
 
 <dl class="method">
 <dt id="prep.plotter.opdos">
-<code class="descname">opdos</code><span class="sig-paren">(</span><em>yLim=[-10, 10], LSDA=False, runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.opdos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.opdos" title="Permalink to this definition">¶</a></dt>
+<code class="descname">opdos</code><span class="sig-paren">(</span><em>yLim=[-10, 10], runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.opdos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.opdos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1154,17 +1116,13 @@ calculation.</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>yLim</strong> (<em>list</em>) &#8211;
-a tuple or list of the range of energy around the fermi/Highest
+<li><strong>yLim</strong> (<em>list</em>) &#8211; a tuple or list of the range of energy around the fermi/Highest
 occupied level energy that is to be included in the plot.</li>
-<li><strong>LSDA</strong> (<em>bool</em>) &#8211;
-Plot the up and down of a spin polarized orbital projected DOS
+<li><strong>LSDA</strong> (<em>bool</em>) &#8211; Plot the up and down of a spin polarized orbital projected DOS
 calculation.</li>
-<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
 or write it to the _ID.py to run during the workflow</li>
-<li><strong>postfix</strong> (<em>string</em>) &#8211;
-a string of an optional postfix to the plot filename for every
+<li><strong>postfix</strong> (<em>string</em>) &#8211; a string of an optional postfix to the plot filename for every
 calculation.</li>
 </ul>
 </td>
@@ -1181,39 +1139,11 @@ calculation.</li>
 <code class="descname">phonon</code><span class="sig-paren">(</span><em>runlocal=False</em>, <em>postfix=''</em>, <em>THz=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.phonon" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="prep.plotter.transport">
-<code class="descname">transport</code><span class="sig-paren">(</span><em>runlocal=False</em>, <em>postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#plotter.transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.plotter.transport" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the plotter object</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>nm</strong> (<em>bool</em>) &#8211;
-whether to plot in nanometers for spectrum or eV for energy</li>
-<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
-a flag to choose whether or not to run the wrapped function now
-or write it to the _ID.py to run during the workflow</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
 </dd></dl>
 
 <dl class="function">
 <dt id="prep.prep_split_step">
-<code class="descclassname">prep.</code><code class="descname">prep_split_step</code><span class="sig-paren">(</span><em>calcs</em>, <em>subset_creator</em>, <em>subset_tasks=[]</em>, <em>mult_jobs=False</em>, <em>substep_name='SUBSET'</em>, <em>keep_file_names=False</em>, <em>clean_input=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#prep_split_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.prep_split_step" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">prep_split_step</code><span class="sig-paren">(</span><em>calcs</em>, <em>subset_creator</em>, <em>subset_tasks=[]</em>, <em>mult_jobs=False</em>, <em>substep_name='SUBSET'</em>, <em>keep_file_names=False</em>, <em>clean_input=True</em>, <em>check_function=None</em>, <em>fault_tolerant=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#prep_split_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.prep_split_step" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1247,10 +1177,8 @@ in particular step have completed.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>command</strong> (<em>str</em>) &#8211;
-the text to be added to the BATCH block</li>
-<li><strong>faultTolerant</strong> (<em>bool</em>) &#8211;
-a flag to choose if we return True if some of the
+<li><strong>command</strong> (<em>str</em>) &#8211; the text to be added to the BATCH block</li>
+<li><strong>faultTolerant</strong> (<em>bool</em>) &#8211; a flag to choose if we return True if some of the
 calculations ran but did not complete successful</li>
 </ul>
 </td>
@@ -1264,7 +1192,7 @@ calculations ran but did not complete successful</li>
 
 <dl class="function">
 <dt id="prep.scfs">
-<code class="descclassname">prep.</code><code class="descname">scfs</code><span class="sig-paren">(</span><em>aflowkeys</em>, <em>allAFLOWpiVars</em>, <em>refFile</em>, <em>pseudodir=None</em>, <em>build_type='product'</em>, <em>build=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#scfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.scfs" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">prep.</code><code class="descname">scfs</code><span class="sig-paren">(</span><em>aflowkeys</em>, <em>allAFLOWpiVars</em>, <em>refFile</em>, <em>pseudodir=None</em>, <em>build_type='product'</em>, <em>convert=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#scfs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.scfs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a reference input file, and construct a set of calculations from the allAFLOWpiVars
 dictionary defining values for the keywords in the reference input file. This will
 also create directory within the set directory for every calculation in the set.</p>
@@ -1283,13 +1211,10 @@ calculations in the set</li>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first">
-<li><p class="first"><strong>pseudodir</strong> (<em>str</em>) &#8211;
-path of the directory that contains your Pseudopotential files
-The value in the AFLOWpi config file used will override this.</p>
-</li>
-<li><p class="first"><strong>build_type</strong> (<em>str</em>) &#8211;
-how to construct the calculation set from allAFLOWpiVars dictionary:</p>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>pseudodir</strong> (<em>str</em>) &#8211; path of the directory that contains your Pseudopotential files
+The value in the AFLOWpi config file used will override this.</li>
+<li><strong>build_type</strong> (<em>str</em>) &#8211; <p>how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 <dl class="docutils">
 <dt>zip | The first calculation takes the first entry from the list of</dt>
 <dd><div class="first last line-block">
@@ -1308,9 +1233,6 @@ how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 </dd>
 </dl>
 </li>
-<li><p class="first"><strong>build</strong> (<em>bool</em>) &#8211;
-&lt;DEFUNCT OPTION. NEEDS REMOVAL&gt;</p>
-</li>
 </ul>
 </td>
 </tr>
@@ -1319,6 +1241,131 @@ how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="class">
+<dt id="prep.tb_plotter">
+<em class="property">class </em><code class="descclassname">prep.</code><code class="descname">tb_plotter</code><span class="sig-paren">(</span><em>calcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for adding common plotting functions from AFLOWpi.plot module to the high level user
+interface.</p>
+<dl class="method">
+<dt id="prep.tb_plotter.bands">
+<code class="descname">bands</code><span class="sig-paren">(</span><em>yLim=[-5, 5], DOSPlot='', runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter.bands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tb_plotter.dos">
+<code class="descname">dos</code><span class="sig-paren">(</span><em>yLim=[-5, 5], runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter.dos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tb_plotter.opdos">
+<code class="descname">opdos</code><span class="sig-paren">(</span><em>yLim=[-5, 5], runlocal=False, postfix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter.opdos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter.opdos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tb_plotter.optical">
+<code class="descname">optical</code><span class="sig-paren">(</span><em>runlocal=False</em>, <em>postfix=''</em>, <em>x_range=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter.optical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter.optical" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the plotter object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>nm</strong> (<em>bool</em>) &#8211; whether to plot in nanometers for spectrum or eV for energy</li>
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
+or write it to the _ID.py to run during the workflow</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="prep.tb_plotter.transport">
+<code class="descname">transport</code><span class="sig-paren">(</span><em>runlocal=False</em>, <em>postfix=''</em>, <em>x_range=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tb_plotter.transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tb_plotter.transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the plotter object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>nm</strong> (<em>bool</em>) &#8211; whether to plot in nanometers for spectrum or eV for energy</li>
+<li><strong>runlocal</strong> (<em>bool</em>) &#8211; a flag to choose whether or not to run the wrapped function now
+or write it to the _ID.py to run during the workflow</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="prep.tight_binding">
+<em class="property">class </em><code class="descclassname">prep.</code><code class="descname">tight_binding</code><span class="sig-paren">(</span><em>calcs</em>, <em>cond_bands=True</em>, <em>proj_thr=0.95</em>, <em>kp_factor=2.0</em>, <em>proj_sh=5.5</em>, <em>cond_bands_proj=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="prep.tight_binding.bands">
+<code class="descname">bands</code><span class="sig-paren">(</span><em>nk=1000</em>, <em>nbnd=None</em>, <em>eShift=15.0</em>, <em>cond_bands=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding.bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding.bands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tight_binding.dos">
+<code class="descname">dos</code><span class="sig-paren">(</span><em>dos_range=[-5.5, 5.5], k_grid=None, projected=True, de=0.05, cond_bands=True, fermi_surface=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding.dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding.dos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tight_binding.effmass">
+<code class="descname">effmass</code><span class="sig-paren">(</span><em>temperature=[300.0, 300.0], step=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding.effmass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding.effmass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tight_binding.optical">
+<code class="descname">optical</code><span class="sig-paren">(</span><em>en_range=[0.05, 5.05], de=0.05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding.optical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding.optical" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="prep.tight_binding.transport">
+<code class="descname">transport</code><span class="sig-paren">(</span><em>temperature=[300], en_range=[-5.05, 5.05], de=0.05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#tight_binding.transport"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.tight_binding.transport" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport
+in the high level user interface. Adds a new step to the workflow.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>self</strong> &#8211; the _calcs_container object</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>epsilon</strong> (<em>bool</em>) &#8211; if True episilon tensor will be computed</li>
+<li><strong>temperature</strong> (<em>list</em>) &#8211; list of temperature(s) at which to calculate transport properties</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -1337,11 +1384,9 @@ how to construct the calculation set from allAFLOWpiVars dictionary:</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>rename</strong> (<em>bool</em>) &#8211;
-option to rename the file/directory being moves into the AFLOWpi
+<li><strong>rename</strong> (<em>bool</em>) &#8211; option to rename the file/directory being moves into the AFLOWpi
 directory tree</li>
-<li><strong>symlink</strong> (<em>bool</em>) &#8211;
-whether to copy the data to the AFLOWpi directory tree or
+<li><strong>symlink</strong> (<em>bool</em>) &#8211; whether to copy the data to the AFLOWpi directory tree or
 to use symbolic links</li>
 </ul>
 </td>
@@ -1356,7 +1401,7 @@ to use symbolic links</li>
 <dl class="function">
 <dt id="prep.unlockAtomMovement">
 <code class="descclassname">prep.</code><code class="descname">unlockAtomMovement</code><span class="sig-paren">(</span><em>calcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#unlockAtomMovement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.unlockAtomMovement" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that writes the function AFLOWpi.prep.__unfreezeAtoms to the __ID.py</p>
+<dd><p>A Wrapper function that writes the function AFLOWpi.prep._unfreezeAtoms to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1372,7 +1417,7 @@ to use symbolic links</li>
 <dl class="function">
 <dt id="prep.updateStructs">
 <code class="descclassname">prep.</code><code class="descname">updateStructs</code><span class="sig-paren">(</span><em>calcs</em>, <em>update_structure=True</em>, <em>update_positions=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/prep.html#updateStructs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#prep.updateStructs" title="Permalink to this definition">¶</a></dt>
-<dd><p>A Wrapper function that writes the function AFLOWpi.prep.__oneUpdateStructs to the __ID.py</p>
+<dd><p>A Wrapper function that writes the function AFLOWpi.prep._oneUpdateStructs to the _ID.py</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1382,11 +1427,9 @@ to use symbolic links</li>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>update_structure</strong> (<em>bool</em>) &#8211;
-if True update the cell parameter if possible from the
+<li><strong>update_structure</strong> (<em>bool</em>) &#8211; if True update the cell parameter if possible from the
 output of previous calculations in the workflow.</li>
-<li><strong>update_positions</strong> (<em>bool</em>) &#8211;
-if True update the atomic positions if possible from the
+<li><strong>update_positions</strong> (<em>bool</em>) &#8211; if True update the atomic positions if possible from the
 output of previous calculations in the workflow.</li>
 </ul>
 </td>
@@ -1420,14 +1463,10 @@ and, in degrees,alpha,beta,gamma and then returns it.</p>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
 <tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>param</strong> (<em>tuple</em>) &#8211;
-the params assoc. with the amount and step. i.e. (&#8216;celldm(1)&#8217;,&#8217;celldm(3))</li>
-<li><strong>amount</strong> (<em>float</em>) &#8211;
-percentage amount to be varied up and down. i.e (0.04,0.02,0.01)</li>
-<li><strong>steps</strong> (<em>int</em>) &#8211;
-how many steps to within each range. i.e (4,5,7)</li>
-<li><strong>constraint</strong> (<em>list</em>) &#8211;
-a list or tuple containing two entry long list or tuples with
+<li><strong>param</strong> (<em>tuple</em>) &#8211; the params assoc. with the amount and step. i.e. (&#8216;celldm(1)&#8217;,&#8217;celldm(3))</li>
+<li><strong>amount</strong> (<em>float</em>) &#8211; percentage amount to be varied up and down. i.e (0.04,0.02,0.01)</li>
+<li><strong>steps</strong> (<em>int</em>) &#8211; how many steps to within each range. i.e (4,5,7)</li>
+<li><strong>constraint</strong> (<em>list</em>) &#8211; a list or tuple containing two entry long list or tuples with
 the first being the constraint type and the second the free
 parameter in params that its constraining for example in a
 orthorhombic cell: constraint=([&#8220;volume&#8221;,&#8217;c&#8217;],) allows for A and B
@@ -1460,8 +1499,7 @@ The mechanics of the _ID.py are written to it here.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>**kwargs</strong> &#8211;
-&lt;DEFUNCT OPTION: HERE FOR LEGACY SUPPORT&gt;</p>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>**kwargs</strong> &#8211; &lt;DEFUNCT OPTION: HERE FOR LEGACY SUPPORT&gt;</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A set of calculations for a new step in the workflow</p>
@@ -1474,21 +1512,75 @@ The mechanics of the _ID.py are written to it here.</p>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="pseudo.html" class="btn btn-neutral float-right" title="pseudo module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="plot.html" class="btn btn-neutral" title="plot module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Andrew Supka.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+        &copy; Copyright 2016, Andrew Supka.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>

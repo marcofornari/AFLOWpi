@@ -1,285 +1,173 @@
+
+
 <!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>retr module &mdash; AFLOWpi  documentation</title>
+  
 
+  
+  
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  
+
+  
+  
     
-    <title>retr module &mdash; AFLOWpi  documentation</title>
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="AFLOWpi  documentation" href="index.html"/>
+        <link rel="next" title="run module" href="run.html"/>
+        <link rel="prev" title="pseudo module" href="pseudo.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
     
-    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-3.3.6/css/bootstrap-theme.min.css" type="text/css" />
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
-    </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
-    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-3.3.6/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
-    <link rel="top" title="AFLOWpi  documentation" href="index.html" />
-    <link rel="next" title="run module" href="run.html" />
-    <link rel="prev" title="pseudo module" href="pseudo.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
 
-  </head>
-  <body role="document">
+          
+            <a href="index.html" class="icon icon-home"> AFLOWpi
+          
 
-  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html">
-          AFLOWpi</a>
-        <span class="navbar-text navbar-version pull-left"><b></b></span>
-      </div>
+          
+          </a>
 
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
             
             
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">Site <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="plot.html">plot module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="prep.html">prep module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="pseudo.html">pseudo module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">retr module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">retr module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scfuj.html">scfuj module</a></li>
 </ul>
-</ul>
-</li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Page <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">retr module</a></li>
-</ul>
-</ul>
-</li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="pseudo.html" title="Previous Chapter: pseudo module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; pseudo module</span>
-    </a>
-  </li>
-  <li>
-    <a href="run.html" title="Next Chapter: run module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">run module &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-              <li class="hidden-sm">
-<div id="sourcelink">
-  <a href="_sources/retr.txt"
-     rel="nofollow">Source</a>
-</div></li>
-            
-          </ul>
 
-          
             
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
-</form>
           
         </div>
-    </div>
-  </div>
+      </div>
+    </nav>
 
-<div class="container">
-  <div class="row">
-    <div class="col-md-12 content">
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
       
-  <div class="section" id="module-retr">
-<span id="retr-module"></span><h1>retr module<a class="headerlink" href="#module-retr" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
-<dt id="retr.abc2celldm">
-<code class="descclassname">retr.</code><code class="descname">abc2celldm</code><span class="sig-paren">(</span><em>a=None</em>, <em>b=None</em>, <em>c=None</em>, <em>alpha=None</em>, <em>beta=None</em>, <em>gamma=None</em>, <em>ibrav=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#abc2celldm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.abc2celldm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert a,b,c,alpha,beta,gamma into celldm for QE</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> &#8211; </p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>a</strong> (<em>float</em>) &#8211;
-length of a</li>
-<li><strong>b</strong> (<em>float</em>) &#8211;
-length of b</li>
-<li><strong>c</strong> (<em>float</em>) &#8211;
-length of c</li>
-<li><strong>alpha</strong> (<em>float</em>) &#8211;
-Angle between axis b and c</li>
-<li><strong>beta</strong> (<em>float</em>) &#8211;
-Angle between axis a and c</li>
-<li><strong>gamma</strong> (<em>float</em>) &#8211;
-Angle between axis a and b</li>
-<li><strong>ibrav</strong> (<em>int</em>) &#8211;
-ibrav to be used to convert for defaults</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>celldm_array</strong> &#8211;
-an array of (ibrav,celldm(1),celldm(2),celldm(3),celldm(4),celldm(5),celldm(6))</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">array</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AFLOWpi</a>
+        
+      </nav>
 
-<dl class="function">
-<dt id="retr.abc2free">
-<code class="descclassname">retr.</code><code class="descname">abc2free</code><span class="sig-paren">(</span><em>a=None</em>, <em>b=None</em>, <em>c=None</em>, <em>alpha=None</em>, <em>beta=None</em>, <em>gamma=None</em>, <em>ibrav=None</em>, <em>returnString=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#abc2free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.abc2free" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a,b,c,alpha,beta,gamma into QE convention primitive lattice vectors</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> &#8211; </p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>a</strong> (<em>float</em>) &#8211;
-length of a</li>
-<li><strong>b</strong> (<em>float</em>) &#8211;
-length of b</li>
-<li><strong>c</strong> (<em>float</em>) &#8211;
-length of c</li>
-<li><strong>alpha</strong> (<em>float</em>) &#8211;
-Angle between axis b and c</li>
-<li><strong>beta</strong> (<em>float</em>) &#8211;
-Angle between axis a and c</li>
-<li><strong>gamma</strong> (<em>float</em>) &#8211;
-Angle between axis a and b</li>
-<li><strong>ibrav</strong> (<em>int</em>) &#8211;
-bravais lattice type by QE convention</li>
-<li><strong>returnString</strong> (<em>bool</em>) &#8211;
-return vectors as a string or as a numpy matrix</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Either a numpy.matrix or a string of the primitive lattice vectors generated from the celldm input</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
 
-<dl class="function">
-<dt id="retr.abcVol">
-<code class="descclassname">retr.</code><code class="descname">abcVol</code><span class="sig-paren">(</span><em>a=None</em>, <em>b=None</em>, <em>c=None</em>, <em>alpha=None</em>, <em>beta=None</em>, <em>gamma=None</em>, <em>ibrav=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#abcVol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.abcVol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get volume from a,b,c,alpha,beta,gamma</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> &#8211; </p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>a</strong> (<em>float</em>) &#8211;
-length of a</li>
-<li><strong>b</strong> (<em>float</em>) &#8211;
-length of b</li>
-<li><strong>c</strong> (<em>float</em>) &#8211;
-length of c</li>
-<li><strong>alpha</strong> (<em>float</em>) &#8211;
-Angle between axis b and c</li>
-<li><strong>beta</strong> (<em>float</em>) &#8211;
-Angle between axis a and c</li>
-<li><strong>gamma</strong> (<em>float</em>) &#8211;
-Angle between axis a and b</li>
-<li><strong>ibrav</strong> (<em>int</em>) &#8211;
-ibrav to be used to convert for defaults</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cell_vol</strong> &#8211;
-volume of the cell</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
 
-<dl class="function">
-<dt id="retr.attachPosFlags">
-<code class="descclassname">retr.</code><code class="descname">attachPosFlags</code><span class="sig-paren">(</span><em>positionString</em>, <em>flagString</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#attachPosFlags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.attachPosFlags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reattaches the flags to the end of the atomic position</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>retr module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/retr.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="retr-module">
+<h1>retr module<a class="headerlink" href="#retr-module" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-retr"></span><dl class="function">
+<dt id="retr.aflow_prim2conv">
+<code class="descclassname">retr.</code><code class="descname">aflow_prim2conv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.aflow_prim2conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts primitive cell vectors to conventional cell vectors using AFLOW
+convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>positionString</strong> (<em>str</em>) &#8211; string of the atomic positions</li>
-<li><strong>flagString</strong> (<em>str</em>) &#8211; string of the flags</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 AFLOW primitive cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>positionString</strong> &#8211;
-Positions with flags attached</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in AFLOW conventional lattice vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -287,167 +175,22 @@ Positions with flags attached</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.celldm2abc">
-<code class="descclassname">retr.</code><code class="descname">celldm2abc</code><span class="sig-paren">(</span><em>ibrav=None</em>, <em>celldm1=None</em>, <em>celldm2=None</em>, <em>celldm3=None</em>, <em>celldm4=None</em>, <em>celldm5=None</em>, <em>celldm6=None</em>, <em>cosine=True</em>, <em>degrees=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#celldm2abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.celldm2abc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert celldm for espresso into A,B,C,and angles alpha,beta,gamma</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cellparamatrix</strong> (<em>numpy.matrix</em>) &#8211; matrix of cell vectors</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>cosine</strong> (<em>bool</em>) &#8211;
-If True alpha,beta,gamma are cos(alpha),cos(beta),cos(gamma),</li>
-<li><strong>degrees</strong> (<em>bool</em>) &#8211;
-If True return alpha,beta,gamma in degrees; radians if False</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>paramArray</strong> &#8211;
-a list of the parameters a,b,c,alpha,beta,gamma generated from the input matrix</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.celldm2free">
-<code class="descclassname">retr.</code><code class="descname">celldm2free</code><span class="sig-paren">(</span><em>ibrav=None</em>, <em>celldm1=None</em>, <em>celldm2=None</em>, <em>celldm3=None</em>, <em>celldm4=None</em>, <em>celldm5=None</em>, <em>celldm6=None</em>, <em>returnString=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#celldm2free"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.celldm2free" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts  QE&#8217;s celldm format into QE convention primitive lattice vectors</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> &#8211; </p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>ibrav</strong> (<em>int</em>) &#8211;
-bravais lattice type by QE convention</li>
-<li><strong>celldm1</strong> (<em>float</em>) &#8211;
-a</li>
-<li><strong>celldm2</strong> (<em>float</em>) &#8211;
-b/a</li>
-<li><strong>celldm3</strong> (<em>float</em>) &#8211;
-c/a</li>
-<li><strong>celldm4</strong> (<em>float</em>) &#8211;
-Cosine of the angle between axis b and c</li>
-<li><strong>celldm5</strong> (<em>float</em>) &#8211;
-Cosine of the angle between axis a and c</li>
-<li><strong>celldm6</strong> (<em>float</em>) &#8211;
-Cosine of the angle between axis a and b</li>
-<li><strong>returnString</strong> (<em>bool</em>) &#8211;
-return vectors as a string or as a numpy matrix</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Either a numpy.matrix or a string of the primitive lattice vectors generated from the celldm input</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.celldm2params">
-<code class="descclassname">retr.</code><code class="descname">celldm2params</code><span class="sig-paren">(</span><em>a</em>, <em>b</em>, <em>c</em>, <em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>k</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#celldm2params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.celldm2params" title="Permalink to this definition">¶</a></dt>
-<dd><p>DEFUNCT &lt;Marked for removal&gt;</p>
-<p>Arguments:</p>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.checkStatus">
-<code class="descclassname">retr.</code><code class="descname">checkStatus</code><span class="sig-paren">(</span><em>PROJECT</em>, <em>SET=''</em>, <em>config=''</em>, <em>step=0</em>, <em>status={}</em>, <em>negate_status=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#checkStatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.checkStatus" title="Permalink to this definition">¶</a></dt>
-<dd><p>function that loads the calclogs of each of the calculations in your run and
-displays status information about them.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>PROJECT</strong> (<em>str</em>) &#8211; Project name</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>SET</strong> (<em>str</em>) &#8211;
-Set name</li>
-<li><strong>config</strong> (<em>str</em>) &#8211;
-Config file used</li>
-<li><strong>step</strong> (<em>int</em>) &#8211;
-Which number step to seee (default all of them)</li>
-<li><strong>status</strong> (<em>dict</em>) &#8211;
-dictionary containing the status and the value
-you want to see (ex. {&#8216;Error&#8217;:True})</li>
-<li><strong>negate_status</strong> (<em>bool</em>) &#8211;
-Whether to take the calculations with that status or without it</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">calcsList (list) list of each step of the calculations you
-selected that satisfay the status criteria</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.chemAsKeys">
-<code class="descclassname">retr.</code><code class="descname">chemAsKeys</code><span class="sig-paren">(</span><em>calcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#chemAsKeys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.chemAsKeys" title="Permalink to this definition">¶</a></dt>
-<dd><p>For sets of calcs that only differ by chemistry you can replace the
-hash by the chemical name. May not always work. Especially if there
-are two compounds with swapped positions of atoms of different elements</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>calcsCopy</strong> &#8211;
-returns new dictionay with keys as the chemical stoiciometry</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.compMatrices">
-<code class="descclassname">retr.</code><code class="descname">compMatrices</code><span class="sig-paren">(</span><em>matrix1</em>, <em>matrix2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#compMatrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.compMatrices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compare two numpy matrices to see if they are equal or not</p>
+<dt id="retr.aflow_conv2prim">
+<code class="descclassname">retr.</code><code class="descname">aflow_conv2prim</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.aflow_conv2prim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts conventional cell vectors to primitive cell vectors using AFLOW
+convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>matrix1</strong> (<em>numpy.matrix</em>) &#8211; first matrix</li>
-<li><strong>matrix2</strong> (<em>numpy.matrix</em>) &#8211; second matrix</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 AFLOW conventional cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>equalBool</strong> &#8211;
-True if they&#8217;re equal False if they&#8217;re not</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in AFLOW primitive lattice vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -455,161 +198,23 @@ True if they&#8217;re equal False if they&#8217;re not</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.convertFCC">
-<code class="descclassname">retr.</code><code class="descname">convertFCC</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#convertFCC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.convertFCC" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.detachPosFlags">
-<code class="descclassname">retr.</code><code class="descname">detachPosFlags</code><span class="sig-paren">(</span><em>positionString</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#detachPosFlags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.detachPosFlags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detach the position flags from the string of the atomic positions</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>positionString</strong> (<em>str</em>) &#8211; string of the atomic positions</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>positions</strong> &#8211;
-atomic positions as a list
-flags (list): a list of the flags for by each position</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.free2abc">
-<code class="descclassname">retr.</code><code class="descname">free2abc</code><span class="sig-paren">(</span><em>cellparamatrix</em>, <em>cosine=True</em>, <em>degrees=True</em>, <em>string=True</em>, <em>bohr=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#free2abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.free2abc" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert lattice vectors to a,b,c,alpha,beta,gamma of the primitive lattice</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cellparamatrix</strong> (<em>numpy.matrix</em>) &#8211; matrix of cell vectors</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>cosine</strong> (<em>bool</em>) &#8211;
-If True alpha,beta,gamma are cos(alpha),cos(beta),cos(gamma),</li>
-<li><strong>degrees</strong> (<em>bool</em>) &#8211;
-If True return alpha,beta,gamma in degrees; radians if False</li>
-<li><strong>string</strong> (<em>bool</em>) &#8211;
-If True return a,b,c,alpha,beta,gamma as a string; if False return as a list</li>
-<li><strong>bohr</strong> (<em>bool</em>) &#8211;
-If True return a,b,c in bohr radii; if False return in angstrom</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>paramArray</strong> &#8211;
-a list of the parameters a,b,c,alpha,beta,gamma generated from the input matrix</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.free2ibrav">
-<code class="descclassname">retr.</code><code class="descname">free2ibrav</code><span class="sig-paren">(</span><em>cellparamatrix</em>, <em>ibrav=0</em>, <em>primitive=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#free2ibrav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.free2ibrav" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert lattice vectors to celldm</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>cellparamatrix</strong> (<em>numpy.matrix</em>) &#8211; matrix of cell vectors</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>ibrav</strong> (<em>int</em>) &#8211;
-Overrides the bravais lattice automatically detected
-(must be in QE convention if primitive)</li>
-<li><strong>primitive</strong> (<em>bool</em>) &#8211;
-If True it will treat cellparamatrix as primitive lattice vectors</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>ibravStr</strong> &#8211;
-string of the celldm used for QE pwscf input</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getBravaisLatticeName">
-<code class="descclassname">retr.</code><code class="descname">getBravaisLatticeName</code><span class="sig-paren">(</span><em>bravaisLatticeNumber</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getBravaisLatticeName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getBravaisLatticeName" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the name of the crystal system from the bravias lattice number</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>braviasLatticeNumber</strong> (<em>int</em>) &#8211; the number of the bravais lattice in QE convention</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A string of the name of the crystal system</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getCellMatrixFromInput">
-<code class="descclassname">retr.</code><code class="descname">getCellMatrixFromInput</code><span class="sig-paren">(</span><em>inputString</em>, <em>string=False</em>, <em>scale=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getCellMatrixFromInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getCellMatrixFromInput" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the primitive cell vectors from the input.</p>
+<dt id="retr.qe_prim2conv">
+<code class="descclassname">retr.</code><code class="descname">qe_prim2conv</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.qe_prim2conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts primitive cell vectors to conventional cell vectors using Quantum
+Espresso convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 Quantum Espresso conventional cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>string</strong> (<em>bool</em>) &#8211;
-Return a string or matrix</li>
-<li><strong>scale</strong> (<em>bool</em>) &#8211;
-scale the vectors by alat</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>cellParamMatrix</strong> &#8211;
-primitive lattice params</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.matrix</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in Quantum Espresso primitive lattice
+vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -617,29 +222,23 @@ primitive lattice params</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.getCellOutput">
-<code class="descclassname">retr.</code><code class="descname">getCellOutput</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getCellOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getCellOutput" title="Permalink to this definition">¶</a></dt>
-<dd><p>retreives information about the structure and its chemistry and prints
-it into a file in the AFLOWpi folder inside the project/set directories</p>
+<dt id="retr.qe_conv2prim">
+<code class="descclassname">retr.</code><code class="descname">qe_conv2prim</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.qe_conv2prim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts conventional cell vectors to primitive cell vectors using Quantum
+Espresso convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 Quantum Espresso conventional cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>outputStr</strong> &#8211;
-Output of the report for the calculation</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in Quantum Espresso primitive lattice
+vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -647,33 +246,25 @@ Output of the report for the calculation</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.getCellVolume">
-<code class="descclassname">retr.</code><code class="descname">getCellVolume</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>conventional=True</em>, <em>string=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getCellVolume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getCellVolume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the cell volume from output if avaiable and if not gets it from the input</p>
+<dt id="retr.conv_aflow2qe">
+<code class="descclassname">retr.</code><code class="descname">conv_aflow2qe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.conv_aflow2qe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts conventional cell vectors using AFLOW convention to conventional
+cell vectors using Quantum Espresso convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 AFLOW conventional cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
+<li><strong>angle</strong> (<em>float</em>) &#8211; Characteristic angle for the lattice structure, only
+necessary for rhombohedral (RHL) lattices</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>conventional</strong> (<em>bool</em>) &#8211;
-return the volume of the primitive or conventional lattice</li>
-<li><strong>string</strong> (<em>bool</em>) &#8211;
-to return as a string or as a float</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>vol</strong> &#8211;
-Volume of the cell</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in Quantum Espresso conventional lattice
+vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -681,50 +272,24 @@ Volume of the cell</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.getCellVolumeFromVectors">
-<code class="descclassname">retr.</code><code class="descname">getCellVolumeFromVectors</code><span class="sig-paren">(</span><em>cellInput</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getCellVolumeFromVectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getCellVolumeFromVectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculates cell volume from basis vectors</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>cellInput</strong> (<em>numpy.matrix</em>) &#8211; basis set defining the cell</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>vol</strong> &#8211;
-volume of the cell (may be not scaled. it depends on your input matrix)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getForce">
-<code class="descclassname">retr.</code><code class="descname">getForce</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getForce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getForce" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets last entry of the total force in the calculation from the engine output.</p>
+<dt id="retr.conv_qe2aflow">
+<code class="descclassname">retr.</code><code class="descname">conv_qe2aflow</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.conv_qe2aflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts conventional cell vectors using Quantum Espresso convention to
+conventional cell vectors using AFLOW convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 Quantum Espresso conventional cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
+<li><strong>angle</strong> (<em>float</em>) &#8211; Characteristic angle for the lattice structure, only
+necessary for rhombohedral (RHL) lattices</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>force_string</strong> &#8211;
-Total force from engine output</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">str</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in AFLOW conventional lattice vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -732,34 +297,23 @@ Total force from engine output</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.getIbravFromVectors">
-<code class="descclassname">retr.</code><code class="descname">getIbravFromVectors</code><span class="sig-paren">(</span><em>cellVectors</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getIbravFromVectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getIbravFromVectors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Arguments:</p>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getPointGroup">
-<code class="descclassname">retr.</code><code class="descname">getPointGroup</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>source='input'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getPointGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getPointGroup" title="Permalink to this definition">¶</a></dt>
-<dd><p>NOT COMPLETED.</p>
+<dt id="retr.prim_aflow2qe">
+<code class="descclassname">retr.</code><code class="descname">prim_aflow2qe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.prim_aflow2qe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts primitive cell vectors using AFLOW convention to primitive cell
+vectors using Quantum Espresso convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 AFLOW primitive cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>source</strong> (<em>string</em>) &#8211;
-either &#8216;input&#8217; or &#8216;output&#8217; to get point group from input
-or output atomic positions</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in Quantum Espresso primitive lattice
+vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -767,462 +321,23 @@ or output atomic positions</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="retr.getPositionsFromInput">
-<code class="descclassname">retr.</code><code class="descname">getPositionsFromInput</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getPositionsFromInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getPositionsFromInput" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getPositionsFromOutput">
-<code class="descclassname">retr.</code><code class="descname">getPositionsFromOutput</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getPositionsFromOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getPositionsFromOutput" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the atomic positions from the output. If atomic positons can not be read from
-output then the the positions from the input are returned.</p>
+<dt id="retr.prim_qe2aflow">
+<code class="descclassname">retr.</code><code class="descname">prim_qe2aflow</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#retr.prim_qe2aflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts primitive cell vectors using Quantum Espresso convention to
+primitive cell vectors using AFLOW convention.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
+<li><strong>cell</strong> (<em>numpy.matrix</em>) &#8211; 3x3 AFLOW primitive cell vectors</li>
+<li><strong>ibrav</strong> (<em>int</em>) &#8211; Quantum Espresso Bravais lattice index of the crystal
+structure</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>pos</strong> &#8211;
-atomic positions</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numpy.matrix</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.getRecipParams">
-<code class="descclassname">retr.</code><code class="descname">getRecipParams</code><span class="sig-paren">(</span><em>oneCalc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#getRecipParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.getRecipParams" title="Permalink to this definition">¶</a></dt>
-<dd><p>reads the output from the SCF or relax calculation to get the
-reciprocal cell parameters produced by the calculation.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary of a single calculation</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>alat</strong> &#8211;
-alat multiplier
-paramMatrix (numpy.matrix): matrix of reciprocal lattice vectors</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.get_parameters">
-<code class="descclassname">retr.</code><code class="descname">get_parameters</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em>, <em>conventional=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#get_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.get_parameters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideXshiftY">
-<code class="descclassname">retr.</code><code class="descname">glideXshiftY</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideXshiftY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideXshiftY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideXshiftZ">
-<code class="descclassname">retr.</code><code class="descname">glideXshiftZ</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideXshiftZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideXshiftZ" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideYshiftX">
-<code class="descclassname">retr.</code><code class="descname">glideYshiftX</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideYshiftX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideYshiftX" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideYshiftZ">
-<code class="descclassname">retr.</code><code class="descname">glideYshiftZ</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideYshiftZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideYshiftZ" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideZshiftX">
-<code class="descclassname">retr.</code><code class="descname">glideZshiftX</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideZshiftX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideZshiftX" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.glideZshiftY">
-<code class="descclassname">retr.</code><code class="descname">glideZshiftY</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#glideZshiftY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.glideZshiftY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="retr.grabEnergy">
-<code class="descclassname">retr.</code><code class="descname">grabEnergy</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#grabEnergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.grabEnergy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Grabs energy for oneCalc and adds the keyword &#8216;Energy&#8217; with the value of the energy grabbed from the output</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><p class="first"><strong>None</strong></p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>oneCalc</strong> &#8211;
-a dictionary containing properties about the AFLOWpi calculation</p>
-<blockquote>
-<div><p>with the &#8216;Energy&#8217; keyword added</p>
-</div></blockquote>
-</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.grabEnergyOut">
-<code class="descclassname">retr.</code><code class="descname">grabEnergyOut</code><span class="sig-paren">(</span><em>calcs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#grabEnergyOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.grabEnergyOut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Goes in every subdirectory of the calculation and searches
-for the final energy of the calculation and returns a new
-copy of the input dictionary that includes the final energy.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><strong>None</strong></td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>calcs</strong> &#8211;
-dictionary of dictionaries of calculations with energy added</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.ibrav2String">
-<code class="descclassname">retr.</code><code class="descname">ibrav2String</code><span class="sig-paren">(</span><em>ibrav=None</em>, <em>celldm1=None</em>, <em>celldm2=None</em>, <em>celldm3=None</em>, <em>celldm4=None</em>, <em>celldm5=None</em>, <em>celldm6=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#ibrav2String"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.ibrav2String" title="Permalink to this definition">¶</a></dt>
-<dd><p>DEFUNCT &lt;CONSIDER FOR REMOVAL&gt;</p>
-<p>Arguments:</p>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.inputDict2params">
-<code class="descclassname">retr.</code><code class="descname">inputDict2params</code><span class="sig-paren">(</span><em>inputDict</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#inputDict2params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.inputDict2params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Arguments:</p>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.invertX">
-<code class="descclassname">retr.</code><code class="descname">invertX</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#invertX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.invertX" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.invertXYZ">
-<code class="descclassname">retr.</code><code class="descname">invertXYZ</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#invertXYZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.invertXYZ" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.invertY">
-<code class="descclassname">retr.</code><code class="descname">invertY</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#invertY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.invertY" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.invertZ">
-<code class="descclassname">retr.</code><code class="descname">invertZ</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#invertZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.invertZ" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.pw2cif">
-<code class="descclassname">retr.</code><code class="descname">pw2cif</code><span class="sig-paren">(</span><em>calcs</em>, <em>inpt=True</em>, <em>outp=True</em>, <em>runlocal=False</em>, <em>outputFolder=None</em>, <em>filePrefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#pw2cif"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.pw2cif" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a simple CIF file for engine input and outputs for viewing the structure</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>inpt</strong> (<em>bool</em>) &#8211;
-Do CIF for input</li>
-<li><strong>outp</strong> (<em>bool</em>) &#8211;
-Do CIF for output</li>
-<li><strong>outputFolder</strong> (<em>str</em>) &#8211;
-Output directory for the CIF</li>
-<li><strong>filePrefix</strong> (<em>str</em>) &#8211;
-Optional prefix to the CIF filenames</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.rotateAlpha">
-<code class="descclassname">retr.</code><code class="descname">rotateAlpha</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#rotateAlpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.rotateAlpha" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.rotateBeta">
-<code class="descclassname">retr.</code><code class="descname">rotateBeta</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#rotateBeta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.rotateBeta" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.rotateGamma">
-<code class="descclassname">retr.</code><code class="descname">rotateGamma</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>angle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#rotateGamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.rotateGamma" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.shiftCell">
-<code class="descclassname">retr.</code><code class="descname">shiftCell</code><span class="sig-paren">(</span><em>symMatrix</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#shiftCell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.shiftCell" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.shiftX">
-<code class="descclassname">retr.</code><code class="descname">shiftX</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#shiftX"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.shiftX" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.shiftY">
-<code class="descclassname">retr.</code><code class="descname">shiftY</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#shiftY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.shiftY" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.shiftZ">
-<code class="descclassname">retr.</code><code class="descname">shiftZ</code><span class="sig-paren">(</span><em>symMatrix</em>, <em>cellMatrix</em>, <em>shift</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#shiftZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.shiftZ" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>symMatrix</strong> (<em>numpy.matrix</em>) &#8211; atomic positions in matrix form</li>
-<li><strong>cellMatrix</strong> (<em>numpy.matrix</em>) &#8211; primitive lattice vectors in matrix form</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.transform_input_conv">
-<code class="descclassname">retr.</code><code class="descname">transform_input_conv</code><span class="sig-paren">(</span><em>oneCalc</em>, <em>ID</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#transform_input_conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.transform_input_conv" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>oneCalc</strong> (<em>dict</em>) &#8211; a dictionary containing properties about the AFLOWpi calculation</li>
-<li><strong>ID</strong> (<em>str</em>) &#8211; ID string for the particular calculation and step</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>Keyword Arguments:</p>
-<p>Returns:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="retr.writeInputFromOutput">
-<code class="descclassname">retr.</code><code class="descname">writeInputFromOutput</code><span class="sig-paren">(</span><em>calcs</em>, <em>replace=False</em>, <em>runlocal=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/retr.html#writeInputFromOutput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#retr.writeInputFromOutput" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>calcs</strong> (<em>dict</em>) &#8211; dictionary of dictionaries of calculations</p>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
-<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
-<li><strong>replace</strong> (<em>bool</em>) &#8211;
-If true replace the input with updated atomic positions and cell parameters</li>
-<li><strong>runlocal</strong> (<em>bool</em>) &#8211;
-run local or write to &lt;ID&gt;.py</li>
-</ul>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">3x3 <cite>numpy.matrix</cite> of the cell in Quantum Espresso primitive lattice
+vectors.</p>
 </td>
 </tr>
 </tbody>
@@ -1232,21 +347,75 @@ run local or write to &lt;ID&gt;.py</li>
 </div>
 
 
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="run.html" class="btn btn-neutral float-right" title="run module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="pseudo.html" class="btn btn-neutral" title="pseudo module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
     </div>
-      
-  </div>
-</div>
-<footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-    </p>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
     <p>
-        &copy; Copyright 2016, Andrew Supka.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.<br/>
+        &copy; Copyright 2016, Andrew Supka.
+
     </p>
   </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
 </footer>
-  </body>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
 </html>
