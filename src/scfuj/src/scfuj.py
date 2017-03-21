@@ -613,7 +613,7 @@ def projwfc(oneCalc,ID=None,paw=False):
   filpdos='./%s_acbn0'
   outdir='%s'
   lwrite_overlaps=.TRUE.
-  lbinary_data  = .FALSE.
+  lbinary_data  = .false.
   %s
 /
 """%(prefix,ID,temp_dir,paw_str,)
@@ -715,7 +715,7 @@ def WanT_bands(oneCalc,ID=None,eShift=5.5,num_points=1000,cond_bands=True,comput
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nkpts_in        = %d                 
 nkpts_max	= %s		 
 do_orthoovp	= %s

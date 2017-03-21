@@ -251,7 +251,7 @@ def WanT_dos(oneCalc,ID=None,eShift=5.0,temperature=None,energy_range=[-21.0,21.
 prefix 		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d
@@ -461,7 +461,7 @@ def WanT_epsilon(oneCalc,ID=None,eShift=5.0,temperature=300.0,energy_range=[0.01
 prefix		= '%s_TB' 		  	                        
 postfix 	= \'_WanT\'		        
 work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.dat\'	 
+%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
 nk(1)           = %d
 nk(2)           = %d
 nk(3)           = %d

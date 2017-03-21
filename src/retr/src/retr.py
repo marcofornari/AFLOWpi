@@ -1431,11 +1431,11 @@ def _getHighSymPoints(oneCalc,ID=None):
     qe_conv    = numpy.identity(3)
 
     if ibrav==2:
-        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0                       
+        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0     
         qe_conv    = numpy.asarray([[-1.0, 0.0, 1.0],[ 0.0, 1.0, 1.0],[-1.0, 1.0, 0.0]])/2.0
     if ibrav==3:
-        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0                    
-        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0                    
+        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0     
+        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0     
     if ibrav==7:
         aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
         qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0],[ 1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
@@ -1450,9 +1450,14 @@ def _getHighSymPoints(oneCalc,ID=None):
         qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
 
                                    
+
     for k,v in special_points.iteritems():
-        second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
-        special_points[k]=tuple(second.flatten().tolist()[0])
+        first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
+        second = qe_conv.dot(first)
+        special_points[k]=tuple(second.tolist())
+#    for k,v in special_points.iteritems():
+#        second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
+#        special_points[k]=tuple(second.flatten().tolist()[0])
 
 
     return special_points, band_path	

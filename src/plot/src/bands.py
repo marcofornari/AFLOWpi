@@ -506,7 +506,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 				bars.append(a[index] )
 			except:
 				bars.append(a[-1] )
-		pylab.xticks(bars,SymPrint, fontsize = 20)
+		pylab.xticks(bars,SymPrint, fontsize = 24)
 	except Exception,e:
                 print e
 		pylab.xticks([a[-1] for index in symIndex],SymPrint)

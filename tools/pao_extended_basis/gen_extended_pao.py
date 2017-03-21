@@ -94,8 +94,8 @@ def read_UPF(fullpath):
 
  #%%
  #-->Reading <PP_BETA.x>
- kkbeta = np.zeros(nbeta)
- lll    = np.zeros(nbeta)
+ kkbeta = np.zeros(nbeta,dtype=np.float32)
+ lll    = np.zeros(nbeta,dtype=np.float32)
  for ibeta in range(nbeta):
      for rootaux in root.iter('PP_BETA.'+str(ibeta+1)):
          kkbeta[ibeta] = int(rootaux.attrib['size'])
@@ -112,7 +112,7 @@ def read_UPF(fullpath):
 
  #%%
  #-->Reading <PP_PSWFC>
- chi = np.zeros((0,mesh))
+ chi = np.zeros((0,mesh),dtype=np.float32)
  pswfc = root.find('PP_PSWFC')
  els = []
  lchi= []
@@ -143,7 +143,7 @@ def read_UPF(fullpath):
  
     full_aewfc_label=[]
     full_aewfc_l    =[]
-    full_aewfc      = np.zeros((0,mesh))
+    full_aewfc      = np.zeros((0,mesh),dtype=np.float32)
     for ibeta in range(nbeta):
         for rootaux in root.iter('PP_AEWFC.'+str(ibeta+1)):
             sizeaux       = int(rootaux.attrib['size'])
@@ -160,7 +160,7 @@ def read_UPF(fullpath):
 
     full_pswfc_label=[]
     full_pswfc_l    =[]
-    full_pswfc      = np.zeros((0,mesh))
+    full_pswfc      = np.zeros((0,mesh),dtype=np.float32)
     for ibeta in range(nbeta):
         for rootaux in root.iter('PP_PSWFC.'+str(ibeta+1)):
             sizeaux       = int(rootaux.attrib['size'])
@@ -197,6 +197,7 @@ def read_UPF(fullpath):
 import sys
 import os
 import matplotlib as mpl
+mpl.use("pdf")
 import matplotlib.pyplot as plt
 import numpy as np
 from   matplotlib.backends.backend_pdf import PdfPages
@@ -207,22 +208,22 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e):
     mesh_size,rmesh,wfc_ps,wfc_ae = PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll)
 
 
-    # try:
-    #     fig_fullpath=os.path.dirname(wfc_ae_fullpath)+"/PP_CHI.pdf"
-    #     print('Printing figures to: ',fig_fullpath)
-    #     with PdfPages(fig_fullpath) as pdf:
-    #          for ichi in range(len(ll)):
-    #              plt.figure(figsize=(3,3))
-    #              plt.plot(rmesh,wfc_ae[:,ichi],':',color='r',linewidth=3,label='AE',alpha=0.8)
-    #              plt.plot(rmesh,wfc_ps[:,ichi],label='PS computed')
-    #              plt.legend(loc=4,prop={'size':6})
-    #              plt.xlim([0,5])
-    #              plt.ylim([-1.5,1.5])
-    #              plt.title('PP_CHI.%s'%(str(ichi+1)))
-    #              pdf.savefig()
-    #              plt.close()
-    # except:
-    #     pass
+    try:
+        fig_fullpath=os.path.dirname(wfc_ae_fullpath)+"/PP_CHI.pdf"
+        print('Printing figures to: ',fig_fullpath)
+        with PdfPages(fig_fullpath) as pdf:
+             for ichi in range(len(ll)):
+                 plt.figure(figsize=(3,3))
+                 plt.plot(rmesh,wfc_ae[:,ichi],':',color='r',linewidth=3,label='AE',alpha=0.8)
+                 plt.plot(rmesh,wfc_ps[:,ichi],label='PS computed')
+                 plt.legend(loc=4,prop={'size':6})
+                 plt.xlim([0,5])
+                 plt.ylim([-1.5,1.5])
+                 plt.title('PP_CHI.%s'%(str(ichi+1)))
+                 pdf.savefig()
+                 plt.close()
+    except Exception,e:
+        print(e)
     print('asdfada')
     np.savez(os.path.dirname(wfc_ae_fullpath)+"/AE_and_PS",r=rmesh,AE=wfc_ae,PS=wfc_ps)
 
@@ -236,6 +237,7 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e):
         print('    <PP_CHI.{0:d} type="real" size="{1:d}"'
               ' columns="4" index="x" label="{2:s}"'
               ' l="{3:d}" occupation="{4:s}" n="x"\npseudo_energy="{5:s}">'.format(ichi+1,mesh_size,llabels[ichi],ll[ichi],occ_str,pseudo_e_str),file=fid)
+        print(occ_str)
         chi_str= radial2string(wfc_ps[:,ichi])
         print('{0:s}'.format(chi_str),file=fid)
         print('    </PP_CHI.{0:d}>'.format(ichi+1),file=fid)
@@ -266,6 +268,7 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll):
     size    = wfc_ae.shape[0]
 
     #Check that the meshes and radial parts are the same
+#    wfc_ae[:,1:]+=1.e-8
     r1 = wfc_ae[:,0]
     r2 = psp['r']
     if len(r2) != size:
@@ -273,7 +276,7 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll):
     if np.sum(np.abs(r2-r1)) > 1e-5:
         sys.exit('The radial meshes are different')
 
-    wfc_ps  =np.zeros((size,nwfcs))
+    wfc_ps  =np.zeros((size,nwfcs),dtype=np.float32)
 
     for iwfc in range(nwfcs):
        wfc_ps[:,iwfc] = AE2PS_l(psp,wfc_ae[:,iwfc+1],ll[iwfc],rcut)
@@ -305,8 +308,8 @@ def AE2PS_l(data,phi,l,rcut):
     r     = data['r']
 
     beta_l = np.where(lll==l)[0]
-    B = np.zeros((len(beta_l),1))
-    A = np.zeros((len(beta_l),len(beta_l)))
+    B = np.zeros((len(beta_l),1),dtype=np.float32)
+    A = np.zeros((len(beta_l),len(beta_l)),dtype=np.float32)
     for ii,ibeta in enumerate(beta_l):
         p_i        = data['beta_'+str(ibeta+1)]
         B[ii,0]    = braket(r,rab,p_i,phi,rcut)
@@ -379,7 +382,7 @@ def pseudizeWFC(ld1FileString, UPF_file):
 		nPAO_RE = re.compile(r"/\n(\d+)\s*\n")
 		nPAO = int(float(nPAO_RE.findall(ld1FileString)[0]));print("Total No. of PAOs found:", nPAO)
 
-		paoRE = re.compile(r"([0-9][A-Z])\s*\d\s*(\d)\s*([-]*\d+\.\d+)\s*([-]*\d+\.\d+)\s*\d+\.\d+\s*(\d+\.\d+)\s*\d+\.\d+.*\n")
+		paoRE = re.compile(r"([0-9][A-Z])\s*\d+\s*(\d+)\s*([-]*\d+\.\d+)\s*([-]*\d+\.\d+)\s*\d+\.\d+\s*(\d+\.\d+)\s*\d+\.\d+.*\n")
 		paoList = paoRE.findall(ld1FileString)
 
 
@@ -389,7 +392,7 @@ def pseudizeWFC(ld1FileString, UPF_file):
 		pseudo_e= map(float, [x[3] for i,x in enumerate(paoList)]);print("pseudo_e:", pseudo_e)
 		occups  = map(float,[x[2] for i,x in enumerate(paoList)]);print("occupations:", occups)
 
-		
+		print(occups)
 		PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e)
 
                 return occups
