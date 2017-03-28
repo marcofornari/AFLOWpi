@@ -17,7 +17,7 @@ import csv
 def _want_txt_to_bin(fpath,fname):
 
     fns=fname.split(".")
-    bin_file = os.path.join(fpath,fns[0]+".binary")
+    bin_file = os.path.join(fpath,fns[0]+".npy")
     if not os.path.exists( os.path.join(fpath,fname)):
         return
 

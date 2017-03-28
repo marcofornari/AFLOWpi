@@ -202,7 +202,7 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
 
 def read_large_file(fpath,fname):
     fns=fname.split(".")
-    bin_file = os.path.join(fpath,fns[0]+".binary")
+    bin_file = os.path.join(fpath,fns[0]+".npy")
     
     if os.path.exists(bin_file):
         fin   = open(bin_file,"r")
