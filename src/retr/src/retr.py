@@ -1796,6 +1796,26 @@ def _joinInput(inputDict):
     return newInputString
 
 
+def _getPath_nk(nk, oneCalc,ID=None,points=False):
+    total=0
+    splitPath=[]
+    dk=0.00001
+    path = AFLOWpi.retr._getPath(dk , oneCalc,ID=ID,points=points)
+    '''scale the k points in the path list so they're as close to nk as possible'''
+    for x in path.split('\n')[1:]:
+        if len(x.strip())!=0:
+            xsplit = x.split()
+            letter = xsplit[-1]
+            num    = int(xsplit[3])
+
+            total += num
+            if num==0:
+                total+=1.0
+
+    scaleFactor = float(nk)/total
+
+    return  AFLOWpi.retr._getPath(dk/scaleFactor,oneCalc,ID=ID)
+
 def _getPath(dk, oneCalc,ID=None,points=False):
     '''
     Get path between HSP

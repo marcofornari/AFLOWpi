@@ -2063,37 +2063,9 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
 
             if nk!=None:
-                total=0
-		splitPath=[]
-                '''scale the k points in the path list so they're as close to nk as possible'''
-		for x in path.split('\n')[1:]:
-			if len(x.strip())!=0:
-				xsplit = x.split()
-				letter = xsplit[-1]
-				num    = int(xsplit[3])
-#				coords = xsplit[:3]
-				total += num
-				if num==0:
-					total+=1
-#				splitPath.append([coords,num,letter])
-			
-#			except Exception,e:
-#				print e
-#				pass
-#			[x.split()[0],int(x.split()[1])] for x in  
+                path = AFLOWpi.retr._getPath_nk(oneCalc,ID)
 
-#                splitPath =  [[x.split()[0],int(x.split()[1])] for x in  path.split('\n')[1:] if len(x)!=0]
-#                total =  [int(x.split()[1]) for x in  path.split('\n')[1:] if len(x)!=0]
-
-#                for entries in range(len(total)):
- #                   if total[entries]==0:
-  #                      total[entries]+=1
-
-#                total=sum(total)
-                scaleFactor = float(nk)/total
-
-		path = AFLOWpi.retr._getPath(dk/scaleFactor,oneCalc,ID=prevID_str)
-		print path
+		
 		
 
             inputSplit=AFLOWpi.retr._splitInput(inputfile)
@@ -4596,15 +4568,18 @@ EXITING.
 
 
 
-	def tight_binding(self,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,cond_bands_proj=True):
+	def tight_binding(self,proj_thr=0.90,kp_factor=1.5):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
-
+		
 		self.new_step(update_positions=True,update_structure=True,)
 
 		self.initial_calcs.append(self.int_dict)
-
+		#for now remove later
+		cond_bands=True
+		proj_sh=5.5,
+		#for now remove later
 		calc_type='Generate PAO-TB Hamiltonian'
 		if cond_bands:
 			calc_type+=' with occupied and unoccupied states'
@@ -4613,7 +4588,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,cond_bands_proj=cond_bands_proj)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
