@@ -87,64 +87,76 @@ def __getPath_WanT(oneCalc,ID):
     '''
 
     try:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands.out'%ID)[-1]
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/kpath_points.txt')[-1]
     except:
         want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands_up.out'%ID)[-1]
 
-    with open(want_stdout_path,'r') as in_file_obj:
-        in_string = in_file_obj.read()
+    with open(want_stdout_path,"r") as ofo:
+	    lines=ofo.readlines()
 
-    path = AFLOWpi.retr._getPath(0.01,oneCalc,ID=ID)
+    output_path_string=""
+    flag=False
+    points_list=[]
+    for l in lines:
+	    if len(l.strip())==0:
+		    flag=True
+	    if flag==False:
+		    lspl=l.split()
+		    output_path_string+="0.0 0.0 0.0 %s ! %s\n"%(lspl[1],lspl[0])
+	    else:
+		    points_list.extend([float(x) for x in l.split()])
 
-    plot_bool=[]
-    path_name=[]
-    path_split = [x for x in  path.split('\n')[1:] if len(x.strip())]
+    points=numpy.reshape(numpy.asarray(points_list),(len(points_list)/3,3))
+    
 
-    for i in path_split:
-        path_name.append(i.split()[-1])
-        if  int(i.split()[3]):
+    r = numpy.diff(points,axis=0)
 
-            plot_bool.append(True)
-        else:
-            plot_bool.append(False)
-
-    gg = re.findall("\s*Number of kpts in each segment\n((?:.*:\W+(?:\d*)\n)*)",in_string)
-    print gg
-
-    num = [int(x) for x in re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)]
-    print re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)
-
-    total = 0
-    include=[]
-
-    output_path_string = ''
-    print plot_bool
-    for i in range(len(num)):
-
-        total+=num[i]+1
-	try:
-		if plot_bool[i]:
-
-		    if i==0:
-			output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i],path_name[i])
-		    else:
-			output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,num[i]+1,path_name[i],)
-		else:
-                    if i!=len(num):
-			    output_path_string+='%s %s %s %s ! %s\n' %(0.0,0.0,0.0,0,path_name[i])
-		for j in range(num[i]):
-		    include.append(plot_bool[i])
-#		else:
-#			include.append(False)
-		include.append(True)
-		
-	except Exception,e:
-		print e
-
-    output_path_string+='%s %s %s %s ! %s' %(0.0,0.0,0.0,0,path_name[-1])+'\n' 
+    dist=numpy.cumsum(numpy.sqrt(numpy.sum(r**2,axis=1)))
+    dist = numpy.concatenate((numpy.array([0.0]),dist),axis=0)
+    
+    with open("bands_0.dat","r") as ofo:
+	    by_band = numpy.array([map(float,x.split()) for x in ofo.readlines()]).T
 
 
 
+
+    calcID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True)
+
+    nspin=2
+    try:
+	    with open("bands_1.dat","r") as ofo:
+		    by_band = numpy.array([map(float,x.split()) for x in ofo.readlines()]).T
+	    ofs=""
+	    for band in xrange(by_band.shape[0]):
+		    for kpt in xrange(by_band.shape[1]):
+			    ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+		    if band!=by_band.shape[0]-1:
+			    ofs+="\n"
+
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_down_cleaned.dat'%calcID)
+	    with open(filebands,"w") as ofo:
+		    ofo.write(ofs)
+
+    except:
+	    nspin=1
+
+    if nspin==2:
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_up_cleaned.dat'%calcID)
+    else:
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_cleaned.dat'%calcID)
+    try:
+	    ofs=""
+	    for band in xrange(by_band.shape[0]):
+		    for kpt in xrange(by_band.shape[1]):
+			    ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+		    if band!=by_band.shape[0]-1:
+			    ofs+="\n"	    
+
+	    with open(filebands,"w") as ofo:
+		    ofo.write(ofs)
+    except Exception,e:
+	    pass
+	    
     return  output_path_string
 
 
@@ -273,9 +285,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		return
 	try:
                 if tight_banding:
-			Efermi=AFLOWpi.retr._getEfermi(oneCalc,'%s_WanT_dos'%calcID,directID=True)
+		#	Efermi=AFLOWpi.retr._getEfermi(oneCalc,'%s_WanT_dos'%calcID,directID=True)
 
-			
+			Efermi=0.0
                 else:
 			Efermi=AFLOWpi.retr._getEfermi(oneCalc,calcID)
 			print 'EFERMI BANDS NO TB',Efermi
@@ -293,10 +305,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
 	if tight_banding==True:
-		try:
-			AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
-		except:
-			return
+	#	try:
+#			AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
+#		except:
+#			return
 		filebands = os.path.join(subdir,'%s_bands_want_cleaned.dat'%calcID)
 		if not os.path.exists(filebands):
 
@@ -491,7 +503,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	for sym in symIndex:
             try:
-                print a[sym]
+
                 pylab.axvline(a[sym], color = 'k',linewidth=2)
             except Exception,e:
 
@@ -642,7 +654,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 		ax2.yaxis.set_ticks([])
 		ax2.yaxis.set_ticks_position('left')
-		pylab.xlabel('Density of States (States/eV)')
+		pylab.xlabel('Density of States (States/eV)',fontsize=20)
 		ax2.axes.xaxis.set_label_position('top')
 		locs, labels = pylab.xticks()
 		
@@ -755,7 +767,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	figtitle = ''
         compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
 	figtitle = '%s: %s' % (description,compoundNameLatex) 
-	ax1.set_title(figtitle)
+	ax1.set_title(figtitle,fontsize=24)
 #	ax1.axes.xaxis.set_label_position('top')
 #	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
 

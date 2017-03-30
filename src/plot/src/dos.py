@@ -340,7 +340,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	for atom in atomList:
 		byAtom=[]
 		for orbital in orbitalList:
-			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*(%s)' % (glob_ID,atom,orbital)))
+			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*(%s)*' % (glob_ID,atom,orbital)))
 
 			if len(pDOSFiles):
 				byAtom.append({'%s' % orbital:pDOSFiles})
@@ -397,7 +397,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	try:
             if TB==True:
 		    fermi_ID = '%s_WanT_dos'%calcID
-		    print fermi_ID
+
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
 
             else:
@@ -641,7 +641,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	try:
             if TB==True:
 		    fermi_ID = '%s_WanT_dos'%calcID
-		    print fermi_ID
+
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
             else:
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
