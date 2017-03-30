@@ -147,7 +147,8 @@ try:
                         'AFLOWpi':['ISOTROPY/*'],
                         '': EXTRA_FILES,                            
 
-
+                        'AFLOWpi':['PAOpy/*/*'],
+                        '': EXTRA_FILES,                            
                         
                         'AFLOWpi.qe': ['regex.py',],},
 

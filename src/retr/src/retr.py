@@ -1796,25 +1796,23 @@ def _joinInput(inputDict):
     return newInputString
 
 
-def _getPath_nk(nk, oneCalc,ID=None,points=False):
+def _getPath_nk2dk(nk, oneCalc,ID=None):
     total=0
     splitPath=[]
     dk=0.00001
-    path = AFLOWpi.retr._getPath(dk , oneCalc,ID=ID,points=points)
+    path = AFLOWpi.retr._getPath(dk , oneCalc,ID=ID,points=True)
     '''scale the k points in the path list so they're as close to nk as possible'''
-    for x in path.split('\n')[1:]:
-        if len(x.strip())!=0:
-            xsplit = x.split()
-            letter = xsplit[-1]
-            num    = int(xsplit[3])
+    total=len(path.split('\n'))-1
 
-            total += num
-            if num==0:
-                total+=1.0
-
+    
     scaleFactor = float(nk)/total
 
-    return  AFLOWpi.retr._getPath(dk/scaleFactor,oneCalc,ID=ID)
+    return dk/scaleFactor
+
+
+def _getPath_nk(nk, oneCalc,ID=None,points=False):
+    dk=_getPath_nk2dk(nk, oneCalc,ID=ID)
+    return  AFLOWpi.retr._getPath(dk,oneCalc,ID=ID,points=points)
 
 def _getPath(dk, oneCalc,ID=None,points=False):
     '''
@@ -1867,12 +1865,13 @@ def _getPath(dk, oneCalc,ID=None,points=False):
         raise Exception
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
-
+    BohrToAngstrom = 1.0/1.889727
+    alat*=BohrToAngstrom
 
 
     totalK=0
     special_points, band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID=ID)
-    hs = 2*numpy.pi*numpy.linalg.inv(cell)  # reciprocal lattice
+    hs = 2.0*numpy.pi*numpy.linalg.inv(cell)  # reciprocal lattice
     segs = getSegments(band_path)
 
     numPointsStr = str(getNumPoints(band_path)) + '\n' #starts the string we need to make
@@ -1893,7 +1892,7 @@ def _getPath(dk, oneCalc,ID=None,points=False):
                 p1 = special_points[point1] 
                 p2 = special_points[point2]
 
-                newDK = (2*numpy.pi/alat)*dk
+                newDK = (2.0*numpy.pi/alat)*dk
                 numK = int(numpy.ceil((kdistance(hs, p1, p2)/newDK)))
                 totalK+=numK
 

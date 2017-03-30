@@ -4568,7 +4568,7 @@ EXITING.
 
 
 
-	def tight_binding(self,proj_thr=0.90,kp_factor=1.5):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'

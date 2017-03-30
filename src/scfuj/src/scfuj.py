@@ -578,7 +578,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
         return output_calc,calc_label
 
 
-def projwfc(oneCalc,ID=None,paw=False):
+def projwfc(oneCalc,ID=None,paw=False,ovp=False):
 	'''
 	Run projwfc on each calculation
 
@@ -593,6 +593,10 @@ def projwfc(oneCalc,ID=None,paw=False):
         nscf_ID=ID+'_nscf'
         Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
         eShift=float(Efermi)+4.0
+        if not ovp:
+            ovp_str=".FALSE."
+        else:
+            ovp_str=".TRUE."
         prefix = oneCalc['_AFLOWPI_PREFIX_']
         try:
                 subdir = oneCalc['_AFLOWPI_FOLDER_']
@@ -612,11 +616,11 @@ def projwfc(oneCalc,ID=None,paw=False):
   prefix='%s'
   filpdos='./%s_acbn0'
   outdir='%s'
-  lwrite_overlaps=.TRUE.
+  lwrite_overlaps=%s
   lbinary_data  = .false.
   %s
 /
-"""%(prefix,ID,temp_dir,paw_str,)
+"""%(prefix,ID,temp_dir,paw_str,ovp_str)
 
 		calc_label = ID + '_pdos'		
 
