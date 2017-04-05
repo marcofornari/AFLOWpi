@@ -425,6 +425,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
  	                #renames gG to greek letter for capital gamma
 			if specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gG':
 				specialPointName = r"$\Gamma$"
+			elif specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gS':
+				specialPointName = r"$\Sigma$"
+			elif specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gS1':
+				specialPointName = r"$\Sigma_{1}$"
 
 			elif len(specialPointName) != 1:
 				specialPointName = "$"+specialPointName[0]+r'_{'+specialPointName[1]+'}$' #if there is a subscript it makes the print out on the plot have the number subscripted 
@@ -438,6 +442,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 			if specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gG': #renames gG to greek letter for capital gamma
 				specialPointName = r"$\Gamma$"
+			elif specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gS':
+				specialPointName = r"$\Sigma$"
+			elif specialPointName == 'G' or specialPointName == 'g' or specialPointName == 'Gamma' or specialPointName == 'gS1':
+				specialPointName = r"$\Sigma_{1}$"
+
 			elif len(specialPointName) != 1:
 				specialPointName = "$"+specialPointName[0]+r'_{'+specialPointName[1]+'}$' #if there is a subscript it makes the print out on the plot have the number subscripted 
 			else:

@@ -500,7 +500,7 @@ class tb_plotter:
             pass
 
 
-def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0):
+def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -577,7 +577,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0):
 #            nawf = AFLOWpi.prep._get_pp_nawf(oneCalc,ID)
 
 #            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,unoccupied_states=unoccupied_bands)	
-            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=1)       
+            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond)  
 
 
 
@@ -625,7 +625,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0):
             oneCalc['__runList__'].append('nscf')
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,paw=False)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,paw=False,ovp=ovp)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):

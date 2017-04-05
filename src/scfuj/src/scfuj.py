@@ -259,40 +259,13 @@ def maketree(oneCalc,ID, paodir=None):
 	 - paodir	- path of pseudoatomic orbital basis set
         """
 
-#        for ID,oneCalc in calcs.iteritems():
+
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in' % ID),'w') as scfujInfileObj:
             scfujInfileObj.write(oneCalc['_AFLOWPI_INPUT_'])
 
         '''save the calc just in case so it's updated witht he scfuj U value info in the input file as well as _AFLOWPI_INPUT_'''
 
-#        if AFLOWpi.prep._findInBlock(oneCalc,ID,'LOADCALC','''oneCalc = AFLOWpi.prep._loadOneCalc('%s','%s')''' % (oneCalc['_AFLOWPI_FOLDER_'],ID) )==False:
 
-#            AFLOWpi.prep._addToBlock(oneCalc,ID,'LOADCALC','''try:
-#   oneCalc = AFLOWpi.prep._loadOneCalc('%s','%s')
-#except:
-#   pass
-#''' % (oneCalc['_AFLOWPI_FOLDER_'],ID) )            
-
-
-	#Get wanT directory from config file and copy bands.x from it to tre
-	wantdir = AFLOWpi.prep._ConfigSectionMap('prep','want_dir')
-        if os.path.isabs(wantdir) == False:
-            configFileLocation = AFLOWpi.prep._getConfigFile()
-            configFileLocation = os.path.dirname(configFileLocation)
-            wantdir =  os.path.join(configFileLocation, wantdir)
-
-	wantBandsExec = os.path.join(wantdir,'bands.x')
-        if os.path.exists(wantBandsExec)==False:
-            print 'WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting'
-            logging.error('WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting')
-            raise SystemExit
-
-
-	wantdir = AFLOWpi.prep._ConfigSectionMap('prep','want_dir')
-        if os.path.isabs(wantdir) == False:
-            configFileLocation = AFLOWpi.prep._getConfigFile()
-            configFileLocation = os.path.dirname(configFileLocation)
-            wantdir =  os.path.join(configFileLocation, wantdir)
 
 	espressodir = AFLOWpi.prep._ConfigSectionMap('prep','engine_dir')
         if os.path.isabs(espressodir) == False:
@@ -306,12 +279,6 @@ def maketree(oneCalc,ID, paodir=None):
             print 'ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting'
             logging.error('ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting')
             raise SystemExit
-	dosExec = 'dos.x'
-	dosExec = os.path.join(espressodir,dosExec)
-        if os.path.exists(dosExec)==False:
-            print 'DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting'
-            logging.error('DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting')
-            raise SystemExit
 	scfExec = 'pw.x'
 	scfExec = os.path.join(espressodir,scfExec)
         if os.path.exists(scfExec)==False:
@@ -321,19 +288,8 @@ def maketree(oneCalc,ID, paodir=None):
             
 
 
-	try:
-		if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()!='false':
-			AFLOWpi.prep.totree(wantBandsExec,{ID:oneCalc},rename='want_bands.x')
-			AFLOWpi.prep.totree(pdosExec,{ID:oneCalc})
-			AFLOWpi.prep.totree(dosExec,{ID:oneCalc})
-			AFLOWpi.prep.totree(scfExec,{ID:oneCalc})
-                else:
-			AFLOWpi.prep.totree(wantBandsExec,{ID:oneCalc},rename='want_bands.x',symlink=True)
-			AFLOWpi.prep.totree(pdosExec,{ID:oneCalc},symlink=True)
-			AFLOWpi.prep.totree(dosExec,{ID:oneCalc},symlink=True)
-			AFLOWpi.prep.totree(scfExec,{ID:oneCalc},symlink=True)
-	except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
+
+
 ##############################################################################################################
 	#move acbn0.py to dir tree
 	acbn0Path = os.path.join(AFLOWpi.__path__[0],'scfuj','acbn0_support', 'acbn0.py')
@@ -449,7 +405,7 @@ def maketree(oneCalc,ID, paodir=None):
 
         '''save the inital list of things to exec so first iteration it will run through'''
 
-#        oneCalc['__runList__']=[]
+
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
         return oneCalc
@@ -593,37 +549,28 @@ def projwfc(oneCalc,ID=None,paw=False,ovp=False):
         nscf_ID=ID+'_nscf'
         Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
         eShift=float(Efermi)+4.0
-        if not ovp:
-            ovp_str=".FALSE."
-        else:
+        if ovp:
             ovp_str=".TRUE."
+        else:
+            ovp_str=".FALSE."
+
         prefix = oneCalc['_AFLOWPI_PREFIX_']
         try:
                 subdir = oneCalc['_AFLOWPI_FOLDER_']
-        
                 try:
                     prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
-
-
                 except Exception,e:
-
                     prefix = oneCalc['_AFLOWPI_PREFIX_']
-                
-                paw_str=""
-                if paw:
-                    paw_str="pawproj=.true."
 		inputfile = """&PROJWFC
   prefix='%s'
   filpdos='./%s_acbn0'
   outdir='%s'
   lwrite_overlaps=%s
-  lbinary_data  = .false.
-  %s
+  lbinary_data  = .FALSE.
 /
-"""%(prefix,ID,temp_dir,paw_str,ovp_str)
+"""%(prefix,ID,temp_dir,ovp_str)
 
 		calc_label = ID + '_pdos'		
-
                 a = calc_label+'.in'
                 new_inputfile = open(os.path.join(subdir,a),'w')
                 new_inputfile.write(inputfile)
@@ -644,155 +591,6 @@ def projwfc(oneCalc,ID=None,paw=False,ovp=False):
 ###############################################################################################################################
 ###############################################################################################################################
 
-def WanT_bands(oneCalc,ID=None,eShift=5.5,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.90):
-	'''
-		Make input files for  WanT bands calculation
-
-		Arguments:
-        	 - calc_copy -- dictionary of dictionaries of calculations
-	'''
-
-        compute_ham_str=""
-	if compute_ham==False:
-		compute_ham_str="!"
-
-	output_calc = {}
-        temp_dir= AFLOWpi.prep._get_tempdir()
-	calc_copy=copy.deepcopy(oneCalc)
-	subdir = calc_copy['_AFLOWPI_FOLDER_']
-	nspin = int(AFLOWpi.scfuj.chkSpinCalc(calc_copy,ID))
-
-	### GET KPATH for respective symmetry #####
-	special_points, band_path = AFLOWpi.retr._getHighSymPoints(calc_copy)
-	lblList = []; kpathStr = ""
-	for i in band_path.split('|'):
-                lblList += i.split('-')
-        for i in lblList:
-                kpathStr += "%s\t%.5f\t%.5f\t%.5f\n"%(i,special_points[i][0],special_points[i][1],special_points[i][2])
-	############################################ 
-        try:
-            nscf_ID=ID+'_nscf'
-            Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-            eShift=float(Efermi)
-
-        except:
-            eShift=10.0
-
-#        eShift=5.0
-            
-        try:
-            prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
-        except:
-            prefix = oneCalc['_AFLOWPI_PREFIX_']
-                
-#        if temp_dir!='./':
-#            subdir=temp_dir
-
-        oovp=".TRUE."
-        do_norm=".TRUE."
-        nbnd_string= ''
-        if cond_bands!=0 and type(cond_bands) == type(452):
-		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))+cond_bands
-                nbnd_string = 'atmproj_nbnd    = %s' % nbnds
-#                proj_thr=0.95
-           #     do_norm=".FALSE."
-
-          #      do_norm=".FALSE."
-	elif cond_bands==0 or cond_bands==False:
-#            nbnd_string=""
-            oovp=".FALSE."
-            nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=False))
-            nbnd_string = 'atmproj_nbnd    = %s' % nbnds
-            proj_thr=0.90
-	if cond_bands==True: 
-		nbnds=int(AFLOWpi.prep._num_bands(oneCalc,mult=True))
-                nbnd_string = 'atmproj_nbnd    = %s' % nbnds       
-#                proj_thr=0.97 
-#        if nbnd==None:
-
- #           else:
-#                nbnd=int(nbnd)
-#                nbnd_string = 'atmproj_nbnd    = %s' % nbnd
-
-
-	inputfile = """ &INPUT							  
-prefix 		= '%s_TB' 		  	                        
-postfix 	= \'_WanT\'		        
-work_dir	= \'./\'		 
-%sdatafile_dft	= \'./%s_TB.save/atomic_proj.xml\'	 
-nkpts_in        = %d                 
-nkpts_max	= %s		 
-do_orthoovp	= %s
-atmproj_do_norm = %s
-atmproj_thr     = %s
-atmproj_sh      = %f                         
-%s
-"""%(ID,compute_ham_str,ID,len(lblList),num_points,oovp,do_norm,proj_thr,eShift,nbnd_string)
-#"""%(prefix,subdir,subdir,prefix,len(special_points),eShift,nbnd_string)
-
-	if nspin == 1:
-		inputfile += "fileout	= '%s_bands_want.dat'\n/\n"%ID
-		# Insert k-path 
-		inputfile += kpathStr
-
-		calc_label = ID + "_WanT_bands"
-		
-	        a = calc_label+'.in'
-	        new_inputfile = open(os.path.join('./',a),'w')
-	        new_inputfile.write(inputfile)
-	        new_inputfile.close()
-
-	        output_calc = calc_copy
-	        output_calc['_AFLOWPI_INPUT_'] = inputfile
-                try:
-                    output_calc['prev'].append(ID)
-                except:
-                    output_calc['prev']=[ID]
-
-		single_output_calc = {calc_label:output_calc}
-
-		return single_output_calc
-
-	else:
-		inputfile1 = inputfile
-		#Create two input files for spin-up and spin-down components.
-		inputfile +=  """fileout	= '%s_bands_want_up.dat'  \nspin_component	  =    "up"\n/\n"""%ID
-		inputfile1 += """fileout	= '%s_bands_want_down.dat'\nspin_component   =    "down"\n/\n"""%ID
-		#Insert k-path
-		inputfile += kpathStr
-		inputfile1 += kpathStr
-
-                inputfile  = re.sub('_WanT','_WanT_up',inputfile)
-                inputfile1 = re.sub('_WanT','_WanT_dn',inputfile1)
-
-                calc_label_up = ID + "_WanT_bands_up" 
-                a = calc_label_up+'.in'
-                new_inputfile = open(os.path.join(subdir,a),'w')
-                new_inputfile.write(inputfile)
-                new_inputfile.close()
-                output_calc_up= calc_copy
-                output_calc_up['_AFLOWPI_INPUT_'] = inputfile
-                try:
-                    output_calc['prev'].append(ID)
-                except:
-                    output_calc['prev']=[ID]
-
-
-                calc_label_down = ID + "_WanT_bands_down" 
-                a = calc_label_down+'.in'
-                new_inputfile = open(os.path.join(subdir,a),'w')
-                new_inputfile.write(inputfile1)
-	        new_inputfile.close()
-                output_calc_down = calc_copy
-                output_calc_down['_AFLOWPI_INPUT_'] = inputfile
-                try:
-                    output_calc['prev'].append(ID)
-                except:
-                    output_calc['prev']=[ID]
-
-
-		output_calc = {calc_label_up:output_calc_up, calc_label_down:output_calc_down}		
-		return output_calc
 
 
 ###############################################################################################################################
@@ -1093,17 +891,13 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 	def gen_input(oneCalcID,subdir,nspin):
 		try:
 			#Get cell parameters, arranged as a single string in pattern a1i, a1j, a1k, a2i, a2j, a2k, a3i, a3j, a3k
-			a,cell=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
-                        """THINK OF A BETTER WAY TO CHECK THIS"""
-                        try:
-                            if cell.getA()[0][0]<2.0 and cell.getA()[0][0]>0.0:
-                                cellParaMatrix=a*cell
+			a,cellParaMatrix=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
 
-                            else:
-                                cellParaMatrix=1.0*cell
-                        except Exception,e:
-                            print e
-                        l=cellParaMatrix.tolist()
+                        """THINK OF A BETTER WAY TO CHECK THIS"""
+
+
+
+                        l=(cellParaMatrix*a).tolist()
 			cellParaStr = ""
                         """THINK OF A BETTER WAY TO CHECK THIS"""
 			for i in range(3):
@@ -1136,7 +930,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 			atmPos = atmPosRegex1.findall(lines1)
 
-                        print oneCalc["_AFLOWPI_INPUT_"]
+
                         try:
                             positions=np.asarray([[float(i.split()[1]),float(i.split()[2]),float(i.split()[3])] for i in positions.split("\n") if len(i.strip())!=0])
                         except:
@@ -1145,6 +939,9 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
+                        #in bohr
+                        positions*=a
+
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
 			atmPosList = []
@@ -1348,7 +1145,7 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 	return Uvals
 
 
-def run(calcs,uThresh=0.001,nIters=20,mixing=0.70,kp_mult=1.5):
+def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6):
 
     temp_calcs=copy.deepcopy(calcs)
     for ID,oneCalc in calcs.iteritems():
@@ -1506,7 +1303,7 @@ AFLOWpi.scfuj._get_ham_xml(oneCalc,ID)
 #     return oneCalcOrig
 
 
-def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
+def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -1559,119 +1356,31 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         subdir = oneCalc['_AFLOWPI_FOLDER_']
 	oneCalc['_AFLOWPI_CONFIG_']=config
 
-        if 'scf' not in oneCalc['__runList__']:
-
-            try:
-                npool=AFLOWpi.retr._get_pool_num(oneCalc,ID)        
-
-                if npool!=1:
-                    if len(re.findall(r'npool[s]*\s*(?:\d*)',execPostfix))!=0:
-                        execPostfixPrime=re.sub(r'npool[s]*\s*(?:\d*)','npool %s'%npool,execPostfix)
-                        logging.debug(execPostfixPrime)
-
-            except Exception,e:
-                AFLOWpi.run._fancy_error_log(e)
-
-
+        nscf_calc,nscf_ID= nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult)	
 ##################################################################################################################
-            AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='scf',executable=None)
-
-
-            oneCalc['__runList__'].append('scf')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-            
-
-            nscf_calc,nscf_ID= nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult)	
-
-
-
-        else:
-            '''if we are restarting from a job killed from going walltime 
-            try to load ID_nscf and if we can't then just make a new one'''
-            try:
-                nscf_ID='%s_nscf' % ID
-                nscf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],nscf_ID)                
-
-                '''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
-                nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-            except Exception,e:
-                try:
-                    nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult)	
-
-                except Exception,e:
-                    AFLOWpi.run._fancy_error_log(e)
-
-
-
-##################################################################################################################
-        if 'nscf' not in oneCalc['__runList__']:
-
-            try:
-                npool=AFLOWpi.retr._get_pool_num(nscf_calc,nscf_ID)        
-
-                if npool!=1:
-                    if len(re.findall(r'npool\s*(?:\d+)',execPostfix))!=0:
-                        execPostfixPrime=re.sub(r'npool\s*(?:\d+)','npool %s'%npool,execPostfix)
-                        logging.debug(execPostfixPrime)
-
-            except Exception,e:
-                AFLOWpi.run._fancy_error_log(e)
-
-
-            AFLOWpi.run._oneRun(__submitNodeName__,nscf_calc,nscf_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='scf',executable=None)
-
-            AFLOWpi.retr._writeEfermi(nscf_calc,nscf_ID)
-
-            abortIFRuntimeError(subdir, nscf_ID)
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-            oneCalc['__runList__'].append('nscf')
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=False)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
             execPostfix+=' -northo 1'
 
-        if 'pdos' not in oneCalc['__runList__']:
-            pdosPath = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'projwfc.x')
-
-            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',executable='projwfc.x',execPath=pdosPath)
-
-            AFLOWpi.prep._form_TB_dir(oneCalc,ID)
-#############
-            oneCalc['__runList__'].append('pdos')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-            abortIFRuntimeError(subdir, pdos_ID)
-
-
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        
-#        nbnd = int(splitInput['&system']['nbnd'])
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=False)
+
+        AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=False)
+        AFLOWpi.scfuj._run_paopy(oneCalc,ID)
+
+        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
 
-        
-        if 'bands' not in oneCalc['__runList__']:
-            want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID,compute_ham=True,cond_bands=False)
-
-            for want_ID,want_calc in want_dict.iteritems():
-#                AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
-                AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix="",execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
-
-            oneCalc['__runList__'].append('bands')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-
-            '''in case we're working in local scratch'''            
-#           AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['ham','wan','space'])
-
-            for want_ID,want_calc in want_dict.iteritems():
-                abortIFRuntimeError(subdir, want_ID)
-
-            '''
+        '''
             Will need to be filled in for the executable name with whatever wanT executable is called 
             and that executable needs to be moved to the calculation directory tree before this is called
-            '''
+        '''
         AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_up.txt")
         AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham_down.txt")
         AFLOWpi.scfuj._want_txt_to_bin(oneCalc['_AFLOWPI_FOLDER_'],"kham.txt")
@@ -1689,8 +1398,8 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             AFLOWpi.run._fancy_error_log(e)
             raise SystemExit
 
-#        acbn0(oneCalc, pdos_ID,byAtom=True)
-#        getU_frmACBN0out(oneCalc,ID,byAtom=True)
+
+
         newUvals = getU_frmACBN0out(oneCalc,ID)
         Uvals=newUvals
         #slight to help with oscillation
@@ -1699,7 +1408,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         except:
             old_U = newUvals
 
-#        mixing=0.70
+
         for spec,val in old_U.iteritems():
             newUvals[spec]=mixing*old_U[spec]+(1.0-mixing)*newUvals[spec]
 

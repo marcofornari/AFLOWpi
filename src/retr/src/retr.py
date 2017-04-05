@@ -816,7 +816,7 @@ def _getCellParams(oneCalc,ID):
     '''
 
     try:
-        scfOutput = '%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:]
+        scfOutput = '%s.out' % ID
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
                 lines = outFile.read()
 
@@ -828,8 +828,8 @@ def _getCellParams(oneCalc,ID):
         alat=float(splitInput['&system']['celldm(1)'])
         paramMatrix=_cellStringToMatrix(cellParams)
 
-        if len(cellParams):
 
+        if len(cellParams):
                 try:
                     return float(alat[0]),paramMatrix
                 except:
@@ -1091,10 +1091,10 @@ def _getHighSymPoints(oneCalc,ID=None):
     '''
 
 
-
+    
     ibrav = 0
     ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
-
+    
     ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
 
     if ibrav==0:
@@ -1106,9 +1106,34 @@ def _getHighSymPoints(oneCalc,ID=None):
 
 
     alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
+#    print cellOld
+#    conv = AFLOWpi.retr._prim2ConvVec(cellOld)
+#    print cellOld
+
     a,b,c,alpha,beta,gamma =  free2abc(cellOld,cosine=False,bohr=False,string=False)
+    
+
 ###############################################################################
 ###############################################################################
+
+    #get a,b,c of QE convention conventional cell from primitive lattice vecs
+    if ibrav == 7:
+        a=numpy.abs(cellOld.getA()[0][0])*2.0
+        c=numpy.abs(cellOld.getA()[2][2]*a)*2.0
+    if ibrav == 9:
+        a=numpy.abs(cellOld.getA()[0][0])*2.0
+        b=numpy.abs(cellOld.getA()[1][1])*2.0
+        c=numpy.abs(cellOld.getA()[2][2])
+    if ibrav == 10:
+        a=numpy.abs(cellOld.getA()[0][0])*2.0
+        b=numpy.abs(cellOld.getA()[1][1])*2.0
+        c=numpy.abs(cellOld.getA()[2][2])*2.0
+    if ibrav == 11:
+        a=numpy.abs(cellOld.getA()[0][0])*2.0
+        b=numpy.abs(cellOld.getA()[1][1])*2.0
+        c=numpy.abs(cellOld.getA()[2][2])*2.0
+
+
     if   ibrav==1:  ibrav_var =  'CUB'
     elif ibrav==2:  ibrav_var =  'FCC'
     elif ibrav==3:  ibrav_var =  'BCC'
@@ -1212,7 +1237,7 @@ def _getHighSymPoints(oneCalc,ID=None):
                           'Z'    : (0.0, 0.0, 0.5)}
 
     if ibrav_var=='BCT1':
-       eta = (1+c**2/a**2)/4
+       eta = (1+(c/a)**2)/4
        band_path = 'gG-X-M-gG-Z-P-N-Z1-M|X-P'
        special_points = {'gG'    : (0.0, 0.0, 0.0),
                          'M'     : (-0.5, 0.5, 0.5),
@@ -1224,8 +1249,10 @@ def _getHighSymPoints(oneCalc,ID=None):
          
     if ibrav_var=='BCT2':
        band_path = 'gG-X-Y-gS-gG-Z-gS1-N-P-Y1-Z|X-P'
-       eta = (1 + a**2/c**2)/4.0
-       zeta = a**2/(2.0*c**2)
+       eta = (1 + (a/c)**2)/4.0
+       zeta = 0.5*((a/c)**2)
+#       eta %=1.0
+#       zeta%=1.0
        special_points = {'gG'    : (0.0, 0.0, 0.0),
                          'N'     : (0.0, 0.5, 0.0),
                          'P'     : (0.25, 0.25, 0.25),
@@ -1369,7 +1396,7 @@ def _getHighSymPoints(oneCalc,ID=None):
                           'X'     : ( 0.0,-0.5,0.0),
                           'Y'     : ( 0.5, 0.0,0.0),
                           'Z'     : (-0.5, 0.0,0.5),}
-            
+    
     # if ibrav_var=='MCLC':
     #    sin_gamma = numpy.sin(numpy.arccos(cos_gamma)) 
     #    mu        = (1+(b/a)**2.0)/4.0
@@ -1454,7 +1481,7 @@ def _getHighSymPoints(oneCalc,ID=None):
     for k,v in special_points.iteritems():
         first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
         second = qe_conv.dot(first)
-        special_points[k]=tuple(second.tolist())
+        special_points[k]=tuple((second).tolist())
 #    for k,v in special_points.iteritems():
 #        second = (aflow_conv*numpy.linalg.inv(qe_conv))*numpy.matrix(v).T
 #        special_points[k]=tuple(second.flatten().tolist()[0])
@@ -2711,7 +2738,6 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
         #                                    (-tx ,-ty  , tz)))
 
     if ibrav==5:
-        print celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,
         c=celldm4
         tx=numpy.sqrt((1-c)/2)
         ty=numpy.sqrt((1-c)/6)
@@ -2803,7 +2829,6 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                                (0,           0,           c)))
 
     if ibrav==13:
-        print celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,
         gamma=numpy.arccos(celldm4)
         matrix=numpy.matrix(((a/2,                0,                -c/2),
                              (b*numpy.cos(gamma), b*numpy.sin(gamma),0),
@@ -4673,6 +4698,7 @@ def _convertCartesian(symMatrix,cellMatrix,scaleFactor=1.0):
         pass 
 
     cellMatrix=cellMatrix.astype(numpy.float)
+    cellMatrix=numpy.linalg.inv(cellMatrix)
     symMatrix=symMatrix.astype(numpy.float)
     returnMatrix=copy.deepcopy(symMatrix)
 

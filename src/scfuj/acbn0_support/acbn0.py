@@ -260,7 +260,7 @@ def read_txtdata(fpath,nspin):
     nbasis  = np.sqrt(kovp_1.shape[0]/float(nkpnts))
     print "read_txt_data: nbasis = %f"%nbasis
 
-    kovp    = np.reshape(kovp_1,(nbasis,nbasis,nkpnts),order='F')
+    kovp    = np.reshape(kovp_1,(nbasis,nbasis,nkpnts),order='C')
 
     for ispin in range(nspin):
         if ispin==0 and nspin==2 : 
@@ -279,7 +279,7 @@ def read_txtdata(fpath,nspin):
         kham_1 = read_large_file(fpath,fname)
 #        print "kham",time.time()-a
 
-        kham   = np.reshape(kham_1,(nbasis,nbasis,nkpnts),order='F')
+        kham   = np.reshape(kham_1,(nbasis,nbasis,nkpnts),order='C')
         if ispin==0 and nspin==2 : 
            kham_up   = kham
         elif ispin==1 and nspin==2 :

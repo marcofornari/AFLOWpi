@@ -682,6 +682,11 @@ def _transformParamsInput(inputString):
     inputDict = AFLOWpi.retr._splitInput(inputString)
     BohrToAngstrom = 0.529177249
 
+#    if int(inputDict['&system']['ibrav']) in [12,13]:
+#	    print 'IBRAV 12 and 13 not yet supported..stopping..'
+#	    print inputString
+#	    raise SystemExit
+	    
     CELL_PARAM_FLAG=False
 
     if 'CELL_PARAMETERS' in inputDict.keys():
@@ -890,7 +895,8 @@ def _transformInput(inputString):
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in input_dict.keys():
-	    isotropy_obj = AFLOWpi.prep.isotropy(inputString)
+	    isotropy_obj = AFLOWpi.prep.isotropy()
+	    isotropy_obj.qe_input(inputString)
 	    inputString = isotropy_obj.convert(ibrav=True)
 	    
 
@@ -2059,13 +2065,13 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                 dk=0.001
 
 
-            path = AFLOWpi.retr._getPath(dk,oneCalc,ID=prevID_str)
+
 
 
             if nk!=None:
-                path = AFLOWpi.retr._getPath_nk(oneCalc,ID)
-
-		
+		    path = AFLOWpi.retr._getPath_nk(nk,oneCalc,ID)
+	    else:
+		    path = AFLOWpi.retr._getPath(dk,oneCalc,ID=prevID_str)
 		
 
             inputSplit=AFLOWpi.retr._splitInput(inputfile)
@@ -4762,7 +4768,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.20,kp_mult=1.5):
+	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.10,kp_mult=1.5):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
 		user interface. Adds a new step to the workflow.

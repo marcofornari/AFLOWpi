@@ -8,8 +8,8 @@ Reference file for VCR
     PSEUDO_DIR ='./',
     outdir ='./',
     verbosity='high'
-    etot_conv_thr=1.0D-5
-    forc_conv_thr=1.0D-4
+    etot_conv_thr=1.0D-4
+    forc_conv_thr=1.0D-3
     nstep=200
  /
  &system
@@ -17,14 +17,14 @@ Reference file for VCR
     ibrav=2,  
     nat=2,
     ntyp=2, 
-    ecutwfc = 25.,
+    ecutwfc = 100.,
 
  /
  &electrons
     diagonalization = 'david',
     mixing_mode = 'plain',
     mixing_beta = 0.7,
-    conv_thr =  1.0d-12,
+    conv_thr =  1.0d-8,
     electron_maxstep=200
  /
  &ions
@@ -34,10 +34,9 @@ Reference file for VCR
  /
 ATOMIC_SPECIES
 _AFLOWPI_A_ _AFLOWPI_AMASS_ _AFLOWPI_APSEUDO_
-
+_AFLOWPI_B_ _AFLOWPI_BMASS_ _AFLOWPI_BPSEUDO_
 ATOMIC_POSITIONS {crystal}
 _AFLOWPI_A_      0.00000000000000   0.00000000000000   0.00000000000000  
-_AFLOWPI_A_      0.75000000000000   0.75000000000000   0.75000000000000
-
+_AFLOWPI_B_     -0.25000000000000  -0.25000000000000  -0.25000000000000
 K_POINTS {automatic}
 10 10 10 1 1 1
