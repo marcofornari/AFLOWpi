@@ -816,7 +816,7 @@ def _getCellParams(oneCalc,ID):
     '''
 
     try:
-        scfOutput = '%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:]
+        scfOutput = '%s.out' % ID
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
                 lines = outFile.read()
 
@@ -4654,6 +4654,7 @@ def _convertCartesian(symMatrix,cellMatrix,scaleFactor=1.0):
         pass 
 
     cellMatrix=cellMatrix.astype(numpy.float)
+    cellMatrix=numpy.linalg.inv(cellMatrix)
     symMatrix=symMatrix.astype(numpy.float)
     returnMatrix=copy.deepcopy(symMatrix)
 
