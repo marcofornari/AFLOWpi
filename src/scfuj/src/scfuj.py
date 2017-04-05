@@ -1090,16 +1090,14 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 		try:
 			#Get cell parameters, arranged as a single string in pattern a1i, a1j, a1k, a2i, a2j, a2k, a3i, a3j, a3k
 			a,cell=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
-                        """THINK OF A BETTER WAY TO CHECK THIS"""
-                        try:
-                            if cell.getA()[0][0]<2.0 and cell.getA()[0][0]>0.0:
-                                cellParaMatrix=a*cell
+                        """THINK OF A BETTER WAY TO CHECK THIS"""                        
+                        cellParaMatrix=cell
 
-                            else:
-                                cellParaMatrix=1.0*cell
-                        except Exception,e:
-                            print e
-                        l=cellParaMatrix.tolist()
+                        
+                                
+                        
+                           
+                        l=cellParaMatrix*a.tolist()
 			cellParaStr = ""
                         """THINK OF A BETTER WAY TO CHECK THIS"""
 			for i in range(3):
@@ -1141,6 +1139,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
+			positions*=a
+			
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
 			atmPosList = []
