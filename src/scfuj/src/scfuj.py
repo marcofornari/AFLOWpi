@@ -1097,7 +1097,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                 
                         
                            
-                        l=cellParaMatrix*a.tolist()
+                        l=(cellParaMatrix*a).tolist()
 			cellParaStr = ""
                         """THINK OF A BETTER WAY TO CHECK THIS"""
 			for i in range(3):
