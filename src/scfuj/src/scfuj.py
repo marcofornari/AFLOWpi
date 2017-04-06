@@ -231,6 +231,14 @@ def updateUvals(oneCalc, Uvals,ID=None):
 
                 inputDict = AFLOWpi.retr._splitInput(inputfile)
                 inputDict['&system']['lda_plus_u']='.TRUE.'
+
+                if "noncolin" in inputDict['&system'].keys():
+                    inputDict['&system']["lda_plus_u_kind"]=1
+                else:
+                    inputDict['&system']["lda_plus_u_kind"]=0
+
+                inputDict['&system']['lda_plus_u']
+
                 for isp in range(len(species)):
                     hub_entry = 'Hubbard_U(%s)'% str(isp+1)
                     inputDict['&system'][hub_entry] = Uvals[species[isp]]
@@ -1360,7 +1368,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 ##################################################################################################################
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=False)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=True)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
@@ -1368,10 +1376,10 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=False)
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=False)
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
         AFLOWpi.scfuj._run_paopy(oneCalc,ID)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)

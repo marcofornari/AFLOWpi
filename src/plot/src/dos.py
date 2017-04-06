@@ -135,10 +135,10 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 
 	ax2=pylab.subplot(111)
 	inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
-	if "degauss" in inDict["&system"].keys():
-		floatdos,floatdosDOWN,enshift=floatdos,floatdosDOWN,enshift
-	else:
-		floatdos,floatdosDOWN,enshift=__smoothGauss(floatdos),__smoothGauss(floatdosDOWN),__smoothGauss(enshift)
+#	if "degauss" in inDict["&system"].keys():
+	floatdos,floatdosDOWN,enshift=floatdos,floatdosDOWN,enshift
+#	else:
+#		floatdos,floatdosDOWN,enshift=__smoothGauss(floatdos),__smoothGauss(floatdosDOWN),__smoothGauss(enshift)
 
 #        plot(f,enshift,'k') #to plot the original data
        	pylab.plot(enshift,floatdos,'k') #to plot the smoothed dat
@@ -340,7 +340,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	for atom in atomList:
 		byAtom=[]
 		for orbital in orbitalList:
-			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*(%s)*' % (glob_ID,atom,orbital)))
+			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*%s*' % (glob_ID,atom,orbital)))
 
 			if len(pDOSFiles):
 				byAtom.append({'%s' % orbital:pDOSFiles})
@@ -464,10 +464,10 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		enshift = numpy.array(endos) #to treat the list b as an array?
 		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
 
-		if "degauss" in inDict["&system"].keys():
-			return enshift,floatdos,floatdosDOWN
-		else:
-			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+#		if "degauss" in inDict["&system"].keys():
+		return enshift,floatdos,floatdosDOWN
+#		else:
+#			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
 
 
 
@@ -709,11 +709,10 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 
 		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
-		if "degauss" in inDict["&system"].keys() or TB==True:
-
-			return enshift,floatdos,floatdosDOWN
-		else:
-			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
+#		if "degauss" in inDict["&system"].keys() or TB==True:
+		return enshift,floatdos,floatdosDOWN
+#		else:
+#			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
 
 
 

@@ -44,7 +44,7 @@ class isotropy():
         self.output    = self.__get_isotropy_output(qe_output=False)
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.cif       = self.get_cif()
+        self.cif       = self.qe2cif()
         self.iso_pr_car= ''
 
         
@@ -65,7 +65,7 @@ class isotropy():
         self.output    = self.__get_isotropy_output(qe_output=True)
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.cif       = self.get_cif()
+        self.cif       = self.qe2cif()
         self.iso_pr_car= ''
 
         
