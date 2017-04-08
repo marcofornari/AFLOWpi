@@ -28,7 +28,7 @@ class isotropy():
         self.conv_beta = ''
         self.conv_gamma= ''
         self.origin    = ''
-
+        self.cif       = ''
 
 
     def qe_input(self,input_str,accuracy=0.001):
@@ -42,11 +42,10 @@ class isotropy():
         self.accuracy  = accuracy
 
         self.output    = self.__get_isotropy_output(qe_output=False)
+        self.cif       = self.qe2cif()
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.cif       = self.qe2cif()
         self.iso_pr_car= ''
-
         
         self.iso_basis = self.__get_iso_basis()
         self.iso_pr_car= self.__get_iso_cart()
@@ -63,12 +62,11 @@ class isotropy():
         self.accuracy  = accuracy
 
         self.output    = self.__get_isotropy_output(qe_output=True)
+        self.cif       = self.qe2cif()
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
-        self.cif       = self.qe2cif()
         self.iso_pr_car= ''
 
-        
         self.iso_basis = self.__get_iso_basis()
         self.iso_pr_car= self.__get_iso_cart()
 
@@ -78,12 +76,10 @@ class isotropy():
             with open(input_str,'r') as fo:
                 input_str = fo.read()
 
-
-        self.input     = self.__skeleton_input()
         self.cif       = input_str
-        self.accuracy  = 0.0
-
         self.output    = input_str
+        self.input     = self.__skeleton_input()
+        self.accuracy  = 0.0
         self.sg_num    = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
         self.origin    = self.__conv_from_cif()        
@@ -204,9 +200,12 @@ K_POINTS {automatic}
             sg_info = re.findall('Space Group\s*([0-9]*)\s*([\w-]*)\s*([\w-]*)',self.output)[0]
             self.sgn = int(sg_info[0])
         except:
-            sg_info = re.findall('_symmetry_Int_Tables_number\s*(\d+)',self.cif)[0]
-            self.sgn = int(sg_info)
-
+            try:
+                sg_info = re.findall('_symmetry_Int_Tables_number\s*(\d+)',self.cif)[0]
+                self.sgn = int(sg_info)
+            except:
+                print self.cif
+                raise SystemExit
 
     def __get_iso_cart(self):
             search = 'Lattice vectors in cartesian coordinates:\s*\n(.*\n.*\n.*)\n'
@@ -295,10 +294,10 @@ K_POINTS {automatic}
 
         elif self.sgn in [143,144,145,147,149,150,151,152,153,154,
                      156,157,158,159,162,163,164,165,]:
-            return 5
+            return 4
 
         elif self.sgn in [146,148,155,160,161,166,167]:
-            return 4
+            return 5
                      
         elif self.sgn in [75,76,77,78,81,83,84,85,86,89,91,92,93,94,
                      95,96,99,100,101,102,103,104,105,106,111,112,
@@ -340,7 +339,42 @@ K_POINTS {automatic}
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
         '''grab the conventional -> primitive conversion matrix for this ibrav'''
-        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,gamma=90.0,ibrav=self.ibrav,returnString=False)
+        if self.ibrav in [4,5]:
+            t_ibrav=1
+        else:
+            t_ibrav=self.ibrav
+
+        '''conventional to qe convention primitive lattice vec'''
+        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,
+                                        gamma=90.0,ibrav=t_ibrav,returnString=False)
+
+        if self.ibrav==5:
+
+             in_hex = AFLOWpi.retr.abc2free(a=self.conv_a,b=1.0,c=self.conv_c,alpha=90.0,
+                                            beta=90.0,gamma=120.0,ibrav=4,
+                                            returnString=False)
+            # print in_hex
+             beta=np.sqrt(3.0+(self.conv_c/self.conv_a)**2.0)
+             self.conv_a = self.conv_a*beta/3.0
+             self.conv_b = self.conv_a
+             self.conv_c = self.conv_a
+             self.conv_alpha =  2.0*np.arcsin((3.0/(2.0*beta)))*(180.0/np.pi)
+             self.conv_beta  = self.conv_alpha
+             self.conv_gamma = self.conv_alpha
+             in_rho = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,
+                                            alpha=self.conv_alpha,beta=self.conv_alpha,
+                                            gamma=self.conv_gamma,ibrav=5,
+                                            returnString=False)
+
+             convert = in_hex.dot(np.linalg.inv(in_rho))
+             '''hex to rho'''
+             convert = np.array([[-1.,  1., -0.,],
+                                 [ 1.,  0., -1.,],
+                                 [ 1.,  1.,  1.,],])
+             
+             convert=np.linalg.inv(np.around(convert,decimals=1))
+
+                                    
 
         ins= self.cif.lower()
         '''grab the symmetry operations from the text in the cif'''
@@ -387,12 +421,20 @@ K_POINTS {automatic}
 
             labels.append(positions[i][spec_lab].strip('0123456789').title())
 
+        '''shift positions to between 0.0 and 1.0'''
+        pos_array%=1.0
+
+        '''if positions is 1/3 or 2/3 use more precision on position'''
+        pos_array[np.where(np.isclose(pos_array-(1.0/3.0),0.0,rtol=1e-04, atol=1e-05))]=1.0/3.0
+        pos_array[np.where(np.isclose(pos_array-(2.0/3.0),0.0,rtol=1e-04, atol=1e-05))]=2.0/3.0
+
         '''there will by natm*numSymOps'''
         labels = labels*len(operations)
         all_eq_pos=np.zeros((pos_array.shape[0]*operations.shape[0],3))
 
         '''duplicate atoms by symmetry operations'''
         for i in xrange(operations.shape[0]):
+ #           print operations[i]+shift[i]
             temp_pos=np.copy(pos_array)
             temp_pos   = temp_pos.dot(operations[i])
             '''translation symmetry'''
@@ -414,44 +456,24 @@ K_POINTS {automatic}
         '''######################'''
         '''remove duplicate atoms'''
         '''######################'''
-        '''convert xyz to crystal coords'''
+        '''shift all atoms back into cell if need be'''
+        all_eq_pos%=1.0
+        '''convert from conventional to primitive lattice coords'''
         try:
             all_eq_pos=(np.linalg.inv(convert.getA()).T.dot(all_eq_pos.T)).T
         except:
             all_eq_pos=(np.linalg.inv(convert).T.dot(all_eq_pos.T)).T
 
-        '''shift all atoms back into cell if need be'''
-        all_eq_pos%=1.0
-        '''distance between each atom pair'''
-        dist = scipy.spatial.distance.cdist(all_eq_pos,all_eq_pos)
-        '''mask for duplicate positions'''
-        mask = np.ones(all_eq_pos.shape[0],dtype=bool)
-        '''for self mask'''
-        xr = xrange(all_eq_pos.shape[0])
-        idx = np.array(xr,dtype=int)
-        '''loop over each atomic position'''
-        for i in xr:
-            '''if already mask don't mask on this indice'''
-            if not mask[i]:
-                continue
-            '''self mask'''
-            self_bool = idx==i
-            '''distance mask for duplicates'''
-            dist_bool = dist[i]>0.001
-            '''if distance is less than the threshold and it's the same atom or if it's'''
-            '''a different atom and the position is greater than the threshold allow'''
-            '''all masks combined'''
-            mask  *= np.logical_or(dist_bool,self_bool)
 
-        '''reduce positions to non duplicates'''
-        all_eq_pos = all_eq_pos[mask]
-        '''reduce labels'''
-        labels_arr=np.array(labels)[mask]
+        '''to convert from primitive to conventional for distance calc'''
+        to_conv = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,
+                                        alpha=self.conv_alpha,beta=self.conv_beta,
+                                        gamma=self.conv_gamma,ibrav=self.ibrav,
+                                        returnString=False)
 
-        '''sort by species label'''
-        spec_sort = np.argsort(labels_arr)
-        labels_arr=labels_arr[spec_sort]
-        all_eq_pos=all_eq_pos[spec_sort]
+
+        '''reduce equivilent atoms'''
+        all_eq_pos,labels_arr = reduce_atoms(all_eq_pos,labels,cell=to_conv)
 
         '''form atomic positions card for QE input'''
         atm_pos_str=""
@@ -503,4 +525,88 @@ K_POINTS {automatic}
         '''convert to celldm'''
         qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
 
+
         return qe_convention_input
+
+def reduce_atoms(all_eq_pos,labels,cell=np.identity(3,dtype=float)):
+    '''shift all atoms back into cell if need be'''
+    all_eq_pos%=1.0
+
+    '''make a copy to keep in crystal coords'''
+    all_eq_pos_crys = np.copy(all_eq_pos)
+    '''distances in alat'''
+    all_eq_pos = (cell.dot(all_eq_pos.T)).T
+    '''distance between each atom pair'''
+    dist = periodic_dist_func(all_eq_pos,all_eq_pos,cell=cell)
+    '''mask for duplicate positions'''
+    mask = np.ones(all_eq_pos.shape[0],dtype=bool)
+    '''for self mask'''
+    xr = xrange(all_eq_pos.shape[0])
+    idx = np.array(xr,dtype=int)
+    '''loop over each atomic position'''
+    for i in xr:
+        '''if already mask don't mask on this indice'''
+        if not mask[i]:
+            continue
+        '''self mask'''
+        self_bool = idx==i
+        '''distance mask for duplicates'''
+        dist_bool = dist[i]>0.01
+        '''if distance is less than the threshold and it's the same atom or if it's'''
+        '''a different atom and the position is greater than the threshold allow'''
+        '''all masks combined'''
+        mask  *= np.logical_or(dist_bool,self_bool)
+
+    '''reduce positions to non duplicates..back to fractional coords'''
+    all_eq_pos = all_eq_pos_crys[mask]
+    '''reduce labels'''
+    labels_arr=np.array(labels)[mask]
+
+    '''sort by species label'''
+    spec_sort = np.argsort(labels_arr)
+    labels_arr=labels_arr[spec_sort]
+    all_eq_pos=all_eq_pos[spec_sort]
+
+    return all_eq_pos,labels_arr
+
+def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
+    '''
+    needed to check for distance atoms of a system 
+    with periodic boundary conditions
+    '''
+
+    print 
+    try:
+        Xt=np.copy(Y)
+        Xtc=np.copy(Y)
+        dist=np.zeros((X.shape[0],Xt.shape[0],8))
+
+        dist[:,:,0] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[1.0,0.0,0.0],]).T)).T
+#                  Xt=Xtc-np.array([1.0,0.0,0.0]).dot(cell)
+        dist[:,:,1] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[0.0,1.0,0.0],]).T)).T
+#                  Xt=Xtc-np.array([0.0,1.0,0.0]).dot(cell)
+        dist[:,:,2] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[0.0,0.0,1.0],]).T)).T
+#                  Xt=Xtc-np.array([0.0,0.0,1.0]).dot(cell)
+        dist[:,:,3] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[1.0,0.0,1.0],]).T)).T
+#                  Xt=Xtc-np.array([1.0,0.0,1.0]).dot(cell)
+        dist[:,:,4] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[1.0,1.0,0.0],]).T)).T
+#                  Xt=Xtc-np.array([1.0,1.0,0.0]).dot(cell)            
+        dist[:,:,5] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[0.0,1.0,1.0],]).T)).T
+#                  Xt=Xtc-np.array([0.0,1.0,1.0]).dot(cell)            
+        dist[:,:,6] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+        Xt=Xtc-(cell.dot(np.array([[1.0,1.0,1.0],]).T)).T
+#                  Xt=Xtc-np.array([1.0,1.0,1.0]).dot(cell)
+        dist[:,:,7] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
+
+        return np.amin(dist,axis=2)
+
+    except Exception,e:
+        print e
+        raise SystemExit
+        
