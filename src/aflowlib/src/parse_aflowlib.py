@@ -44,24 +44,27 @@ class parser():
                 connection = urllib2.urlopen(search_str+filename)
                 relax_file_str = connection.read()
                 
-                page_str = '!# http://aflowlib.org/material.php?id=aflow:'+auid+'\n'
+                page_str = 'http://aflowlib.org/material.php?id=aflow:'+auid+'\n'
 
                 if text==True:
                     self.results[auid]['url']=page_str
                     self.results[auid][filename]=page_str+relax_file_str
                 else:
                     try:
-                       os.mkdir(fp = os.path.join(file_path,auid))
-                    except:
-                       print 'could not create directory %s for AFLOWlib parser. Exiting.'
-                       raise SystemExit
+                        if not os.path.exists(os.path.join(file_path,auid)): 
+                            os.mkdir(os.path.join(file_path,auid))
+                    except Exception,e:
+                        print 'could not create directory in %s for AFLOWlib parser.'%file_path
+                        
                     fp = os.path.join(file_path,auid,filename)
+                    try:
+                        bin_file = urllib2.urlopen(search_str+filename)
+                        with open(fp,'wb') as bfo:
+                            bfo.write(bin_file.read())
                     
-                    bin_file = urllib2.urlopen(page_str+relax_file_str)
-                    with open(fp,'wb') as bfo:
-                        bfo.write(bin_file.read())
-                    
-                    self.results[auid][filename]=fp                   
+                        self.results[auid][filename]=fp                   
+                    except Exception,e:
+                        print e
                 found_counter+=1
             except:
                 self.results[auid][filename]=''
