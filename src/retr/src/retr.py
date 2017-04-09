@@ -2035,7 +2035,8 @@ def _splitInput(inFileString):
                     inputDict[lastOne.lower()]=OrderedDict()
                 inputDict[lastOne.lower()][namelist[item][1].lower()]=namelist[item][2]
             except Exception,e:
-                AFLOWpi.run._fancy_error_log(e)
+                pass
+#                AFLOWpi.run._fancy_error_log(e)
 
 
     atomicSpecRegex = re.compile(r'ATOMIC_SPECIES\s*\n((?:(?:\s*[A-Za-z0-9]+)\s+(?:[0-9.]+)\s+(?:.+)\n*)+)(?=(?:[A-Z_\s]+\n)|)',(re.MULTILINE))

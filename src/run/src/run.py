@@ -2680,8 +2680,8 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
                         """ &dos
        prefix='%s'
        outdir='%s'
-       Emin=%s
-       Emax=%s
+ !      Emin=%s
+ !      Emax=%s
        degauss=0.025
        fildos='%s_dos.dat'
 
@@ -2691,8 +2691,8 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
        prefix='%s'
        DeltaE=0.01
        outdir='%s'
-       Emin=%s
-       Emax=%s
+!       Emin=%s
+!       Emax=%s
        degauss=0.025
     !    kresolveddos=.true.
        filpdos='%s'
