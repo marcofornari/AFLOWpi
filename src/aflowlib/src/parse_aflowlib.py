@@ -3,6 +3,8 @@ import urllib2
 import ast
 import copy 
 import re
+import os
+
 class parser():
 
 
@@ -31,7 +33,7 @@ class parser():
     def add_condition(self,parameter,condition):
         self.search_parameters[parameter]=condition
 
-    def get_file(self,filename):
+    def get_file(self,filename,text=False,file_path='./'):
         num_entries = len(self.results.keys())
         print 'Parsing AFLOWlib entries for %s\n' % filename
         found_counter=0
@@ -43,9 +45,23 @@ class parser():
                 relax_file_str = connection.read()
                 
                 page_str = '!# http://aflowlib.org/material.php?id=aflow:'+auid+'\n'
-                   
-                self.results[auid]['url']=page_str
-                self.results[auid][filename]=page_str+relax_file_str
+
+                if text==True:
+                    self.results[auid]['url']=page_str
+                    self.results[auid][filename]=page_str+relax_file_str
+                else:
+                    try:
+                       os.mkdir(fp = os.path.join(file_path,auid))
+                    except:
+                       print 'could not create directory %s for AFLOWlib parser. Exiting.'
+                       raise SystemExit
+                    fp = os.path.join(file_path,auid,filename)
+                    
+                    bin_file = urllib2.urlopen(page_str+relax_file_str)
+                    with open(fp,'wb') as bfo:
+                        bfo.write(bin_file.read())
+                    
+                    self.results[auid][filename]=fp                   
                 found_counter+=1
             except:
                 self.results[auid][filename]=''
