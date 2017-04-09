@@ -895,9 +895,17 @@ def _transformInput(inputString):
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in input_dict.keys():
-	    isotropy_obj = AFLOWpi.prep.isotropy()
-	    isotropy_obj.qe_input(inputString)
-	    inputString = isotropy_obj.convert(ibrav=True)
+
+	    for thresh in [0.001,0.01,0.1]:
+		    isotropy_obj    = AFLOWpi.prep.isotropy()
+		    isotropy_obj.qe_input(inputString)
+		    inputString_new = isotropy_obj.convert(ibrav=True,thresh=thresh)
+		    isotropy_chk    = AFLOWpi.prep.isotropy()
+		    isotropy_chk.qe_input(inputString_new)
+
+		    if isotropy_obj.sgn==isotropy_chk.sgn:
+			    inputString=inputString_new
+			    break
 	    
 
     try:

@@ -2646,9 +2646,13 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
     """
 
 
+    try:
+        efermi=AFLOWpi.retr._getEfermi(oneCalc,ID,directID=False)
+    except:
+        efermi=0.0
 
-    
-
+    emax=efermi+20.0
+    emin=efermi-20.0
 
     try:
         prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -2676,26 +2680,25 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
                         """ &dos
        prefix='%s'
        outdir='%s'
-       Emax=20
-       Emin=-20
-       outdir='%s'
+       Emin=%s
+       Emax=%s
        degauss=0.025
        fildos='%s_dos.dat'
 
       /
-""" % (prefix,temp_dir,ID),
+""" % (prefix,temp_dir,emin,emax,ID),
                             'pdos':"""  &projwfc
        prefix='%s'
        DeltaE=0.01
-       Emax=20
-       Emin=-20
        outdir='%s'
+       Emin=%s
+       Emax=%s
        degauss=0.025
     !    kresolveddos=.true.
        filpdos='%s'
 
       / 
- """ % (prefix,temp_dir,ID),
+ """ % (prefix,temp_dir,emin,emax,ID),
 
                     'bands':""" &bands
      prefix='%s'
