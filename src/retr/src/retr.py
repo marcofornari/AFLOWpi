@@ -3507,10 +3507,22 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
         if scale==True:
             if modifier=='angstrom':
                 cellTimes=1.0/0.529177249
+            if modifier=='alat':
+                if "celldm(1)" in splitInput['&system'].keys():
+                    cellTimes = float(splitInput['&system']["celldm(1)"])
+                try:
+                    cellTimes = float(splitInput['&system']["a"])/0.529177249
+                except:
+                    try:
+                        cellTimes = float(splitInput['&system']["A"])/0.529177249
+                    except:
+                        pass
+
         cellParamString = splitInput['CELL_PARAMETERS']['__content__']
         cellParamMatrix = AFLOWpi.retr._cellStringToMatrix(cellParamString)*cellTimes
 
         return cellParamMatrix
+
     celldm2freeDict={'ibrav':splitInput['&system']['ibrav'],'returnString':string}
 
     for items in splitInput['&system'].keys():

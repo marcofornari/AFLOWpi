@@ -152,7 +152,9 @@ K_POINTS {automatic}
             except: mod=""
 
             if mod.lower() in ["angstrom","bohr"]:
-                
+                if mod.lower()=="bohr":
+                    positions*=0.529177249                
+
                 positions = np.linalg.inv(cell_matrix).T.dot(positions.T).T
 
             positions = AFLOWpi.retr._cellMatrixToString(positions,indent=False)
