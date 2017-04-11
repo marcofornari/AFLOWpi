@@ -712,29 +712,6 @@ def _transformParamsInput(inputString):
                     mult=1.0
                 cellParamMatrix*=mult
 
-	    # if AFLOWpi.prep._ConfigSectionMap('prep','cell_convention').upper()=='AFLOW':
-	    # 	    ibrav_aflow = int(AFLOWpi.retr.getIbravFromVectors(cellParamMatrix))
-	    # 	    if ibrav_aflow==5:
-	    # 		    angle=numpy.arccos(cellParamMatrix[0].dot(cellParamMatrix[1]))*180.0/numpy.pi
-	    # 	    else:
-	    # 		    angle=None
-
-	    # 	    to_conv = AFLOWpi.retr.aflow_primitive_to_aflow_conventional_transform(ibrav_aflow)
-	    # 	    to_prim = AFLOWpi.retr.qe_conventional_to_qe_primitive_transform(ibrav_aflow)
-	    # 	    conv = to_prim.dot(to_conv)
-
-	    # 	    cellParamMatrix = conv.dot(cellParamMatrix)
-
-
-
-	    # 	    pos    = AFLOWpi.retr._getPositions(inputString,matrix=True)
-	    # 	    labels = AFLOWpi.retr._getPosLabels(inputString)
-	    # 	    for one_position in range(len(pos)):
-	    # 		    trans_pos = conv.dot(pos[one_position].T).T
-	    # 		    pos[one_position]=trans_pos
-	    # 	    pos    = AFLOWpi.retr._joinMatrixLabels(labels,pos)
-	    # 	    inputDict['ATOMIC_POSITIONS']['__content__']=pos
-
             ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
 	    ibravDict_prime = AFLOWpi.retr._getCelldm2freeDict(ibravDict)
 	    new_prim_mat = AFLOWpi.retr.celldm2free(**ibravDict_prime) 
@@ -789,7 +766,7 @@ def _transformParamsInput(inputString):
                         paramName='celldm(6)'
                     if param=='A':
                         paramName='celldm(1)'
-                        paramFloat=numpy.around((paramFloat/0.529177249),decimals=5)
+                        paramFloat=paramFloat/0.529177249
                     if param=='B':
                         paramName='celldm(2)'
                         paramFloat/=A
@@ -861,8 +838,8 @@ def _transformPositionsInput(inputString):
 
         for entry in range(len(symMatrix.getA())):
 
-            posLineStr = ' '.join(['%20.14f' % (decimal.Decimal(str(numpy.around(i,16)))) for i in symMatrix.getA()[entry]])+'\n'
-            outputString+='%4s %8s' % (labels[entry],posLineStr)
+            posLineStr = ' '.join(['%20.18f' % (decimal.Decimal(str(numpy.around(i,16)))) for i in symMatrix.getA()[entry]])+'\n'
+            outputString+='%4s ' % (labels[entry])+posLineStr
         
         outputString = AFLOWpi.retr.attachPosFlags(outputString,flags)
 
@@ -895,17 +872,10 @@ def _transformInput(inputString):
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in input_dict.keys():
+	    isotropy_obj    = AFLOWpi.prep.isotropy()
+	    isotropy_obj.qe_input(inputString,accuracy=0.005)
+	    inputString = isotropy_obj.convert(ibrav=True,)
 
-	    for thresh in [0.001,0.01,0.1]:
-		    isotropy_obj    = AFLOWpi.prep.isotropy()
-		    isotropy_obj.qe_input(inputString)
-		    inputString_new = isotropy_obj.convert(ibrav=True,thresh=thresh)
-		    isotropy_chk    = AFLOWpi.prep.isotropy()
-		    isotropy_chk.qe_input(inputString_new)
-
-		    if isotropy_obj.sgn==isotropy_chk.sgn:
-			    inputString=inputString_new
-			    break
 	    
 
     try:
