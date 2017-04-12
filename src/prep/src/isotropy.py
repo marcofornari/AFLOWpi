@@ -30,7 +30,6 @@ class isotropy():
         self.origin    = ''
         self.cif       = ''
 
-
     def qe_input(self,input_str,accuracy=0.001):
 
         if os.path.exists(input_str):
@@ -43,7 +42,7 @@ class isotropy():
 
         self.output    = self.__get_isotropy_output(qe_output=False)
         self.cif       = self.qe2cif()
-        self.sg_num    = self.__get_sg_num()
+        self.sgn       = self.__get_sg_num()
         self.ibrav     = self.__ibrav_from_sg_number()
         self.iso_pr_car= ''
         
@@ -51,7 +50,7 @@ class isotropy():
         self.iso_pr_car= self.__get_iso_cart()
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-        print input_dict["&system"]["nat"]
+#        print input_dict["&system"]["nat"]
 
     def qe_output(self,input_str,accuracy=0.001):
 
@@ -65,7 +64,9 @@ class isotropy():
 
         self.output    = self.__get_isotropy_output(qe_output=True)
         self.cif       = self.qe2cif()
-        self.sg_num    = self.__get_sg_num()
+        self.sgn       = self.__get_sg_num()
+        
+    
         self.ibrav     = self.__ibrav_from_sg_number()
         self.iso_pr_car= ''
 
@@ -78,11 +79,13 @@ class isotropy():
             with open(input_str,'r') as fo:
                 input_str = fo.read()
 
+        self.accuracy  = 0.0001
         self.cif       = input_str
         self.output    = input_str
         self.input     = self.__skeleton_input()
-        self.accuracy  = 0.0
-        self.sg_num    = self.__get_sg_num()
+        self.accuracy  = 0.0001
+        self.sgn       = self.__get_sg_num()
+        
         self.ibrav     = self.__ibrav_from_sg_number()
         self.origin    = self.__conv_from_cif()        
 
@@ -146,7 +149,7 @@ K_POINTS {automatic}
 
         else:
             cell_matrix = AFLOWpi.retr.getCellMatrixFromInput(self.input,string=False)*0.529177249
-            print cell_matrix
+
 
             positions = AFLOWpi.retr._getPositions(self.input,matrix=True)
 
@@ -219,20 +222,26 @@ K_POINTS {automatic}
         try:
             sg_info = re.findall('Space Group\s*([0-9]*)\s*([\w-]*)\s*([\w-]*)',self.output)[0]
             self.sgn = int(sg_info[0])
+            return self.sgn
         except:
-            try:
+            pass
+        try:
                 sg_info = re.findall('_symmetry_Int_Tables_number\s*(\d+)',self.cif)[0]
                 self.sgn = int(sg_info)
-            except:
-                try:
-                    sg_nam = re.compile('''_symmetry_space_group_name_H-M\s*['"](.*)['"]''')
-                    self.sgn = self.__HM2Num(sg_nam.findall(self.cif)[0])
-                    return self.sgn
+                return self.sgn
+        except:
+            pass
 
-                except Exception,e:
-                    print e
-#                    print self.cif
-#                    raise SystemExit
+        try:
+            sg_nam = re.compile('''_symmetry_space_group_name_H-M\s*['"](.*)['"]''')
+            name = sg_nam.findall(self.cif)[0]
+
+            self.sgn = self.__HM2Num(name)
+            return self.sgn
+
+        except Exception,e:
+            return 1
+
 
     def __get_iso_cart(self):
             search = 'Lattice vectors in cartesian coordinates:\s*\n(.*\n.*\n.*)\n'
@@ -361,64 +370,31 @@ K_POINTS {automatic}
     def convert(self,ibrav=True,thresh=0.01):
         inputString=''
 
-        for thresh in [0.001,0.01,0.1]:
+        for thresh in [0.1,0.01,0.1]:
             inputString_new= self.cif2qe(thresh=thresh)
             isotropy_chk    = AFLOWpi.prep.isotropy()
-            isotropy_chk.qe_input(inputString_new)
+            isotropy_chk.qe_input(inputString_new,accuracy=self.accuracy)
 
 
             inputString=inputString_new
+        
+            if self.sgn!=isotropy_chk.sgn:
+                print "warning "*10
+                print "warning "*10
+                print "warning "*10
+                print inputString
+                print "warning "*10
+                print "warning "*10
+                print "warning "*10
             break
-            if self.sgn==isotropy_chk.sgn:
 
-                break
-            else:
-                print self.sgn,isotropy_chk.sgn
+
         return inputString
 
 
     def cif2qe(self,thresh=0.01):
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-        '''grab the conventional -> primitive conversion matrix for this ibrav'''
-        if self.ibrav in [4,5]:
-            t_ibrav=1
-        else:
-            t_ibrav=self.ibrav
-
-
-
-        '''conventional to qe convention primitive lattice vec'''
-        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,
-                                        gamma=90.0,ibrav=t_ibrav,returnString=False)
-
-        if self.ibrav==5:
-
-             in_hex = AFLOWpi.retr.abc2free(a=self.conv_a,b=1.0,c=self.conv_c,alpha=90.0,
-                                            beta=90.0,gamma=120.0,ibrav=4,
-                                            returnString=False)
-            # print in_hex
-             beta=np.sqrt(3.0+(self.conv_c/self.conv_a)**2.0)
-             self.conv_a = self.conv_a*beta/3.0
-             self.conv_b = self.conv_a
-             self.conv_c = self.conv_a
-             self.conv_alpha =  2.0*np.arcsin((3.0/(2.0*beta)))*(180.0/np.pi)
-             self.conv_beta  = self.conv_alpha
-             self.conv_gamma = self.conv_alpha
-             in_rho = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,
-                                            alpha=self.conv_alpha,beta=self.conv_alpha,
-                                            gamma=self.conv_gamma,ibrav=5,
-                                            returnString=False)
-
-             convert = in_hex.dot(np.linalg.inv(in_rho))
-             '''hex to rho'''
-             convert = np.array([[-1.,  1., -0.,],
-                                 [ 1.,  0., -1.,],
-                                 [ 1.,  1.,  1.,],])
-             
-             convert=np.linalg.inv(np.around(convert,decimals=1))
-
-                                    
 
         ins= self.cif.lower()
         '''grab the symmetry operations from the text in the cif'''
@@ -490,9 +466,48 @@ K_POINTS {automatic}
             all_eq_pos[i*pos_array.shape[0]:(i+1)*pos_array.shape[0]]=temp_pos
 
 
-#        '''shift origin to zero'''
-#        all_eq_pos-=self.origin
 
+        '''grab the conventional -> primitive conversion matrix for this ibrav'''
+        if self.ibrav in [4,5]:
+            t_ibrav=1
+        else:
+            t_ibrav=self.ibrav
+
+        '''conventional to qe convention primitive lattice vec'''
+        convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,
+                                        gamma=90.0,ibrav=t_ibrav,returnString=False)
+
+        '''#####################'''
+        '''### SPECIAL CASES ###'''
+        '''#####################'''
+
+        '''trigonal P hex to rho vecs''' 
+        if self.ibrav==5:
+             # in_hex = AFLOWpi.retr.abc2free(a=self.conv_a,b=1.0,c=self.conv_c,alpha=90.0,
+             #                                beta=90.0,gamma=120.0,ibrav=4,
+             #                                returnString=False)
+
+             beta=np.sqrt(3.0+(self.conv_c/self.conv_a)**2.0)
+             self.conv_a = self.conv_a*beta/3.0
+             self.conv_b = self.conv_a
+             self.conv_c = self.conv_a
+             self.conv_alpha =  2.0*np.arcsin((3.0/(2.0*beta)))*(180.0/np.pi)
+             self.conv_beta  = self.conv_alpha
+             self.conv_gamma = self.conv_alpha
+             # in_rho = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,
+             #                                alpha=self.conv_alpha,beta=self.conv_alpha,
+             #                                gamma=self.conv_gamma,ibrav=5,
+             #                                returnString=False)
+
+             # convert = in_hex.dot(np.linalg.inv(in_rho))
+             '''hex to rho'''
+             convert = np.array([[-1.,  1., -0.,],
+                                 [ 1.,  0., -1.,],
+                                 [ 1.,  1.,  1.,],])
+             
+             convert=np.linalg.inv(np.around(convert,decimals=1))
+
+        """A base centered to C"""
         if self.sgn in [38,39,40,41]:
             all_eq_pos=all_eq_pos[:,[2,1,0]]
             all_eq_pos[:,0]*=-1.0
@@ -500,11 +515,8 @@ K_POINTS {automatic}
             self.conv_c=self.conv_a
             self.conv_a=temp_c
 
-
-
             convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,
                                             gamma=self.conv_gamma,ibrav=self.ibrav,returnString=False)
-
 
         '''make unique a or b monoclinic into unique c'''
         if self.ibrav in [12,13]:
@@ -525,10 +537,10 @@ K_POINTS {automatic}
 
             elif np.isclose(self.conv_alpha,self.conv_gamma):
                 all_eq_pos=all_eq_pos[:,[2,0,1]]
-
-                print self.conv_alpha
-                print self.conv_beta                    
-                print self.conv_gamma
+                
+                #print self.conv_alpha
+                #print self.conv_beta                    
+                #print self.conv_gamma
                 temp_a=self.conv_c
                 temp_b=self.conv_a
                 temp_c=self.conv_b
@@ -541,29 +553,25 @@ K_POINTS {automatic}
                 self.conv_alpha = temp_alpha
                 self.conv_beta  = temp_beta
                 self.conv_gamma = temp_gamma
-        '''######################'''
-        '''remove duplicate atoms'''
-        '''######################'''
+
 
         if self.ibrav==13:
             self.ibrav=12
-            two_one = np.cos(self.conv_gamma/180.0*np.pi)
-            two_two = np.sin(self.conv_gamma/180.0*np.pi)
-
-            convert=np.matrix((
-                    ( 0.5, 0.0,0.5),
-                    ( 0.5, 0.0,-0.5),
-                    ( two_one,two_two,0.0),
-#                    ( 0.5, 0.0, 0.5,),
-                               )).T
             
         if self.ibrav==12:
             convert=np.matrix(((1.0, 0.0,0.0,),
-#                               (1.0*np.cos(self.conv_gamma), 1.0*np.sin(self.conv_gamma), 0.0,),
                                (0.0, 1.0, 0.0,),
                                (0.0, 0.0, 1.0,),))
+        '''#####################'''
+        '''### SPECIAL CASES ###'''
+        '''#####################'''
 
 
+        '''shift origin to zero before transforming'''
+#        all_eq_pos-=self.origin
+
+
+        '''remove duplicate atoms'''
 
         '''shift all atoms back into cell if need be'''
 #        all_eq_pos%=1.0
@@ -582,27 +590,13 @@ K_POINTS {automatic}
 
 
         if self.ibrav==13:
-            print self.conv_a
-            print self.conv_b
-            print self.conv_c
-            print self.conv_alpha
-            print self.conv_beta                    
-            print self.conv_gamma
-
             two_one = np.cos(self.conv_gamma/180.0*np.pi)*self.conv_b
             two_two = np.sin(self.conv_gamma/180.0*np.pi)*self.conv_b
-#            to_conv=np.matrix((
-#                    (0.5*self.conv_a, 0.0        ,0.5*self.conv_c,),
-#                    (1.0*two_one,1.0*two_two, 0.0            ,),
-#                    (-0.5*self.conv_a, 0.0        ,-0.5*self.conv_c,),))
+
             to_conv=np.matrix(((1.0*self.conv_a, 0.0,0.0,),
                                (0.0, 1.0*self.conv_b, 0.0,),
                                (0.0, 0.0, 1.0*self.conv_c,),))
 
-
-            # to_conv=np.matrix(((1.0*self.conv_a ,0.0,0.0,),
-            #                    (1.0*np.cos(self.conv_gamma)*self.conv_b, 1.0*np.sin(self.conv_gamma)*self.conv_b, 0.0,),
-            #                      (0.0,0.0,1.0*self.conv_c,),)).T
         if self.ibrav==12:
             to_conv=np.matrix(((1.0*self.conv_a, 0.0,0.0,),
                                (0.0, 1.0*self.conv_b, 0.0,),
@@ -620,9 +614,6 @@ K_POINTS {automatic}
             atm_pos_str+= ('%3.3s'% labels_arr[i]) +(' % 9.9f % 9.9f % 9.9f '%tuple(all_eq_pos[i].tolist()))+"\n"
 
 
-
-
-
         '''assign values of cell to A,B,C,cosAB,cosAC,cosBC in QE input file'''
         input_dict['&system']['ibrav']=self.ibrav
 
@@ -635,15 +626,12 @@ K_POINTS {automatic}
         input_dict['&system']['cosBC']=np.cos(self.conv_alpha/180.0*np.pi)
 
 
-        
-                
+        """get rid of cell parameters card if present"""
         try:
             del input_dict['CELL_PARAMETERS']
-        except:
-            pass
-
-    
+        except: pass
         
+        """assign new number of atoms"""
         input_dict['&system']['nat']=all_eq_pos.shape[0]
         
         '''add newly transformed atomic positions to QE convention input'''
@@ -653,7 +641,7 @@ K_POINTS {automatic}
             input_dict['ATOMIC_POSITIONS']={}
             input_dict['ATOMIC_POSITIONS']["__modifier__"]="{crystal}"
             input_dict['ATOMIC_POSITIONS']['__content__']=atm_pos_str        
-
+        
         qe_convention_input=AFLOWpi.retr._joinInput(input_dict)
         '''convert to celldm'''
         qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)
@@ -663,223 +651,225 @@ K_POINTS {automatic}
 
 
     def __HM2Num(self,HM_str):
-       HM_dict={"P 1":1,
-                "P -1":2,
-                "P 1 2 1":3,
-                "P 1 21 1":4,
-                "C 1 2 1":5,
-                "P 1 m 1":6,
-                "P 1 c 1":7,
-                "C 1 m 1":8,
-                "C 1 c 1":9,
-                "P 1 2/m 1":10,
-                "P 1 21/m 1":11,
-                "C 1 2/m 1":12,
-                "P 1 2/c 1":13,
-                "P 1 21/c 1":14,
-                "P 1 21/a 1":14,
-                "C 1 2/c 1":15,
-                "P 2 2 2":16,
-                "P 2 2 21":17,
-                "P 21 21 2":18,
-                "P 21 21 21":19,
-                "C 2 2 21":20,
-                "C 2 2 2":21,
-                "F 2 2 2":22,
-                "I 2 2 2":23,
-                "I 21 21 21":24,
-                "P m m 2":25,
-                "P m c 21":26,
-                "P c c 2":27,
-                "P m a 2":28,
-                "P c a 21":29,
-                "P n c 2":30,
-                "P m n 21":31,
-                "P b a 2":32,
-                "P n a 21":33,
-                "P n n 2":34,
-                "C m m 2":35,
-                "C m c 21":36,
-                "C c c 2":37,
-                "A m m 2":38,
-                "A b m 2":39,
-                "A b a 2":41,
-                "F m m 2":42,
-                "F d d 2":43,
-                "I m m 2":44,
-                "I b a 2":45,
-                "I m a 2":46,
-                "P 2/m 2/m 2/m":47,
-                "P 2/n 2/n 2/n (origin choice 2)":48,
-                "P 2/b 2/a 2/n (origin choice 2)":50,
-                "P 21/m 2/m 2/a":51,
-                "P 2/n 21/n 2/a":52,
-                "P 2/m 2/n 21/a":53,
-                "P 21/c 2/c 2/a":54,
-                "P 21/b 21/a 2/m":55,
-                "P 21/c 21/c 2/n":56,
-                "P 2/b 21/c 21/m":57,
-                "P 21/n 21/n 2/m":58,
-                "P 21/m 21/m 2/n (origin choice 2)":59,
-                "P 21/b 2/c 21/n":60,
-                "P 21/b 21/c 21/a":61,
-                "P 21/n 21/m 21/a":62,
-                "C 2/m 2/c 21/m":63,
-                "C 2/m 2/c 21/a":64,
-                "C 2/m 2/m 2/m":65,
-                "C 2/c 2/c 2/m":66,
-                "C 2/m 2/m 2/a":67,
-                "C 2/c 2/c 2/a (origin choice 2)":68,
-                "F 2/m 2/m 2/m":69,
-                "F 2/d 2/d 2/d (origin choice 2)":70,
-                "I 2/m 2/m 2/m":71,
-                "I 2/b 2/a 2/m":72,
-                "I 21/b 21/c 21/a":73,
-                "I 21/m 21/m 21/a":74,
-                "P 4":75,
-                "P 41":76,
-                "P 42":77,
-                "P 43":78,
-                "I 4":79,
-                "I 41":80,
-                "P -4":81,
-                "I -4":82,
-                "P 4/m":83,
-                "P 42/m":84,
-                "P 4/n (origin choice 2)":85,
-                "P 42/n (origin choice 2)":86,
-                "I 4/m":87,
-                "I 41/a (origin choice 2)":88,
-                "P 4 21 2":90,
-                "P 41 2 2":91,
-                "P 41 21 2":92,
-                "P 43 2 2":95,
-                "P 43 21 2":96,
-                "I 4 2 2":97,
-                "I 41 2 2":98,
-                "P 4 m m":99,
-                "P 4 b m":100,
-                "P 42 n m":102,
-                "P 4 n c":104,
-                "P 42 m c":105,
-                "I 4 m m":107,
-                "I 4 c m":108,
-                "I 41 m d":109,
-                "I 41 c d":110,
-                "P -4 2 m":111,
-                "P -4 2 c":112,
-                "P -4 21 m":113,
-                "P -4 21 c":114,
-                "P -4 m 2":115,
-                "P -4 c 2":116,
-                "P -4 b 2":117,
-                "P -4 n 2":118,
-                "I -4 m 2":119,
-                "I -4 c 2":120,
-                "I -4 2 m":121,
-                "I -4 2 d":122,
-                "P 4/m 2/m 2/m":123,
-                "P 4/m 2/c 2/c":124,
-                "P 4/n 2/b 2/m (origin choice 2)":125,
-                "P 4/n 2/n 2/c (origin choice 2)":126,
-                "P 4/m 21/b 2/m":127,
-                "P 4/m 21/n 2/c":128,
-                "P 4/n 21/m 2/m (origin choice 2)":129,
-                "P 4/n 21/c 2/c (origin choice 2)":130,
-                "P 42/m 2/m 2/c":131,
-                "P 42/m 2/c 2/m":132,
-                "P 42/n 2/b 2/c (origin choice 2)":133,
-                "P 42/n 2/n 2/m (origin choice 2)":134,
-                "P 42/m 21/b 2/c":135,
-                "P 42/m 21/n 2/m":136,
-                "P 42/n 21/m 2/c (origin choice 2)":137,
-                "P 42/n 21/c 2/m (origin choice 2)":138,
-                "I 4/m 2/m 2/m":139,
-                "I 4/m 2/c 2/m":140,
-                "I 41/a 2/m 2/d (origin choice 2)":141,
-                "I 41/a 2/c 2/d (origin choice 2)":142,
-                "P 3":143,
-                "P 31":144,
-                "P 32":145,
-                "R 3 (hexagonal axes)":146,
-                "P -3":147,
-                "R -3 (hexagonal axes)":148,
-                "P 3 1 2":149,
-                "P 3 2 1":150,
-                "P 31 1 2":151,
-                "P 31 2 1":152,
-                "P 32 1 2":153,
-                "P 32 2 1":154,
-                "R 3 2 (hexagonal axes)":155,
-                "P 3 m 1":156,
-                "P 3 1 m":157,
-                "P 3 c 1":158,
-                "P 3 1 c":159,
-                "R 3 m (hexagonal axes)":160,
-                "R 3 c (hexagonal axes)":161,
-                "P -3 1 2/m":162,
-                "P -3 1 2/c":163,
-                "P -3 2/m 1":164,
-                "P -3 2/c 1":165,
-                "R -3 2/m (hexagonal axes)":166,
-                "R -3 2/c (hexagonal axes)":167,
-                "P 61":169,
-                "P 65":170,
-                "P 63":173,
-                "P -6":174,
-                "P 6/m":175,
-                "P 63/m":176,
-                "P 61 2 2":178,
-                "P 65 2 2":179,
-                "P 62 2 2":180,
-                "P 64 2 2":181,
-                "P 63 2 2":182,
-                "P 6 m m":183,
-                "P 63 c m":185,
-                "P 63 m c":186,
-                "P -6 m 2":187,
-                "P -6 c 2":188,
-                "P -6 2 m":189,
-                "P -6 2 c":190,
-                "P 6/m 2/m 2/m":191,
-                "P 6/m 2/c 2/c":192,
-                "P 63/m 2/c 2/m":193,
-                "P 63/m 2/m 2/c":194,
-                "P 2 3":195,
-                "F 2 3":196,
-                "I 2 3":197,
-                "P 21 3":198,
-                "I 21 3":199,
-                "P 2/m -3":200,
-                "P 2/n -3 (origin choice 2)":201,
-                "F 2/m -3":202,
-                "F 2/d -3 (origin choice 2)":203,
-                "I 2/m -3":204,
-                "P 21/a -3":205,
-                "I 21/a -3":206,
-                "P 42 3 2":208,
-                "F 41 3 2":210,
-                "I 4 3 2":211,
-                "P 43 3 2":212,
-                "P 41 3 2":213,
-                "I 41 3 2":214,
-                "P -4 3 m":215,
-                "F -4 3 m":216,
-                "I -4 3 m":217,
-                "P -4 3 n":218,
-                "F -4 3 c":219,
-                "I -4 3 d":220,
-                "P 4/m -3 2/m":221,
-                "P 4/n -3 2/n (origin choice 2)":222,
-                "P 42/m -3 2/n":223,
-                "P 42/n -3 2/m (origin choice 2)":224,
-                "F 4/m -3 2/m":225,
-                "F 4/m -3 2/c":226,
-                "F 41/d -3 2/m (origin choice 2)":227,
-                "I 4/m -3 2/m":229,
-                "I 41/a -3 2/d":230,}
-
-       return HM_dict[HM_str]
+  
+       HM_dict={"P1":1,
+        "P-1":2,
+        "P121":3,
+        "P1211":4,
+        "C121":5,
+        "P1m1":6,
+        "P1c1":7,
+        "C1m1":8,
+        "C1c1":9,
+        "P12/m1":10,
+        "P121/m1":11,
+        "C12/m1":12,
+        "P12/c1":13,
+        "P121/c1":14,
+        "P121/a1":14,
+        "C12/c1":15,
+        "P222":16,
+        "P2221":17,
+        "P21212":18,
+        "P212121":19,
+        "C2221":20,
+        "C222":21,
+        "F222":22,
+        "I222":23,
+        "I212121":24,
+        "Pmm2":25,
+        "Pmc21":26,
+        "Pcc2":27,
+        "Pma2":28,
+        "Pca21":29,
+        "Pnc2":30,
+        "Pmn21":31,
+        "Pba2":32,
+        "Pna21":33,
+        "Pnn2":34,
+        "Cmm2":35,
+        "Cmc21":36,
+        "Ccc2":37,
+        "Amm2":38,
+        "Abm2":39,
+        "Aba2":41,
+        "Fmm2":42,
+        "Fdd2":43,
+        "Imm2":44,
+        "Iba2":45,
+        "Ima2":46,
+        "P2/m2/m2/m":47,
+        "P2/n2/n2/n":48,
+        "P2/b2/a2/n":50,
+        "P21/m2/m2/a":51,
+        "P2/n21/n2/a":52,
+        "P2/m2/n21/a":53,
+        "P21/c2/c2/a":54,
+        "P21/b21/a2/m":55,
+        "P21/c21/c2/n":56,
+        "P2/b21/c21/m":57,
+        "P21/n21/n2/m":58,
+        "P21/m21/m2/n":59,
+        "P21/b2/c21/n":60,
+        "P21/b21/c21/a":61,
+        "P21/n21/m21/a":62,
+        "C2/m2/c21/m":63,
+        "C2/m2/c21/a":64,
+        "C2/m2/m2/m":65,
+        "C2/c2/c2/m":66,
+        "C2/m2/m2/a":67,
+        "C2/c2/c2/a":68,
+        "F2/m2/m2/m":69,
+        "F2/d2/d2/d":70,
+        "I2/m2/m2/m":71,
+        "I2/b2/a2/m":72,
+        "I21/b21/c21/a":73,
+        "I21/m21/m21/a":74,
+        "P4":75,
+        "P41":76,
+        "P42":77,
+        "P43":78,
+        "I4":79,
+        "I41":80,
+        "P-4":81,
+        "I-4":82,
+        "P4/m":83,
+        "P42/m":84,
+        "P4/n":85,
+        "P42/n":86,
+        "I4/m":87,
+        "I41/a":88,
+        "P4212":90,
+        "P4122":91,
+        "P41212":92,
+        "P4322":95,
+        "P43212":96,
+        "I422":97,
+        "I4122":98,
+        "P4mm":99,
+        "P4bm":100,
+        "P42nm":102,
+        "P4nc":104,
+        "P42mc":105,
+        "I4mm":107,
+        "I4cm":108,
+        "I41md":109,
+        "I41cd":110,
+        "P-42m":111,
+        "P-42c":112,
+        "P-421m":113,
+        "P-421c":114,
+        "P-4m2":115,
+        "P-4c2":116,
+        "P-4b2":117,
+        "P-4n2":118,
+        "I-4m2":119,
+        "I-4c2":120,
+        "I-42m":121,
+        "I-42d":122,
+        "P4/m2/m2/m":123,
+        "P4/m2/c2/c":124,
+        "P4/n2/b2/m":125,
+        "P4/n2/n2/c":126,
+        "P4/m21/b2/m":127,
+        "P4/m21/n2/c":128,
+        "P4/n21/m2/m":129,
+        "P4/n21/c2/c":130,
+        "P42/m2/m2/c":131,
+        "P42/m2/c2/m":132,
+        "P42/n2/b2/c":133,
+        "P42/n2/n2/m":134,
+        "P42/m21/b2/c":135,
+        "P42/m21/n2/m":136,
+        "P42/n21/m2/c":137,
+        "P42/n21/c2/m":138,
+        "I4/m2/m2/m":139,
+        "I4/m2/c2/m":140,
+        "I41/a2/m2/d":141,
+        "I41/a2/c2/d":142,
+        "P3":143,
+        "P31":144,
+        "P32":145,
+        "R3":146,
+        "P-3":147,
+        "R-3":148,
+        "P312":149,
+        "P321":150,
+        "P3112":151,
+        "P3121":152,
+        "P3212":153,
+        "P3221":154,
+        "R32":155,
+        "P3m1":156,
+        "P31m":157,
+        "P3c1":158,
+        "P31c":159,
+        "R3m":160,
+        "R3c":161,
+        "P-312/m":162,
+        "P-312/c":163,
+        "P-32/m1":164,
+        "P-32/c1":165,
+        "R-32/m":166,
+        "R-32/c":167,
+        "P61":169,
+        "P65":170,
+        "P63":173,
+        "P-6":174,
+        "P6/m":175,
+        "P63/m":176,
+        "P6122":178,
+        "P6522":179,
+        "P6222":180,
+        "P6422":181,
+        "P6322":182,
+        "P6mm":183,
+        "P63cm":185,
+        "P63mc":186,
+        "P-6m2":187,
+        "P-6c2":188,
+        "P-62m":189,
+        "P-62c":190,
+        "P6/m2/m2/m":191,
+        "P6/m2/c2/c":192,
+        "P63/m2/c2/m":193,
+        "P63/m2/m2/c":194,
+        "P23":195,
+        "F23":196,
+        "I23":197,
+        "P213":198,
+        "I213":199,
+        "P2/m-3":200,
+        "P2/n-3":201,
+        "F2/m-3":202,
+        "F2/d-3":203,
+        "I2/m-3":204,
+        "P21/a-3":205,
+        "I21/a-3":206,
+        "P4232":208,
+        "F4132":210,
+        "I432":211,
+        "P4332":212,
+        "P4132":213,
+        "I4132":214,
+        "P-43m":215,
+        "F-43m":216,
+        "I-43m":217,
+        "P-43n":218,
+        "F-43c":219,
+        "I-43d":220,
+        "P4/m-32/m":221,
+        "P4/n-32/n":222,
+        "P42/m-32/n":223,
+        "P42/n-32/m":224,
+        "F4/m-32/m":225,
+        "F4/m-32/c":226,
+        "F41/d-32/m":227,
+        "I4/m-32/m":229,
+        "I41/a-32/d":230,}
+       try:
+           return HM_dict[HM_str.replace(" ","")]
+       except: return 1
 
 
 
@@ -933,7 +923,7 @@ def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
     with periodic boundary conditions
     '''
 
-    print 
+
     try:
         Xt=np.copy(Y)
         Xtc=np.copy(Y)
