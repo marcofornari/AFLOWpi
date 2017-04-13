@@ -89,14 +89,14 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                             'fp':'SEEBECK',
                                             }
 
-        trans_plot_dict['sig_seebeck']   = {'pf':'sigma_seebeck_',
-                                            'ft':'$\sigma S$:',
-                                            'lc':'\sigma S ',
-                                            'xl':'$\mu$ (eV)',
-                                            'yl':'$\sigma S$ ($Vm/\Omega/K)$ ',
-                                            'fp':'SIGMA_SEEBECK',
+        # trans_plot_dict['sig_seebeck']   = {'pf':'sigma_seebeck_',
+        #                                     'ft':'$\sigma S$:',
+        #                                     'lc':'\sigma S ',
+        #                                     'xl':'$\mu$ (eV)',
+        #                                     'yl':'$\sigma S$ ($Vm/\Omega/K)$ ',
+        #                                     'fp':'SIGMA_SEEBECK',
 
-                                            }
+        #                                     }
         trans_plot_dict['kappa']         = {'pf':'kappa_',
                                             'ft':'$\kappa$:',
                                             'lc':'\kappa ',
@@ -149,12 +149,12 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 file_name_down=[]
                 for ID_ent in ID_list:
 
-                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
 
                     file_name.extend(glob.glob(search))
 
-                    file_name_up.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
-                    file_name_down.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
+                    file_name_up.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
+                    file_name_down.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
 
 
 
@@ -576,7 +576,7 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
 			for x in split_line:
 				float_array.append(float(x))
 			en_array.append(float_array[0])
-			val_array.append(sum([float_array[1],float_array[5],float_array[9]]))
+			val_array.append(sum([float_array[1],float_array[2],float_array[3]]))
 		except:
 			pass
 
