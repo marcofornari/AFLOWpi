@@ -15,7 +15,7 @@ calcs = session.scfs(allvars,'phonon.ref')
 calcs.vcrelax()
 # calculate one phonon frequency
 calcs.phonon(mult_jobs=False,nrx1=2,nrx2=2,nrx3=2,
-             innx=1,de=0.005,LOTO=True)
+             innx=2,de=0.01,LOTO=False,disp_sym=True)
 # plot phonon dispersion and DOS
 calcs.plot.phonon(postfix='222_inCM',THz=False)
 calcs.plot.phonon(postfix='222_THz')
