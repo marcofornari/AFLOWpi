@@ -17,7 +17,7 @@ Reference file for VCR
     ibrav=2,  
     nat=2,
     ntyp=2, 
-    ecutwfc = 100.,
+    ecutwfc = 25.,
 
  /
  &electrons
@@ -39,4 +39,4 @@ ATOMIC_POSITIONS {crystal}
 _AFLOWPI_A_      0.00000000000000   0.00000000000000   0.00000000000000  
 _AFLOWPI_B_     -0.25000000000000  -0.25000000000000  -0.25000000000000
 K_POINTS {automatic}
-10 10 10 1 1 1
+7 7 7 1 1 1

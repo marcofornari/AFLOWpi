@@ -1,10 +1,10 @@
 import AFLOWpi
 
 # start the AFLOWpirame session
-session = AFLOWpi.prep.init('ACBN0', 'Ge_no_ovp',
+session = AFLOWpi.prep.init('ACBN0', 'Si',
                             config='./ACBN0.config')
 # choose the values for the keywords in the ref file
-allvars = {'_AFLOWPI_A_':('Ge',),'_AFLOWPI_B_':('Ge',),}
+allvars = {'_AFLOWPI_A_':('Si',),'_AFLOWPI_B_':('Si',),}
 # form the calculation set from ref input and allvars dict
 calcs = session.scfs(allvars,'ACBN0.ref')
 # relax the structure
@@ -35,7 +35,7 @@ calcs.bands(nk=400)
 calcs.plot.bands(yLim=[-10,10],DOSPlot='APDOS',
                  postfix='with_acbn0')
 # run the calculation workflow
-calcs.submit()
+#calcs.submit()
 
 
 
