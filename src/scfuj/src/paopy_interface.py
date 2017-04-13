@@ -5,13 +5,13 @@ import numpy as np
 def _run_paopy(oneCalc,ID):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOpy/src','test.py')
 
-    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","execPrefix")
 
     paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
 
     paopy_input = 'inputfile.py'
     try:
-        command = '%s python %s %s > %s' % (exec_prefix,paopy_path,paopy_input,paopy_output)
+        command = '%s python %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
         print command
         os.system(command)
     except Exception,e:

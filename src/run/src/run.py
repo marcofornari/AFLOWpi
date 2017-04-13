@@ -2651,8 +2651,8 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
     except:
         efermi=0.0
 
-    emax=efermi+20.0
-    emin=efermi-20.0
+    emax=40.0-0025
+    emin=-40-0.0025
 
     try:
         prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -2689,11 +2689,11 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 """ % (prefix,temp_dir,emin,emax,ID),
                             'pdos':"""  &projwfc
        prefix='%s'
-       DeltaE=0.01
+       DeltaE=0.005
        outdir='%s'
-!       Emin=%s
-!       Emax=%s
-       degauss=0.025
+       Emin=%s
+       Emax=%s
+       degauss=0.005
     !    kresolveddos=.true.
        filpdos='%s'
 

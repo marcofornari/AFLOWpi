@@ -290,7 +290,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			Efermi=0.0
                 else:
 			Efermi=AFLOWpi.retr._getEfermi(oneCalc,calcID)
-			print 'EFERMI BANDS NO TB',Efermi
+
 
 		if type(Efermi)!=type(0.5):
 			Efermi=Efermi[0]

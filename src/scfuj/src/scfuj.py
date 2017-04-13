@@ -1368,7 +1368,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 ##################################################################################################################
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=True)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=False)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
@@ -1376,10 +1376,10 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True)
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=False)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=False)
         AFLOWpi.scfuj._run_paopy(oneCalc,ID)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)

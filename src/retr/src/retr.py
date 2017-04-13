@@ -816,10 +816,15 @@ def _getCellParams(oneCalc,ID):
     '''
 
     try:
-        scfOutput = '%s.out' % ID
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
-                lines = outFile.read()
 
+        scfOutput = '%s.out' % ID
+        if os.path.exists(scfOutput):
+            with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
+                lines = outFile.read()
+        else:
+            splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
+            alat=float(splitInput['&system']['celldm(1)'])
+            return alat,AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
 
 
@@ -1142,7 +1147,7 @@ def _getHighSymPoints(oneCalc,ID=None):
 
         b_over_a = cellOld.getA()[1][1]/numpy.sin(gamma)
     
-    print a,b,c,alpha,beta,gamma
+
 
     if   ibrav==1:  ibrav_var =  'CUB'
     elif ibrav==2:  ibrav_var =  'FCC'
@@ -1779,7 +1784,6 @@ def _getEfermi(oneCalc,ID,directID=False):
             efermi = float(outFileObj.read())
             return efermi
     except Exception,e:
-        print e
         return 0.0
 
 
