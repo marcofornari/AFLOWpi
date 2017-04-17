@@ -143,7 +143,7 @@ def _rename_boltz_files(oneCalc,ID):
         conv_dict['epsi_1.dat']     = '%s_PAOpy_epsilon_down_imag.dat'%ID                        
     else:
         conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_sigma_%sK.dat'%(ID,temperature)     
+        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_%sK.dat'%(ID,temperature)     
         conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_%sK.dat'%(ID,temperature)             
         conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_real.dat'%ID                        
         conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_imag.dat'%ID                        

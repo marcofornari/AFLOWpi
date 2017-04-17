@@ -303,10 +303,10 @@ K_POINTS {automatic}
 
         a=np.abs((self.iso_conv).dot(self.iso_basis))
 
-        if self.ibrav in [8,9,10,11]:
-            self.conv_a=np.sum(a[:,0])
-            self.conv_b=np.sum(a[:,1])
-            self.conv_c=np.sum(a[:,2])
+        # if self.ibrav in [8,9,10,11]:
+        #     self.conv_a=np.sum(a[:,0])
+        #     self.conv_b=np.sum(a[:,1])
+        #     self.conv_c=np.sum(a[:,2])
 
 
         prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
@@ -441,8 +441,15 @@ K_POINTS {automatic}
 
             labels.append(positions[i][spec_lab].strip('0123456789').title())
 
+
+        '''shift origin to zero before transforming'''
+#        pos_array-=self.origin
+        
+
         '''shift positions to between 0.0 and 1.0'''
         pos_array%=1.0
+
+
 
         '''if positions is 1/3 or 2/3 use more precision on position'''
         pos_array[np.where(np.isclose(pos_array-(1.0/3.0),0.0,rtol=1e-04, atol=1e-05))]=1.0/3.0
@@ -568,13 +575,43 @@ K_POINTS {automatic}
 
 
         '''shift origin to zero before transforming'''
-#        all_eq_pos-=self.origin
+        all_eq_pos-=self.origin
 
 
         '''remove duplicate atoms'''
 
         '''shift all atoms back into cell if need be'''
-#        all_eq_pos%=1.0
+        all_eq_pos%=1.0
+
+
+# #         '''order the the axes a<b<c'''
+#         if self.ibrav in [8,10,11]:
+
+
+#         #     prim=np.copy(convert)
+#         #     prim[:,0]*=self.conv_a
+#         #     prim[:,1]*=self.conv_b
+#         #     prim[:,2]*=self.conv_c
+#         #     print prim
+#             sides=np.array([self.conv_a,self.conv_b,self.conv_c])
+#             order = np.argsort(sides)
+#             ordered_sides = sides[order]
+
+#             self.conv_a = ordered_sides[0]
+#             self.conv_b = ordered_sides[1]
+#             self.conv_c = ordered_sides[2]
+# #            all_eq_pos=all_eq_pos[:,order]
+ 
+#             convert=convert[:,order]
+
+#         if self.ibrav in [9]:
+#             if self.conv_b<self.conv_a:
+#                 all_eq_pos=all_eq_pos[:,[1,0,2]]
+#                 temp_a=self.conv_a
+#                 self.conv_a=self.conv_b
+#                 self.conv_b=temp_a
+#                 convert=convert[:,[1,0,2]]
+
         '''convert from conventional to primitive lattice coords'''
         try:
             all_eq_pos=(np.linalg.inv(convert.getA()).T.dot(all_eq_pos.T)).T
@@ -582,6 +619,7 @@ K_POINTS {automatic}
             all_eq_pos=(np.linalg.inv(convert).T.dot(all_eq_pos.T)).T
 
         all_eq_pos%=1.0
+
         '''to convert from primitive to conventional for distance calc'''
         to_conv = AFLOWpi.retr.abc2free(a=self.conv_a,b=self.conv_b,c=self.conv_c,
                                         alpha=self.conv_alpha,beta=self.conv_beta,
@@ -603,9 +641,12 @@ K_POINTS {automatic}
                                (0.0, 0.0, 1.0*self.conv_c,),))
 
 
-
         '''reduce equivilent atoms'''
         all_eq_pos,labels_arr = reduce_atoms(all_eq_pos,labels,cell=to_conv,thresh=thresh)
+
+
+
+#        all_eq_pos-=all_eq_pos[0]
 
 
         '''form atomic positions card for QE input'''

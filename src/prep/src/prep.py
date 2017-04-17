@@ -873,7 +873,7 @@ def _transformInput(inputString):
     input_dict = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in input_dict.keys():
 	    isotropy_obj    = AFLOWpi.prep.isotropy()
-	    isotropy_obj.qe_input(inputString,accuracy=0.005)
+	    isotropy_obj.qe_input(inputString,accuracy=0.0025)
 	    inputString = isotropy_obj.convert(ibrav=True,)
 
 	    
@@ -2059,6 +2059,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
             inputSplit['&control']['calculation']="'nscf'"
             inputSplit['&system']['noinv']=".true."
             inputSplit['&system']['nosym']=".true."
+            inputSplit['&electrons']['conv_thr']="1.e-6"
 	    try:
 		    inputSplit['&system']['nbnd']=nbnd
 	    except:
@@ -5233,6 +5234,8 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
 
 		inputDict['K_POINTS']['__content__']=newKPointString
 		inputDict['K_POINTS']['__modifier__']='{automatic}'
+
+	inputDict['&electrons']['conv_thr']="1.e-6"
 
         inputfile = AFLOWpi.retr._joinInput(inputDict)
 

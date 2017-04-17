@@ -136,7 +136,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 	if epsilon==True:
 		type_list=['epsilon',]
 	else:
-		type_list=['kappa','seebeck','sig_seebeck','cond','ZT',]
+		type_list=['kappa','seebeck','cond',]
 
         for Type in type_list:
             try:
@@ -219,7 +219,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    else:
 
 					    continue
-
+				    print temperature
 			    else:
 				    temperature = file_name_up[i][:-4].split('_')[-1][:-1]
 
@@ -403,16 +403,16 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    min_x=x_range[0]
 				    max_x=x_range[1]
 
-			    if epsilon==True:
-				    if min_x<=0.2:
-					    min_x=0.2
+#			    if epsilon==True:
+#				    if min_x<=0.2:
+#					    min_x=0.2
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e17
-			    elif Type=='sigma_seebeck':
-				    y_vals=numpy.asarray(y_vals)/1.0e-3
-			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)/1.0e20
+#			    if Type=='kappa':
+#				    y_vals=numpy.asarray(y_vals)/1.0e17
+#			    elif Type=='sigma_seebeck':
+#				    y_vals=numpy.asarray(y_vals)/1.0e-3
+#			    elif Type=='cond':
+#				    y_vals=numpy.asarray(y_vals)/1.0e20
 
 
 
@@ -560,10 +560,10 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
         Returns:
 
 	'''
-
+	print ep_data_file
 	with open(ep_data_file,'r') as epsilon_data_file:
 		ep_data_string=epsilon_data_file.read()
-
+		
 	lines=ep_data_string.split('\n')[2:]
 	en_array=[]
 	val_array=[]
