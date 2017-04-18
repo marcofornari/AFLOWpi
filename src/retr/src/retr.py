@@ -1135,18 +1135,31 @@ def _getHighSymPoints(oneCalc,ID=None):
     if ibrav == 7:
         a=numpy.abs(cellOld[0][0])*2.0
         c=numpy.abs(cellOld[2][2])*2.0
+    if ibrav == 8:
+        a=numpy.abs(cellOld[0][0])
+        b=numpy.abs(cellOld[1][1])
+        c=numpy.abs(cellOld[2][2])
+        len_arr = np.asarray([a,b,c])
+        axes_order = argsort(len_arr) 
+        swap_axes = numpy.identity(3)[order]
     if ibrav == 9:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])
+        axes_order = argsort(np.asarray([a,b,c]))
+        swap_axes = numpy.identity(3)[order]
     if ibrav == 10:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])*2.0
+        axes_order = argsort(np.asarray([a,b,c]))
+        swap_axes = numpy.identity(3)[order]
     if ibrav == 11:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])*2.0
+        axes_order = argsort(np.asarray([a,b,c]))
+        swap_axes = numpy.identity(3)[order]
     if ibrav == 12:
         a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
         b=numpy.sqrt(cellOld[1].dot(cellOld[1].T))
@@ -2243,218 +2256,34 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
 
     '''        
 
-    def atomPosPretty(atomicPositionString,ibrav):
-            
-            a,b,c,alpha,beta,gamma = (0.0,0.0,0.0,0.0,0.0,0.0)
-            atomPosSortList = []
-            try:
-                splitAtomicPos = atomicPositionString.split('\n')                
-            except ValueError:
-                pass
+
+    if outputFolder == None:
+        outputFolder = oneCalc['_AFLOWPI_FOLDER_']
 
 
-            for item in splitAtomicPos:
-                
-                    if len(item.strip())!=0:
-                            atomSplit = item.split()
-                            formattedAtomPos = atomSplit[0]+' '+' '.join(['%14.12f' % float(atomSplit[i]) for i in range(1,len(atomSplit))])+'\n'
-                            atomPosSortList.append(formattedAtomPos)
-
-
-            atomPosSortCifList = []
-            atomPosSortCifListSecond = []
-            countDict = {}
-            for item in atomPosSortList:
-                splitItem = item.split()
-                firstItem = splitItem[0]
-                if firstItem not in countDict.keys():
-                    countDict[firstItem] = 1
-                else:
-                    count = countDict[firstItem]+1
-                    countDict[firstItem]=count
-
-            countDictOrig = copy.deepcopy(countDict)
-            origDictSecond = copy.deepcopy(countDict)
-
-            for item1 in atomPosSortList:
-                try:
-                    splitItem = item1.split()
-                    firstItem = splitItem[0]
-
-                    
-                    secondItem = '%s%s' % (firstItem,countDictOrig[firstItem]-countDict[firstItem]+1)
-
-                    
-
-                    try:
-                        entry = '%s 1.0 %04f %04f %04f Biso 1.0 %s' % (secondItem,float(splitItem[1]),float(splitItem[2]),float(splitItem[3]),firstItem)
-                        atomPosSortCifList.append(entry)
-                    except:
-                        pass
-                except Exception,e:
-                    AFLOWpi.run._fancy_error_log(e)
-
-                    
-                """
-                decriment the counter for the atom in question
-                """
-                countDict[firstItem] = countDict[firstItem]-1                
-
-########################################################################################
-########################################################################################
-########################################################################################
-            loopblock = """loop_
-      _atom_site_label
-      _atom_site_occupancy
-      _atom_site_fract_x
-      _atom_site_fract_y
-      _atom_site_fract_z
-      _atom_site_thermal_displace_type
-      _atom_site_B_iso_or_equiv
-      _atom_site_type_symbol
-"""
-            
-            outputString = loopblock+'\n'.join(atomPosSortCifList)
-
-            return outputString
-
-    if inOrOut != 'input' and inOrOut != 'output' and inOrOut != 'both':
-        print "options for variable 'inOrOut' must be 'in','out',or 'both'"
-        logging.warning("options for variable 'inOrOut' must be 'in','out',or 'both'")
-        return
-    if filePrefix!='':
-        filePrefix=filePrefix+'_'
-    input_suffix=''
-    cif_suffix=''
-    cif_prefix=''
-
-    cif_prefix=__getStoicName(oneCalc)+'_'
-    outFileString=''
-    inputFileString  = oneCalc['_AFLOWPI_INPUT_']
+    if inOrOut=='input'  or inOrOut=='both':
+        iso = AFLOWpi.prep.isotropy()
+        iso.qe_input(oneCalc['_AFLOWPI_INPUT_'])
     
-    ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
-    a,b,c,alpha,beta,gamma = (0.0,0.0,0.0,0.0,0.0,0.0)
+        outFileString = iso.cif
 
-    if inOrOut.lower()=='input' or inOrOut.lower()=='both':
-
-        labels,atomicPositions,cellParamVec = AFLOWpi.retr._getConventionalCellFromInput(oneCalc,ID)
-
-        input_suffix='.in'
-        cif_suffix='.in.cif'
-        
-
-        inputDict = AFLOWpi.retr._splitInput(inputFileString)
-        ibravRegex= re.compile(r'ibrav\s*=\s*([0-9]{1,2})')
-
-        try:
-            ibravOrig= ibravRegex.findall(inputFileString)[-1]
-            ibrav=int(ibravOrig)
-            if ibrav==5:
-
-                labels,atomicPositions,cellParamVec = AFLOWpi.retr._rho2hex(cellParamVec,atomicPositions,labels)
-        except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
-
-
-        a,b,c,alpha,beta,gamma =  free2abc(cellParamVec,cosine=False,degrees=True,string=False,)
-        
-        outFileString+="""data_global
-_chemical_name '%s'
-
-_cell_length_a %s
-_cell_length_b %s
-_cell_length_c %s
-_cell_angle_alpha %s
-_cell_angle_beta %s
-_cell_angle_gamma %s
-""" % (cif_prefix[:-1],a,b,c,alpha,beta,gamma)
-
-        atomicPositions = AFLOWpi.retr._cellMatrixToString(atomicPositions)
-        atomicPositions = '\n'.join( [' '.join(x) for x  in zip(labels,atomicPositions.split('\n'))])        
-        outFileString += atomPosPretty(atomicPositions,ibravOrig)
-        outFileString += '\n'
-
-        if outputFolder == None:
-            outputFolder = oneCalc['_AFLOWPI_FOLDER_']
-        with open(os.path.join(outputFolder,filePrefix+'STRUCT_'+cif_prefix+ID+cif_suffix),'w') as outFile:
-            outFile.write(outFileString)
-
-    if inOrOut.lower()=='output' or inOrOut.lower()=='both':
-        input_suffix='.out'
-        cif_suffix='.out.cif'
-        inputDict = {}
-        outFileString=''
-
-
-
-
-        try:
-#            labels,positions,cell = AFLOWpi.retr._getConventionalCellFromOutput(oneCalc,ID)
-            labels=AFLOWpi.retr._getPosLabels(inputString)
-            alat,cellParamMatrix = AFLOWpi.retr._getCellParams(oneCalc,ID)
-            cell=cellParamMatrix*float(alat)
-            positions = AFLOWpi.retr.getPositionsFromOutput(oneCalc,ID)
-            
-
-            ibrav = AFLOWpi.retr.getIbravFromVectors(cell)        
-            ibrav=int(ibrav)
-            positions= positions.getA()
-
-        except Exception,e:
-
-            AFLOWpi.run._fancy_error_log(e)
-
-            try:
-                with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.in'),'r') as inFileObj:
-                     exceptionInputFileString  = inFileObj.read()
-
-
-
-            except:
-                print "Error finding ATOMIC_POSITIONS from output"
-                logging.warning("Error finding ATOMIC_POSITIONS from output")
-                return
-        try:
-            cellParamVec = AFLOWpi.retr._getCellOutDim(oneCalc,ID)
-        except:
-            return
-
-
-        a = cellParamVec['a']
-        b  = cellParamVec['b']
-        c  = cellParamVec['c']
-        alpha  = cellParamVec['alpha']
-        beta = cellParamVec['beta']
-
-        gamma = cellParamVec['gamma']
-        a,b,c,alpha,beta,gamma =  free2abc(cell,cosine=False,degrees=True,string=False,)        
-
-
-
-        outFileString+="""data_global
-_chemical_name '%s'
-_cell_length_a %s
-_cell_length_b %s
-_cell_length_c %s
-_cell_angle_alpha %s
-_cell_angle_beta %s
-_cell_angle_gamma %s
-""" % (cif_prefix[:-1],a,b,c,alpha,beta,gamma)
-        
-        positions= AFLOWpi.retr._joinMatrixLabels(labels,positions)
-
-
-        outFileString += atomPosPretty(positions,ibrav)
-        outFileString += '\n'
-
-        if outputFolder == None:
-            outputFolder = oneCalc['_AFLOWPI_FOLDER_']
-        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+cif_suffix
+        cif_prefix='INPUT_'
+        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
 
         with open(os.path.join(outputFolder,joiner),'w') as outFile:
             outFile.write(outFileString)
 
+    if inOrOut=='output' or inOrOut=='both':
+        outfile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'out')
+        iso = AFLOWpi.prep.isotropy()
+        iso.qe_output(outfile)
+        
+        outFileString = iso.cif
+        cif_prefix='OUTPUT_'
+        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
 
+        with open(os.path.join(outputFolder,joiner),'w') as outFile:
+            outFile.write(outFileString)
 
 def celldm2params(a,b,c,alpha,beta,gamma,k,v):
     '''

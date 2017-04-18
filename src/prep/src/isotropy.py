@@ -584,33 +584,29 @@ K_POINTS {automatic}
         all_eq_pos%=1.0
 
 
-# #         '''order the the axes a<b<c'''
-#         if self.ibrav in [8,10,11]:
+        '''order the the axes a<b<c for ortho'''
+        if self.ibrav in [8,10,11]:
+             sides=np.array([self.conv_a,self.conv_b,self.conv_c])
+             order = np.argsort(sides)
+             ordered_sides = sides[order]
+             self.conv_a = ordered_sides[0]
+             self.conv_b = ordered_sides[1]
+             self.conv_c = ordered_sides[2]
 
+        elif self.ibrav==9:
+            if self.conv_b<self.conv_a:
+                temp_a=self.conv_a
+                self.conv_a=self.conv_b
+                self.conv_b=temp_a            
+                order=np.array([1,0,2])
+            else:
+                order=np.array([0,1,2])
 
-#         #     prim=np.copy(convert)
-#         #     prim[:,0]*=self.conv_a
-#         #     prim[:,1]*=self.conv_b
-#         #     prim[:,2]*=self.conv_c
-#         #     print prim
-#             sides=np.array([self.conv_a,self.conv_b,self.conv_c])
-#             order = np.argsort(sides)
-#             ordered_sides = sides[order]
+        else:
+            order=np.array([0,1,2])
 
-#             self.conv_a = ordered_sides[0]
-#             self.conv_b = ordered_sides[1]
-#             self.conv_c = ordered_sides[2]
-# #            all_eq_pos=all_eq_pos[:,order]
- 
-#             convert=convert[:,order]
+        all_eq_pos=all_eq_pos[:,order]
 
-#         if self.ibrav in [9]:
-#             if self.conv_b<self.conv_a:
-#                 all_eq_pos=all_eq_pos[:,[1,0,2]]
-#                 temp_a=self.conv_a
-#                 self.conv_a=self.conv_b
-#                 self.conv_b=temp_a
-#                 convert=convert[:,[1,0,2]]
 
         '''convert from conventional to primitive lattice coords'''
         try:
@@ -641,12 +637,13 @@ K_POINTS {automatic}
                                (0.0, 0.0, 1.0*self.conv_c,),))
 
 
+
         '''reduce equivilent atoms'''
         all_eq_pos,labels_arr = reduce_atoms(all_eq_pos,labels,cell=to_conv,thresh=thresh)
 
 
 
-#        all_eq_pos-=all_eq_pos[0]
+
 
 
         '''form atomic positions card for QE input'''

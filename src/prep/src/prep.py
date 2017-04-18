@@ -758,12 +758,20 @@ def _transformParamsInput(inputString):
                     paramFloat = float(inputDict['&system'][param.lower()])
 
 		    param=param.upper()
-                    if param=='COSAB':
-                        paramName='celldm(4)'
-                    if param=='COSAC':
-                        paramName='celldm(5)'
-                    if param=='COSBC':
-                        paramName='celldm(6)'
+		    if int(inputDict['&system']['ibrav'])==14:
+			    if param=='COSAB':
+				paramName='celldm(6)'
+			    if param=='COSAC':
+				paramName='celldm(5)'
+			    if param=='COSBC':
+				paramName='celldm(4)'
+		    else:
+			    if param=='COSAB':
+				paramName='celldm(4)'
+			    if param=='COSAC':
+				paramName='celldm(5)'
+			    if param=='COSBC':
+				paramName='celldm(6)'
                     if param=='A':
                         paramName='celldm(1)'
                         paramFloat=paramFloat/0.529177249
