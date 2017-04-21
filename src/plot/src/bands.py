@@ -527,6 +527,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 				bars.append(a[index] )
 			except:
 				bars.append(a[-1] )
+
+		matplotlib.rcParams['xtick.major.pad'] = 8
+
 		pylab.xticks(bars,SymPrint, fontsize = 24)
 	except Exception,e:
                 print e

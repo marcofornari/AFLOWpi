@@ -881,7 +881,7 @@ def _transformInput(inputString):
     input_dict = AFLOWpi.retr._splitInput(inputString)
     if 'CELL_PARAMETERS' in input_dict.keys():
 	    isotropy_obj    = AFLOWpi.prep.isotropy()
-	    isotropy_obj.qe_input(inputString,accuracy=0.0025)
+	    isotropy_obj.qe_input(inputString,accuracy=0.005)
 	    inputString = isotropy_obj.convert(ibrav=True,)
 
 	    
@@ -5142,7 +5142,7 @@ def _num_bands(oneCalc,mult=True):
     else:
 	    nbnd = int(1.0*match1/2.0)
 
-    print 'Number of bands to be Calculated: %s\n'% nbnd
+#    print 'Number of bands to be Calculated: %s\n'% nbnd
     logging.info('Number of bands to be Calculated %s: '% nbnd)
 
     return nbnd

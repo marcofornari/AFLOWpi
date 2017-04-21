@@ -855,7 +855,7 @@ def _getCellParams(oneCalc,ID):
                 return AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
     except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+
      
         paramMatrix = AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
@@ -1112,7 +1112,7 @@ def _getHighSymPoints(oneCalc,ID=None):
 
     alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
     cellOld=cellOld.getA()
-    print cellOld
+
 #    raise SystemExit
     #get a,b,c of QE convention conventional cell from primitive lattice vecs
     if ibrav == 1:
@@ -1139,27 +1139,22 @@ def _getHighSymPoints(oneCalc,ID=None):
         a=numpy.abs(cellOld[0][0])
         b=numpy.abs(cellOld[1][1])
         c=numpy.abs(cellOld[2][2])
-        len_arr = np.asarray([a,b,c])
-        axes_order = argsort(len_arr) 
-        swap_axes = numpy.identity(3)[order]
+
     if ibrav == 9:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])
-        axes_order = argsort(np.asarray([a,b,c]))
-        swap_axes = numpy.identity(3)[order]
+
     if ibrav == 10:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])*2.0
-        axes_order = argsort(np.asarray([a,b,c]))
-        swap_axes = numpy.identity(3)[order]
+
     if ibrav == 11:
         a=numpy.abs(cellOld[0][0])*2.0
         b=numpy.abs(cellOld[1][1])*2.0
         c=numpy.abs(cellOld[2][2])*2.0
-        axes_order = argsort(np.asarray([a,b,c]))
-        swap_axes = numpy.identity(3)[order]
+
     if ibrav == 12:
         a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
         b=numpy.sqrt(cellOld[1].dot(cellOld[1].T))
@@ -1169,13 +1164,15 @@ def _getHighSymPoints(oneCalc,ID=None):
         gamma=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a*b))
 
     if ibrav==14:
+        cellOld=numpy.linalg.inv(cellOld.T).T
         a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
         b=numpy.sqrt(cellOld[1].dot(cellOld[1].T))
         c=numpy.sqrt(cellOld[2].dot(cellOld[2].T))
-        alpha=numpy.arccos(cellOld[1].dot(cellOld[2].T)/(c*b))
-        beta =numpy.arccos(cellOld[0].dot(cellOld[2].T)/(a*c))
-        gamma=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a*b))
-
+        alpha=numpy.arccos(cellOld[1].dot(cellOld[2].T)/(c*b))*(180.0/numpy.pi)
+        beta =numpy.arccos(cellOld[0].dot(cellOld[2].T)/(a*c))*(180.0/numpy.pi)
+        gamma=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a*b))*(180.0/numpy.pi)
+        alat*=  0.529177249
+        print a*alat,b*alat,c*alat,alpha,beta,gamma
 
     if   ibrav==1:  ibrav_var =  'CUB'
     elif ibrav==2:  ibrav_var =  'FCC'
@@ -1188,8 +1185,8 @@ def _getHighSymPoints(oneCalc,ID=None):
     elif ibrav==12: ibrav_var =  'MCL'
 
     elif ibrav==5:
-        if alpha_deg   < numpy.pi/2.0: ibrav_var = 'RHL1'
-        elif alpha_deg > numpy.pi/2.0: ibrav_var = 'RHL2'
+        if   alpha < numpy.pi/2.0: ibrav_var = 'RHL1'
+        elif alpha > numpy.pi/2.0: ibrav_var = 'RHL2'
     elif ibrav==7:
         if(c < a):   ibrav_var =  'BCT1'
         elif(c > a): ibrav_var =  'BCT2'
@@ -1201,6 +1198,7 @@ def _getHighSymPoints(oneCalc,ID=None):
         elif  (1.0/a**2 < 1.0/b**2+1.0/c**2): ibrav_var =  'ORCF2'
 
     elif(int(ibrav)==14):
+        print alpha,beta,gamma
         minAngle = numpy.amin([alpha,beta,gamma])
         maxAngle = numpy.amax([alpha,beta,gamma])
         if alpha==90.0 or beta==90.0 or gamma==90.0:
@@ -1208,6 +1206,7 @@ def _getHighSymPoints(oneCalc,ID=None):
             if alpha<=90.0 or beta<=90.0 or gamma<=90.0: ibrav_var =  'TRI2B'
         elif minAngle>90.0:                              ibrav_var =  'TRI1A'
         elif maxAngle<90:                                ibrav_var =  'TRI1B'
+        else: ibrav_var =  'TRI1A'
 ###############################################################################
 ###############################################################################
     if ibrav_var=='CUB':
@@ -1244,8 +1243,6 @@ def _getHighSymPoints(oneCalc,ID=None):
         
     if ibrav_var=='RHL1':
         eta = (1.0 + 4.0*numpy.cos(alpha))/(2.0 + 4.0*numpy.cos(alpha))
-        
-        eta=eta1/eta2
         nu =0.75-eta/2.0
         band_path = 'gG-L-B1|B-Z-gG-X|Q-F-P1-Z|L-P'
         special_points = {'gG'   : (0.0, 0.0, 0.0),
@@ -1320,6 +1317,21 @@ def _getHighSymPoints(oneCalc,ID=None):
                            'Y'   : (0.0, 0.5, 0.0),
                            'Z'   : (0.0, 0.0, 0.5)}
 
+    if ibrav_var=='ORCC':
+       band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
+       zeta=(1.0+((a/b)**2))/4.0
+       special_points = {'gG'    : (  0.0, 0.0     , 0.0),
+                         'A'     : ( zeta, zeta    , 0.5),
+                         'A1'    : (-zeta, 1.0-zeta, 0.5),
+                         'R'     : (  0.0, 0.5     , 0.5),
+                         'S'     : (  0.0, 0.5     , 0.0),
+                         'T'     : ( -0.5, 0.5     , 0.5),
+                         'X'     : ( zeta, zeta    , 0.0),
+                         'X1'    : (-zeta, 1.0-zeta, 0.0),
+                         'Y'     : ( -0.5, 0.5     , 0.0),
+                         'Z'     : (  0.0, 0.0     , 0.5)}
+
+
     if ibrav_var=='ORCF1':
        band_path = 'gG-Y-T-Z-gG-X-A1-Y|T-X1|X-A-Z|L-gG'
        eta =(1.0+(a/b)**2+(a/c)**2)/4.0
@@ -1366,26 +1378,13 @@ def _getHighSymPoints(oneCalc,ID=None):
                          'Y'     : (0.5, 0.0, 0.5),
                          'Z'     : (0.5, 0.5, 0.0)}
 
-    if ibrav_var=='ORCC':
-       band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
-       zeta=(1.0+(a/b)**2)/4.0
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'A'     : (zeta, zeta, 0.5),
-                         'A1'    : (-zeta, 1.0-zeta, 0.5),
-                         'R'     : (0.0, 0.5, 0.5),
-                         'S'     : (0.0, 0.5, 0.0),
-                         'T'     : (-0.5, 0.5, 0.5),
-                         'X'     : (zeta, zeta, 0.0),
-                         'X1'    : (-zeta, 1.0-zeta, 0.0),
-                         'Y'     : (-0.5, 0.5, 0.0),
-                         'Z'     : (0.0, 0.0, 0.5)}
          
     if ibrav_var=='ORCI':
          band_path = 'gG-X-L-T-W-R-X1-Z-gG-Y-S-W|L1-Y|Y1-Z'
          chi   = (1.0  + (a/c)**2)/(4.0)
          eta   = (1.0  + (b/c)**2)/(4.0)
-         delta = ((b/c)**2 - (a/c)**2    )/(4.0)
-         mu    = ((b/c)**2 + (a/c)**2    )/(4.0)
+         delta = ( (b/c)**2 - (a/c)**2    )/(4.0)
+         mu    = ( (b/c)**2 + (a/c)**2    )/(4.0)
          special_points = {'gG'   : (0, 0, 0),
                            'L'    : (-mu, mu, 0.5-delta),
                            'L1'   : (mu, -mu, 0.5+delta),
@@ -1478,10 +1477,10 @@ def _getHighSymPoints(oneCalc,ID=None):
     if ibrav==3:
         aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0     
         qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0     
-    if ibrav==4:
-        s32 = numpy.sqrt(3)/2.0
-        aflow_conv = numpy.asarray([[ 0.5,-s32, 0.0],[ 0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
-        qe_conv    = numpy.asarray([[ 1.0, 0.0, 0.0],[-0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
+#    if ibrav==4:
+#        s32 = numpy.sqrt(3)/2.0
+#        aflow_conv = numpy.asarray([[ 0.5,-s32, 0.0],[ 0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
+#        qe_conv    = numpy.asarray([[ 1.0, 0.0, 0.0],[-0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
     if ibrav==7:
         aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
         qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0],[ 1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
@@ -1504,7 +1503,10 @@ def _getHighSymPoints(oneCalc,ID=None):
 
     for k,v in special_points.iteritems():
         first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-        second = qe_conv.dot(first)
+        if ibrav == 9:
+            second = qe_conv.T.dot(first)
+        else:
+            second = qe_conv.dot(first)
         special_points[k]=tuple((second).tolist())
 
 
@@ -2683,7 +2685,7 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
         gamma=numpy.arccos(celldm6)
 
         twoone = c*(numpy.cos(alpha)-numpy.cos(beta)*numpy.cos(gamma))/numpy.sin(gamma)
-        insert =  1 + 2*celldm4*celldm5*celldm6-celldm4**2-celldm5**2-celldm6**2
+        insert =  1.0 + 2.0*celldm4*celldm5*celldm6-celldm4**2-celldm5**2-celldm6**2
         twotwo = c*numpy.sqrt(insert)/numpy.sin(gamma)
 
         matrix=numpy.matrix(((a,                  0,                  0),
