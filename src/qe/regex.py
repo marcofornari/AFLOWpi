@@ -110,12 +110,16 @@ def atomic_positions(string,return_which='content',regex_or_string='string'):
 
 
     if return_which=='content':
+        content_return = re.compile(r'(?:ATOMIC_POSITIONS)(?:(?:\s*[\[\(\{]*)\s*(?:\w*)\s*(?:[\]\)\}]*))\s*\n(\s*(?:(?:[A-Za-z0-9]+)\s+(?:[-0-9.]+)\s+(?:[-0-9.]+)\s+(?:[-0-9.]+)\s*(?:[-0-9.]+)\s*[\s\d]*\n*)+)(?=(?:[A-Z|_|\s]+\n)|)',re.MULTILINE)    
+        if regex_or_string=='regex':
+            return content_return
+
         try:
             modifier = modifier_regex.findall(string)[-1]
         except Exception,e:
             return ''
 
-        content_return = re.compile(r'(?:ATOMIC_POSITIONS)(?:(?:\s*[\[\(\{]*)\s*(?:\w*)\s*(?:[\]\)\}]*))\s*\n(\s*(?:(?:[A-Za-z0-9]+)\s+(?:[-0-9.]+)\s+(?:[-0-9.]+)\s+(?:[-0-9.]+)\s*(?:[-0-9.]+)\s*[\s\d]*\n*)+)(?=(?:[A-Z|_|\s]+\n)|)',re.MULTILINE)    
+
 
 
     if regex_or_string=='string':

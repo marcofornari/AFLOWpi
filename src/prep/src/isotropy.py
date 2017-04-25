@@ -135,6 +135,7 @@ K_POINTS {automatic}
             cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix)
 
             pos_with_labs = AFLOWpi.qe.regex.atomic_positions(self.input,'content') 
+
             labels=[]
             positions = []
             
@@ -142,6 +143,9 @@ K_POINTS {automatic}
                 split_pos = i.split()
                 try:
                     labels.append(split_pos[0])
+                    split_pos[1]=str(float(split_pos[1])%1.0)
+                    split_pos[2]=str(float(split_pos[2])%1.0)
+                    split_pos[3]=str(float(split_pos[3])%1.0)
                     positions.append(' '.join(split_pos[1:4]))
                 except:
                     pass
@@ -187,6 +191,7 @@ K_POINTS {automatic}
         isotropy_input_str+='%s\n'%self.accuracy
         isotropy_input_str+='1\n'
         isotropy_input_str+=cm_string
+
         isotropy_input_str+='2\n'
         isotropy_input_str+='P'+'\n'
         isotropy_input_str+='%s\n'%num_atoms
@@ -565,7 +570,7 @@ K_POINTS {automatic}
 
         '''make unique a or b monoclinic into unique c'''
         if self.ibrav in [12,13]:
-            if np.isclose(self.conv_beta,self.conv_gamma):
+            if np.isclose(self.conv_beta,self.conv_gamma) and not np.isclose(self.conv_beta,self.conv_alpha):
                 #all_eq_pos=all_eq_pos[:,[1,2,0]]
                 temp_a=self.conv_b
                 temp_b=self.conv_c
@@ -580,7 +585,7 @@ K_POINTS {automatic}
                 self.conv_beta  = temp_beta
                 self.conv_gamma = temp_gamma
 
-            elif np.isclose(self.conv_alpha,self.conv_gamma):
+            elif np.isclose(self.conv_alpha,self.conv_gamma) and not np.isclose(self.conv_beta,self.conv_gamma):
                 all_eq_pos=all_eq_pos[:,[2,0,1]]
                 
                 #print self.conv_alpha

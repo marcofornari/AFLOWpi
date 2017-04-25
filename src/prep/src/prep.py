@@ -5604,126 +5604,161 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
     
     '''
 
-    try:
-        logging.debug('entering _oneUpdateStructs')
-        d=oneCalc
-        f=ID
-        output_calcs = {}
-        
-        subdir = d['_AFLOWPI_FOLDER_']
-        inputfile = d['_AFLOWPI_INPUT_']
-        inputDict=AFLOWpi.retr._splitInput(inputfile)
-        for prevOut in reversed(oneCalc['prev']):
-            oldFile = os.path.join(subdir,'%s.out' % prevOut)
-            if not os.path.exists(oldFile):
-                continue
-            try:
-                outputfile = file(oldFile,'r').read()
-                cellParaRE=AFLOWpi.qe.regex.cell_parameters('','content','regex')
-                cellPara = cellParaRE.findall(outputfile)
+    if True:
+	logging.debug('entering _oneUpdateStructs')
+	d=oneCalc
+	f=ID
 
-                if len(cellPara) != 0:
-                    cellPara=cellPara[-1]
-                    #Get alat
-                    alatRE = re.compile('alat=\s*(\d+.\d+)')
-                    alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*.*alat[\D]*([0-9.]*)',re.M)
-                    alatFind = alatSearch.findall(outputfile)
+
+	subdir = d['_AFLOWPI_FOLDER_']
+
+	inputfile = d['_AFLOWPI_INPUT_']
+	
+	splitInput = AFLOWpi.retr._splitInput(d['_AFLOWPI_INPUT_'])
+	in_copy_split=copy.deepcopy(splitInput)
+	for prevOut in reversed(oneCalc['prev']):
+	    oldFile = os.path.join(subdir,'%s.out' % prevOut)
+	    print oldFile
+	    if not os.path.exists(oldFile):
+		continue
+
+	    with open(oldFile,'r') as ofo:
+		    outputfile = ofo.read()
+	    
+
+	    pos_re=AFLOWpi.qe.regex.atomic_positions('','content','regex')
+	    try:
+		    pos=pos_re.findall(outputfile)[-1]
+
+
+		    
+		    in_copy_split['ATOMIC_POSITIONS']['__content__']=pos	    
+		    break
+	    except Exception,e:
+		    print e
+		    pass
+
+	for prevOut in reversed(oneCalc['prev']):
+
+	    oldFile = os.path.join(subdir,'%s.out' % prevOut)
+	    if not os.path.exists(oldFile):
+		continue
+	    try:
+		with open(oldFile,'r') as ofo:
+			outputfile = ofo.read()
+	    
+
+		cellParaRE=AFLOWpi.qe.regex.cell_parameters('','content','regex')
+		cellPara = cellParaRE.findall(outputfile)
+
+		if len(cellPara) != 0:
+                    alat=1.0
+		    cellPara=cellPara[-1]
+		    #Get alat
+		    alatRE = re.compile('alat=\s*(\d+.\d+)')
+		    alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*.*alat[\D]*([0-9.]*)',re.M)
+		    alatFind = alatSearch.findall(outputfile)
 		    try:
 			    alat = float(alatFind[-1])
-			    
+
 		    except:
 			    print "cant find alat from output. getting it from input"
-			    alat=float(inputDict["&system"]["celldm(1)"])
-                    #Get ibrav
-                    splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
-                    try:
-                        ibrav=int(splitInput['&system']['ibrav'])
-                    except:
-                        ibrav=0
-                    #Make cell parameter matrix
-                    temp = []
-                    splitPara = cellPara.split('\n')
-                    for item in splitPara:
-                        if len(item)!=0:
-                            temp.append([float(x) for x in item.split(' ') if len(x)!=0])
+			    alat=float(splitInput["&system"]["celldm(1)"])
+		    #Get ibrav
 
-		    if 'CELL_PARAMETERS' in splitInput.keys():
-			    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
-				    alat=1.0
+		    try:
+			ibrav=int(splitInput['&system']['ibrav'])
+		    except:
+			ibrav=0
+		    #Make cell parameter matrix
+		    temp = []
+		    splitPara = cellPara.split('\n')
+		    for item in splitPara:
+			if len(item)!=0:
+			    temp.append([float(x) for x in item.split(' ') if len(x)!=0])
+
+		    # if 'CELL_PARAMETERS' in splitInput.keys():
+		    # 	    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
+		    # 		    alat=1.0
 
 		    cellParaMatrix = alat*np.array(temp).astype(np.float)
+		    in_copy_split["&system"]["ibrav"]=0
+		    try:
+			    del in_copy_split["&system"]["celldm(1)"]
+		    except: pass
+		    try:
+			    del in_copy_split["&system"]["celldm(2)"]
+		    except: pass
+		    try:
+			    del in_copy_split["&system"]["celldm(3)"]
+		    except: pass
+		    try:
+			    del in_copy_split["&system"]["celldm(4)"]
+		    except: pass
+		    try:
+			    del in_copy_split["&system"]["celldm(5)"]
+		    except: pass
+		    try:
+			    del in_copy_split["&system"]["celldm(6)"]
+		    except: pass
 
-                    #Update cell dimensions according to ibrav and alat
-                    ibravDict = AFLOWpi.retr._free2celldm(cellParaMatrix,ibrav=ibrav)                    
-                    ibravDict['ibrav']=ibrav
+		    in_copy_split["CELL_PARAMETERS"]={}
+		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cellParaMatrix)
+		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{bohr}'
 
-                    break
-                else:
-                    pass
-
-            except Exception,e:
-                AFLOWpi.run._fancy_error_log(e)
-
-        for prevOut in reversed(oneCalc['prev']):
-            oldFile = os.path.join(subdir,'%s.out' % prevOut)
-            if not os.path.exists(oldFile):
-                continue
-            outputfile = file(oldFile,'r').read()
-            try:
-                atmPos  = AFLOWpi.qe.regex.atomic_positions(outputfile)
+		    break
 
 
-                if len(atmPos.strip())!=0:
-                    break
-            except Exception,e:
-                AFLOWpi.run._fancy_error_log(e)
+		else:
+		    pass
+
+	    except Exception,e:
+		AFLOWpi.run._fancy_error_log(e)
 
 
-        splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])   
-        try:
-            if update_structure==True:
-		    if 'CELL_PARAMETERS' in splitInput.keys():
-			    splitInput['CELL_PARAMETERS']['__content__']=AFLOWpi.retr._cellMatrixToString(cellParaMatrix)
-		    else:
-			    for item in ibravDict.items():	
-				    splitInput['&system'].update({item[0]:item[1]})
-        except:
-            pass
-        try:
-            if update_positions==True:
-                if len(atmPos.strip())!=0:
-                    atom_pos_input = splitInput['ATOMIC_POSITIONS']['__content__']
-                    fakeFlags,flags=AFLOWpi.retr.detachPosFlags(atom_pos_input)
-                    atmPos,outputflags=AFLOWpi.retr.detachPosFlags(atmPos)
-                    atmPos=AFLOWpi.retr.attachPosFlags(atmPos,flags)
-                    splitInput['ATOMIC_POSITIONS']['__content__']=atmPos        
-                    splitInput['ATOMIC_POSITIONS']['__modifier__']='{crystal}'
-        except Exception,e:
-            pass
+    out_in = AFLOWpi.retr._joinInput(in_copy_split)
+    oneCalc["_AFLOWPI_INPUT_"]=out_in    
+    try:	    
 
-        inputfile = AFLOWpi.retr._joinInput(splitInput)
+
+	    iso    = AFLOWpi.prep.isotropy()
+
+	    iso.qe_input(out_in,accuracy=0.005)
+	    tmp_in = iso.convert(ibrav=True,)
+	    split_tmp = AFLOWpi.retr._splitInput(tmp_in)
+	    splitInput["&system"]["ibrav"]=split_tmp["&system"]["ibrav"]
+	    splitInput["&system"]["celldm(1)"]=split_tmp["&system"]["celldm(1)"]
+	    splitInput["&system"]["celldm(2)"]=split_tmp["&system"]["celldm(2)"]
+	    splitInput["&system"]["celldm(3)"]=split_tmp["&system"]["celldm(3)"]
+	    splitInput["&system"]["celldm(4)"]=split_tmp["&system"]["celldm(4)"]
+	    splitInput["&system"]["celldm(5)"]=split_tmp["&system"]["celldm(5)"]
+	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
+	    splitInput["ATOMIC_POSITIONS"]["__content__"]=split_tmp["ATOMIC_POSITIONS"]["__content__"]
+	    atom_pos_input = splitInput['ATOMIC_POSITIONS']['__content__']
+
+	    fakeFlags,flags=AFLOWpi.retr.detachPosFlags(atom_pos_input)
+	    atmPos,outputflags=AFLOWpi.retr.detachPosFlags(split_tmp['ATOMIC_POSITIONS']['__content__'])
+	    atmPos=AFLOWpi.retr.attachPosFlags(atmPos,flags)
+	    splitInput['ATOMIC_POSITIONS']['__content__']=atmPos	    
 
     except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+	    AFLOWpi.run._fancy_error_log(e)
+	    print e
 
-    try:
-        '''Update CELL_PARAMETERS and ATOMIC_POSITIONS from vc-relax or relax output'''
-        output_calcs = copy.deepcopy(d)
-        output_calcs['_AFLOWPI_INPUT_'] = inputfile
-    except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+    inputfile=AFLOWpi.retr._joinInput(splitInput)
 
 
+    oneCalc["_AFLOWPI_INPUT_"]=inputfile
     logging.debug('exiting _oneUpdateStructs')
     '''written funny because output needs to be oneCalc,ID'''
     try:
-	    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
-		    newIn.write(output_calcs['_AFLOWPI_INPUT_'])
+     	    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
+     		    newIn.write(oneCalc['_AFLOWPI_INPUT_'])
 
     except Exception,e:
-        AFLOWpi.run._fancy_error_log(e)
+         AFLOWpi.run._fancy_error_log(e)
 
-    return output_calcs,ID
+    return oneCalc,ID
 
 
 @newstepWrapper(_check_lock)

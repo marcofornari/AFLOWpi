@@ -441,6 +441,10 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
 
                 try:
                         nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)
+
+                        if "noncolin" in splitInput['&system'].keys():
+                            nbnd*=2
+
                         if unoccupied_states==True:
                             nbnd = int(1.75*nbnd)
                             splitInput['&system']['nbnd']= nbnd                        
