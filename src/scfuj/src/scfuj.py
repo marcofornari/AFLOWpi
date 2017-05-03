@@ -14,6 +14,34 @@ import itertools
 import collections
 import csv
 
+def _get_PAO_orb_count(ID,oneCalc):
+    out_str = AFLOWpi.retr._getOutputString(oneCalc,ID)
+
+    spec = re.compile('\s*PseudoPot\..*for\s*([A-Za-z]*) read from file:')
+
+    orbs = re.compile('l\((\d+)\)\s*=\s*(\d+)')
+    spec_num_atom =  AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=True)
+
+    orbs_list = orbs.findall(out_str)
+    spec_list = spec.findall(out_str)
+
+    orb_dict={}
+    orb_count=999
+    spec_counter=-1
+    for i in xrange(len(orbs_list)):
+        if orb_count>int(orbs_list[i][0]):
+            spec_counter+=1
+            orb_dict[spec_list[spec_counter]]=0
+
+        orb_count = int(orbs_list[i][0])
+        orb_dict[spec_list[spec_counter]]+=int(orbs_list[i][1])*2+1
+
+    tot_orbs=0
+    for spec,norb in orb_dict.iteritems():
+        tot_orbs+=spec_num_atom[spec]*norb
+    
+    return tot_orbs
+
 def _want_txt_to_bin(fpath,fname):
 
     fns=fname.split(".")
@@ -440,25 +468,28 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                 splitInput = AFLOWpi.retr._splitInput(inputfile)
 
                 try:
-                        nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)
+                        # nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)
 
-                        if "noncolin" in splitInput['&system'].keys():
-                            nbnd*=2
+                        # if "noncolin" in splitInput['&system'].keys():
+                        #     nbnd*=2
 
-                        if unoccupied_states==True:
-                            nbnd = int(1.75*nbnd)
-                            splitInput['&system']['nbnd']= nbnd                        
-                        elif type(unoccupied_states)==type(357):
-                            nbnd = int(1.00*nbnd)
-                            splitInput['&system']['nbnd']= nbnd+unoccupied_states
-                        else:
-                            nbnd = int(1.00*nbnd)
-                            splitInput['&system']['nbnd']= nbnd                       
-                            
-                        print 'Number of bands to be Calculated %s: '% nbnd
-                        logging.info('Number of bands to be Calculated %s: '% nbnd)
+                        # if unoccupied_states==True:
+                        #     nbnd = int(1.75*nbnd)
+                        #     splitInput['&system']['nbnd']= nbnd                        
+                        # elif type(unoccupied_states)==type(357):
+                        #     nbnd = int(1.00*nbnd)
+                        #     splitInput['&system']['nbnd']= nbnd+unoccupied_states
+                        # else:
+                        #     nbnd = int(1.00*nbnd)
+                        #     splitInput['&system']['nbnd']= nbnd                       
+                        # nbnd=36
 
-
+                        # print 'Number of bands to be Calculated %s: '% nbnd
+                        # logging.info('Number of bands to be Calculated %s: '% nbnd)
+                        
+                        '''do nbnd==number of projectors'''
+                        nbnd = AFLOWpi.scfuj._get_PAO_orb_count(ID,oneCalc)
+                        splitInput['&system']['nbnd']=nbnd
 
  			'''checks to see if nbnd has already been added to the file - in any case add/replace nbnd'''
 #                        if "occupations" in splitInput['&system'].keys():
