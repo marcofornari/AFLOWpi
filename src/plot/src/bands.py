@@ -133,7 +133,7 @@ def __getPath_WanT(oneCalc,ID):
 		    if band!=by_band.shape[0]-1:
 			    ofs+="\n"
 
-	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_down_cleaned.dat'%calcID)
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
 	    with open(filebands,"w") as ofo:
 		    ofo.write(ofs)
 
@@ -141,12 +141,12 @@ def __getPath_WanT(oneCalc,ID):
 	    nspin=1
 
     if nspin==2:
-	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_up_cleaned.dat'%calcID)
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_up_cleaned.dat'%calcID)
     else:
-	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_want_cleaned.dat'%calcID)
+	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_cleaned.dat'%calcID)
     try:
 	    ofs=""
-	    for band in xrange(by_band.shape[0]):
+	    for band in xrange(1,by_band.shape[0]):
 		    for kpt in xrange(by_band.shape[1]):
 			    ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
 		    if band!=by_band.shape[0]-1:
@@ -309,11 +309,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 #			AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
 #		except:
 #			return
-		filebands = os.path.join(subdir,'%s_bands_want_cleaned.dat'%calcID)
+		filebands = os.path.join(subdir,'%s_bands_paopy_cleaned.dat'%calcID)
 		if not os.path.exists(filebands):
 
-			filebands_up = os.path.join(subdir,'%s_bands_want_up_cleaned.dat'%calcID)
-			filebands_dn = os.path.join(subdir,'%s_bands_want_down_cleaned.dat'%calcID)
+			filebands_up = os.path.join(subdir,'%s_bands_paopy_up_cleaned.dat'%calcID)
+			filebands_dn = os.path.join(subdir,'%s_bands_paopy_down_cleaned.dat'%calcID)
                 Efermi_shift=Efermi
 
 	else:
