@@ -571,13 +571,13 @@ K_POINTS {automatic}
         '''make unique a or b monoclinic into unique c'''
         if self.ibrav in [12,13]:
             if np.isclose(self.conv_beta,self.conv_gamma) and not np.isclose(self.conv_beta,self.conv_alpha):
-                #all_eq_pos=all_eq_pos[:,[1,2,0]]
+                all_eq_pos=all_eq_pos[:,[1,2,0]]
                 temp_a=self.conv_b
                 temp_b=self.conv_c
                 temp_c=self.conv_a
-                temp_alpha=self.conv_gamma
-                temp_beta =self.conv_alpha
-                temp_gamma=self.conv_beta
+                temp_alpha=self.conv_beta
+                temp_beta =self.conv_gamma
+                temp_gamma=self.conv_alpha
                 self.conv_a=temp_a
                 self.conv_b=temp_b
                 self.conv_c=temp_c
@@ -725,7 +725,30 @@ K_POINTS {automatic}
             input_dict['ATOMIC_POSITIONS']={}
             input_dict['ATOMIC_POSITIONS']["__modifier__"]="{crystal}"
             input_dict['ATOMIC_POSITIONS']['__content__']=atm_pos_str        
-        
+
+
+        """reorder MP kpoint grid if axes change ordering"""
+        mod = input_dict['K_POINTS']['__modifier__'].strip("{").strip("}").strip("(").strip(")").lower()
+        if mod=="automatic":
+            kp = np.array(map(int,input_dict['K_POINTS']['__content__'].split()))
+            cell_vec=AFLOWpi.retr.abc2free(self.conv_a,self.conv_b,self.conv_c,self.conv_alpha,
+                                           self.conv_beta,self.conv_gamma,self.ibrav,returnString=False)
+
+            '''recip lattice'''
+            cell_vec=np.linalg.inv(cell_vec)
+            '''prim recip lattice vectors lengths'''
+
+            prim_a = (np.sqrt(cell_vec[0].dot(cell_vec[0].T))).getA()[0][0]
+            prim_b = (np.sqrt(cell_vec[1].dot(cell_vec[1].T))).getA()[0][0]
+            prim_c = (np.sqrt(cell_vec[2].dot(cell_vec[2].T))).getA()[0][0]
+
+            '''find the order from smallest to largest of the recip lattice vec'''
+            ordering = np.argsort(np.array([prim_a,prim_b,prim_c]))
+
+            '''order new kp grid with largest for smallest real space vector'''
+            kp[:3][ordering] = np.sort(kp[:3])
+            input_dict['K_POINTS']['__content__'] =  ' '.join(map(str,kp.tolist()))
+
         qe_convention_input=AFLOWpi.retr._joinInput(input_dict)
         '''convert to celldm'''
         qe_convention_input = AFLOWpi.prep._transformInput(qe_convention_input)

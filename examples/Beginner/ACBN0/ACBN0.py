@@ -14,7 +14,7 @@ calcs.vcrelax()
 calcs.dos()
 calcs.plot.opdos(yLim=[-10,10],postfix='without_acbn0')
 # calculate the bands for SrTiO3
-calcs.bands(nk=400)
+calcs.bands(nk=200)
 # do the plot the Electronic Band Structure
 # and atom projected DOS for SrTiO3
 calcs.plot.bands(yLim=[-10,10],DOSPlot='APDOS',
@@ -29,13 +29,13 @@ calcs.dos()
 # do the plot the Oribital Proj. DOS for PBE+U SrTiO3
 calcs.plot.opdos(yLim=[-10,10],postfix='with_acbn0')
 # calculate the bands for PBE+U SrTiO3
-calcs.bands(nk=400)
+calcs.bands(nk=200)
 # do the plot the Electronic Band Structure
 # and atom projected DOS for PBE+U SrTiO3
 calcs.plot.bands(yLim=[-10,10],DOSPlot='APDOS',
                  postfix='with_acbn0')
 # run the calculation workflow
-#calcs.submit()
+calcs.submit()
 
 
 

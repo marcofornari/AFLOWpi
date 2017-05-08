@@ -10,7 +10,7 @@ calcs = session.from_file(['CRAWL_MIN_2D.in',])
 calcs.crawl_min(constraint=['fixed','c'],
                 initial_variance=0.05,
                 thresh=0.0001,grid_density=10,
-                mult_jobs=False)
+                mult_jobs=True)
 #do a vc-relax at the end just for verification
 calcs.vcrelax()
 # submit the calcs to run

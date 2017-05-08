@@ -15,7 +15,7 @@ calcs = session.scfs(allvars,'elastic.ref')
 calcs.vcrelax()
 # do the elastic constants with the ElaStic Package 
 # Install: http://exciting-code.org/elastic
-calcs.elastic(mult_jobs=False,num_dist=10,eta_max=0.001)
+calcs.elastic(mult_jobs=True,num_dist=10,eta_max=0.001)
 # submit the calcs to run
 calcs.submit()
 

@@ -2,10 +2,13 @@ import AFLOWpi.prep
 import os
 import numpy as np 
 
-def _run_paopy(oneCalc,ID):
+def _run_paopy(oneCalc,ID,acbn0=False):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOpy/src','test.py')
 
-    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+    if acbn0:
+        execPrefix=''
+    else:
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
     paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
 
@@ -81,23 +84,23 @@ def _add_paopy_dos(oneCalc,ID):
     with open(paopy_input,'a') as ifo:
         ifo.write('do_dos = True\n')
         ifo.write('delta = 0.05\n')
-        ifo.write('emin = -10.0\n')
-        ifo.write('emax =  10.0\n')
+        ifo.write('emin = -12.0\n')
+        ifo.write('emax =  12.0\n')
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_pdos = True\n')
         ifo.write('delta = 0.05\n')
         ifo.write('delta = 0.05\n')
-        ifo.write('emin = -10.0\n')
-        ifo.write('emax =  10.0\n')
+        ifo.write('emin = -12.0\n')
+        ifo.write('emax =  12.0\n')
 
-def _add_paopy_bands(oneCalc,ID,nk=5000):
+def _add_paopy_bands(oneCalc,ID,nk=1000):
     dk = AFLOWpi.retr._getPath_nk2dk(nk, oneCalc,ID=ID)
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_bands = True\n')
-        ifo.write('nk = 5000\n')
+        ifo.write('nk = %s\n'%nk)
 
 def _add_paopy_transport(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')

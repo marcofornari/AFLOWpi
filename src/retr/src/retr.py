@@ -2583,13 +2583,13 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if ibrav==5:
         c=celldm4
-        tx=numpy.sqrt((1-c)/2)
-        ty=numpy.sqrt((1-c)/6)
-        tz=numpy.sqrt((1+2*c)/3)
+        tx=numpy.sqrt((1.-c)/2.)
+        ty=numpy.sqrt((1.-c)/6.)
+        tz=numpy.sqrt((1.+2.*c)/3.)
 
-        matrix = celldm1*numpy.matrix(((tx  ,-ty  , tz),
-                                       (0   , 2*ty, tz),
-                                       (-tx ,-ty  , tz)))
+        matrix = celldm1*numpy.matrix(((tx  ,-ty   , tz),
+                                       (0   , 2.*ty, tz),
+                                       (-tx ,-ty   , tz)))
 
 
 
@@ -2604,19 +2604,19 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
                     
     if ibrav==-5:
         c=celldm4
-        tx=numpy.sqrt((1-c)/2)
-        ty=numpy.sqrt((1-c)/6)
-        tz=numpy.sqrt((1+2*c)/3)
-        u = tz - 2*numpy.sqrt(2)*ty
-        v = tz + numpy.sqrt(2)*ty
+        tx=numpy.sqrt((1-c)/2.)
+        ty=numpy.sqrt((1-c)/6.)
+        tz=numpy.sqrt((1+2*c)/3.)
+        u = tz - 2.*numpy.sqrt(2.)*ty
+        v = tz + numpy.sqrt(2.)*ty
         matrix = celldm1/numpy.sqrt(3)*numpy.matrix(((u,v,v),
-                                 (v,u,v),
+                                                     (v,u,v),
                                                      (v,v,u)))
 
     if ibrav==6:
-        matrix=celldm1*numpy.matrix(((1,0,0),
-                                     (0,1,0),
-                                     (0,0,celldm3)))
+        matrix=celldm1*numpy.matrix(((1.,0.,0.),
+                                     (0.,1.,0.),
+                                     (0.,0.,celldm3)))
 
     if ibrav==7:
         matrix = numpy.matrix((

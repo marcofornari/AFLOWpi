@@ -6,10 +6,8 @@ session = AFLOWpi.prep.init('mHT', 'zincblende',
 # choose the values for the keywords in the ref file
 allvars={}
 allvars.update(
-#_AFLOWPI_A_ = ('Ga','In'),
-#_AFLOWPI_B_ = ('As','P'),)
-_AFLOWPI_A_ = ('Si',),
-_AFLOWPI_B_ = ('Si',),)
+_AFLOWPI_A_ = ('Ga','In'),
+_AFLOWPI_B_ = ('As','P'),)
 # form the calculation set from ref input and allvars dict
 calcs = session.scfs(allvars,'mHT.ref')
 # relax the structure

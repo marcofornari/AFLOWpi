@@ -11,12 +11,12 @@ calcs.vcrelax()
 # transport properties with WanT at 300K and 400K 
 
 tb = calcs.tight_binding()
-tb.transport(temperature=[300,400])
+tb.transport()
 # plot optical and transport
 # properties at 300K and 400K
-
 tb.optical()
-calcs.plot.transport()
+tb.plot.transport()
+tb.plot.optical()
 # submit the workflow to run
 calcs.submit()
 

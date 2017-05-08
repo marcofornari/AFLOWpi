@@ -45,5 +45,5 @@ calcs=session.scfs(allvars,BaTiO3_input)
 # do an scf to get the energy grid
 calcs.scf()
 # start calculations 
-#calcs.submit()
+calcs.submit()
 

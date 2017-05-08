@@ -97,11 +97,17 @@ for j in modules:
 
 try:
    
-#   ISOTROPY = [(i,i) for i in glob.glob('ISOTROPY/*')]
-   EXTRA_FILES=['scfuj/acbn0_support/integs.py',
-                'scfuj/acbn0_support/acbn0.py',
-                'scfuj/acbn0_support/Molecule.py',
-                'scfuj/acbn0_support/pyints.py',]
+   ISOTROPY = glob.glob('src/ISOTROPY/*')
+
+
+   PAOPY_SRC = glob.glob('src/PAOpy/src/*')
+   PAOPY_DEF = glob.glob('src/PAOpy/src/defs/*')
+
+   ACBN0=['scfuj/acbn0_support/integs.py',
+          'scfuj/acbn0_support/acbn0.py',
+          'scfuj/acbn0_support/Molecule.py',
+          'scfuj/acbn0_support/pyints.py',]
+
 
 
 #   raise SystemExit
@@ -137,21 +143,28 @@ try:
 
                       
          package_data = {
+
+
+                        '':ISOTROPY,
+
+#                        'AFLOWpi':['PAOpy/'],
+#                        '': PAOPY,
+                        'AFLOWpi':['PAOpy/src/'],
+                        '': PAOPY_SRC,
+
+                        'AFLOWpi':['PAOpy/src/defs/'],
+                        '': PAOPY_DEF,
+                        },
+                        
 #                                'run.py',
 #                                'prep.py',
 #                                'retr.py',
 #                                'plot.py',
 #                                'pseudo.py',
 #                                'db.py'],
-
-                        'AFLOWpi':['ISOTROPY/*'],
-                        '': EXTRA_FILES,                            
-
-                        'AFLOWpi':['PAOpy/*/*'],
-                        '': EXTRA_FILES,                            
-                        
-                        'AFLOWpi.qe': ['regex.py',],},
-
+#         data_files=[("lib/python2.7/site-packages/AFLOWpi/PAOpy/",PAOPY_SRC),
+#                     ("lib/python2.7/site-packages/AFLOWpi/ISOTROPY/",ISOTROPY),
+#                     ],
 
 
 

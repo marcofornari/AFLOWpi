@@ -1,8 +1,8 @@
 ## uncomment to reserve entire node 
 ## use only if necessary
-#PBS -l nodes=1:ppn=28,feature=intel16
+#PBS -l nodes=1:ppn=16,feature=intel16
 #PBS -l walltime=3:59:00
-#PBS -l mem=128gb
+#PBS -l mem=32gb
 #PBS -e jabbersnacks.err 
 #PBS -o jabbersnacks.out 
 #PBS -oe jabbersnacks.oe.txt 

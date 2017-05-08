@@ -16,7 +16,7 @@ CUB perovskite template for AFLOWPIrame
     ntyp=3, 
     ecutwfc = 60.,
     ecutrho = 720.,
-    smearing = 'cold',
+
 
  /
  &electrons

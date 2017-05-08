@@ -77,7 +77,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                             'ft':'$Conduction$:',
                                             'lc':r'{\sigma/\tau}',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':r'$\sigma/\tau$ $(10^{20}$ $m/s/\Omega)$ ',
+                                            'yl':r'$\sigma/\tau$ $(10^{21}$ $m/s/\Omega)$ ',
                                             'fp':'CONDUCTION',
 
                                             }
@@ -281,7 +281,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 			    elif Type=='sig_seebeck':
 				    y_vals=numpy.asarray(y_vals)/1.0e-9
 			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)/1.0e20
+				    y_vals=numpy.asarray(y_vals)
+
 			    if x_range==None:
 				    max_x=max(x_vals)
 				    min_x=min(x_vals)
@@ -339,7 +340,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 			    elif Type=='sig_seebeck':
 				    y_vals=numpy.asarray(y_vals)/1.0e-3
 			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)/1.0e20
+				    y_vals=numpy.asarray(y_vals)
+
 
 			    if x_range==None:
 				    max_x=max(x_vals)
@@ -534,9 +536,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=50,horizontalalignment='center') #[x,y] 
 
                 if postfix!='':
-                    postfix='_'+postfix
+                    postfix_append='_'+postfix
 
-                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.pdf'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix))
+                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.pdf'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append))
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
 
@@ -576,7 +578,7 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
 			for x in split_line:
 				float_array.append(float(x))
 			en_array.append(float_array[0])
-			val_array.append(sum([float_array[1],float_array[2],float_array[3]]))
+			val_array.append(sum([float_array[1],float_array[2],float_array[3]])/3.0)
 		except:
 			pass
 

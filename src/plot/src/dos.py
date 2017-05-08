@@ -340,7 +340,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	for atom in atomList:
 		byAtom=[]
 		for orbital in orbitalList:
-			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*%s*' % (glob_ID,atom,orbital)))
+			pDOSFiles= glob.glob(os.path.join(subdir,'%s.pdos_atm*(%s)*wfc*%s*' % (glob_ID,atom,orbital)))
 
 			if len(pDOSFiles):
 				byAtom.append({'%s' % orbital:pDOSFiles})

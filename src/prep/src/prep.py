@@ -5733,6 +5733,13 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    splitInput["&system"]["celldm(4)"]=split_tmp["&system"]["celldm(4)"]
 	    splitInput["&system"]["celldm(5)"]=split_tmp["&system"]["celldm(5)"]
 	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
+	    try:
+		    mod = split_tmp["K_POINTS"]["__modifier__"].strip("{").strip("}").strip("(").strip(")").lower()
+		    if mod=='automatic':
+			    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
+	    except Exception,e:
+		    print e
+		    
 	    splitInput["ATOMIC_POSITIONS"]["__content__"]=split_tmp["ATOMIC_POSITIONS"]["__content__"]
 	    atom_pos_input = splitInput['ATOMIC_POSITIONS']['__content__']
 

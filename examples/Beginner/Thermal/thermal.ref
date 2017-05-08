@@ -8,8 +8,8 @@
 &system                                                                                                              
     ibrav=2,celldm(1)=10.68499993031742
     nat=4,ntyp=2,                                                                                                     
-    ecutwfc = 20.,                                                                                                    
-    ecutrho = 200.,                                                                                                   
+    ecutwfc = 30.,                                                                                                    
+    ecutrho = 240.,                                                                                                   
 /                                                                                                                     
 &electrons                                                                                                            
     diagonalization = 'david',                                                                                        

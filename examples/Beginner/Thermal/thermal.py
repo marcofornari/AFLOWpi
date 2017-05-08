@@ -23,7 +23,7 @@ calcs.plot.phonon()
 
 
 # submit the calcs to run
-#calcs.submit()
+calcs.submit()
 
 
 
