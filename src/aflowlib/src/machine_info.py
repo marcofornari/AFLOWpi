@@ -1,36 +1,25 @@
-import re
-import subprocess
-import AFLOWpi
+# ***************************************************************************
+# *                                                                         *
+# *          AFLOWpi - Central Michigan University University, 2017         *
+# *                                                                         *
+# ***************************************************************************
+#
+#  Copyright 2017 - Andrew Supka and Marco Fornari - AFLOW.ORG consortium
+#
+#  This file is part of AFLOW software.
+#
+#  AFLOW is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# ***************************************************************************
 
-def __grab__hostname(oneCalc,ID):
-    status = subprocess.Popen("uname -n",stdout=subprocess.PIPE,shell=True)
-    hostname = status.communicate()[0]
-    return hostname.strip('\n').strip()
-
-def __grab__kernel_version(oneCalc,ID):
-    status = subprocess.Popen("uname -r",stdout=subprocess.PIPE,shell=True)
-    kernel_version = status.communicate()[0]
-    return kernel_version.strip('\n').strip()
-
-def __grab__architecture(oneCalc,ID):
-    status = subprocess.Popen("uname -m",stdout=subprocess.PIPE,shell=True)
-    arch = status.communicate()[0]
-    return arch.strip('\n').strip()
-
-def __grab__os(oneCalc,ID):
-    status = subprocess.Popen("lsb_release -a",stdout=subprocess.PIPE,shell=True)
-    output = status.communicate()[0]
-    try:
-        flavor = re.findall('.*Distributor ID:\s*(\w*)\s*',output)[0]
-    except:
-        flavor=''
-    return flavor.strip('\n').strip()
-
-def __grab__os_version(oneCalc,ID):
-    status = subprocess.Popen("lsb_release -a",stdout=subprocess.PIPE,shell=True)
-    output = status.communicate()[0]
-    try:
-        version = re.findall('.*Release:\s*([\w.-_]*)\s*',output)[0]
-    except:
-        version=''
-    return version.strip('\n').strip()
