@@ -399,11 +399,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			try:
 				
 				if tight_banding==True:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
-					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 				else:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
-					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
@@ -516,7 +516,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		if int(HSPList[i]) == 0 and i<len(HSPList)-2: # for the end of a path (where the number of k points between one point and another is zero)
 			continue
 		elif int(HSPList[i+1]) == 0 and i!=len(HSPList)-2: # for the point that begins a new path where the end of the last path (which has zero k points from it to this k point)
-			totalX +=(int(HSPList[i])+1)
+			if not tight_banding:
+				totalX +=(int(HSPList[i])+1)
+			else:
+				totalX +=(int(HSPList[i]))
 			symIndex.append(totalX)
 			mid = '|'
 			pathBetweenString = HSPSymList[i+1]+mid+HSPSymList[i+2]
