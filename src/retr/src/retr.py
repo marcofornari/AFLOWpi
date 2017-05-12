@@ -1210,8 +1210,8 @@ def _getHighSymPoints(oneCalc,ID=None):
     elif ibrav==12: ibrav_var =  'MCL'
 
     elif ibrav==5:
-        if   alpha < numpy.pi/2.0: ibrav_var = 'RHL1'
-        elif alpha > numpy.pi/2.0: ibrav_var = 'RHL2'
+        if   alpha < 90.0: ibrav_var = 'RHL1'
+        elif alpha > 90.0: ibrav_var = 'RHL2'
     elif ibrav==7:
         if(c < a):   ibrav_var =  'BCT1'
         elif(c > a): ibrav_var =  'BCT2'
