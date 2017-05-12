@@ -493,35 +493,13 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                 splitInput = AFLOWpi.retr._splitInput(inputfile)
 
                 try:
-                        # nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)
 
-                        # if "noncolin" in splitInput['&system'].keys():
-                        #     nbnd*=2
-
-                        # if unoccupied_states==True:
-                        #     nbnd = int(1.75*nbnd)
-                        #     splitInput['&system']['nbnd']= nbnd                        
-                        # elif type(unoccupied_states)==type(357):
-                        #     nbnd = int(1.00*nbnd)
-                        #     splitInput['&system']['nbnd']= nbnd+unoccupied_states
-                        # else:
-                        #     nbnd = int(1.00*nbnd)
-                        #     splitInput['&system']['nbnd']= nbnd                       
-                        # nbnd=36
-
-                        # print 'Number of bands to be Calculated %s: '% nbnd
-                        # logging.info('Number of bands to be Calculated %s: '% nbnd)
-                        
                         '''do nbnd==number of projectors'''
                         nbnd = AFLOWpi.scfuj._get_PAO_orb_count(ID,oneCalc)
-                        splitInput['&system']['nbnd']=nbnd
+                        splitInput['&system']['nbnd']=int(float(nbnd)*1.25)
 
  			'''checks to see if nbnd has already been added to the file - in any case add/replace nbnd'''
-#                        if "occupations" in splitInput['&system'].keys():
-#                            if splitInput['&system']["occupations"]!= 'smearing':
-#                                splitInput['&system']["occupations"]='"tetrahedra"'
-#                        else:
-#                            splitInput['&system']["occupations"]='"tetrahedra"'
+
 
 			'''Add nosym = .true. and noinv = .true. to file '''
 
