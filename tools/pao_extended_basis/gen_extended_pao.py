@@ -263,6 +263,8 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll):
     psp     = read_UPF(UPF_fullpath)
     wfc_ae  = np.loadtxt(wfc_ae_fullpath,skiprows=1)
 
+    print(wfc_ae.shape)
+
     nwfcs   = wfc_ae.shape[1]-1
 
     size    = wfc_ae.shape[0]
