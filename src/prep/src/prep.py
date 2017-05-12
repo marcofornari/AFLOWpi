@@ -4550,7 +4550,8 @@ EXITING.
 
 		
 	def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
-
+		print 'converge_smeareing DISABLED. Coming soon.'
+		raise SystemExit
 		rel_low = relax.lower()
 		if rel_low not in ['vc-relax','relax','scf']:
 			print "Invalid option for relax parameter in converge_smearing!"
@@ -4647,7 +4648,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True):
 		workf = self.workflow
-
+		print 'thermal DISABLED. Coming soon.'
+		raise SystemExit
 		#check to see if phonon was already done and the structure hasn't changed since
 		#if structure has changed redo first set of phonons if it hasn't then skip doing
 		#it and just do the volume increase and the phonons at larger vol
@@ -4871,6 +4873,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
         def evCurve_min(self,pThresh=25,final_minimization='relax'):
+		print 'DISABLED. Untested.'
+		raise SystemExit
 		self.scf_complete=True
 		self.type='evCurve_min'
                 self.new_step(update_positions=True,update_structure=True)
@@ -4997,26 +5001,6 @@ class plotter:
 	def __init__(self,calcs):
 		self.calcs=calcs
 	
-
-	# def gruneisen(self,runlocal=False,with_phonons,postfix='',with_phonons=False):
-
-	# 	if runlocal==True:
-	# 		for ID,oneCalc in self.int_dict.iteritems():
-	# 			AFLOWpi.plot.__plot_gruneisen(oneCalc,ID,postfix=postfix,with_phonons=with_phonons)
-	# 	else:
-	# 		loadModString = 'AFLOWpi.plot.__plot_gruneisen(oneCalc,ID,postfix=%s,with_phonons=%s)'%(postfix,with_phonons)
-	# 		AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
-
-	# def thermal_conductivity(self,runlocal=False,temperature=[300.0,800.0],postfix=''):
-
-	# 	if runlocal==True:
-	# 		for ID,oneCalc in self.int_dict.iteritems():
-	# 			AFLOWpi.plot.__plot_thermal_conductivity(oneCalc,ID,postfix=postfix,temperature=temperature)
-	# 	else:
-	# 		loadModString = 'AFLOWpi.plot.__plot_thermal_conductivity(oneCalc,ID,postfix=%s,temperature=%s)'%(postfix,temperature)
-	# 		AFLOWpi.prep._addToAll(calcs,block='PREPROCESSING',addition=loadModString)
-
-
 	def opdos(self,yLim=[-10,10],runlocal=False,postfix=''):
 		'''
 		Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.

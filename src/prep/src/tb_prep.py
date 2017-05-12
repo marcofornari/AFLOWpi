@@ -224,92 +224,92 @@ def _rename_projectability(oneCalc,ID):
         except:
             pass
 
-def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10):
-    nscf_ID=ID+'_nscf'
+# def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10):
+#     nscf_ID=ID+'_nscf'
 
-    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-    else:
-        execPrefix=''
-
-
-
-    if '__effmass_counter__' not in oneCalc.keys():
-        #if an old effective mass data file exists delete it before we start
-        effmass_datafile_by_temp = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_effmass.dat'%ID)
-        if os.path.exists(effmass_datafile_by_temp):
-            os.remove(effmass_datafile_by_temp)
-        #set counter to zero
-        oneCalc['__effmass_counter__']=0
-        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-
-    cell_params = AFLOWpi.retr._getCellParams(oneCalc,ID)
-    k_grid = AFLOWpi.prep.getMPGrid(cell_params,offset=True,string=False)
-    try:
-        k_grid = [int(float(x)*10.0) for x in k_grid.split()[:3]]
-    except:
-        k_grid=[20,20,20]
-
-    Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
-    eShift=float(Efermi)+10.0
-
-    step_holder=step
-    step = (float(temperature[1])-float(temperature[0])+float(step_holder))/float(step)
-    temps = numpy.linspace(float(temperature[0]),float(temperature[1]),step)
-
-    #some constants
-    h_bar = numpy.float64(1.05457180*10.0**-34.0)
-    k_b   = numpy.float64(1.38064852*10.0**-23.0)
-    m_e   = numpy.float64(9.10938356*10.0**-31.0)
-
-    sf = numpy.power(k_b*m_e/(2.0*numpy.pi*numpy.power(h_bar,2.0)),(3.0/2.0))#*numpy.power((1.0/cm2m),2.0)
-
-
-    for temp_step in range(len(temps)):
-        if temp_step<oneCalc['__effmass_counter__']:
-            continue
-
-        want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,k_grid=k_grid,pdos=False,boltzmann=False,eShift=eShift,cond_bands=True,temperature=temps[temp_step])
-        this_temp = '%8.4f ' % float(temps[temp_step])
-        for want_dos_ID,want_dos in want_dos_calc.iteritems():
-            AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,engine='espresso',calcType='custom',execPath='./effmass.x',execPrefix=execPrefix,execPostfix='')
-
-            effmass_datafile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.dat'%want_dos_ID)
-            effmass_datafile_by_temp = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_effmass.dat'%ID)
-            with open(effmass_datafile,'r') as emdfo:
-                data_by_line = emdfo.readlines()
+#     if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
+#         execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+#     else:
+#         execPrefix=''
 
 
 
-            with open(effmass_datafile_by_temp,'a+') as emdfo:
+#     if '__effmass_counter__' not in oneCalc.keys():
+#         #if an old effective mass data file exists delete it before we start
+#         effmass_datafile_by_temp = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_effmass.dat'%ID)
+#         if os.path.exists(effmass_datafile_by_temp):
+#             os.remove(effmass_datafile_by_temp)
+#         #set counter to zero
+#         oneCalc['__effmass_counter__']=0
+#         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
-                for data_line in range(len(data_by_line)):
-                    if temp_step==0:
-                        if data_line==0:
-                            temp_as_str = 'Temperature '+data_by_line[data_line]
+#     cell_params = AFLOWpi.retr._getCellParams(oneCalc,ID)
+#     k_grid = AFLOWpi.prep.getMPGrid(cell_params,offset=True,string=False)
+#     try:
+#         k_grid = [int(float(x)*10.0) for x in k_grid.split()[:3]]
+#     except:
+#         k_grid=[20,20,20]
 
-                    else:
-                        if data_line==0:
-                            continue
-                        else:
-                            try:
+#     Efermi = AFLOWpi.retr._getEfermi(oneCalc,nscf_ID,directID=True)
+#     eShift=float(Efermi)+10.0
 
-                                emass = numpy.float64(data_by_line[data_line].strip('\n').split()[-1])
+#     step_holder=step
+#     step = (float(temperature[1])-float(temperature[0])+float(step_holder))/float(step)
+#     temps = numpy.linspace(float(temperature[0]),float(temperature[1]),step)
+
+#     #some constants
+#     h_bar = numpy.float64(1.05457180*10.0**-34.0)
+#     k_b   = numpy.float64(1.38064852*10.0**-23.0)
+#     m_e   = numpy.float64(9.10938356*10.0**-31.0)
+
+#     sf = numpy.power(k_b*m_e/(2.0*numpy.pi*numpy.power(h_bar,2.0)),(3.0/2.0))#*numpy.power((1.0/cm2m),2.0)
 
 
-                            except Exception,e:
-                                print e
-                                continue
-                            line_write = this_temp + data_by_line[data_line].strip('\n')+'\n'#+' %s\n'%(N_s)
-                            emdfo.write(line_write)
+#     for temp_step in range(len(temps)):
+#         if temp_step<oneCalc['__effmass_counter__']:
+#             continue
 
-        oneCalc['__effmass_counter__']=temp_step
-        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+#         want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,k_grid=k_grid,pdos=False,boltzmann=False,eShift=eShift,cond_bands=True,temperature=temps[temp_step])
+#         this_temp = '%8.4f ' % float(temps[temp_step])
+#         for want_dos_ID,want_dos in want_dos_calc.iteritems():
+#             AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,engine='espresso',calcType='custom',execPath='./effmass.x',execPrefix=execPrefix,execPostfix='')
 
-    del oneCalc['__effmass_counter__']
-    AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+#             effmass_datafile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.dat'%want_dos_ID)
+#             effmass_datafile_by_temp = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_effmass.dat'%ID)
+#             with open(effmass_datafile,'r') as emdfo:
+#                 data_by_line = emdfo.readlines()
 
-    return oneCalc,ID
+
+
+#             with open(effmass_datafile_by_temp,'a+') as emdfo:
+
+#                 for data_line in range(len(data_by_line)):
+#                     if temp_step==0:
+#                         if data_line==0:
+#                             temp_as_str = 'Temperature '+data_by_line[data_line]
+
+#                     else:
+#                         if data_line==0:
+#                             continue
+#                         else:
+#                             try:
+
+#                                 emass = numpy.float64(data_by_line[data_line].strip('\n').split()[-1])
+
+
+#                             except Exception,e:
+#                                 print e
+#                                 continue
+#                             line_write = this_temp + data_by_line[data_line].strip('\n')+'\n'#+' %s\n'%(N_s)
+#                             emdfo.write(line_write)
+
+#         oneCalc['__effmass_counter__']=temp_step
+#         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+
+#     del oneCalc['__effmass_counter__']
+#     AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+
+#     return oneCalc,ID
 
 def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,project=True,num_e=2001,cond_bands=True,fermi_surface=False,compute_ham=False,proj_thr=0.95,proj_sh=5.5):
     nscf_ID=ID+'_nscf'
@@ -381,7 +381,7 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                     orb_type=['s','p','d','f']
              
                     #the orig file name from WanT output
-                    orig_name = '%d_pdos%s.dat'%(state_num-1,dat_postfix)
+                    orig_name = '%d_pdosdk%s.dat'%(state_num-1,dat_postfix)
 
                     orig_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],orig_name)
                     if not os.path.exists(orig_path ):
