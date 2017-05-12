@@ -937,11 +937,15 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 	def gen_input(oneCalcID,subdir,nspin):
 		try:
 			#Get cell parameters, arranged as a single string in pattern a1i, a1j, a1k, a2i, a2j, a2k, a3i, a3j, a3k
-			a,cellParaMatrix=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
 
-                        """THINK OF A BETTER WAY TO CHECK THIS"""
+			a,cell=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
+                        """THINK OF A BETTER WAY TO CHECK THIS"""                        
+                        cellParaMatrix=cell
 
-
+                        
+                                
+                        
+                           
 
                         l=(cellParaMatrix*a).tolist()
 			cellParaStr = ""
@@ -985,8 +989,10 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
+
                         #in bohr
                         positions*=a
+
 
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
