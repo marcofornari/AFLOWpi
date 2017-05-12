@@ -49,12 +49,7 @@ import inspect
 
 orig_dir=os.path.abspath(os.curdir)
 def __init__gen(src_folder):
-   #import MTF
-   
 
-
-   ##modules=['prep','run','retr','plot','db','aflowlib','scfuj']
-   #@for mod in modules:
 
    os.chdir('%s'%src_folder)
    files = glob.glob('./*.py')
@@ -125,7 +120,6 @@ try:
    
    ISOTROPY = glob.glob('src/ISOTROPY/*')
 
-
    PAOPY_SRC = glob.glob('src/PAOpy/src/*')
    PAOPY_DEF = glob.glob('src/PAOpy/src/defs/*')
 
@@ -134,9 +128,6 @@ try:
           'scfuj/acbn0_support/Molecule.py',
           'scfuj/acbn0_support/pyints.py',]
 
-
-
-#   raise SystemExit
    setup(name = "AFLOWpi",
          version = "0.9.9",
          description = "Medium Throughput Framework for Quantum Espresso",
@@ -169,29 +160,10 @@ try:
 
                       
          package_data = {
-
-
-                        '':ISOTROPY,
-
-#                        'AFLOWpi':['PAOpy/'],
-#                        '': PAOPY,
-                        'AFLOWpi':['PAOpy/src/'],
-                        '': PAOPY_SRC,
-
-                        'AFLOWpi':['PAOpy/src/defs/'],
-                        '': PAOPY_DEF,
-                        },
-                        
-#                                'run.py',
-#                                'prep.py',
-#                                'retr.py',
-#                                'plot.py',
-#                                'pseudo.py',
-#                                'db.py'],
-#         data_files=[("lib/python2.7/site-packages/AFLOWpi/PAOpy/",PAOPY_SRC),
-#                     ("lib/python2.7/site-packages/AFLOWpi/ISOTROPY/",ISOTROPY),
-#                     ],
-
+                                  'AFLOWpi':['ISOTROPY/*'],
+                                  'AFLOWpi':['PAOpy/src/*/*'],
+                                  'AFLOWpi':['scfuj/acbn0_support/*'],
+                                  },
 
 
        ext_modules = ext_modules,
