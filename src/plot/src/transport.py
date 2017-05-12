@@ -175,19 +175,20 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 for ID_ent in ID_list:
 
                     search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-
+		    print search
                     file_name.extend(glob.glob(search))
 
                     file_name_up.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
                     file_name_down.extend(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) ))
 
-
+		
 
                 spin_polarized=False
                 if len(file_name_down)!=0:
                         spin_polarized=True
 
-
+		if len(file_name_down) == 0 and len(file_name) == 0:
+			continue
 
                 if spin_polarized==False:
                         ############################################################################################
