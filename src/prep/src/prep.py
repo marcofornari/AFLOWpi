@@ -5737,6 +5737,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    iso.qe_input(out_in,accuracy=0.005)
 	    tmp_in = iso.convert(ibrav=True,)
 	    split_tmp = AFLOWpi.retr._splitInput(tmp_in)
+	    splitInput["&system"]["nat"]=split_tmp["&system"]["nat"]
 	    splitInput["&system"]["ibrav"]=split_tmp["&system"]["ibrav"]
 	    splitInput["&system"]["celldm(1)"]=split_tmp["&system"]["celldm(1)"]
 	    splitInput["&system"]["celldm(2)"]=split_tmp["&system"]["celldm(2)"]
