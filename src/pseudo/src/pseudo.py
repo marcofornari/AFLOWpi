@@ -1336,26 +1336,41 @@ def _crawl_min_vars_to_calc(calc_subset):
                 val=float(cdmDict['celldm(1)'])
                 oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
                 refDictDict['&system']['celldm(1)']='_AFLOWPI_PARAM_%s_'%param
-            if param=='B':
-                val = float(cdmDict['celldm(1)'])*float(cdmDict['celldm(2)'])
-                oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
-                refDictDict['&system']['celldm(2)']='_AFLOWPI_PARAM_%s_'%param
-            if param=='C':
-                val = float(cdmDict['celldm(1)'])*float(cdmDict['celldm(3)'])
-                oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
-                refDictDict['&system']['celldm(3)']='_AFLOWPI_PARAM_%s_'%param
-            if param=='alpha':
-                val = numpy.arccos(float(cdmDict['celldm(4)']))*(180/numpy.pi)
-                oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
-                refDictDict['&system']['celldm(4)']='_AFLOWPI_PARAM_%s_'%param
-            if param=='beta':
-                val = numpy.arccos(float(cdmDict['celldm(5)']))*(180/numpy.pi)
-                oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
-                refDictDict['&system']['celldm(5)']='_AFLOWPI_PARAM_%s_'%param
-            if param=='gamma':
-                val = numpy.arccos(float(cdmDict['celldm(6)']))*(180/numpy.pi)
-                oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
-                refDictDict['&system']['celldm(6)']='_AFLOWPI_PARAM_%s_'%param
+            try:
+                if param=='B':
+                    val = float(cdmDict['celldm(1)'])*float(cdmDict['celldm(2)'])
+                    oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
+                    refDictDict['&system']['celldm(2)']='_AFLOWPI_PARAM_%s_'%param
+            except:
+                pass
+            try:
+                if param=='C':
+                    val = float(cdmDict['celldm(1)'])*float(cdmDict['celldm(3)'])
+                    oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
+                    refDictDict['&system']['celldm(3)']='_AFLOWPI_PARAM_%s_'%param
+            except:
+                pass
+            try:
+                if param=='alpha':
+                    val = numpy.arccos(float(cdmDict['celldm(4)']))*(180/numpy.pi)
+                    oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
+                    refDictDict['&system']['celldm(4)']='_AFLOWPI_PARAM_%s_'%param
+            except:
+                pass
+            try:
+                if param=='beta':
+                    val = numpy.arccos(float(cdmDict['celldm(5)']))*(180/numpy.pi)
+                    oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
+                    refDictDict['&system']['celldm(5)']='_AFLOWPI_PARAM_%s_'%param
+            except:
+                pass
+            try:
+                if param=='gamma':
+                    val = numpy.arccos(float(cdmDict['celldm(6)']))*(180/numpy.pi)
+                    oneCalc['_AFLOWPI_PARAM_%s_'%param]=val
+                    refDictDict['&system']['celldm(6)']='_AFLOWPI_PARAM_%s_'%param
+            except:
+                pass
 
 
 
@@ -1963,22 +1978,34 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
 					if l=='celldm(1)':
 						inputDict['&system']['celldm(1)']=oneCalc['_AFLOWPI_PARAM_A_']
-                                        
-					if l=='celldm(2)':
+                                        try:
+                                            if l=='celldm(2)':
 						inputDict['&system']['celldm(2)']=oneCalc['_AFLOWPI_PARAM_B_']/oneCalc['_AFLOWPI_PARAM_A_']
-					if l=='celldm(3)':
+                                        except:
+                                            pass
+                                        try:
+                                            if l=='celldm(3)':
 						inputDict['&system']['celldm(3)']=oneCalc['_AFLOWPI_PARAM_C_']/oneCalc['_AFLOWPI_PARAM_A_']
-					if l=='celldm(4)':
+                                        except:
+                                            pass
+                                        try:
+                                            if l=='celldm(4)':
 						newcelldm=numpy.arccos(oneCalc['_AFLOWPI_PARAM_ALPHA_']*180.0/numpy.pi)
 						inputDict['&system']['celldm(4)'] = newcelldm
-
-					if l=='celldm(5)':
+                                        except:
+                                            pass
+                                        try:
+                                            if l=='celldm(5)':
 						newcelldm=numpy.arccos(oneCalc['_AFLOWPI_PARAM_BETA_']*180.0/numpy.pi)
 						inputDict['&system']['celldm(5)'] = newcelldm
-
-					if l=='celldm(6)':
+                                        except:
+                                            pass
+                                        try:
+                                            if l=='celldm(6)':
 						newcelldm=numpy.arccos(oneCalc['_AFLOWPI_PARAM_GAMMA_']*180.0/numpy.pi)
 						inputDict['&system']['celldm(6)'] = newcelldm
+                                        except:
+                                            pass
 
 			if quit_bool==False:# in close2MaxList or True in close2MinList:
 				

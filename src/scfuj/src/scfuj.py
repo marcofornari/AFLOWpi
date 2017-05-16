@@ -937,15 +937,11 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 	def gen_input(oneCalcID,subdir,nspin):
 		try:
 			#Get cell parameters, arranged as a single string in pattern a1i, a1j, a1k, a2i, a2j, a2k, a3i, a3j, a3k
+			a,cellParaMatrix=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
 
-			a,cell=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
-                        """THINK OF A BETTER WAY TO CHECK THIS"""                        
-                        cellParaMatrix=cell
+                        """THINK OF A BETTER WAY TO CHECK THIS"""
 
-                        
-                                
-                        
-                           
+
 
                         l=(cellParaMatrix*a).tolist()
 			cellParaStr = ""
@@ -989,10 +985,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
-
                         #in bohr
                         positions*=a
-
 
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
@@ -1412,7 +1406,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 ##################################################################################################################
 	
 ##################################################################################################################
-        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=False)
+        pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,ovp=True)
 
 
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
@@ -1420,10 +1414,10 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=False)
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=False)
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
         AFLOWpi.scfuj._run_paopy(oneCalc,ID,acbn0=True)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)

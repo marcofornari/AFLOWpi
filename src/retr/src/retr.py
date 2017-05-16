@@ -843,11 +843,6 @@ def _getCellParams(oneCalc,ID):
     try:
 
         scfOutput = '%s.out' % ID
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
-                lines = outFile.read()
-
-
-        scfOutput = '%s.out' % ID
         if os.path.exists(scfOutput):
             with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],scfOutput),'r') as outFile:
                 lines = outFile.read()

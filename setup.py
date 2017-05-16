@@ -160,9 +160,8 @@ try:
 
                       
          package_data = {
-                                  'AFLOWpi':['ISOTROPY/*'],
-                                  'AFLOWpi':['PAOpy/src/*/*'],
-                                  'AFLOWpi':['scfuj/acbn0_support/*'],
+                                  'AFLOWpi':['ISOTROPY/*','PAOpy/src/*/*','PAOpy/src/*','scfuj/acbn0_support/*'],
+
                                   },
 
 
@@ -179,12 +178,13 @@ except Exception,e:
 
 
 
-
 try:
    import AFLOWpi
    FINDSYM_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','findsym')
    COMSUBS_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','comsubs')
    SMODES_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','smodes')
+
+
 
    if not os.access(SMODES_EXEC,3) and not os.access(COMSUBS_EXEC,3) and not os.access(FINDSYM_EXEC,3):
       print "INSTALLING ISOTROPY"
@@ -199,3 +199,6 @@ try:
 except Exception,e:
    print 'Could not install ISOTROPY package:',e
    
+
+
+

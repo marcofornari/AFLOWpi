@@ -593,6 +593,36 @@ K_POINTS {automatic}
             convert = AFLOWpi.retr.abc2free(a=1.0,b=1.0,c=1.0,alpha=90.0,beta=90.0,
                                             gamma=self.conv_gamma,ibrav=self.ibrav,returnString=False)
 
+
+
+        '''make A<B<C'''
+        if self.ibrav in [14]:           
+            cell_vec=AFLOWpi.retr.abc2free(self.conv_a,self.conv_b,self.conv_c,self.conv_alpha,
+                                           self.conv_beta,self.conv_gamma,self.ibrav,returnString=False)
+
+            prim_a = (np.sqrt(cell_vec[0].dot(cell_vec[0].T))).getA()[0][0]
+            prim_b = (np.sqrt(cell_vec[1].dot(cell_vec[1].T))).getA()[0][0]
+            prim_c = (np.sqrt(cell_vec[2].dot(cell_vec[2].T))).getA()[0][0]
+
+            sizes = np.array([prim_a,prim_b,prim_c])
+            order = np.argsort(sizes)
+
+            new_cell_vec =  cell_vec[order]
+
+            prim_a = (np.sqrt(new_cell_vec[0].dot(new_cell_vec[0].T))).getA()[0][0]
+            prim_b = (np.sqrt(new_cell_vec[1].dot(new_cell_vec[1].T))).getA()[0][0]
+            prim_c = (np.sqrt(new_cell_vec[2].dot(new_cell_vec[2].T))).getA()[0][0]
+
+            self.conv_alpha = np.arccos(new_cell_vec[1].dot(new_cell_vec[2].T).getA()[0][0]/(prim_b*prim_c))*180/np.pi
+            self.conv_beta  = np.arccos(new_cell_vec[1].dot(new_cell_vec[2].T).getA()[0][0]/(prim_a*prim_c))*180/np.pi
+            self.conv_gamma = np.arccos(new_cell_vec[0].dot(new_cell_vec[1].T).getA()[0][0]/(prim_a*prim_b))*180/np.pi
+            self.conv_a = prim_a
+            self.conv_b = prim_b
+            self.conv_c = prim_c
+
+            all_eq_pos=all_eq_pos[:,order]
+
+
         '''make unique a or b monoclinic into unique c'''
         if self.ibrav in [12,13]:
             if np.isclose(self.conv_beta,self.conv_gamma) and not np.isclose(self.conv_beta,self.conv_alpha):

@@ -4550,7 +4550,7 @@ EXITING.
 
 		
 	def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
-		print 'converge_smeareing DISABLED. Coming soon.'
+		print 'converge_smeareing DISABLED. Coming soon. Exiting.'
 		raise SystemExit
 		rel_low = relax.lower()
 		if rel_low not in ['vc-relax','relax','scf']:
@@ -4858,7 +4858,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		      None
 
 		'''
-
+		print 'crawling minimization coming soon. Exiting.'
+		raise SystemExit
 		self.scf_complete=True
 		self.tight_banding==False
 		self.load_index+=1
@@ -4873,7 +4874,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
         def evCurve_min(self,pThresh=25,final_minimization='relax'):
-		print 'DISABLED. Untested.'
+		print 'evCurve_min DISABLED. Untested. Exiting.'
 		raise SystemExit
 		self.scf_complete=True
 		self.type='evCurve_min'
@@ -4961,7 +4962,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 	def pseudo_test_brute(self,ecutwfc,dual=[],sampling=[],conv_thresh=0.01,constraint=None,initial_relax=None,
 			      min_thresh=0.01,initial_variance=0.05,grid_density=7,mult_jobs=False,options=None):
 
-
+		print 'Pseudopotential testing using crawling minimization coming soon. Exiting.'
+		raise SystemExit
 		self.load_index+=1
 		self.type='brute_pseudotest'
 		self.new_step(update_positions=True,update_structure=True)
