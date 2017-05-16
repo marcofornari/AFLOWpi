@@ -27,13 +27,18 @@ import AFLOWpi.prep
 import os
 import numpy as np 
 
-def _run_paopy(oneCalc,ID,acbn0=False):
+def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOpy/src','test.py')
 
-    if acbn0:
-        execPrefix=''
+    if exec_prefix=="":
+
+        if acbn0:
+            execPrefix=''
+        else:
+            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+
     else:
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+        execPrefix=exec_prefix
 
     paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
 

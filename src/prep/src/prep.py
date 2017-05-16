@@ -4587,7 +4587,7 @@ EXITING.
 
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix=""):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4607,7 +4607,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 

@@ -34,7 +34,7 @@ import numpy
 import time
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix=""):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -60,9 +60,9 @@ class tight_binding:
  
         self.step_counter+=1
         command='''if oneCalc["__execCounter__"]<=%s:
-     AFLOWpi.scfuj._run_paopy(oneCalc,ID)
+     AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,exec_prefix)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
 
