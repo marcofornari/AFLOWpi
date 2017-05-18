@@ -74,6 +74,8 @@ class tight_binding:
 
 
     def optical(self,en_range=[0.05,5.05],de=0.05):
+        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
+        raise SystemExit
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
