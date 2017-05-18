@@ -1417,7 +1417,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
         AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=2,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=1,shift=0.01,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
         AFLOWpi.scfuj._run_paopy(oneCalc,ID,acbn0=True)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
