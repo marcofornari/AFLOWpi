@@ -135,6 +135,7 @@ class tight_binding:
             calc_type='Calculate PDOS with PAO-TB Hamiltonian'
             print '                 %s'% (calc_type)
             pdos_pp_str="""
+
 try:
    AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
 except: pass
@@ -144,6 +145,10 @@ except: pass
 try:
     AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,1)    
 except: pass
+
+
+AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
+
 """
             AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',pdos_pp_str)
 
@@ -406,7 +411,7 @@ def _combine_pol_pdos(oneCalc,ID):
     glob_ID =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True,straight=False)
     glob_ID +='_TB'
 
-    glob_ID_up=glob_ID+'_up'
+    glob_ID_up=glob_ID#+'_up'
     glob_ID_dn=glob_ID+'_down'
 
     subdir=oneCalc['_AFLOWPI_FOLDER_']
