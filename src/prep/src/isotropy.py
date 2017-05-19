@@ -491,11 +491,6 @@ K_POINTS {automatic}
         '''get positions from input'''
         positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
-
-
-
-
-
         pos_array=np.zeros((len(positions),3))
         
         labels=[]
@@ -511,11 +506,6 @@ K_POINTS {automatic}
                 return
             except:
                 pass
-
-
-
-
-
 
             element_list=["H", "He","Li","Be","B", "C", "N", "O", "F", "Ne","Na","Mg","Al",
                           "Si","P", "S", "Cl","Ar","K", "Ca","Sc","Ti","V", "Cr","Mn","Fe",
