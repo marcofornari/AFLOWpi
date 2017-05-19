@@ -268,7 +268,7 @@ def read_txtdata(fpath,nspin):
         elif ispin==1 and nspin==2 :
            fname = 'kham_dn.txt'
         elif ispin==0 and nspin==1 :
-           fname = 'kham_up.txt'
+           fname = 'kham.txt'
         else :
            print 'wrong case 1'
 #        fin    = open(fpath+'/'+fname,"r")
