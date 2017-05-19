@@ -75,7 +75,6 @@ class isotropy():
         self.iso_pr_car= self.__get_iso_cart()
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
-#        print input_dict["&system"]["nat"]
 
     def qe_output(self,input_str,accuracy=0.001):
 
@@ -141,7 +140,49 @@ K_POINTS {automatic}
         return skel_in
 
     def qe2cif(self):
-        return re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
+        '''
+        Converts Quantum Espresso input into CIF
+        
+        Returns: (str) CIF file generated from Quantum Espresso input
+        '''
+        # we need to take the wyckoff positions and match
+        # the ATOMIC_SPECIES labels in the qe input
+        wyc_full = re.findall('Atomic positions in terms of a,b,c:\n((?:.*\n)+)------',
+                              self.output)[0]
+        each_wyc = re.findall('Wyckoff position.*\n(?:(\s*\d+\s*[\d.\s]+\n)+)',wyc_full)
+
+        wyc_first_lab_ind=[]
+        for i in each_wyc:
+            wyc_first_lab_ind.append([int(x.split()[0])-1 for x in i.split('\n') if len(x.strip())!=0][0])
+
+        cif_file = re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
+        re_atom_pos=re.compile(r'(_atom_site_label.*\n(?:(?:[A-Za-z_\s])*\n))((?:.*\n)*)')
+
+        atom_pos = re_atom_pos.findall(cif_file)[0]
+
+        '''positions from cif'''
+        loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
+        spec_lab_index =  loop_list.index('_atom_site_type_symbol')
+
+        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
+
+        mod_pos=[]
+        for i in xrange(len(positions)):
+            positions[i][spec_lab_index]=self.pos_labels[wyc_first_lab_ind[i]]
+            mod_pos.append(' '.join(['%8.8s'%x for x in positions[i]]))
+
+
+        atom_pos[0].split('\n')
+        cif_file_temp_split = [x for x in cif_file.split('\n') if len(x.strip())!=0]
+        cif_file_temp_split[-len(positions):] = mod_pos
+
+        cif_file = '\n'.join(cif_file_temp_split)
+
+
+
+
+
+        return cif_file
 
     def __generate_isotropy_input_from_qe_data(self,output=False):
         if output:
@@ -178,10 +219,7 @@ K_POINTS {automatic}
 
         else:
             cell_matrix = AFLOWpi.retr.getCellMatrixFromInput(self.input,string=False)*0.529177249
-
-
             positions = AFLOWpi.retr._getPositions(self.input,matrix=True)
-
 
             try:
                 mod = AFLOWpi.qe.regex.atomic_positions(self.input,'modifier')
@@ -190,7 +228,6 @@ K_POINTS {automatic}
             if mod.lower() in ["angstrom","bohr"]:
                 if mod.lower()=="bohr":
                     positions*=0.529177249                
-
                 positions = np.linalg.inv(cell_matrix).T.dot(positions.T).T
 
             positions = AFLOWpi.retr._cellMatrixToString(positions,indent=False)
@@ -201,12 +238,9 @@ K_POINTS {automatic}
             cm_string = AFLOWpi.retr._cellMatrixToString(cell_matrix,indent=False)
             a,b,c,alpha,beta,gamma = AFLOWpi.retr.free2abc(cell_matrix,cosine=False,bohr=False,string=False)
 
-
         self.pos_labels=labels
         num_atoms=len(labels)
         spec = list(set(labels))
-
-
         
         label_index=dict([[i[1],i[0]+1] for i in enumerate(spec)])
 
@@ -224,9 +258,7 @@ K_POINTS {automatic}
 
         isotropy_input_str+=positions
 
-
         self.iso_input = isotropy_input_str
-
 
         return isotropy_input_str
 
@@ -263,12 +295,8 @@ K_POINTS {automatic}
             pass
 
         try:
-
-
             sg_nam = re.compile("_symmetry_space_group_name_H-M\s*(.*)\n")
             name=sg_nam.findall(self.cif)[0].replace("'","").replace("\r","").replace(" ","")
-#            sg_nam = re.compile('''_symmetry_space_group_name_H-M\s*['"](.*)['"]''')
-#            name = sg_nam.findall(self.cif)[0]
 
             self.sgn = self.__HM2Num(name)
             return self.sgn
@@ -280,7 +308,7 @@ K_POINTS {automatic}
     def __get_iso_cart(self):
             search = 'Lattice vectors in cartesian coordinates:\s*\n(.*\n.*\n.*)\n'
             std_prim_basis_str = re.findall(search,self.output)[0]
-            self.iso_pr_car    = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)#*
+            self.iso_pr_car    = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
 
             return self.iso_pr_car
             
@@ -334,14 +362,7 @@ K_POINTS {automatic}
                        [self.conv_b,],
                        [self.conv_c,],])
 
-
         a=np.abs((self.iso_conv).dot(self.iso_basis))
-
-        # if self.ibrav in [8,9,10,11]:
-        #     self.conv_a=np.sum(a[:,0])
-        #     self.conv_b=np.sum(a[:,1])
-        #     self.conv_c=np.sum(a[:,2])
-
 
         prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
         prim_abc=map(float,prim_abc)
@@ -458,13 +479,8 @@ K_POINTS {automatic}
         atom_pos=re_atom_pos.findall(ins)[0]
         '''positions from cif'''
         loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
-
-        spec_lab =  loop_list.index('_atom_site_label')
-        try:
-            spec_lab =  loop_list.index('_atom_site_type_symbol')
-        except:
-            pass
-
+        
+        spec_lab =  loop_list.index('_atom_site_type_symbol')
         x_loc =  loop_list.index('_atom_site_fract_x')
         y_loc =  loop_list.index('_atom_site_fract_y')
         z_loc =  loop_list.index('_atom_site_fract_z')
@@ -475,26 +491,29 @@ K_POINTS {automatic}
         '''get positions from input'''
         positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
+        '''counter for each species'''
+        pos_counter_dict={}
+
         pos_array=np.zeros((len(positions),3))
         
         labels=[]
         for i in range(len(positions)):
-            
-
             pos_array[i][0] = float(positions[i][x_loc])
             pos_array[i][1] = float(positions[i][y_loc])
             pos_array[i][2] = float(positions[i][z_loc])
             try:
                 occupancy = float(positions[i][occup])
                 if occupancy!=1.0:
-#                    print positions[i]
                     raise IndexError
             except IndexError:
                 return
             except:
                 pass
 
-            positions[i][spec_lab] = positions[i][spec_lab].strip('0123456789').title()
+
+
+
+
 
             element_list=["H", "He","Li","Be","B", "C", "N", "O", "F", "Ne","Na","Mg","Al",
                           "Si","P", "S", "Cl","Ar","K", "Ca","Sc","Ti","V", "Cr","Mn","Fe",
@@ -503,27 +522,29 @@ K_POINTS {automatic}
                           "Lu","Hf","Ta","W", "Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi",
                           "Co","Ni","Cu","Zn","Ga","Ge","Rh","Pd","Ag","Cd","In","Sn","Tb",
                           "Dy","Ho","Er","Tm","Yb","Po","At","Th","Pa","U","Am",]
+
+
+            pos_lab_strip = positions[i][spec_lab].strip('0123456789').title()
+
+            
+
             try:
-                positions[i][spec_lab]=positions[i][spec_lab][:2]
-                if positions[i][spec_lab] not in element_list:
+                if pos_lab_strip not in element_list:
                     raise IndexError
 
 
             except IndexError:                
                 return
-            except:
-                pass
-            labels.append(positions[i][spec_lab])
+
+            
+            temp_pos_lab = positions[i][spec_lab].title()
+
+            labels.append(temp_pos_lab)        
 
 
-        '''shift origin to zero before transforming'''
-#        pos_array-=self.origin
-        
 
         '''shift positions to between 0.0 and 1.0'''
         pos_array%=1.0
-
-
 
         '''if positions is 1/3 or 2/3 use more precision on position'''
         pos_array[np.where(np.isclose(pos_array-(1.0/3.0),0.0,rtol=1e-04, atol=1e-05))]=1.0/3.0
@@ -643,9 +664,6 @@ K_POINTS {automatic}
             elif np.isclose(self.conv_alpha,self.conv_gamma) and not np.isclose(self.conv_beta,self.conv_gamma):
                 all_eq_pos=all_eq_pos[:,[2,0,1]]
                 
-                #print self.conv_alpha
-                #print self.conv_beta                    
-                #print self.conv_gamma
                 temp_a=self.conv_c
                 temp_b=self.conv_a
                 temp_c=self.conv_b
@@ -738,10 +756,6 @@ K_POINTS {automatic}
 
         '''reduce equivilent atoms'''
         all_eq_pos,labels_arr = reduce_atoms(all_eq_pos,labels,cell=to_conv,thresh=thresh)
-
-
-
-
 
 
         '''form atomic positions card for QE input'''
@@ -1445,25 +1459,25 @@ def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
 
         dist[:,:,0] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[1.0,0.0,0.0],]).T)).T
-#                  Xt=Xtc-np.array([1.0,0.0,0.0]).dot(cell)
+
         dist[:,:,1] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[0.0,1.0,0.0],]).T)).T
-#                  Xt=Xtc-np.array([0.0,1.0,0.0]).dot(cell)
+
         dist[:,:,2] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[0.0,0.0,1.0],]).T)).T
-#                  Xt=Xtc-np.array([0.0,0.0,1.0]).dot(cell)
+
         dist[:,:,3] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[1.0,0.0,1.0],]).T)).T
-#                  Xt=Xtc-np.array([1.0,0.0,1.0]).dot(cell)
+
         dist[:,:,4] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[1.0,1.0,0.0],]).T)).T
-#                  Xt=Xtc-np.array([1.0,1.0,0.0]).dot(cell)            
+
         dist[:,:,5] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[0.0,1.0,1.0],]).T)).T
-#                  Xt=Xtc-np.array([0.0,1.0,1.0]).dot(cell)            
+
         dist[:,:,6] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
         Xt=Xtc-(cell.dot(np.array([[1.0,1.0,1.0],]).T)).T
-#                  Xt=Xtc-np.array([1.0,1.0,1.0]).dot(cell)
+
         dist[:,:,7] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
 
         return np.amin(dist,axis=2)
