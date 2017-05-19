@@ -176,7 +176,7 @@ K_POINTS {automatic}
         cif_file_temp_split = [x for x in cif_file.split('\n') if len(x.strip())!=0]
         cif_file_temp_split[-len(positions):] = mod_pos
 
-        cif_file = '\n'.join(cif_file_temp_split)
+        cif_file = '\n'.join(cif_file_temp_split)+'\n'
 
 
 
@@ -491,8 +491,10 @@ K_POINTS {automatic}
         '''get positions from input'''
         positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
-        '''counter for each species'''
-        pos_counter_dict={}
+
+
+
+
 
         pos_array=np.zeros((len(positions),3))
         
