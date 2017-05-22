@@ -113,15 +113,14 @@ def _add_paopy_dos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_dos = True\n')
-        ifo.write('delta = 0.05\n')
+        ifo.write('delta = 0.1\n')
         ifo.write('emin = -12.0\n')
         ifo.write('emax =  12.0\n')
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_pdos = True\n')
-        ifo.write('delta = 0.05\n')
-        ifo.write('delta = 0.05\n')
+        ifo.write('delta = 0.1\n')
         ifo.write('emin = -12.0\n')
         ifo.write('emax =  12.0\n')
 

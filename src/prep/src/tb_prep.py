@@ -137,7 +137,7 @@ class tight_binding:
             pdos_pp_str="""
 
 try:
-   AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
+    AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
 except: pass
 try:
     AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,-1)    
@@ -145,10 +145,9 @@ except: pass
 try:
     AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,1)    
 except: pass
-
-
-AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
-
+try:
+    AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
+except: pass
 """
             AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',pdos_pp_str)
 
