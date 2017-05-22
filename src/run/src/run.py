@@ -935,7 +935,7 @@ def _get_qsub_name(path):
             calcName = '_'.join(c_name.split('_')[-2:])
 
     try:
-        calcName=calcName[-16:]
+        calcName=calcName[-15:]
     except:
         pass 
 
