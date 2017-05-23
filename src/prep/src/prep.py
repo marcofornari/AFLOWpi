@@ -2358,7 +2358,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                 try:
                     clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').upper()
-                    if clusterType in ['PBS','UGE']:
+                    if clusterType in ['PBS','UGE','SLURM']:
                         AFLOWpi.run._qsubGen(v,k)
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)

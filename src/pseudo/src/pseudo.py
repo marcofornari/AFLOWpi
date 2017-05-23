@@ -1590,7 +1590,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		
 
 
-		if AFLOWpi.prep._ConfigSectionMap('cluster','type').upper().strip() in ['PBS','UGE']:
+		if AFLOWpi.prep._ConfigSectionMap('cluster','type').upper().strip() in ['PBS','UGE','SLURM']:
 			'''
 			in case we're 90% of the way through the walltime we don't want to risk the job possibly 
 			getting killed half while it's submitting the jobs for the next iteration because it could 

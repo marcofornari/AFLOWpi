@@ -976,7 +976,7 @@ def _qsubGen(oneCalc,ID):
         prevQsubString = ''
         clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').strip().upper()
 
-        if clusterType in ['PBS','UGE']:
+        if clusterType in ['PBS','UGE','SLURM']:
             qsubRefFileName = AFLOWpi.prep._ConfigSectionMap("cluster",'job_template')
             if os.path.isabs(qsubRefFileName) == False:
                 configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -992,14 +992,14 @@ def _qsubGen(oneCalc,ID):
             if clusterType=='UGE':
                 name_regex=re.compile(r'\s*#$.*-[nN].*\n')
                 calcNameString = '\n#$ -N %s\n'%calcName
-            else:
+            elif clusterType=='PBS':
                 name_regex=re.compile(r'\s*#PBS.*-[nN].*\n')
                 calcNameString = '\n#PBS -N %s\n'%calcName
-
-            if len(name_regex.findall(qsubRef)):
-                qsubRef=name_regex.sub(calcNameString,qsubRef)
-            else:
-                qsubRef=calcNameString+qsubRef
+            if clusterType in ['PBS','UGE']:
+                if len(name_regex.findall(qsubRef)):
+                    qsubRef=name_regex.sub(calcNameString,qsubRef)
+                else:
+                    qsubRef=calcNameString+qsubRef
 
 
         #not sure if this will work on UGE so we'll leave it only for PBS
@@ -1022,8 +1022,9 @@ def _qsubGen(oneCalc,ID):
                 else:
                     pass
 
-
-
+                
+        if clusterType=='SLURM':                
+            pass
 
         with open(qsubFilename,'w') as qsubFile:
             qsubSub='''%scd %s
@@ -1531,7 +1532,10 @@ def _getWalltime(oneCalc,ID):
             walltime = re.findall("walltime\s*=\s*([0-9:]*)",qsubFileString)[-1]
 
         elif cluster_type=='SLURM':
-            walltime = re.findall("--time\s*=\s*([0-9:]*)",qsubFileString)[-1]
+            try:
+                walltime = re.findall("--time\s*=\s*([0-9:]*)",qsubFileString)[-1]
+            except:
+                walltime = re.findall("-t\s*=\s*([0-9:]*)",qsubFileString)[-1]
         else:
             walltime='3000:00:00'
     except:
