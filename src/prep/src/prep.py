@@ -2358,7 +2358,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                 try:
                     clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').upper()
-                    if clusterType in ['PBS','UGE']:
+                    if clusterType in ['PBS','UGE','SLURM']:
                         AFLOWpi.run._qsubGen(v,k)
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
@@ -5745,6 +5745,12 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    splitInput["&system"]["celldm(4)"]=split_tmp["&system"]["celldm(4)"]
 	    splitInput["&system"]["celldm(5)"]=split_tmp["&system"]["celldm(5)"]
 	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
+
+	    #if ibrav changes. use the k points scaled to match the new cell vectors
+	    if splitInput["&system"]["ibrav"]!=split_tmp["&system"]["ibrav"]:
+		    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
+
+
 	    try:
 		    mod = split_tmp["K_POINTS"]["__modifier__"].strip("{").strip("}").strip("(").strip(")").lower()
 		    if mod=='automatic':

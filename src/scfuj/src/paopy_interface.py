@@ -113,15 +113,14 @@ def _add_paopy_dos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_dos = True\n')
-        ifo.write('delta = 0.05\n')
+        ifo.write('delta = 0.1\n')
         ifo.write('emin = -12.0\n')
         ifo.write('emax =  12.0\n')
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.py')
     with open(paopy_input,'a') as ifo:
         ifo.write('do_pdos = True\n')
-        ifo.write('delta = 0.05\n')
-        ifo.write('delta = 0.05\n')
+        ifo.write('delta = 0.1\n')
         ifo.write('emin = -12.0\n')
         ifo.write('emax =  12.0\n')
 
@@ -164,13 +163,13 @@ def _rename_boltz_files(oneCalc,ID):
     conv_dict={}
     if nspin!=1:
         conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_up_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_sigma_up_%sK.dat'%(ID,temperature)     
+        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_up_%sK.dat'%(ID,temperature)     
         conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_up_%sK.dat'%(ID,temperature)             
         conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_up_real.dat'%ID                        
         conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_up_imag.dat'%ID                        
 
         conv_dict['Seebeck_1.dat']  = '%s_PAOpy_seebeck_down_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_1.dat']    = '%s_PAOpy_sigma_down_%sK.dat'%(ID,temperature)     
+        conv_dict['sigma_1.dat']    = '%s_PAOpy_cond_down_%sK.dat'%(ID,temperature)     
         conv_dict['kappa_1.dat']    = '%s_PAOpy_kappa_down_%sK.dat'%(ID,temperature)             
         conv_dict['epsr_1.dat']     = '%s_PAOpy_epsilon_down_real.dat'%ID                        
         conv_dict['epsi_1.dat']     = '%s_PAOpy_epsilon_down_imag.dat'%ID                        

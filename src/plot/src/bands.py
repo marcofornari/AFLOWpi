@@ -139,11 +139,6 @@ def __getPath_WanT(oneCalc,ID):
     dist=numpy.cumsum(numpy.sqrt(numpy.sum(r**2,axis=1)))
     dist = numpy.concatenate((numpy.array([0.0]),dist),axis=0)
     
-    with open("bands_0.dat","r") as ofo:
-	    by_band = numpy.array([map(float,x.split()) for x in ofo.readlines()]).T
-
-
-
 
     calcID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True)
 
@@ -161,7 +156,7 @@ def __getPath_WanT(oneCalc,ID):
 	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
 	    with open(filebands,"w") as ofo:
 		    ofo.write(ofs)
-
+	    
     except:
 	    nspin=1
 
@@ -169,6 +164,12 @@ def __getPath_WanT(oneCalc,ID):
 	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_up_cleaned.dat'%calcID)
     else:
 	    filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_cleaned.dat'%calcID)
+
+    with open("bands_0.dat","r") as ofo:
+	    by_band = numpy.array([map(float,x.split()) for x in ofo.readlines()]).T
+
+
+
     try:
 	    ofs=""
 	    for band in xrange(1,by_band.shape[0]):
@@ -180,6 +181,8 @@ def __getPath_WanT(oneCalc,ID):
 	    with open(filebands,"w") as ofo:
 		    ofo.write(ofs)
     except Exception,e:
+	    AFLOWpi.run._fancy_error_log(e)
+	    raise SystemExit
 	    pass
 	    
     return  output_path_string
