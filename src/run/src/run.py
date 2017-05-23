@@ -935,7 +935,7 @@ def _get_qsub_name(path):
             calcName = '_'.join(c_name.split('_')[-2:])
 
     try:
-        calcName=calcName[-16:]
+        calcName=calcName[-15:]
     except:
         pass 
 
@@ -1012,11 +1012,11 @@ def _qsubGen(oneCalc,ID):
                 if len(dash_e_regex.findall(qsubRef)):
                     qsubRef=dash_e_regex.sub('\n#PBS -e %s\n'%stderr_name,qsubRef)
                 else:
-                    qsubRef+='\n#PBS -e %s\n'%stderr_name
+                    qsubRef='\n#PBS -e %s\n'%stderr_name+qsubRef
                 if len(dash_o_regex.findall(qsubRef)):
                     qsubRef=dash_o_regex.sub('\n#PBS -o %s\n'%stdout_name,qsubRef)
                 else:
-                    qsubRef+='\n#PBS -o %s\n'%stdout_name
+                    qsubRef='\n#PBS -o %s\n'%stdout_name+qsubRef
                 if len(dash_oe_regex.findall(qsubRef)):
                     qsubRef=dash_oe_regex.sub('\n',qsubRef)
                 else:
@@ -1243,15 +1243,29 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             queue = ''
             if AFLOWpi.prep._ConfigSectionMap("cluster","queue") !='':
                 queue = '-q %s ' %  AFLOWpi.prep._ConfigSectionMap("cluster","queue")
+
         except Exception,e:
             _fancy_error_log(e)
         try:
             
-            command  = "ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
+            command  = "ssh -o StrictHostKeyChecking=no %s '%s -N %s %s %s %s' " % (__submitNodeName__,submitCommand,calcName,queue,qsubFilename,additional_flags)
+
             job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
             job.communicate()               
+            if job.returncode != 0:
+                try:
+                    logging.info("Trying to submit job with no ssh")
+                    
+                    command = '%s -N %s %s %s %s' % (submitCommand,calcName,queue,qsubFilename,additional_flags)
 
-            logging.info('submitted %s to the queue' % submit_ID)
+                    job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
+                    info_str = job.communicate()               
+                    print logging.info(info_str)
+                except Exception,e:
+                    AFLOWpi.run._fancy_error_log(e)
+            else:
+                logging.info('submitted %s to the queue' % submit_ID)
+
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
             logging.info("Trying to submit job with no -N option")
@@ -1267,7 +1281,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
                     baseID = ID.split('_')[0]
                     baseID = ID
                     qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
-                    os.system("ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags))
+                    os.system("ssh -o StrictHostKeyChecking=no %s '%s %s %s %s' " % (__submitNodeName__,submitCommand,queue,qsubFilename,additional_flags))
                 except Exception,e:
                     logging.info("Trying to submit job without ssh and -N option")
                     try:
