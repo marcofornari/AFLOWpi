@@ -1232,8 +1232,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             
         try:
             try:
-                submitCommand = AFLOWpi.run._get_cluster_submit_command()
-                
+                submitCommand = AFLOWpi.run._get_cluster_submit_command()                
             except Exception,e:
                 _fancy_error_log(e)
             
@@ -1244,50 +1243,37 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             queue = ''
             if AFLOWpi.prep._ConfigSectionMap("cluster","queue") !='':
                 queue = '-q %s ' %  AFLOWpi.prep._ConfigSectionMap("cluster","queue")
+
         except Exception,e:
             _fancy_error_log(e)
-        try:
-            
-            command  = "ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
-            job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
-            job.communicate()               
 
+        #submit the job
+        try:
+            command  = "ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
+            job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
             logging.info('submitted %s to the queue' % submit_ID)
         except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
-            logging.info("Trying to submit job with no -N option")
-
             try:
+                logging.info("Trying to submit job with no -N option")
                 command = "ssh -o StrictHostKeyChecking=no %s '%s %s %s' " % (__submitNodeName__,submitCommand,qsubFilename,additional_flags)
-                job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
-                job.communicate()               
-
+                job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
             except Exception,e:
-                logging.info("Trying to submit job without ssh and -N option")
                 try:
-                    baseID = ID.split('_')[0]
-                    baseID = ID
-                    qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
-                    os.system("ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags))
+                    logging.info("Trying to submit job without ssh option")
+                    command = "%s %s -N %s %s %s" % (submitCommand,queue,calcName,qsubFilename,additional_flags)
+                    job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
                 except Exception,e:
-                    logging.info("Trying to submit job without ssh and -N option")
                     try:
-                        baseID = ID.split('_')[0]
-                        baseID = ID
-                        qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
-                        os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                    except Exception,e:
                         logging.info("Trying to submit job without ssh and -N option")
-                        try:
-                            os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                        except Exception,e:
-                            _fancy_error_log(e)
+                        command = "%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags)
+                        job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
+                    except Exception,e:
+                        pass
 
+            
     else:
         try:
-
-            execFileString  = os.path.abspath(os.path.join(folder,'_'+ID+'.py'))
-            
+            execFileString  = os.path.abspath(os.path.join(folder,'_'+ID+'.py'))            
             execfile(execFileString)
 
         except KeyboardInterrupt:
