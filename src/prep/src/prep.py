@@ -707,77 +707,122 @@ def _transformParamsInput(inputString):
     inputDict = AFLOWpi.retr._splitInput(inputString)
     BohrToAngstrom = 0.529177249
 
-#    if int(inputDict['&system']['ibrav']) in [12,13]:
-#	    print 'IBRAV 12 and 13 not yet supported..stopping..'
-#	    print inputString
-#	    raise SystemExit
-	    
     CELL_PARAM_FLAG=False
 
     if 'CELL_PARAMETERS' in inputDict.keys():
         cellParamMatrix = AFLOWpi.retr._cellStringToMatrix(inputDict['CELL_PARAMETERS']['__content__'])
-        cellParamRegex = AFLOWpi.qe.regex.cell_parameters('','content','regex')
 
-        if len(cellParamRegex.findall(inputString)):
+        paramUnits = inputDict['CELL_PARAMETERS']['__modifier__']
 
-            paramUnits = inputDict['CELL_PARAMETERS']['__modifier__'].replace('{','').replace('}','')
-            paramUnits = paramUnits.lower()
+        paramUnits = paramUnits.replace('{','').replace('}','')
+        paramUnits = paramUnits.lower()
+        if paramUnits.strip()=='':
+                paramUnits='alat'
 
-            if paramUnits=='angstrom':
-                cellParamMatrix*=1/0.529177249
 
-            else:
+
+        mult=1.0
+        if paramUnits=='angstrom':
+                mult = 1.0/0.529177249
+        elif paramUnits=='bohr':
+                mult = 1.0
+        elif paramUnits=='alat':
                 if 'a' in inputDict['&system'].keys():
                     mult = float(inputDict['&system']['a'])
+                    del inputDict['&system']['a']
+                elif 'A' in inputDict['&system'].keys():
+                    mult = float(inputDict['&system']['A'])
+                    del inputDict['&system']['A']
                 elif paramUnits=='angstrom':
                     mult=1/0.529177249
                 elif 'celldm(1)' in inputDict['&system'].keys():
                     mult = float(inputDict['&system']['celldm(1)'])
-                else: 
-                    mult=1.0
-                cellParamMatrix*=mult
+                    del inputDict['&system']['celldm(1)']
+        
+        cellParamMatrix*=mult
 
-            ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
-	    ibravDict_prime = AFLOWpi.retr._getCelldm2freeDict(ibravDict)
-	    new_prim_mat = AFLOWpi.retr.celldm2free(**ibravDict_prime) 
-	    new_prim_mat = AFLOWpi.retr._cellStringToMatrix(new_prim_mat)
-	    orig =  AFLOWpi.retr._prim2ConvVec(cellParamMatrix)        
-	    new  =  AFLOWpi.retr._prim2ConvVec(new_prim_mat)        
-	    slam = numpy.linalg.inv(new.astype(numpy.float32)).dot(orig)
-            ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
-	    
-	    
-            for param,value in ibravDict.iteritems():
-                if param.strip()=='celldm(1)':
-                    scaled = str(float(value)/BohrToAngstrom)
-                    if 'a' in inputDict['&system'].keys():
-                        value = str(float(value)/BohrToAngstrom)
-                    inputDict['&system'][param]=str(float(value))
-                else:
-                    inputDict['&system'][param]=value
+        inputDict['CELL_PARAMETERS']['__content__']=AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
+        inputDict['CELL_PARAMETERS']['__modifier__']='{bohr}'
 
-            try:
-                del inputDict['CELL_PARAMETERS']
-            except Exception,e:
-                print e
+        inputString = AFLOWpi.retr._joinInput(inputDict)
 
-            inputString = AFLOWpi.retr._joinInput(inputDict)
-
-            return inputString    
-
+#################################################################################################################
 
     elif 'A' in [x.upper() for x in inputDict['&system'].keys()]:
-        paramDict={}
-        A=float(inputDict['&system']['a'])
-        paramDict['ibrav']=int(inputDict['&system']['ibrav'])
+
+        try:
+                A=float(inputDict['&system']['a'])
+        except:
+                A=float(inputDict['&system']['A'])
+                        
         inputDictCopy = copy.deepcopy(inputDict)
 
         for param in ['A','B','C','cosAB','cosAC','cosBC']:
                 if param.lower() in inputDict['&system'].keys():
                     del inputDictCopy['&system'][param.lower()]
                     
-        tempDict=collections.OrderedDict()
+        tempDict={'celldm1':1.0,'celldm2':1.0,'celldm3':1.0,
+                  'celldm4':0.0,'celldm5':0.0,'celldm6':0.0,
+                  'ibrav':0}
+
+        tempDict['ibrav']=int(inputDict['&system']['ibrav'])
+        
         for param in ['A','B','C','COSAB','COSAC','COSBC']:
+                if param.lower() in inputDict['&system'].keys():
+                    paramFloat = float(inputDict['&system'][param.lower()])
+
+		    param=param.upper()
+		    if int(inputDict['&system']['ibrav'])==14:
+			    if param=='COSAB':
+				paramName='celldm6'
+			    if param=='COSAC':
+				paramName='celldm5'
+			    if param=='COSBC':
+				paramName='celldm4'
+		    else:
+			    if param=='COSAB':
+				paramName='celldm4'
+			    if param=='COSAC':
+				paramName='celldm5'
+			    if param=='COSBC':
+				paramName='celldm6'
+                    if param=='A':
+                        paramName='celldm1'
+                        paramFloat=paramFloat/0.529177249
+                    if param=='B':
+                        paramName='celldm2'
+                        paramFloat/=A
+                    if param=='C':
+                        paramName='celldm3'
+                        paramFloat/=A
+                    
+                    tempDict.update({paramName:paramFloat})
+
+
+        inputDictCopy['&system']['ibrav']='0'
+        inputDictCopy['CELL_PARAMETERS']={}
+        inputDictCopy['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr.celldm2free(**tempDict)
+        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{bohr}'
+
+        inputString = AFLOWpi.retr._joinInput(inputDictCopy)
+
+    elif 'celldm(1)' in inputDict['&system'].keys():
+        
+        inputDictCopy = copy.deepcopy(inputDict)
+
+        tempDict={'celldm1':1.0,'celldm2':1.0,'celldm3':1.0,
+                  'celldm4':0.0,'celldm5':0.0,'celldm6':0.0,}
+        
+        tempDict['celldm1']=float(inputDict['&system']['celldm(1)'])
+        tempDict['ibrav']=int(inputDict['&system']['ibrav'])
+        inputDictCopy = copy.deepcopy(inputDict)
+
+        for param in ['celldm(1)','celldm(2)','celldm(3)','celldm(4)','celldm(5)','celldm(6)']:
+                if param.lower() in inputDict['&system'].keys():
+                    del inputDictCopy['&system'][param.lower()]
+                    
+        
+        for param in ['celldm1','celldm2','celldm3','celldm4','celldm5','celldm6']:
 
                 if param.lower() in inputDict['&system'].keys():
                     paramFloat = float(inputDict['&system'][param.lower()])
@@ -785,43 +830,37 @@ def _transformParamsInput(inputString):
 		    param=param.upper()
 		    if int(inputDict['&system']['ibrav'])==14:
 			    if param=='COSAB':
-				paramName='celldm(6)'
+				paramName='celldm6'
 			    if param=='COSAC':
-				paramName='celldm(5)'
+				paramName='celldm5'
 			    if param=='COSBC':
-				paramName='celldm(4)'
+				paramName='celldm4'
 		    else:
 			    if param=='COSAB':
-				paramName='celldm(4)'
+				paramName='celldm4'
 			    if param=='COSAC':
-				paramName='celldm(5)'
+				paramName='celldm5'
 			    if param=='COSBC':
-				paramName='celldm(6)'
+				paramName='celldm6'
                     if param=='A':
-                        paramName='celldm(1)'
-                        paramFloat=paramFloat/0.529177249
+                        paramName='celldm1'
                     if param=='B':
-                        paramName='celldm(2)'
-                        paramFloat/=A
+                        paramName='celldm2'
                     if param=='C':
-                        paramName='celldm(3)'
-                        paramFloat/=A
+                        paramName='celldm3'
+
                     
                     tempDict.update({paramName:paramFloat})
-
-        for k,v in tempDict.iteritems():
-            inputDictCopy['&system'][k]=v
-
-
+                    
+        inputDictCopy['&system']['ibrav']='0'
+        inputDictCopy['CELL_PARAMETERS']={}
+        inputDictCopy['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr.celldm2free(**tempDict)
+        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{bohr}'
+        
         inputString = AFLOWpi.retr._joinInput(inputDictCopy)
+        
 
-
-        return inputString    
-
-
-    elif 'celldm(1)' in inputDict['&system'].keys():
-        inputDict = AFLOWpi.retr._splitInput(inputString)        
-        return AFLOWpi.retr._joinInput(inputDict)
+    return inputString
 
 
 def _transformPositionsInput(inputString):
@@ -904,12 +943,12 @@ def _transformInput(inputString):
     '''
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
-    if 'CELL_PARAMETERS' in input_dict.keys():
-	    isotropy_obj    = AFLOWpi.prep.isotropy()
-	    isotropy_obj.qe_input(inputString,accuracy=0.005)
-	    inputString = isotropy_obj.convert(ibrav=True,)
+#    if 'CELL_PARAMETERS' in input_dict.keys():
+#	    isotropy_obj    = AFLOWpi.prep.isotropy()
+#	    isotropy_obj.qe_input(inputString,accuracy=0.005)
+#	    inputString = isotropy_obj.convert(ibrav=True,)
 
-	    
+
 
     try:
 	    positionMatrix = AFLOWpi.retr._getPositions(inputString)
@@ -922,6 +961,7 @@ def _transformInput(inputString):
     
 
     inputString = AFLOWpi.prep._transformParamsInput(inputString)
+
     inputString = AFLOWpi.prep._transformPositionsInput(inputString) 
 
 

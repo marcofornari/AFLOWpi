@@ -2154,7 +2154,7 @@ def _splitInput(inFileString):
             inputDict['CELL_PARAMETERS']=OrderedDict()
             inputDict['CELL_PARAMETERS']['__content__']=cellParams
             inputDict['CELL_PARAMETERS']['__modifier__']=paramUnits
-
+        
 
 
     except Exception,e:
@@ -2719,10 +2719,10 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
 
     if returnString==True:
-        vecString = '''{:^6.10f} {:^6.10f} {:^6.10f}
-{:6^.10f} {:6^.10f} {:6^.10f}
-{:6^.10f} {:6^.10f} {:6^.10f}
-'''.format(float(matrix.item(0,0)),float(matrix.item(0,1)),float(matrix.item(0,2)),float(matrix.item(1,0)),float(matrix.item(1,1)),float(matrix.item(1,2)),float(matrix.item(2,0)),float(matrix.item(2,1)),float(matrix.item(2,2)))
+        vecString = '''% 18.12f % 18.12f % 18.12f
+% 18.12f % 18.12f % 18.12f
+% 18.12f % 18.12f % 18.12f
+'''%(float(matrix.item(0,0)),float(matrix.item(0,1)),float(matrix.item(0,2)),float(matrix.item(1,0)),float(matrix.item(1,1)),float(matrix.item(1,2)),float(matrix.item(2,0)),float(matrix.item(2,1)),float(matrix.item(2,2)))
 
         return vecString
     else:
