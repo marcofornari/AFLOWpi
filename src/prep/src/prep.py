@@ -888,7 +888,9 @@ def _transformPositionsInput(inputString):
         pos,flags = AFLOWpi.retr.detachPosFlags(AFLOWpi.qe.regex.atomic_positions(inputString))
 
         paramUnits = splitInput['ATOMIC_POSITIONS']['__modifier__']
-        cellParamMatrix/=float(splitInput['&system']['celldm(1)'])
+        try:
+                cellParamMatrix/=float(splitInput['&system']['celldm(1)'])
+        except: pass
 
 
         if paramUnits=='{angstrom}':
@@ -899,10 +901,9 @@ def _transformPositionsInput(inputString):
             positionMatrix/=float(splitInput['&system']['celldm(1)'])
             symMatrix = AFLOWpi.retr._convertFractional(positionMatrix,cellParamMatrix)
         elif paramUnits=='{crystal}' or paramUnits=='':
-
             symMatrix = positionMatrix
         elif paramUnits=='alat':
-            pass
+            symMatrix = AFLOWpi.retr._convertFractional(positionMatrix,cellParamMatrix)
         else:
             symMatrix = positionMatrix
 
@@ -963,8 +964,8 @@ def _transformInput(inputString):
     inputString = AFLOWpi.prep._transformParamsInput(inputString)
 
     inputString = AFLOWpi.prep._transformPositionsInput(inputString) 
-
-
+    print inputString
+    raise SystemExit
 
 
     return inputString
@@ -4540,8 +4541,8 @@ EXITING.
 			AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 				
 
-	def update_cell(self,update_positions=True,update_structure=True):
-		self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
+#	def update_cell(self,update_positions=True,update_structure=True):
+		
 	
         def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
 		if self.step_index==0:
@@ -4549,7 +4550,8 @@ EXITING.
 			print AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)
 
 		self.step_index+=1
-
+                self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
+                
 		try:
 			last_calcs = self.initial_calcs[-1]
 		except:
@@ -5670,7 +5672,10 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
     
     '''
 
-    if True:
+    
+    if len(oneCalc['prev']) == 0:
+            return oneCalc,ID
+    else:
 	logging.debug('entering _oneUpdateStructs')
 	d=oneCalc
 	f=ID
@@ -5682,193 +5687,49 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	
 	splitInput = AFLOWpi.retr._splitInput(d['_AFLOWPI_INPUT_'])
 	in_copy_split=copy.deepcopy(splitInput)
-	for prevOut in reversed(oneCalc['prev']):
-	    oldFile = os.path.join(subdir,'%s.out' % prevOut)
-	    print oldFile
-	    if not os.path.exists(oldFile):
-		continue
+        
+	prevOut = oneCalc['prev'][-1]
+	oldFile = os.path.join(subdir,'%s.out' % prevOut)
+        try:
+	        with open(oldFile,'r') as ofo:
+		        outputfile = ofo.read()
+	        
+                pos_re=AFLOWpi.qe.regex.atomic_positions('','content','regex')
 
-	    with open(oldFile,'r') as ofo:
-		    outputfile = ofo.read()
-	    
+		pos=pos_re.findall(outputfile)[-1]		    
+		splitInput['ATOMIC_POSITIONS']['__content__']=pos	    
+	except Exception,e:
 
-	    pos_re=AFLOWpi.qe.regex.atomic_positions('','content','regex')
-	    try:
-		    pos=pos_re.findall(outputfile)[-1]
+		pass
 
+	prevOut = oneCalc['prev'][-1]
 
-		    
-		    in_copy_split['ATOMIC_POSITIONS']['__content__']=pos	    
-		    break
-	    except Exception,e:
-		    print e
-		    pass
-
-	for prevOut in reversed(oneCalc['prev']):
-
-	    oldFile = os.path.join(subdir,'%s.out' % prevOut)
-	    if not os.path.exists(oldFile):
-		continue
-	    try:
-		with open(oldFile,'r') as ofo:
+	oldFile = os.path.join(subdir,'%s.out' % prevOut)
+		
+	try:
+	        with open(oldFile,'r') as ofo:
 			outputfile = ofo.read()
 	    
-
-		cellParaRE=AFLOWpi.qe.regex.cell_parameters('','content','regex')
+                cellParaRE=AFLOWpi.qe.regex.cell_parameters('','content','regex')
 		cellPara = cellParaRE.findall(outputfile)
 
 		if len(cellPara) != 0:
                     alat=1.0
 		    cellPara=cellPara[-1]
-		    #Get alat
-		    alatRE = re.compile('alat=\s*(\d+.\d+)')
-		    alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*.*alat[\D]*([0-9.]*)',re.M)
-		    alatFind = alatSearch.findall(outputfile)
-		    try:
-			    alat = float(alatFind[-1])
 
-		    except:
-			    print "cant find alat from output. getting it from input"
-			    alat=float(splitInput["&system"]["celldm(1)"])
-		    #Get ibrav
-
-		    try:
-			ibrav=int(splitInput['&system']['ibrav'])
-		    except:
-			ibrav=0
-		    #Make cell parameter matrix
-		    temp = []
-		    splitPara = cellPara.split('\n')
-		    for item in splitPara:
-			if len(item)!=0:
-			    temp.append([float(x) for x in item.split(' ') if len(x)!=0])
-
-		    # if 'CELL_PARAMETERS' in splitInput.keys():
-		    # 	    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
-		    # 		    alat=1.0
-
-		    cellParaMatrix = alat*np.array(temp).astype(np.float)
-		    in_copy_split["&system"]["ibrav"]=0
-		    try:
-			    del in_copy_split["&system"]["celldm(1)"]
-		    except: pass
-		    try:
-			    del in_copy_split["&system"]["celldm(2)"]
-		    except: pass
-		    try:
-			    del in_copy_split["&system"]["celldm(3)"]
-		    except: pass
-		    try:
-			    del in_copy_split["&system"]["celldm(4)"]
-		    except: pass
-		    try:
-			    del in_copy_split["&system"]["celldm(5)"]
-		    except: pass
-		    try:
-			    del in_copy_split["&system"]["celldm(6)"]
-		    except: pass
-
-		    in_copy_split["CELL_PARAMETERS"]={}
-		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cellParaMatrix)
-		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{bohr}'
-
-		    break
+                    if 'CELL_PARAMETERS' in splitInput.keys():
+                            splitInput['CELL_PARAMETERS']['__content__'] = cellPara
+                            
 
 
-		else:
-		    pass
-
-	    except Exception,e:
+	except Exception,e:
 		AFLOWpi.run._fancy_error_log(e)
 
 
     out_in = AFLOWpi.retr._joinInput(in_copy_split)
     oneCalc["_AFLOWPI_INPUT_"]=out_in    
     try:	    
-
-
-	    iso    = AFLOWpi.prep.isotropy()
-	    iso.qe_input(out_in,accuracy=0.005)
-	    tmp_in = iso.convert(ibrav=True,)
-	    split_tmp = AFLOWpi.retr._splitInput(tmp_in)
-	    
-            ###################################################################################################
-	    ibr = splitInput["&system"]["ibrav"]
-	    try:
-		    cdm1 = float(splitInput["&system"]["celldm(1)"])
-	    except: cdm1 = None
-	    try:
-		    cdm2 = float(splitInput["&system"]["celldm(2)"])
-	    except: cdm2 = None
-	    try:
-		    cdm3 = float(splitInput["&system"]["celldm(3)"])
-	    except: cdm3 = None
-	    try:
-		    cdm4 = float(splitInput["&system"]["celldm(4)"])
-	    except: cdm4 = None
-	    try:
-		    cdm5 = float(splitInput["&system"]["celldm(5)"])
-	    except: cdm5 = None
-	    try:
-		    cdm6 = float(splitInput["&system"]["celldm(6)"])
-	    except: cdm6 = None
-
-	    old_cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
-				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
-
-
-	    ibr = split_tmp["&system"]["ibrav"]
-	    try:
-		    cdm1 = float(split_tmp["&system"]["celldm(1)"])
-	    except: cdm1 = None
-	    try:
-		    cdm2 = float(split_tmp["&system"]["celldm(2)"])
-	    except: cdm2 = None
-	    try:
-		    cdm3 = float(split_tmp["&system"]["celldm(3)"])
-	    except: cdm3 = None
-	    try:
-		    cdm4 = float(split_tmp["&system"]["celldm(4)"])
-	    except: cdm4 = None
-	    try:
-		    cdm5 = float(split_tmp["&system"]["celldm(5)"])
-	    except: cdm5 = None
-	    try:
-		    cdm6 = float(split_tmp["&system"]["celldm(6)"])
-	    except: cdm6 = None
-
-	    cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
-				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
-
-	    oldk = splitInput["K_POINTS"]["__content__"]
-            new_grid = AFLOWpi.prep.getMPGrid(cell_vec/0.529177249,offset=True,string=True,oldk=oldk,oldLat=old_cell_vec)
-            '''recip lattice'''
-            '''find the order from smallest to largest of the recip lattice vec'''
-
-            splitInput['K_POINTS']['__content__'] =  new_grid
-	    
-            ###################################################################################################
-
-	    splitInput["&system"]["nat"]=split_tmp["&system"]["nat"]
-	    splitInput["&system"]["ibrav"]=split_tmp["&system"]["ibrav"]
-	    splitInput["&system"]["celldm(1)"]=split_tmp["&system"]["celldm(1)"]
-	    splitInput["&system"]["celldm(2)"]=split_tmp["&system"]["celldm(2)"]
-	    splitInput["&system"]["celldm(3)"]=split_tmp["&system"]["celldm(3)"]
-	    splitInput["&system"]["celldm(4)"]=split_tmp["&system"]["celldm(4)"]
-	    splitInput["&system"]["celldm(5)"]=split_tmp["&system"]["celldm(5)"]
-	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
-
-	    #if ibrav changes. use the k points scaled to match the new cell vectors
-#	    if splitInput["&system"]["ibrav"]!=split_tmp["&system"]["ibrav"]:
-#	    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
-
-
-	    try:
-		    mod = split_tmp["K_POINTS"]["__modifier__"].strip("{").strip("}").strip("(").strip(")").lower()
-		    if mod=='automatic':
-			    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
-	    except Exception,e:
-		    print e
+	    split_tmp = copy.deepcopy(splitInput)
 		    
 	    splitInput["ATOMIC_POSITIONS"]["__content__"]=split_tmp["ATOMIC_POSITIONS"]["__content__"]
 	    atom_pos_input = splitInput['ATOMIC_POSITIONS']['__content__']
@@ -5876,11 +5737,12 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    fakeFlags,flags=AFLOWpi.retr.detachPosFlags(atom_pos_input)
 	    atmPos,outputflags=AFLOWpi.retr.detachPosFlags(split_tmp['ATOMIC_POSITIONS']['__content__'])
 	    atmPos=AFLOWpi.retr.attachPosFlags(atmPos,flags)
+            
 	    splitInput['ATOMIC_POSITIONS']['__content__']=atmPos	    
 
     except Exception,e:
 	    AFLOWpi.run._fancy_error_log(e)
-	    print e
+
 
     inputfile=AFLOWpi.retr._joinInput(splitInput)
 
