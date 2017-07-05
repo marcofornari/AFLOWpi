@@ -719,30 +719,27 @@ def _transformParamsInput(inputString):
         if paramUnits.strip()=='':
                 paramUnits='alat'
 
-
-
         mult=1.0
+
+
         if paramUnits=='angstrom':
-                mult = 1.0/0.529177249
+                alat = abs(cellParamMatrix[0,0])
+                cellParamMatrix/=alat
+                inputDict['&system']['celldm(1)']=alat/0.529177249
         elif paramUnits=='bohr':
-                mult = 1.0
+                alat = abs(cellParamMatrix[0,0])
+                cellParamMatrix/=alat
+                inputDict['&system']['celldm(1)']=alat
         elif paramUnits=='alat':
                 if 'a' in inputDict['&system'].keys():
-                    mult = float(inputDict['&system']['a'])
+                    inputDict['&system']['celldm(1)'] = float(inputDict['&system']['a'])/0.529177249
                     del inputDict['&system']['a']
                 elif 'A' in inputDict['&system'].keys():
-                    mult = float(inputDict['&system']['A'])
+                    inputDict['&system']['celldm(1)'] = float(inputDict['&system']['A'])/0.529177249
                     del inputDict['&system']['A']
-                elif paramUnits=='angstrom':
-                    mult=1/0.529177249
-                elif 'celldm(1)' in inputDict['&system'].keys():
-                    mult = float(inputDict['&system']['celldm(1)'])
-                    del inputDict['&system']['celldm(1)']
-        
-        cellParamMatrix*=mult
 
         inputDict['CELL_PARAMETERS']['__content__']=AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
-        inputDict['CELL_PARAMETERS']['__modifier__']='{bohr}'
+        inputDict['CELL_PARAMETERS']['__modifier__']='{alat}'
 
         inputString = AFLOWpi.retr._joinInput(inputDict)
 
@@ -797,12 +794,16 @@ def _transformParamsInput(inputString):
                         paramFloat/=A
                     
                     tempDict.update({paramName:paramFloat})
-
-
+                    
+        tempDict['returnString']=False
+        scaled_cell  = AFLOWpi.retr.celldm2free(**tempDict)
+        scaled_cell  = AFLOWpi.retr._cellMatrixToString(scaled_cell/tempDict['celldm1'])
+                    
+        inputDictCopy['&system']['celldm(1)']=tempDict['celldm1']
         inputDictCopy['&system']['ibrav']='0'
         inputDictCopy['CELL_PARAMETERS']={}
-        inputDictCopy['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr.celldm2free(**tempDict)
-        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{bohr}'
+        inputDictCopy['CELL_PARAMETERS']['__content__'] = scaled_cell
+        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{alat}'
 
         inputString = AFLOWpi.retr._joinInput(inputDictCopy)
 
@@ -817,7 +818,7 @@ def _transformParamsInput(inputString):
         tempDict['ibrav']=int(inputDict['&system']['ibrav'])
         inputDictCopy = copy.deepcopy(inputDict)
 
-        for param in ['celldm(1)','celldm(2)','celldm(3)','celldm(4)','celldm(5)','celldm(6)']:
+        for param in ['celldm(2)','celldm(3)','celldm(4)','celldm(5)','celldm(6)']:
                 if param.lower() in inputDict['&system'].keys():
                     del inputDictCopy['&system'][param.lower()]
                     
@@ -851,14 +852,18 @@ def _transformParamsInput(inputString):
 
                     
                     tempDict.update({paramName:paramFloat})
-                    
+
+                                        
         inputDictCopy['&system']['ibrav']='0'
+        tempDict['returnString']=False
+        scaled_cell  = AFLOWpi.retr.celldm2free(**tempDict)
+        scaled_cell  = AFLOWpi.retr._cellMatrixToString(scaled_cell/tempDict['celldm1'])
+        print scaled_cell        
         inputDictCopy['CELL_PARAMETERS']={}
-        inputDictCopy['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr.celldm2free(**tempDict)
-        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{bohr}'
+        inputDictCopy['CELL_PARAMETERS']['__content__'] = scaled_cell
+        inputDictCopy['CELL_PARAMETERS']['__modifier__']= '{alat}'
         
         inputString = AFLOWpi.retr._joinInput(inputDictCopy)
-        
 
     return inputString
 
@@ -964,8 +969,7 @@ def _transformInput(inputString):
     inputString = AFLOWpi.prep._transformParamsInput(inputString)
 
     inputString = AFLOWpi.prep._transformPositionsInput(inputString) 
-    print inputString
-    raise SystemExit
+
 
 
     return inputString
@@ -5719,7 +5723,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
                     if 'CELL_PARAMETERS' in splitInput.keys():
                             splitInput['CELL_PARAMETERS']['__content__'] = cellPara
-                            
+                            splitInput['CELL_PARAMETERS']['__modifier__'] = 'alat'
 
 
 	except Exception,e:

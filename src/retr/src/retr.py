@@ -849,6 +849,7 @@ def _getCellParams(oneCalc,ID):
         else:
             splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
             alat=float(splitInput['&system']['celldm(1)'])
+
             return alat,AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
 
@@ -856,7 +857,7 @@ def _getCellParams(oneCalc,ID):
         cellParams = AFLOWpi.qe.regex.cell_parameters(lines,'content')
         splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         alat=float(splitInput['&system']['celldm(1)'])
-        paramMatrix=_cellStringToMatrix(cellParams)
+        paramMatrix=AFLOWpi.retr._cellStringToMatrix(cellParams)
 
 
         if len(cellParams):
@@ -1122,23 +1123,12 @@ def _getHighSymPoints(oneCalc,ID=None):
 
 
     
-    ibrav = 0
-    ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
+    cellOld= AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['CELL_PARAMETERS']['__content__']
+    cellOld= AFLOWpi.retr._cellStringToMatrix(cellOld)   
+    ibrav  = int(AFLOWpi.retr.getIbravFromVectors(cellOld))
+
+
     
-    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
-
-    if ibrav==0:
-            return
-    if ibrav < 0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
-
-
-    alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
-    cellOld=cellOld.getA()
-
-#    raise SystemExit
     #get a,b,c of QE convention conventional cell from primitive lattice vecs
     if ibrav == 1:
         a=numpy.abs(cellOld[0][0])
@@ -1493,6 +1483,9 @@ def _getHighSymPoints(oneCalc,ID=None):
                           'Z'     : (-0.5, 0.0,0.5),}
 
 
+
+
+
     aflow_conv = numpy.identity(3)
     qe_conv    = numpy.identity(3)
 
@@ -1523,8 +1516,8 @@ def _getHighSymPoints(oneCalc,ID=None):
         qe_conv    = numpy.asarray([[ 1.0, 0.0, 0.0],[ 0.0, 1.0, 0.0],[ 0.0, 0.0, 1.0]])
 
 
+    qe_conv=cellOld
 
-                                   
 
     for k,v in special_points.iteritems():
         first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
@@ -1533,7 +1526,7 @@ def _getHighSymPoints(oneCalc,ID=None):
         else:
             second = qe_conv.dot(first)
         special_points[k]=tuple((second).tolist())
-
+        
 
 #    print special_points
 #    raise SystemExit
@@ -1934,14 +1927,12 @@ def _getPath(dk, oneCalc,ID=None,points=False):
     ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
     ibrav = int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[0])	
 
-    if ibrav==0:
-            return
-    if ibrav<0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
+
+
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
+    print cell
+    raise SystemExit
     BohrToAngstrom = 1.0/1.889727
     alat*=BohrToAngstrom
 
