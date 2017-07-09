@@ -181,9 +181,19 @@ def _rename_boltz_files(oneCalc,ID):
         conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_imag.dat'%ID                        
 
     for old,new in conv_dict.iteritems():
-        old_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old)
+        old_split = old.split('_')
+        xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
+        yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
+        zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
+        
+        xx_arr = np.loadtxt(xx)
+        yy_arr = np.loadtxt(yy)[:,1]
+        zz_arr = np.loadtxt(zz)[:,1]
+        
+        comb_arr = np.concatenate((xx_arr,yy_arr,zz_arr),axis=1)
         new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
         try:
-            os.rename(old_path,new_path)
-        except Exception,e:
+            np.savetxt(new_path,comb_arr)
+        except:
             pass
+
