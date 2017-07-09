@@ -645,11 +645,9 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             except Exception,e:
                 AFLOWpi.run._fancy_error_log(e)
 
-
             AFLOWpi.run._oneRun(__submitNodeName__,nscf_calc,nscf_ID,execPrefix=execPrefix,
                                 execPostfix=execPostfix,engine='espresso',calcType='scf',executable=None)
             AFLOWpi.retr._writeEfermi(nscf_calc,nscf_ID)
-
 
             abortIFRuntimeError(subdir, nscf_ID)
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
@@ -662,10 +660,13 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
             execPostfix+=' -northo 1'
 
+        execPrefix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_prefix_local')
+            
+        
         if 'pdos' not in oneCalc['__runList__']:
             pdosPath = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'projwfc.x')
 
-            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix,
+            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix_LOCAL,
                                 execPostfix=execPostfix,engine='espresso',calcType='custom',
                                 executable='projwfc.x',execPath=pdosPath)
 #############

@@ -642,6 +642,10 @@ def dos(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
+    
+    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial") != '':
+        execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+        
     testOne(calcs,calcType='dos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
         try:
@@ -674,6 +678,10 @@ def pdos(calcs,engine='',execPrefix=None,execPostfix='',holdFlag=True,config=Non
           
     """    
 
+    
+    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial") != '':
+        execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+        
     testOne(calcs,calcType='pdos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
         try:
@@ -714,14 +722,6 @@ def bands(calcs,engine='',execPrefix=None,execPostfix=' ',holdFlag=True,config=N
     
     testOne(calcs,calcType='bands',engine=engine,execPrefix=execPrefix,execPostfix='',holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
-#        try:
-#            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='bands')
-#        except Exception,e:
-#            AFLOWpi.run._fancy_error_log(e)
-#        try:
-#            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands')
-#        except Exception,e:
-#            AFLOWpi.run._fancy_error_log(e)
 
         bands_pp_run_string = '''if oneCalc['__execCounter__'] <=%s:
         AFLOWpi.run._bands_pp(__submitNodeName__,oneCalc,ID)

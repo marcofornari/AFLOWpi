@@ -137,14 +137,11 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     """
 
         
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
-    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-	    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-    else:
-        execPrefix=''
             
     #run fd_ifc
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
 
     # get ifc file for matdyn
     header_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'FD_PHONON','header.txt')
@@ -168,7 +165,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
             try:
 
                 AFLOWpi.run._gen_fd_input(oneCalc,ID,for_type=field,de=field_strength)
-                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
+                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
 
 
             except Exception,e:
@@ -206,10 +203,10 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 
 
     #run matdyn for bands
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
     #run matdyn for dos
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
 
     if project_phDOS:
@@ -516,7 +513,7 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
     
 
 
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']

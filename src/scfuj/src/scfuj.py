@@ -508,6 +508,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                             splitInput['&system']['nosym']='.True.'
                             splitInput['&system']['noinv']='.True.'
                             splitInput['&control']['verbosity']='"high"'
+                            splitInput['&control']['wf_collect']='.TRUE.'
                             splitInput['&control']['calculation']='"nscf"'
                             inputfile=AFLOWpi.retr._joinInput(splitInput)
                             '''writes an input for band_plot.x to process the correct number of bands calculated'''

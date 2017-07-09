@@ -350,7 +350,8 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','''AFLOWpi.prep._to_local_scratch(oneCalc_ff,'%s')'''%FD_ID)
 
 
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_local")
+        
         run_command="""if oneCalc['__execCounter__']<=%s:
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s',execPrefix='%s',execPostfix='-northo 1',engine='espresso',calcType='scf',exit_on_error=True)
         oneCalc['__execCounter__']+=1
@@ -358,9 +359,6 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
 """%(str(exec_counter_index),FD_ID,execPrefix)
 
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',run_command)       
-
-#        AFLOWpi.run._onePrep(oneCalc,ID,engine='espresso',calcType='scf',execPrefix=execPrefix,execPostfix=' -northo 1 ',alt_ID=FD_ID,)
-
 
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_forces(oneCalc_ff,'%s')""" % FD_ID)       
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_polarization(oneCalc_ff,'%s')""" % FD_ID)       

@@ -2702,12 +2702,6 @@ def _updatecalclogs(calcs,inc=True):
 		output.close()
 
 
-
-
-
-
-
-
 import socket
 
 
@@ -4142,7 +4136,7 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 		sec_header = '[%s]'%sec
 		print AFLOWpi.run._colorize_message(sec_header,level='DEBUG',show_level=False)
 		for param,value in entries.iteritems():
-			print '%-15s = %s'%(param,value)
+			print '%-20s = %s'%(param,value)
 	print 
 
 #        print '\nReading from Config: %s' % configFile
