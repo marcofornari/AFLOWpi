@@ -161,7 +161,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 	if epsilon==True:
 		type_list=['epsilon',]
 	else:
-		type_list=['kappa','seebeck','cond',]
+		type_list=['kappa','seebeck','cond']
 
         for Type in type_list:
             try:
@@ -178,10 +178,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
                     file_name.extend(glob.glob(search))
 		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-		    print 'up',search
                     file_name_up.extend(glob.glob(search))
 		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-		    print 'dn',search
+
                     file_name_down.extend(glob.glob(search))
 
 		
@@ -189,7 +188,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 spin_polarized=False
                 if len(file_name_down)!=0:
                         spin_polarized=True
-			print 'asdf'
+		
 		if len(file_name_down) == 0 and len(file_name) == 0:
 			continue
 
@@ -223,13 +222,11 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                         for i in range(len(file_name_down)):
 		            temperature = file_name_down[i][:-4].split('_')[-1][:-1]
                             if epsilon==True:
-
 				    if temperature=="ima":
 					    temperature="-100"
 				    elif temperature=="rea":
 					    temperature="-200"
 				    else:
-
 					    continue
 
 			    else:
@@ -240,7 +237,6 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                         for i in range(len(file_name_up)):
 		            temperature = file_name_up[i][:-4].split('_')[-1][:-1]
                             if epsilon==True:
-
 				    if temperature=="ima":
 					    temperature="-100"
 				    elif temperature=="rea":
@@ -248,7 +244,6 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    else:
 
 					    continue
-				    print temperature
 			    else:
 				    temperature = file_name_up[i][:-4].split('_')[-1][:-1]
 
@@ -287,7 +282,6 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 					    label_text='$'+trans_plot_dict[Type]['lc']+'_{2}$'
 				    elif temp==-200:
 					    label_text='$'+trans_plot_dict[Type]['lc']+'_{1}$'
-
 				    else:
 					    continue
 
@@ -354,9 +348,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 						    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}_{1}$'
 				    except:
 					    continue
-
 			    else:
 				    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}$ @ %sK'%int(sorted_dn[temp_index][0])
+
                             color_choice  = colors[temp_index%len(colors)]
                             ls_choice  = lines[temp_index%len(lines)]
                             marker_choice = markers[temp_index%len(markers)]
@@ -392,7 +386,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                 if set_min<min_val:
                                     min_val=set_min
 
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+
+			    print y_vals
                             ax1.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
