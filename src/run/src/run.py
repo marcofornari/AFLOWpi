@@ -621,7 +621,7 @@ def scf(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
             AFLOWpi.run._fancy_error_log(e)
 
 
-def dos(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+def dos(calcs,engine='',execPrefix="  ",execPostfix="  ",holdFlag=True,config=None):
     """
     Wrapper to set up DOS nscf calculation
     
@@ -642,18 +642,25 @@ def dos(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
-    testOne(calcs,calcType='dos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+    
+
+
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    if execPrefix=="":
+        execPrefix=="  "
+        
+    testOne(calcs,calcType='dos',engine=engine,execPrefix=execPrefix,execPostfix="  ",holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
         try:
-            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='dos')
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType='dos')
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
         try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='dos')
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType='dos')
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
-def pdos(calcs,engine='',execPrefix=None,execPostfix='',holdFlag=True,config=None):
+def pdos(calcs,engine='',execPrefix="  ",execPostfix='  ',holdFlag=True,config=None):
     """
     Wrapper to set up DOS projection calculation
     
@@ -674,14 +681,20 @@ def pdos(calcs,engine='',execPrefix=None,execPostfix='',holdFlag=True,config=Non
           
     """    
 
-    testOne(calcs,calcType='pdos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+    
+
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    if execPrefix=="":
+        execPrefix=="  "
+        
+    testOne(calcs,calcType='pdos',engine=engine,execPrefix=execPrefix,execPostfix="  ",holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
         try:
-            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='pdos')
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType='pdos')
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
         try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='pdos')
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType='pdos')
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -714,14 +727,6 @@ def bands(calcs,engine='',execPrefix=None,execPostfix=' ',holdFlag=True,config=N
     
     testOne(calcs,calcType='bands',engine=engine,execPrefix=execPrefix,execPostfix='',holdFlag=holdFlag,config=config)
     for ID,oneCalc in calcs.iteritems():
-#        try:
-#            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='bands')
-#        except Exception,e:
-#            AFLOWpi.run._fancy_error_log(e)
-#        try:
-#            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands')
-#        except Exception,e:
-#            AFLOWpi.run._fancy_error_log(e)
 
         bands_pp_run_string = '''if oneCalc['__execCounter__'] <=%s:
         AFLOWpi.run._bands_pp(__submitNodeName__,oneCalc,ID)
@@ -757,22 +762,20 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
 
         try:
             logging.debug('entering testOne')
-
-
                 
             if execPrefix == None:
                 if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
                     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-
                 else:
-                    execPrefix=''
+                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+                    
 
             if execPostfix == None:
                 if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
                     execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-
                 else:
-                    execPostfix=''
+                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial")
+
             
             if calcType=='bands':
                 if len(re.findall(r'pool',execPostfix))!=0:
@@ -1012,11 +1015,11 @@ def _qsubGen(oneCalc,ID):
                 if len(dash_e_regex.findall(qsubRef)):
                     qsubRef=dash_e_regex.sub('\n#PBS -e %s\n'%stderr_name,qsubRef)
                 else:
-                    qsubRef='\n#PBS -e %s\n'%stderr_name+qsubRef
+                    qsubRef+='\n#PBS -e %s\n'%stderr_name
                 if len(dash_o_regex.findall(qsubRef)):
                     qsubRef=dash_o_regex.sub('\n#PBS -o %s\n'%stdout_name,qsubRef)
                 else:
-                    qsubRef='\n#PBS -o %s\n'%stdout_name+qsubRef
+                    qsubRef+='\n#PBS -o %s\n'%stdout_name
                 if len(dash_oe_regex.findall(qsubRef)):
                     qsubRef=dash_oe_regex.sub('\n',qsubRef)
                 else:
@@ -1075,14 +1078,14 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
             execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
 
-        else:
-            execPrefix=''
+#        else:
+#            execPrefix=''
 
     if execPostfix == None:
         if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
             execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-        else:
-            execPostfix=''
+#        else:
+#            execPostfix=''
 
 
     logging.debug('entering _testOne') 
@@ -1095,14 +1098,14 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
         if execPrefix == None:
             if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
                 execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-            else:
-                execPrefix=''
+#            else:
+#                execPrefix=''
 
         if execPostfix == None:
             if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
                 execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-            else:
-                execPostfix=''
+#            else:
+#                execPostfix=''
     except Exception,e:
         _fancy_error_log(e)
 
@@ -2054,7 +2057,7 @@ def _get_index_from_pp_step(oneCalc,ID):
         return ID
 
 
-def _PW_bands_fix(oneCalc,ID):
+def _PW_bands_fix(oneCalc,ID,exten="band_data.out"):
     """
     Accounts for the occational problem of the bands.x output being 
     improperly formatted for AFLOWpi to parse later.
@@ -2077,9 +2080,9 @@ def _PW_bands_fix(oneCalc,ID):
     try:
         """fix bands.out where you have large numbers butting up against each other ex.) -113.345-112.567 
         and split the two numbers up for processing with band_plot.x or else you'll get an error"""
-        with open(os.path.join(rd,'%s_band_data.out'%ID),'r') as fileinput:
+        with open(os.path.join(rd,'%s_%s'%(ID,exten)),'r') as fileinput:
             input = fileinput.read()
-            with open(os.path.join(rd,'%s_band_data.out'%ID),'w') as fileoutput:
+            with open(os.path.join(rd,'%s_%s'%(ID,exten)),'w') as fileoutput:
                 correctedText = re.sub(r'(\d)([-][\d])',r'\1 \2',input)
                 fileoutput.write(correctedText)
     except Exception,e:
@@ -2088,7 +2091,7 @@ def _PW_bands_fix(oneCalc,ID):
 
     try:
         ##### make the bands.xmgr now that band_plot.x is gone
-        with open(os.path.join(rd,'%s_band_data.out'%ID),'r') as bands_out_file:
+        with open(os.path.join(rd,'%s_%s'%(ID,exten)),'r') as bands_out_file:
             bands_out_lines = bands_out_file.readlines()
 
         indent_re=re.compile(r'      ')
@@ -2124,8 +2127,18 @@ def _PW_bands_fix(oneCalc,ID):
                 output_string+='%12.7f %12.5f\n'%(total_list[j],item[j])
             output_string+='\n'
 
-        with open(os.path.join(rd,'%s_bands.xmgr'%ID),'w') as bands_out_file:
-            bands_out_file.write(output_string)
+        if exten=="band_data.out.1":
+            with open(os.path.join(rd,'%s_bands.xspin'%ID),'w') as bands_out_file:
+                bands_out_file.write(output_string)
+        elif exten=="band_data.out.2":
+            with open(os.path.join(rd,'%s_bands.yspin'%ID),'w') as bands_out_file:
+                bands_out_file.write(output_string)
+        elif exten=="band_data.out.3":
+            with open(os.path.join(rd,'%s_bands.zspin'%ID),'w') as bands_out_file:
+                bands_out_file.write(output_string)
+        else:
+            with open(os.path.join(rd,'%s_bands.xmgr'%ID),'w') as bands_out_file:
+                bands_out_file.write(output_string)
 
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
@@ -2140,16 +2153,16 @@ def _vcrelax_error_restart(ID,oneCalc,__submitNodeName__):
     BROKEN/NOT NEEDED POSSIBLY DELETE
     
     Arguments:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation
-          __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
+    oneCalc (dict): dictionary of one of the calculations
+    ID (str): ID of calculation
+    __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
 
     Keyword Arguments:
-          None
+    None
 
     Returns:
-          None
-          
+    None
+    
     """
 
     error_regex_list=[]
@@ -2170,10 +2183,10 @@ def _vcrelax_error_restart(ID,oneCalc,__submitNodeName__):
                 except:
                     pass
                 try:
-                        oneCalcBase =AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],submit_ID)
-                        oneCalcBase['__runList__']=[]
-                        oneCalc['__runList__']=[]
-                        AFLOWpi.prep._saveOneCalc(oneCalcBase,submit_ID)
+                    oneCalcBase =AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],submit_ID)
+                    oneCalcBase['__runList__']=[]
+                    oneCalc['__runList__']=[]
+                    AFLOWpi.prep._saveOneCalc(oneCalcBase,submit_ID)
                 except:
                     pass
 
@@ -2187,16 +2200,16 @@ def _io_error_restart(ID,oneCalc,__submitNodeName__):
     BROKEN/NOT NEEDED POSSIBLY DELETE
     
     Arguments:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation
-          __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
+    oneCalc (dict): dictionary of one of the calculations
+    ID (str): ID of calculation
+    __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
 
     Keyword Arguments:
-          None
+    None
 
     Returns:
-          None
-          
+    None
+    
     """
 
 
@@ -2257,18 +2270,18 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
     On local mode this gets skipped
     
     Arguments:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation
-          calcType (str): type of calculation
-          __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
+    oneCalc (dict): dictionary of one of the calculations
+    ID (str): ID of calculation
+    calcType (str): type of calculation
+    __submitNodeName__ (str): String of hostname that cluster jobs should be submitted from
 
     Keyword Arguments:
-          None
+    None
 
     Returns:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation          
-          
+    oneCalc (dict): dictionary of one of the calculations
+    ID (str): ID of calculation          
+    
     """
 
     clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","type")
@@ -2299,8 +2312,8 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
 
     try:
         if calcType!='scf' and calcType!=None and calcType!='custom':
-                with open(os.path.join(rd,"%s_%s.in") % (ID,calcType),'w+') as PPInput:
-                    PPInput.write(AFLOWpi.run._makeInput(oneCalc,engine,calcType,ID=ID))
+            with open(os.path.join(rd,"%s_%s.in") % (ID,calcType),'w+') as PPInput:
+                PPInput.write(AFLOWpi.run._makeInput(oneCalc,engine,calcType,ID=ID))
 
     except Exception,e:
         _fancy_error_log(e)
@@ -2317,26 +2330,26 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
     
     Arguments:
 
-	  oneCalc (dict): dictionary of the calculation
-          ID (str): Identifying hash of the calculation
+    oneCalc (dict): dictionary of the calculation
+    ID (str): Identifying hash of the calculation
     Keyword Arguments:
-	  engine (str): executable that you are calling to run the calculations          
- 	  execPrefix (str): commands to go before the executable when run 
-                            (ex. mpiexec nice -n 19 <executable>) (default = None)
-	  execPostfix (str): commands to go after the executable when run
-                            (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
-          calcType (str): used to pull the engine post processing executable to the calc dir
-                          and to write the postprocessing input file if needed
-          executable (str): if the executable has already been copied to the calc's directory
-                            then use this to run the input <ID>.in
-          execPath (str): path of the executable if needed
-          nextCalc (str): DEFUNCT
-          nextConf (str): DEFUNCT
+    engine (str): executable that you are calling to run the calculations          
+    execPrefix (str): commands to go before the executable when run 
+    (ex. mpiexec nice -n 19 <executable>) (default = None)
+    execPostfix (str): commands to go after the executable when run
+    (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
+    calcType (str): used to pull the engine post processing executable to the calc dir
+    and to write the postprocessing input file if needed
+    executable (str): if the executable has already been copied to the calc's directory
+    then use this to run the input <ID>.in
+    execPath (str): path of the executable if needed
+    nextCalc (str): DEFUNCT
+    nextConf (str): DEFUNCT
 
-          
+    
     Returns:
-          None
-          
+    None
+    
     """
 
     logging.debug('entering _oneRun')
@@ -2511,14 +2524,14 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
         logging.debug('Got Keyboard Exit signal, exiting')
         sys.exit(0)
     except OSError as e:
-            print "ERROR! "+str(e)
-            logging.error("ERROR! "+str(e))
+        print "ERROR! "+str(e)
+        logging.error("ERROR! "+str(e))
     except ValueError as e:
-            print "ERROR! "+str(e)
-            logging.error("ERROR! "+str(e))
+        print "ERROR! "+str(e)
+        logging.error("ERROR! "+str(e))
     except subprocess.CalledProcessError,e:
-            if e.returncode==1:
-                print "exit code==1"
+        if e.returncode==1:
+            print "exit code==1"
 
 #################################################################################################################     
 #################################################################################################################     
@@ -2543,33 +2556,38 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
     Prepares one calculation run an engine executable
     
     Arguments:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation
+    oneCalc (dict): dictionary of one of the calculations
+    ID (str): ID of calculation
 
     Keyword Arguments:
-          engine (str): executable that you are calling to run the calculations (default='pw.x')          
-          execPrefix (str): commands to go before the executable when run (ex. mpiexec nice -n 19 <executable>) 
-                            (default = None)
-          execPostfix (str): commands to go after the executable when run (ex. <execPrefix> <executable> -npool 12 )
-                             (default = None)
-          calcType (str): used to prep for a particular type of calc (i.e. 'scf','pdos'..etc) 
+    engine (str): executable that you are calling to run the calculations (default='pw.x')          
+    execPrefix (str): commands to go before the executable when run (ex. mpiexec nice -n 19 <executable>) 
+    (default = None)
+    execPostfix (str): commands to go after the executable when run (ex. <execPrefix> <executable> -npool 12 )
+    (default = None)
+    calcType (str): used to prep for a particular type of calc (i.e. 'scf','pdos'..etc) 
 
     Returns:
-          None
-          
+    None
+    
     """
 
     logging.debug('entering _onePrep')
 
     if execPrefix == None or execPrefix ==  '':
-            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-    else:
-        execPrefix=''
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+#    else:
+#        execPrefix=''
     if execPostfix == None or execPostfix ==  '':
 
         execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-    else:
-        execPostfix=''
+#    else:
+#        execPostfix=''
+
+
+    if calcType in ["dos","pdos"]:
+        execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial")
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
     folder = oneCalc['_AFLOWPI_FOLDER_']
     prefix = oneCalc['_AFLOWPI_PREFIX_']
@@ -2639,7 +2657,12 @@ def _bands_pp(__submitNodeName__,oneCalc,ID):
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands',executable='bands.x',execPath='./bands.x')		
 
         AFLOWpi.run._PW_bands_fix(oneCalc,ID)
-    
+
+    try:
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID,exten="band_data.out.1")
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID,exten="band_data.out.2")
+        AFLOWpi.run._PW_bands_fix(oneCalc,ID,exten="band_data.out.3")
+    except: pass
 
 
 def _makeInput(oneCalc,engine,calcType,ID=''):
@@ -2680,6 +2703,12 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
     calcType=calcType.lower()
 
     if engine=='espresso':
+        try:
+            nc = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['noncolin']
+            if nc.lower()=='.true.' and calcType=="bands":
+                calcType="bands_nc"
+        except: pass
+
         bandsInput=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.in" % ID)
         nbnd=''
         if calcType!='scf':
@@ -2706,8 +2735,8 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
        prefix='%s'
        DeltaE=0.005
        outdir='%s'
-       Emin=%s
-       Emax=%s
+    !   Emin=%s
+    !   Emax=%s
        degauss=0.005
     !    kresolveddos=.true.
        filpdos='%s'
@@ -2738,6 +2767,15 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
  /
  """ %  (prefix,temp_dir,ID),
 
+                    'bands_nc':""" &bands
+     prefix='%s'
+     outdir='%s'
+     lsigma(1)=.true.
+     lsigma(2)=.true.
+     lsigma(3)=.true.
+     filband='./%s_band_data.out'
+ /
+ """ %  (prefix,temp_dir,ID),
 
 
                     'scf':
