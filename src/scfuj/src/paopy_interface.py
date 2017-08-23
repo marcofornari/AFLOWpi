@@ -33,9 +33,9 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     if exec_prefix=="":
 
         if acbn0:
-            execPrefix=''
+            execPrefix = AFLOWpi.prep._ConfigSectionMap('run','exec_prefix_serial')
         else:
-            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+            execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
     else:
         execPrefix=exec_prefix
@@ -181,9 +181,23 @@ def _rename_boltz_files(oneCalc,ID):
         conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_imag.dat'%ID                        
 
     for old,new in conv_dict.iteritems():
-        old_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old)
-        new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
+        old_split = old.split('_')
         try:
-            os.rename(old_path,new_path)
-        except Exception,e:
-            pass
+            xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
+            yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
+            zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
+            print xx
+            xx_arr = np.loadtxt(xx)
+            yy_arr = np.loadtxt(yy)
+            zz_arr = np.loadtxt(zz)
+
+            comb_arr = np.concatenate((xx_arr[:,np.newaxis,0],xx_arr[:,np.newaxis,1],
+                                       yy_arr[:,np.newaxis,1],zz_arr[:,np.newaxis,1] ),axis=1)
+            new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
+
+            np.savetxt(new_path,comb_arr)
+
+        except Exception,e: 
+            try:
+                os.rename(old,new)
+            except Exception,e: print e
