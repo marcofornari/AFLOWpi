@@ -111,7 +111,8 @@ for j in modules:
       print 'generating ./src/%s/tests/__init__.py'%j
       __init__gen('./src/%s/tests/'%j)      
    except Exception,e:
-      print e
+      pass
+#      print e
 
 
 
