@@ -1,3 +1,4 @@
+
 # ***************************************************************************
 # *                                                                         *
 # *          AFLOWpi - Central Michigan University University, 2017         *
@@ -79,27 +80,19 @@ def _check_lock(func,oneCalc,ID,*args,**kwargs):
 	'''
 
 	if 'override_lock' in kwargs.keys():
-		
 		return oneCalc,ID
         try:
             if ID in oneCalc['prev']:
                 return False,False
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
-
-        new_ID=ID
-        oneCalc['__execCounter__']=0
-        oneCalc['__qsubFileName__']='_%s.qsub' % new_ID
-        try:
-            d=oneCalc
-            f=ID
-            new_calcs={}
-            output_calcs = {}
-        except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
+        # try:
+        #     d=oneCalc
 
 
-        a = f+'.out'
+
+        # except Exception,e:
+        #     AFLOWpi.run._fancy_error_log(e)
 
         return oneCalc,ID
 
@@ -174,6 +167,10 @@ def _lock_transform(oneCalc,ID):
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
 
+	
+        oneCalc['__execCounter__']=0
+        oneCalc['__qsubFileName__']='_%s.qsub' % ID
+
         subdir=oneCalc['_AFLOWPI_FOLDER_']
 
         '''set prev to current ID so that we can check if we have already transformed'''
@@ -241,7 +238,7 @@ def _resolveEqualities(inputString):
     for replacement in equalities:
         try:
             evalResult=eval(replacement[3:-3])
-            replacementEval = str(evalResult)
+            replacementEval = "%10.8f" % evalResult
             equalDict[replacement]=replacementEval
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
@@ -2702,12 +2699,6 @@ def _updatecalclogs(calcs,inc=True):
 		output.close()
 
 
-
-
-
-
-
-
 import socket
 
 
@@ -4142,7 +4133,7 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 		sec_header = '[%s]'%sec
 		print AFLOWpi.run._colorize_message(sec_header,level='DEBUG',show_level=False)
 		for param,value in entries.iteritems():
-			print '%-15s = %s'%(param,value)
+			print '%-20s = %s'%(param,value)
 	print 
 
 #        print '\nReading from Config: %s' % configFile
@@ -4764,23 +4755,60 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		force_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_forces(oneCalc,ID)')"""
 		#adds the command to run the FD phonon calculations with pw.x and to add the command
 		#to run finite fields calculations for raman to the calculations in the subset
+		pol_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_polarization(oneCalc,ID)')"""
 		if raman==True:
 			LOTO=True
-			task_list=['AFLOWpi.run.scf(calc_subset)',
-				   'AFLOWpi.run._setup_raman(calc_subset,oneCalc,ID,field_strength=%s,field_cycles=%s)'%(field_strength,field_cycles),force_pull_string,]
+			ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="raman")"""%(field_strength,field_cycles)
+				                 	   
+
+			task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
+				   force_pull_string,pol_pull_string]
+
+			self.addToAll(block='RUN',addition=ff_add)		
+
+			self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
+								   'AFLOWpi.run._fd_field_gath(oneCalc,ID)',
+								   mult_jobs=mult_jobs,
+								   subset_tasks=task_list,
+								   substep_name='FD_FIELD',
+								   keep_file_names=True,
+								   clean_input=False)
+
+#			self.addToAll(block='RUN',addition="     oneCalc['__CRAWL_CHECK__']=''")	    
+
 		#adds the command to run the FD phonon calculations with pw.x and to add the command
 		#to run finite fields calculations for eps_inf and Z* to the calculations in the subset
 		elif LOTO==True:
-			task_list=['AFLOWpi.run.scf(calc_subset)',
-				   'AFLOWpi.run._setup_raman(calc_subset,oneCalc,ID,for_type="born",field_strength=%s,field_cycles=%s)'%(field_strength,field_cycles),force_pull_string,]
+			ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="born")"""%(field_strength,field_cycles)
+				                 	   
+			self.addToAll(block='RUN',addition=ff_add)		
+
+			task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
+				   force_pull_string,pol_pull_string]
+				   
+			self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
+								   'AFLOWpi.run._fd_field_gath(oneCalc,ID)',
+								   mult_jobs=mult_jobs,
+								   subset_tasks=task_list,
+								   substep_name='FD_FIELD',
+								   keep_file_names=True,
+								   clean_input=False)
+
+#			self.addToAll(block='RUN',addition="     oneCalc['__CRAWL_CHECK__']=''")	  
                 #adds the command to run the FD phonon calculations with pw.x
 		else:
-			task_list=['AFLOWpi.run.scf(calc_subset)',force_pull_string,]
+			task_list=['AFLOWpi.run.scf(calc_subset)',
+				   force_pull_string,]
+
 		#add the command to the ID.py that will generate the subset FD_PHONON and perform
 		#the tasks in task_list. The flags for mult_jobs (parallel cluster jobs) is passed
 		#into this function and that option will be written to the ID.py
-		self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,'AFLOWpi.run._one_phon(oneCalc,ID)',mult_jobs=mult_jobs,
-							   subset_tasks=task_list,substep_name='FD_PHONON',keep_file_names=True,
+
+		self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
+							   'AFLOWpi.run._one_phon(oneCalc,ID)',
+							   mult_jobs=mult_jobs,
+							   subset_tasks=task_list,
+							   substep_name='FD_PHONON',keep_file_names=True,
 							   clean_input=False)
 		#after all the calculations in the subset have finshed we do some kind of postprocessing 
 		#routine(s) to extract/process data
@@ -4919,13 +4947,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.type='dos'
 		self.new_step(update_positions=True,update_structure=True)
 		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
-		postfix = ConfigSectionMap('run','exec_postfix')
 
-		if len(re.findall(r'npool',postfix))!=0 or len(re.findall(r'nk',postfix))!=0:
-			self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
+
+
+		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
 
 		AFLOWpi.run.scf(self.int_dict)
-		AFLOWpi.run.dos(self.int_dict)	
+		AFLOWpi.run.dos(self.int_dict)
 
 		if project==True:
 			AFLOWpi.run.pdos(self.int_dict)
@@ -4962,8 +4990,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.new_step(update_positions=True,update_structure=True)
 
 		postfix = ConfigSectionMap('run','exec_postfix')
-		if len(re.findall(r'npool',postfix))!=0 or len(re.findall(r'nk',postfix))!=0:
-			self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
+
+		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
 	
 		AFLOWpi.run.scf(self)
 
@@ -5286,10 +5314,10 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
         output_calcs = d
         output_calcs['_AFLOWPI_INPUT_'] = inputfile
         '''set prev to current ID so we can check if we've already done the transform'''
-        try:
-            output_calcs['prev'].append(f)
-        except:
-            output_calcs['prev']=[f]
+        # try:
+        #     output_calcs['prev'].append(f)
+        # except:
+        #     output_calcs['prev']=[f]
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
 
