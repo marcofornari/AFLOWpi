@@ -137,14 +137,11 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     """
 
         
-
-    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-	    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-    else:
-        execPrefix=''
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    print execPrefix
             
     #run fd_ifc
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
 
     # get ifc file for matdyn
     header_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'FD_PHONON','header.txt')
@@ -160,15 +157,14 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     else:
         field_list=[]
 
-    epol_list=glob.glob("./FD_PHONON/epol.*")
+    epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/FD_FIELD/epol.*")
     if len(epol_list)!=0:
       try:
-
         for field in field_list:
             try:
 
                 AFLOWpi.run._gen_fd_input(oneCalc,ID,for_type=field,de=field_strength)
-                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
+                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
 
 
             except Exception,e:
@@ -206,10 +202,10 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 
 
     #run matdyn for bands
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
     #run matdyn for dos
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
 
     if project_phDOS:
@@ -229,7 +225,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 	    AFLOWpi.run._fancy_error_log(e)
 
 
-def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=True,disp_sym=True,proj_phDOS=True):
+def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=True,disp_sym=True,proj_phDOS=True,phdos_mult=5):
     """
     Generates input files for fd.x, fd_ifc.x, and matdyn.x for the finite
     difference phonon calculations. 
@@ -392,7 +388,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 
     kgrid=''
     kpt_str  = inputDict['K_POINTS']['__content__']    
-    kpt_ints = [int(numpy.ceil(float(x)*5)) for x in kpt_str.split()[:3]]
+    kpt_ints = [int(numpy.ceil(float(x)*phdos_mult)) for x in kpt_str.split()[:3]]
 
     for i in range(len(kpt_ints)):
         kgrid+='   nk%d = %s,\n'%(i+1,kpt_ints[i])
@@ -420,12 +416,16 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 !   l1=%d
 !   l2=%d
 !   l3=%d
-   dos=.true.,
+   dos=.false.,
    eigen_similarity=.false.
-%s   
+   
  /
-'''%(amass_str,ID,ID,ID,ID,ID,ID,for_proj_phDOS,nrx1,nrx2,nrx3,kgrid)
+'''%(amass_str,ID,ID,ID,ID,ID,ID,for_proj_phDOS,nrx1,nrx2,nrx3)
     matdyn_in_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_matdyn_phDOS.in'%ID)
+
+    kpts_str = AFLOWpi.prep._gen_nosym_kgrid(kpt_ints[0],kpt_ints[1],kpt_ints[2],as_string=True)          
+    matdyn_dos_template= str(    matdyn_dos_template)+str(kpts_str)
+
     with open(matdyn_in_path,'w') as matdyn_in_file:
         matdyn_in_file.write(matdyn_dos_template)
 
@@ -473,7 +473,7 @@ def clean_cell_params(output):
     return output
 
 
-def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=True,disp_sym=True,proj_phDOS=True):
+def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=True,disp_sym=True,proj_phDOS=True,phdos_mult=5):
 
     """
     Generates input files for fd.x, fd_ifc.x, and matdyn.x for the finite
@@ -496,8 +496,6 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
           None          
           
     """
-#    if ID in oneCalc["prev"]:
-#        return
 
     #copy fd.x to the directories
     engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')
@@ -512,11 +510,12 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
         else:
             AFLOWpi.prep.totree(os.path.join(engineDir,'%s'%fd_exec),{ID:oneCalc},symlink=True)
 
-    write_fdx_template(oneCalc,ID,nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,atom_sym=atom_sym,disp_sym=disp_sym,proj_phDOS=proj_phDOS)
+    write_fdx_template(oneCalc,ID,nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,atom_sym=atom_sym,disp_sym=disp_sym,proj_phDOS=proj_phDOS,phdos_mult=phdos_mult)
     
 
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']
