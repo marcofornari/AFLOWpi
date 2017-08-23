@@ -34,7 +34,7 @@ import numpy
 import collections
 
 def _one_phon(oneCalc,ID):
-    return glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_PHONON'+'/displaced*.in')
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_PHONON'+'/displaced*.in'))
 
 
 def _phonon_band_path(oneCalc,ID,nk=400):
@@ -570,9 +570,9 @@ def reduce_kpoints(inputfile,factor):
 
 			newKPointString = ' '.join(scfKPointSplit)
                         new_mod='{automatic}'
-                        if scfKPointSplit[0]=="1" and scfKPointSplit[1]=="1" and scfKPointSplit[2]=="1":
-                            newKPointString=""
-                            new_mod="{gamma}"
+                        # if scfKPointSplit[0]=="1" and scfKPointSplit[1]=="1" and scfKPointSplit[2]=="1":
+                        #     newKPointString=""
+                        #     new_mod="{gamma}"
 
                         splitInput['K_POINTS']['__content__']=newKPointString
                         splitInput['K_POINTS']['__modifier__']=new_mod
