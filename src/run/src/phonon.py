@@ -34,7 +34,7 @@ import numpy
 import collections
 
 def _one_phon(oneCalc,ID):
-    return glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_PHONON'+'/displaced*.in')
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_PHONON'+'/displaced*.in'))
 
 
 def _phonon_band_path(oneCalc,ID,nk=400):
@@ -137,14 +137,11 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     """
 
         
-
-    if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-	    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-    else:
-        execPrefix=''
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    print execPrefix
             
     #run fd_ifc
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
 
     # get ifc file for matdyn
     header_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'FD_PHONON','header.txt')
@@ -160,15 +157,14 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     else:
         field_list=[]
 
-    epol_list=glob.glob("./FD_PHONON/epol.*")
+    epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/FD_FIELD/epol.*")
     if len(epol_list)!=0:
       try:
-
         for field in field_list:
             try:
 
                 AFLOWpi.run._gen_fd_input(oneCalc,ID,for_type=field,de=field_strength)
-                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
+                AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
 
 
             except Exception,e:
@@ -206,10 +202,10 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 
 
     #run matdyn for bands
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phBand'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
     #run matdyn for dos
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phDOS'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
 
     if project_phDOS:
@@ -496,8 +492,6 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
           None          
           
     """
-#    if ID in oneCalc["prev"]:
-#        return
 
     #copy fd.x to the directories
     engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')
@@ -515,8 +509,9 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
     write_fdx_template(oneCalc,ID,nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,atom_sym=atom_sym,disp_sym=disp_sym,proj_phDOS=proj_phDOS)
     
 
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']
@@ -571,9 +566,9 @@ def reduce_kpoints(inputfile,factor):
 
 			newKPointString = ' '.join(scfKPointSplit)
                         new_mod='{automatic}'
-                        if scfKPointSplit[0]=="1" and scfKPointSplit[1]=="1" and scfKPointSplit[2]=="1":
-                            newKPointString=""
-                            new_mod="{gamma}"
+                        # if scfKPointSplit[0]=="1" and scfKPointSplit[1]=="1" and scfKPointSplit[2]=="1":
+                        #     newKPointString=""
+                        #     new_mod="{gamma}"
 
                         splitInput['K_POINTS']['__content__']=newKPointString
                         splitInput['K_POINTS']['__modifier__']=new_mod
