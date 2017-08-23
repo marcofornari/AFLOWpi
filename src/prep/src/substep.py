@@ -82,6 +82,15 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
 #''' % (subset_creator,exit_command,repr(subset_tasks),mult_jobs)  
                 oneCalc['__execCounterBkgrd__']+=1
 		AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
+
+		execString='''if oneCalc['__execCounter__']<=%s:
+     ''' % oneCalc['__execCounterBkgrd__']
+                execString+='''del oneCalc["__CRAWL_CHECK__"]
+     oneCalc["__execCounter__"]+=1
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+'''
+                oneCalc['__execCounterBkgrd__']+=1
+		AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
 #####################################################################                
 
         
@@ -143,7 +152,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
 	    AFLOWpi.run._submitJob('%s',mainOneCalc,__submitNodeName__,forceOneJob=True)
 
 ''' % (complete_function,ID,ID,ID)
-################################################################################################################
+########y########################################################################################################
             try:
                 os.mkdir(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi'))
             except:
