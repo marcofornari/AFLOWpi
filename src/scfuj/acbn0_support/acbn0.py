@@ -257,7 +257,7 @@ def read_txtdata(fpath,nspin):
 #    print kovp_1[0]
 
 
-    nbasis  = np.sqrt(kovp_1.shape[0]/float(nkpnts))
+    nbasis  = int(np.sqrt(kovp_1.shape[0]/float(nkpnts)))
     print "read_txt_data: nbasis = %f"%nbasis
 
     kovp    = np.reshape(kovp_1,(nbasis,nbasis,nkpnts),order='C')
