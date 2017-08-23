@@ -27,6 +27,11 @@ import AFLOWpi
 import os
 import re
 import copy 
+import glob
+
+def _fd_field_gath(oneCalc,ID):
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_FIELD'+'/finite_field*.in'))
+
 
 def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
     """
@@ -59,13 +64,13 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
     force_out_str=''
     for index in num:
         try:
-            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./FD_PHONON/%s.%02d'%(val_type,index))
+            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./FD_FIELD/%s.%d'%(val_type,index))
             with open(force_file_path,'r') as force_file:
                 force_str=force_file.read()
                 force_out_str+=force_str
-        except:
-            pass
-
+        except Exception,e: print e
+            
+    
     return force_out_str
 
 def _pull_polarization(oneCalc,ID):
@@ -229,38 +234,39 @@ def _gen_fd_input(oneCalc,ID,for_type='raman',de=0.003):
     header+=card+'\n'
 
     forces = AFLOWpi.run._collect_fd_field_forces(oneCalc,ID,for_type=for_type)
+    
     header+=forces
     
     finite_field_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s.in'%(ID,for_type))
     with open(finite_field_input,'w') as force_file:
         force_file.write(header)
 
-def _swap_scf_inputs(oneCalc,ID):
-    """
-    Swaps the value of oneCalc['_AFLOWPI_INPUT_'] in oneCalc to the finite field input
+# def _swap_scf_inputs(oneCalc,ID):
+#     """
+#     Swaps the value of oneCalc['_AFLOWPI_INPUT_'] in oneCalc to the finite field input
     
-    Arguments:
-          oneCalc (dict): dictionary of one of the calculations
-          ID (str): ID of calculation
+#     Arguments:
+#           oneCalc (dict): dictionary of one of the calculations
+#           ID (str): ID of calculation
 
-    Keyword Arguments:
-          None
+#     Keyword Arguments:
+#           None
 
-    Returns:
-          oneCalc (dict): dictionary of one of the calculations
+#     Returns:
+#           oneCalc (dict): dictionary of one of the calculations
           
-    """
+#     """
 
-    try:
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'r') as in_by_ID_obj:
-            input_string = in_by_ID_obj.read()
-        oneCalc['_AFLOWPI_INPUT_']=input_string
-    except:
-        pass
+#     try:
+#         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'r') as in_by_ID_obj:
+#             input_string = in_by_ID_obj.read()
+#         oneCalc['_AFLOWPI_INPUT_']=input_string
+#     except:
+#         pass
 
-    return oneCalc
+#     return oneCalc
 
-def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_type='raman'):
+def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_type='raman'):
     """
     Sets up the input files and the command to run the finite field calculations.
     
@@ -269,7 +275,7 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
           orig_oneCalc (dict): oneCalc of one calculation the main calc set
 
     Keyword Arguments:
-         feild_strength (float): applied electric field strength
+         field_strength (float): applied electric field strength
          field_cycles (int) number of berry phase cycles
          for_type (str): which type of FD input do we want to generate files for. 'raman','born','eps'
 
@@ -279,7 +285,6 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
     """
 
     input_string=orig_oneCalc['_AFLOWPI_INPUT_']
-    subset_keys = calc_subset.keys()
 
     in_dict=AFLOWpi.retr._splitInput(input_string)
 
@@ -309,9 +314,6 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
         input_string=AFLOWpi.retr._joinInput(in_dict)
 
 
-    #copy for when we append finite field calcs to the calclog
-    calc_subset_extended=copy.deepcopy(calc_subset)
-
     if for_type=='raman':
         val_type='force'
         num=range(19)
@@ -323,66 +325,66 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
         num=[0,2,4,6,1,3,5]
 
     num_calcs=19
-    subset_size=len(calc_subset)
-    
+
+    if not os.path.exists(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD')):
+        os.mkdir(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD'))
+
     for index in range(len(num)):        
         fd_input = AFLOWpi.run._field_factory(input_string,field_strength=field_strength,for_type=for_type,field_cycles=field_cycles,dir_index=num[index])
 
-        subset_key_index=num[index]%subset_size
-        exec_counter_index = (index/subset_size)+1
-        ID = subset_keys[subset_key_index]
-        oneCalc=calc_subset[ID]
+        fd_field_fn = os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD',"finite_field.%s.in"%index)
+        with open(fd_field_fn,"w") as ifo:
+            ifo.write(fd_input)
+         
+#         oneCalc=calc_subset[ID]
 
-        #set prefix in finite field input to that of the FD phonon calc's input
-        split_input = AFLOWpi.retr._splitInput(fd_input)
-        split_input['&control']['prefix']='"%s"'%calc_subset[ID]['_AFLOWPI_PREFIX_']
-        fd_input = AFLOWpi.retr._joinInput(split_input)
+#         #set prefix in finite field input to that of the FD phonon calc's input
+#         split_input = AFLOWpi.retr._splitInput(fd_input)
+#         split_input['&control']['prefix']='"%s"'%calc_subset[ID]['_AFLOWPI_PREFIX_']
+#         fd_input = AFLOWpi.retr._joinInput(split_input)
 
-        FD_ID='finite_field.%02d'%num[index]
-        file_path_fd_field_in = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%FD_ID)
+#         FD_ID='finite_field.%02d'%num[index]
+#         file_path_fd_field_in = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%FD_ID)
     
 
-        with open(file_path_fd_field_in,'w') as fd_in_obj:
-            fd_in_obj.write(fd_input)
+#         with open(file_path_fd_field_in,'w') as fd_in_obj:
+#             fd_in_obj.write(fd_input)
+
+#         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',
+#                                  '''AFLOWpi.prep._to_local_scratch(oneCalc_ff,'%s')'''%FD_ID)
 
 
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""oneCalc_ff = AFLOWpi.run._swap_scf_inputs(oneCalc,'%s')""" % FD_ID)       
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','''AFLOWpi.prep._to_local_scratch(oneCalc_ff,'%s')'''%FD_ID)
+#         execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_local")
+        
+# #        run_command="""if oneCalc['__execCounter__']<=%s:
+# #        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s',execPrefix='%s',execPostfix='-northo 1',engine='espresso',calcType='scf',exit_on_error=True)
+# #        oneCalc['__execCounter__']+=1
+# #        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+# #"""%(str(exec_counter_index),FD_ID,execPrefix)
+
+# #        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',run_command)       
+
+#         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_forces(oneCalc_ff,'%s')""" % FD_ID)       
+#         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_polarization(oneCalc_ff,'%s')""" % FD_ID)       
 
 
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
-        run_command="""if oneCalc['__execCounter__']<=%s:
-        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s',execPrefix='%s',execPostfix='-northo 1',engine='espresso',calcType='scf',exit_on_error=True)
-        oneCalc['__execCounter__']+=1
-        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-"""%(str(exec_counter_index),FD_ID,execPrefix)
+#         # add finite field to calcs for calclog
+#         oneCalc_FD=copy.deepcopy(oneCalc)
+#         oneCalc_FD['_AFLOWPI_INPUT_']=fd_input
+#         calc_subset_extended[FD_ID]=oneCalc_FD
 
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',run_command)       
+#     #update the calclogs to include FD_fields so when all phonon supercell
+#     #are finished but not finite fields the main script doesn't try to run
+#     chain_index=orig_oneCalc['__chain_index__']
 
-#        AFLOWpi.run._onePrep(oneCalc,ID,engine='espresso',calcType='scf',execPrefix=execPrefix,execPostfix=' -northo 1 ',alt_ID=FD_ID,)
+# #FIX THIS
+# #FIX THIS
+#     chain_logname='step_01'
+# ###    chain_logname='step_%02d'% chain_index
+# #FIX THIS
+# #FIX THIS
 
-
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_forces(oneCalc_ff,'%s')""" % FD_ID)       
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"""AFLOWpi.run._pull_polarization(oneCalc_ff,'%s')""" % FD_ID)       
-
-
-        # add finite field to calcs for calclog
-        oneCalc_FD=copy.deepcopy(oneCalc)
-        oneCalc_FD['_AFLOWPI_INPUT_']=fd_input
-        calc_subset_extended[FD_ID]=oneCalc_FD
-
-    #update the calclogs to include FD_fields so when all phonon supercell
-    #are finished but not finite fields the main script doesn't try to run
-    chain_index=orig_oneCalc['__chain_index__']
-
-#FIX THIS
-#FIX THIS
-    chain_logname='step_01'
-###    chain_logname='step_%02d'% chain_index
-#FIX THIS
-#FIX THIS
-
-#    AFLOWpi.prep.updatelogs(calc_subset_extended,chain_logname,runlocal=True)
+# #    AFLOWpi.prep.updatelogs(calc_subset_extended,chain_logname,runlocal=True)
 
 def _field_factory(input_str,field_strength=0.001,for_type='raman',field_cycles=3,dir_index=0):
     """
@@ -392,7 +394,7 @@ def _field_factory(input_str,field_strength=0.001,for_type='raman',field_cycles=
          input_str (str): string of QE pwscf input file
 
     Keyword Arguments:
-         feild_strength (float): applied electric field strength
+         field_strength (float): applied electric field strength
          field_cycles (int) number of berry phase cycles
          for_type (str): which type of FD input do we want to generate files for. 'raman','born','eps'
          dir_index (int): index of the finite field direction to choose
@@ -441,7 +443,6 @@ def _field_factory(input_str,field_strength=0.001,for_type='raman',field_cycles=
 
     input_list=[]
 
-#    for i in range(len(field_dir)):
     for j in range(len(field_dir[dir_index])):
         in_dict['&electrons']['efield_cart(%s)'%(j+1)]=field_dir[dir_index][j]*field_strength
 
