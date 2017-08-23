@@ -1232,8 +1232,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             
         try:
             try:
-                submitCommand = AFLOWpi.run._get_cluster_submit_command()
-                
+                submitCommand = AFLOWpi.run._get_cluster_submit_command()                
             except Exception,e:
                 _fancy_error_log(e)
             
@@ -1247,61 +1246,34 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
 
         except Exception,e:
             _fancy_error_log(e)
+
+        #submit the job
         try:
-            
-            command  = "ssh -o StrictHostKeyChecking=no %s '%s -N %s %s %s %s' " % (__submitNodeName__,submitCommand,calcName,queue,qsubFilename,additional_flags)
-
-            job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
-            job.communicate()               
-            if job.returncode != 0:
-                try:
-                    logging.info("Trying to submit job with no ssh")
-                    
-                    command = '%s -N %s %s %s %s' % (submitCommand,calcName,queue,qsubFilename,additional_flags)
-
-                    job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
-                    info_str = job.communicate()               
-                    print logging.info(info_str)
-                except Exception,e:
-                    AFLOWpi.run._fancy_error_log(e)
-            else:
-                logging.info('submitted %s to the queue' % submit_ID)
-
+            command  = "ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
+            job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
+            logging.info('submitted %s to the queue' % submit_ID)
         except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
-            logging.info("Trying to submit job with no -N option")
-
             try:
+                logging.info("Trying to submit job with no -N option")
                 command = "ssh -o StrictHostKeyChecking=no %s '%s %s %s' " % (__submitNodeName__,submitCommand,qsubFilename,additional_flags)
-                job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
-                job.communicate()               
-
+                job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
             except Exception,e:
-                logging.info("Trying to submit job without ssh and -N option")
                 try:
-                    baseID = ID.split('_')[0]
-                    baseID = ID
-                    qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
-                    os.system("ssh -o StrictHostKeyChecking=no %s '%s %s %s %s' " % (__submitNodeName__,submitCommand,queue,qsubFilename,additional_flags))
+                    logging.info("Trying to submit job without ssh option")
+                    command = "%s %s -N %s %s %s" % (submitCommand,queue,calcName,qsubFilename,additional_flags)
+                    job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
                 except Exception,e:
-                    logging.info("Trying to submit job without ssh and -N option")
                     try:
-                        baseID = ID.split('_')[0]
-                        baseID = ID
-                        qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
-                        os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                    except Exception,e:
                         logging.info("Trying to submit job without ssh and -N option")
-                        try:
-                            os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                        except Exception,e:
-                            _fancy_error_log(e)
+                        command = "%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags)
+                        job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
+                    except Exception,e:
+                        pass
 
+            
     else:
         try:
-
-            execFileString  = os.path.abspath(os.path.join(folder,'_'+ID+'.py'))
-            
+            execFileString  = os.path.abspath(os.path.join(folder,'_'+ID+'.py'))            
             execfile(execFileString)
 
         except KeyboardInterrupt:

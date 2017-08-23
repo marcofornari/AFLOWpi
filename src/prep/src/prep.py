@@ -3703,15 +3703,24 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
 
 
-def getMPGrid(primLatVec,offset=True,string=True):
+def getMPGrid(primLatVec,offset=True,string=True,oldk=None,oldLat=None):
     try:
         '''just starting on this. going to refine later'''
 
+	
         kpointList=[]
         a,b,c,alpha,beta,gamma =  AFLOWpi.retr.free2abc(primLatVec,cosine=False,bohr=False,string=False)
-        kpointList.append(int(numpy.floor(200.0/(a*2*numpy.pi))))
-        kpointList.append(int(numpy.floor(200.0/(b*2*numpy.pi))))
-        kpointList.append(int(numpy.floor(200.0/(c*2*numpy.pi))))
+	if oldk==None or oldLat==None:
+		kpointList.append(int(numpy.floor(200.0/(a*2*numpy.pi))))
+		kpointList.append(int(numpy.floor(200.0/(b*2*numpy.pi))))
+		kpointList.append(int(numpy.floor(200.0/(c*2*numpy.pi))))
+	else:
+		old_a,old_b,old_c,al,be,ga = AFLOWpi.retr.free2abc(oldLat,cosine=False,bohr=False,string=False)
+		
+		old = [int(x) for x in old.split()][:3]
+		kpointList.append(int(numpy.around(old[0]*old_a/a,decimals=0)))
+		kpointList.append(int(numpy.around(old[1]*old_b/b,decimals=0)))
+		kpointList.append(int(numpy.around(old[2]*old_c/c,decimals=0)))
 
 
 
@@ -4490,6 +4499,9 @@ EXITING.
 		for ID,oneCalc in self.int_dict.iteritems():
 			AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 				
+
+	def update_cell(self,update_positions=True,update_structure=True):
+		self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
 	
         def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
 		if self.step_index==0:
@@ -4525,7 +4537,7 @@ EXITING.
 
 #			self.split=False
 
-		self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
+
 		#add workflow to each step
 		for k,v in self.int_dict.iteritems():
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
@@ -4585,6 +4597,9 @@ EXITING.
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 		
 
+	def shake_atoms(self,dist=0.2):		
+		command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s)'%dist
+		self.addToAll(block='PREPROCESSING',addition=command)
 
 
 	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix=""):
@@ -5733,10 +5748,67 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 
 	    iso    = AFLOWpi.prep.isotropy()
-
 	    iso.qe_input(out_in,accuracy=0.005)
 	    tmp_in = iso.convert(ibrav=True,)
 	    split_tmp = AFLOWpi.retr._splitInput(tmp_in)
+	    
+            ###################################################################################################
+	    ibr = splitInput["&system"]["ibrav"]
+	    try:
+		    cdm1 = float(splitInput["&system"]["celldm(1)"])
+	    except: cdm1 = None
+	    try:
+		    cdm2 = float(splitInput["&system"]["celldm(2)"])
+	    except: cdm2 = None
+	    try:
+		    cdm3 = float(splitInput["&system"]["celldm(3)"])
+	    except: cdm3 = None
+	    try:
+		    cdm4 = float(splitInput["&system"]["celldm(4)"])
+	    except: cdm4 = None
+	    try:
+		    cdm5 = float(splitInput["&system"]["celldm(5)"])
+	    except: cdm5 = None
+	    try:
+		    cdm6 = float(splitInput["&system"]["celldm(6)"])
+	    except: cdm6 = None
+
+	    old_cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
+				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
+
+
+	    ibr = split_tmp["&system"]["ibrav"]
+	    try:
+		    cdm1 = float(split_tmp["&system"]["celldm(1)"])
+	    except: cdm1 = None
+	    try:
+		    cdm2 = float(split_tmp["&system"]["celldm(2)"])
+	    except: cdm2 = None
+	    try:
+		    cdm3 = float(split_tmp["&system"]["celldm(3)"])
+	    except: cdm3 = None
+	    try:
+		    cdm4 = float(split_tmp["&system"]["celldm(4)"])
+	    except: cdm4 = None
+	    try:
+		    cdm5 = float(split_tmp["&system"]["celldm(5)"])
+	    except: cdm5 = None
+	    try:
+		    cdm6 = float(split_tmp["&system"]["celldm(6)"])
+	    except: cdm6 = None
+
+	    cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
+				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
+
+	    oldk = splitInput["K_POINTS"]["__content__"]
+            new_grid = AFLOWpi.prep.getMPGrid(cell_vec/0.529177249,offset=True,string=True,oldk=oldk,oldLat=old_cell_vec)
+            '''recip lattice'''
+            '''find the order from smallest to largest of the recip lattice vec'''
+
+            splitInput['K_POINTS']['__content__'] =  new_grid
+	    
+            ###################################################################################################
+
 	    splitInput["&system"]["nat"]=split_tmp["&system"]["nat"]
 	    splitInput["&system"]["ibrav"]=split_tmp["&system"]["ibrav"]
 	    splitInput["&system"]["celldm(1)"]=split_tmp["&system"]["celldm(1)"]
@@ -5747,8 +5819,8 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
 
 	    #if ibrav changes. use the k points scaled to match the new cell vectors
-	    if splitInput["&system"]["ibrav"]!=split_tmp["&system"]["ibrav"]:
-		    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
+#	    if splitInput["&system"]["ibrav"]!=split_tmp["&system"]["ibrav"]:
+#	    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
 
 
 	    try:

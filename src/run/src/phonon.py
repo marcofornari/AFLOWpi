@@ -55,7 +55,7 @@ def _phonon_band_path(oneCalc,ID,nk=400):
     """
 
     dk=0.0001
-    nk=10000
+    nk=2000
     path = AFLOWpi.retr._getPath(dk,oneCalc,ID=ID)
 
     '''scale the k points in the path list so they're as close to nk as possible'''
@@ -685,7 +685,9 @@ def _get_ph_weights(appdos_fn):
     with open(appdos_fn,"r") as fo:
         data = fo.read()
 
+    data = re.sub("-"," -",data)
     data=data.split('\n')
+    
     at_labels = data[0].split()[4:]
 
     data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
