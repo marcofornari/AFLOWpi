@@ -34,7 +34,7 @@ import numpy
 import time
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix=""):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -52,9 +52,9 @@ class tight_binding:
 #        AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING',"""AFLOWpi.scfuj._get_ham_xml(oneCalc,ID)""")
 
         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=%s)
+     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=%s,band_factor=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,kp_factor)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,kp_factor,band_mult)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
  
@@ -74,8 +74,8 @@ class tight_binding:
 
 
     def optical(self,en_range=[0.05,5.05],de=0.05):
-        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
-        raise SystemExit
+#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
+#        raise SystemExit
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
@@ -531,7 +531,7 @@ class tb_plotter:
             pass
 
 
-def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False):
+def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -605,10 +605,10 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             oneCalc['__runList__'].append('scf')
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
             
-#            nawf = AFLOWpi.prep._get_pp_nawf(oneCalc,ID)
 
-#            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,unoccupied_states=unoccupied_bands)	
-            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond)  
+
+
+            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond,band_factor=band_factor)  
 
 
 
@@ -645,11 +645,9 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             except Exception,e:
                 AFLOWpi.run._fancy_error_log(e)
 
-
             AFLOWpi.run._oneRun(__submitNodeName__,nscf_calc,nscf_ID,execPrefix=execPrefix,
                                 execPostfix=execPostfix,engine='espresso',calcType='scf',executable=None)
             AFLOWpi.retr._writeEfermi(nscf_calc,nscf_ID)
-
 
             abortIFRuntimeError(subdir, nscf_ID)
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
@@ -662,11 +660,14 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
             execPostfix+=' -northo 1'
 
+        execPrefix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_prefix_serial')
+        execPostfix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_postfix_serial')            
+        
         if 'pdos' not in oneCalc['__runList__']:
             pdosPath = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'projwfc.x')
 
-            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix,
-                                execPostfix=execPostfix,engine='espresso',calcType='custom',
+            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix_LOCAL,
+                                execPostfix=execPostfix_LOCAL,engine='espresso',calcType='custom',
                                 executable='projwfc.x',execPath=pdosPath)
 #############
             oneCalc['__runList__'].append('pdos')
