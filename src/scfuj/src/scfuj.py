@@ -40,30 +40,12 @@ import collections
 import csv
 
 def _get_PAO_orb_count(ID,oneCalc):
-    out_str = AFLOWpi.retr._getOutputString(oneCalc,ID)
+    tmpdir = AFLOWpi.prep._get_tempdir()
+    dfxml  = os.path.join(tmpdir,"%s.save/data-file.xml"%oneCalc["_AFLOWPI_PREFIX_"])
+    with open(dfxml) as ofo:
+        ofs = ofo.read()
 
-    spec = re.compile('\s*PseudoPot\..*for\s*([A-Za-z]*) read from file:')
-
-    orbs = re.compile('l\((\d+)\)\s*=\s*(\d+)')
-    spec_num_atom =  AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=True)
-
-    orbs_list = orbs.findall(out_str)
-    spec_list = spec.findall(out_str)
-
-    orb_dict={}
-    orb_count=999
-    spec_counter=-1
-    for i in xrange(len(orbs_list)):
-        if orb_count>int(orbs_list[i][0]):
-            spec_counter+=1
-            orb_dict[spec_list[spec_counter]]=0
-
-        orb_count = int(orbs_list[i][0])
-        orb_dict[spec_list[spec_counter]]+=int(orbs_list[i][1])*2+1
-
-    tot_orbs=0
-    for spec,norb in orb_dict.iteritems():
-        tot_orbs+=spec_num_atom[spec]*norb
+    tot_orbs = int(re.findall("NUMBER_OF_ATOMIC.*\n\s*(\d+)\s*",ofs)[-1])
     
     return tot_orbs
 
@@ -471,7 +453,7 @@ def maketree(oneCalc,ID, paodir=None):
 
         return oneCalc
 
-def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
+def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25):
         """
         Add the ncsf input to each subdir and update the master dictionary
         
@@ -496,7 +478,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
 
                         '''do nbnd==number of projectors'''
                         nbnd = AFLOWpi.scfuj._get_PAO_orb_count(ID,oneCalc)
-                        splitInput['&system']['nbnd']=int(float(nbnd)*1.25)
+                        splitInput['&system']['nbnd']=int(float(nbnd)*band_factor)
 
  			'''checks to see if nbnd has already been added to the file - in any case add/replace nbnd'''
 
@@ -508,6 +490,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                             splitInput['&system']['nosym']='.True.'
                             splitInput['&system']['noinv']='.True.'
                             splitInput['&control']['verbosity']='"high"'
+                            splitInput['&control']['wf_collect']='.TRUE.'
                             splitInput['&control']['calculation']='"nscf"'
                             inputfile=AFLOWpi.retr._joinInput(splitInput)
                             '''writes an input for band_plot.x to process the correct number of bands calculated'''
@@ -1402,7 +1385,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
         subdir = oneCalc['_AFLOWPI_FOLDER_']
 	oneCalc['_AFLOWPI_CONFIG_']=config
 
-        nscf_calc,nscf_ID= nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult)	
+        nscf_calc,nscf_ID= nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult,band_factor=1.0)	
 ##################################################################################################################
 	
 ##################################################################################################################
@@ -1414,7 +1397,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True)
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True,band_factor=1.0)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
         AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=1,shift=0.1,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
