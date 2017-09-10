@@ -115,7 +115,7 @@ class tight_binding:
 
         calc_type='Transport Properties'
 
-        print AFLOWpi.run._colorize_message('\nADDING TB STEP: ',level='GREEN',show_level=False)+\
+        print AFLOWpi.run._colorize_message('\nADDING TB STEP:  ',level='GREEN',show_level=False)+\
                                             AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
         ## no temperature parameter for WanT bands so only run 
         ## it once if run_bands=True in the input the method.
