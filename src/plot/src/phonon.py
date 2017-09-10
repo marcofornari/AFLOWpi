@@ -245,13 +245,13 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
             pylab.ylabel('Frequency (cm$^{-1}$)')
 	pylab.xlim(min(k_x[1]),max(k_x[1])) 
         
-
-
 	if w_range!=None:
 		min_val=w_range[0]/1.1
 		max_val=w_range[1]/1.1
 
 	pylab.ylim(1.1*min_val,max_val*1.1) 
+
+
 
 	'''
         takes in a list of k points that was used as pw.x input for the 'bands'
@@ -443,11 +443,15 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		#smooth the phDOS
 	#	dos = AFLOWpi.plot.__smoothGauss(dos)   
 	#	freq_dos = AFLOWpi.plot.__smoothGauss(freq_dos)   
+		if w_range==None:
+			w_range=[numpy.amin(freq_dos[:,0])/1.1,numpy.amax(freq_dos[:,0])/1.1]
 		freq_dos = freq_dos[numpy.where(numpy.logical_and(freq_dos[:,0]>=w_range[0]*1.1,freq_dos[:,0]<=w_range[1]*1.1))]
 
 
 		min_xval = numpy.amin(freq_dos[:,2:])
 		max_xval = numpy.amax(freq_dos[:,2:])
+
+
 		for spec in range(2,len(labels)):
 			ax2.plot(freq_dos[:,spec],freq_dos[:,0],linestyle='-', linewidth=1.5,label=labels[spec]) #to plot the smoothed data
 		ax2.set_xlim(0.0,max_xval*1.2) 
