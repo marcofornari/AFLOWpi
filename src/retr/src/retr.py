@@ -687,7 +687,7 @@ def getCellOutput(oneCalc,ID):
     retrDict = {}
     try:
         outputStr+=os.path.abspath(os.path.join(folder,scfInput))+'\n'
-        outputStr+=__getStoicName(oneCalc)+'\n'
+        outputStr+=_getStoicName(oneCalc)+'\n'
         outputStr+='********************************************************\n\n'        
         coordRegex = re.compile(r'(Begin final coordinates(?:.*\n)+End final coordinates)',re.MULTILINE)
         energyRegex = re.compile(r'(?:(?:(?:(?:\!\s+)total)|(?:Final)) en\w+\s*=\s+(.+?)Ry)',re.MULTILINE)
