@@ -339,8 +339,8 @@ def _cleanInputStringSCF(inputString,convert=True):
             speciesArr = speciesArr[-1]
             splitSpecies = speciesArr.split('\n')
 	except:
-            splitSpecies=''
-                                                                                                                                                                         
+            splitSpecies='' 
+
         try:
             for item in splitSpecies:
 		if item!='' and item[0]!='!':
@@ -3707,8 +3707,10 @@ def getMPGrid(primLatVec,offset=True,string=True,oldk=None,oldLat=None):
 		kpointList.append(int(numpy.floor(200.0/(c*2*numpy.pi))))
 	else:
 		old_a,old_b,old_c,al,be,ga = AFLOWpi.retr.free2abc(oldLat,cosine=False,bohr=False,string=False)
-		
-		old = [int(x) for x in old.split()][:3]
+
+
+
+		old = [int(x) for x in oldk.split()][:3]
 		kpointList.append(int(numpy.around(old[0]*old_a/a,decimals=0)))
 		kpointList.append(int(numpy.around(old[1]*old_b/b,decimals=0)))
 		kpointList.append(int(numpy.around(old[2]*old_c/c,decimals=0)))
@@ -3731,7 +3733,7 @@ def getMPGrid(primLatVec,offset=True,string=True,oldk=None,oldLat=None):
             return kpointList
     except Exception,e:
         AFLOWpi.run._fancy_error_log(e)
-        return '2 2 2 1 1 1'
+        return oldk
         
 #####################################################################################################################
 #####################################################################################################################
@@ -4731,9 +4733,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=True,disp_sym=False,atom_sym=False,field_strength=0.003,field_cycles=3,proj_phDOS=True):
-		#disable raman for this release
-		raman=False
+	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=False,disp_sym=False,atom_sym=False,field_strength=0.003,field_cycles=3,proj_phDOS=True,raman=False):
+		
 		#flag to determine if we need to recalculate the TB hamiltonian if 
 		#the user has chosen to calculate it on a later step in the workflow
 		self.tight_banding=False
@@ -4774,7 +4775,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 								   keep_file_names=True,
 								   clean_input=False)
 
-#			self.addToAll(block='RUN',addition="     oneCalc['__CRAWL_CHECK__']=''")	    
+
 
 		#adds the command to run the FD phonon calculations with pw.x and to add the command
 		#to run finite fields calculations for eps_inf and Z* to the calculations in the subset
@@ -4794,7 +4795,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 								   keep_file_names=True,
 								   clean_input=False)
 
-#			self.addToAll(block='RUN',addition="     oneCalc['__CRAWL_CHECK__']=''")	  
+
                 #adds the command to run the FD phonon calculations with pw.x
 		else:
 			task_list=['AFLOWpi.run.scf(calc_subset)',
@@ -4825,7 +4826,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.10,kp_mult=1.5):
+	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kp_mult=1.0):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
 		user interface. Adds a new step to the workflow.
