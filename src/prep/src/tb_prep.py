@@ -361,20 +361,23 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
             spin_postfix=''
             dat_postfix ='_0'
 
+
+        qe_pdos_out_str = AFLOWpi.retr._getOutputString(oneCalc,ID+'_pdos')
         rename_info_re = re.compile(r'state #\s*(\d*): atom\s*(\d+)\s*\(\s*(\S*)\s*\).*wfc\s*(\d+)\s*\(l=(\d+).*\)\n')
 
         #first check the QE projwfc.x output for the orbital
         #and species label for each state #
-        try:
-            qe_pdos_out_str = AFLOWpi.retr._getOutputString(oneCalc,ID+'_pdos')
-            state_info_list = rename_info_re.findall(qe_pdos_out_str)
-            #if it found the info on the states by their numbers
-            if len(state_info_list)==0:
-                rename_info_re = re.compile(r'state #\s*(\d*): atom\s*(\d+)\s*\(\s*(\S*)\s*\).*wfc\s*(\d+).*l=(\d+).*m_j=([\s-][.\d]+).*\n')
-                state_info_list = rename_info_re.findall(qe_pdos_out_str)
 
-            if len(state_info_list)!=0:
-                for i in range(len(state_info_list)):
+        state_info_list = rename_info_re.findall(qe_pdos_out_str)
+        #if it found the info on the states by their numbers
+        if len(state_info_list)==0:
+            rename_info_re = re.compile(r'state #\s*(\d*): atom\s*(\d+)\s*\(\s*(\S*)\s*\).*wfc\s*(\d+).*l=(\d+).*m_j=([\s-][.\d]+).*\n')
+            state_info_list = rename_info_re.findall(qe_pdos_out_str)
+
+        pdos_dict={}
+        if len(state_info_list)!=0:
+            for i in range(len(state_info_list)):
+
                     state_num = int(state_info_list[i][0].strip())
                     atom_num  = state_info_list[i][1].strip()
                     atom_spec = state_info_list[i][2].strip()
@@ -385,24 +388,42 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                     except: orb_m_j=-999
                     #translate atomic number "l" to orbital name (i.e. s,p,d,f)
                     orb_type=['s','p','d','f']
-             
+
                     #the orig file name from WanT output
                     orig_name = '%d_pdosdk%s.dat'%(state_num-1,dat_postfix)
 
                     orig_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],orig_name)
-                    if not os.path.exists(orig_path ):
-                        orig_name = '%s_TB_WanT%s_dos-%04d.dat'%(ID,dat_postfix,state_num)
+                    if not os.path.exists(orig_path):
+                        orig_name = '%d_pdos%s.dat'%(state_num-1,dat_postfix)
                         orig_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],orig_name)
                     #the renamed filename
                     if orb_m_j==-999:
-                        rename = '%s_TB%s.pdos_atm#%s(%s)_wfc#%s(%s)'%(ID,spin_postfix,atom_num,atom_spec,wfc_num,orb_type[orb_l])
+                        new_name = '%s_TB%s.pdos_atm#%s(%s)_wfc#%s(%s)'%(ID,spin_postfix,
+                                                                         atom_num,atom_spec,
+                                                                         wfc_num,orb_type[orb_l])
                     else:
-                        rename = '%s_TB%s.pdos_atm#%s(%s)_wfc#%s(%s)_%s'%(ID,spin_postfix,atom_num,atom_spec,wfc_num,orb_type[orb_l],orb_m_j)
-                    rename_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],rename)
-                    #finally we rename it
-                    os.rename(orig_path, rename_path)
-        except Exception,e:
-            AFLOWpi.run._fancy_error_log(e)
+                        new_name = '%s_TB%s.pdos_atm#%s(%s)_wfc#%s(%s)_%s'%(ID,spin_postfix,atom_num,
+                                                                            atom_spec,wfc_num,
+                                                                            orb_type[orb_l],orb_m_j)
+
+                    
+                    try:
+                        pdos_dict[new_name].append(orig_name)
+                    except Exception,e:
+                        pdos_dict[new_name]=[orig_name]
+
+        for k,v in pdos_dict.iteritems():
+
+            old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[0])
+            dat = numpy.loadtxt(old_name_path)                    
+            for i in xrange(1,len(v)):
+                old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[i])
+                dat[:,1] += numpy.loadtxt(old_name_path)[:,1]
+            new_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],k)
+            numpy.savetxt(new_name_path,dat)
+
+
+
 
 
 
