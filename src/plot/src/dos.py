@@ -377,7 +377,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 					data = __combinePDOS(fileList)
 					with open(os.path.join(subdir,'%s_%s.sumpdos' % (atom,orbitalName)),'wb') as outputFile:
 						cPickle.dump(data,outputFile)
-
+					numpy.savetxt(os.path.join(subdir,'%s_%s.sumpdos.txt' % (atom,orbitalName)),data)
 
 	byAtom={}
 	for atom in atomList:	
@@ -393,6 +393,9 @@ def __sumpdos(oneCalc,ID,TB=False):
 		data = __combinePDOS(files)
 		with open(os.path.join(subdir,'%s.sumpdos' % (atom)),'wb') as outputFile:
 					cPickle.dump(data,outputFile)
+		numpy.savetxt(os.path.join(subdir,'%s.sumpdos.txt' % (atom)),data)
+
+			
 
 ###################################################################################################################
 
@@ -675,7 +678,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	except:
 		Efermi=0.0
 
-	print 'Efermi/HOMO-LUMO = %s' % Efermi
+#	print 'Efermi/HOMO-LUMO = %s' % Efermi
 
         try:
             ax2=ax[speciesNum]

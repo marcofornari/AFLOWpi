@@ -95,7 +95,7 @@ def __bands(oneCalc,ID,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		nc = AFLOWpi.retr._splitInput(oneCalc[1]['_AFLOWPI_INPUT_'])['&system']['noncolin']
 		if nc.lower()=='.true.':
 			SOC=True
-	except Exception,e: print e
+	except Exception,e: pass
 
 	if not SOC:
 		__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding)
@@ -770,8 +770,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		try:
 			data = open(filedos,'r').readlines()
 		except Exception:
-			logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-			print "Are you sure you ran ppDOS and it completed properly?"
+#			logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
+#			print "Are you sure you ran ppDOS and it completed properly?"
 			return
 
 		en = []

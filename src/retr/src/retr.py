@@ -1000,7 +1000,7 @@ def _getAtomNum(inputString,strip=False):
     return numOfEach
 
 from collections import OrderedDict
-def _getStoicName(oneCalc,strip=False,latex=False,order=True):
+def _getStoicName(oneCalc,strip=False,latex=False,order=True,gcd=True):
     '''
     Determines the name of the compound by looking at the input and
     finds the stoichiometric number of species in the compound
@@ -1022,6 +1022,8 @@ def _getStoicName(oneCalc,strip=False,latex=False,order=True):
     '''get GCD of it'''
     def GCD(a, b):
 
+            if gcd==False:
+                return 1
             if b == 0:
                     return a
             else:

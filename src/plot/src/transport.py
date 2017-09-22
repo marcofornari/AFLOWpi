@@ -287,7 +287,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
 			    else:
-				    label_text='$'+trans_plot_dict[Type]['lc']+'$ @ %sK'%int(sorted_all[temp_index][0])
+#				    label_text='$'+trans_plot_dict[Type]['lc']+'$ @ %sK'%int(sorted_all[temp_index][0])
+				    label_text='%sK'%int(sorted_all[temp_index][0])
 
 
                             ls_choice  = lines[temp_index%len(lines)]
@@ -299,9 +300,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e17
-			    elif Type=='sig_seebeck':
+#			    if Type=='kappa':
+#				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    if Type=='sig_seebeck':
 				    y_vals=numpy.asarray(y_vals)/1.0e-9
 			    elif Type=='cond':
 				    y_vals=numpy.asarray(y_vals)
@@ -349,7 +350,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    except:
 					    continue
 			    else:
-				    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}$ @ %sK'%int(sorted_dn[temp_index][0])
+#				    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}$ @ %sK'%int(sorted_dn[temp_index][0])
+				    label_text='%sK'%int(sorted_dn[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
                             ls_choice  = lines[temp_index%len(lines)]
@@ -358,9 +360,9 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             y_vals=sorted_dn[temp_index][1][1]
 
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e17
-			    elif Type=='sig_seebeck':
+#			    if Type=='kappa':
+#				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    if Type=='sig_seebeck':
 				    y_vals=numpy.asarray(y_vals)/1.0e-3
 			    elif Type=='cond':
 				    y_vals=numpy.asarray(y_vals)
@@ -414,7 +416,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 					    continue
 
 			    else:
-				    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}$ @ %sK'%int(sorted_up[temp_index][0])
+#				    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}$ @ %sK'%int(sorted_up[temp_index][0])
+				    label_text='%sK'%int(sorted_up[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
                             marker_choice = markers[temp_index%len(markers)]
@@ -531,8 +534,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 #                pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
 
 
-                compoundName = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
-                compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
+                compoundName = AFLOWpi.retr._getStoicName(oneCalc,strip=True,gcd=False)
+                compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True,gcd=False)
 #                ax2.legend(loc=0,fontsize=26)
                 ax2.legend(loc=0)
 
