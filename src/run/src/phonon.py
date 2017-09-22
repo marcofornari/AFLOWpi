@@ -648,21 +648,21 @@ def _sum_aproj_phDOS(appdos_fn,de=1.0):
 
     kpts,data,summed_weights,species = AFLOWpi.run._get_ph_weights(appdos_fn)
 
-    data_min=numpy.min(data[:,0])*1.2
-    data_max=numpy.max(data[:,0])*1.2
+    data_min=numpy.min(data[:,0])*1.01
+    data_max=numpy.max(data[:,0])*1.01
 
-    num_bins=(data_max-data_min)/de
-    new_bins=numpy.linspace(data_min, data_max, num=num_bins, endpoint=True)
+    new_bins=numpy.linspace(data_min, data_max, num=1001, endpoint=True)
     #do a new array for the bins with density,total,then a col for each species
     dos_data = numpy.zeros([len(new_bins)-1,len(species)+2])
     total_phDOS = numpy.histogram(data[:,0], bins=new_bins, )
     dos_data[:,0] = total_phDOS[1][:-1]
-#    dos_data[:,1] = total_phDOS[0]
-    for spec in range(1,len(species)+1):
 
-        projected_phDOS = numpy.histogram(data[:,0], bins=new_bins, weights=summed_weights[:,spec])[0]
-        dos_data[:,spec+1]=projected_phDOS
-        dos_data[:,1]+=projected_phDOS
+    for spec in range(1,len(species)+1):
+        for w in xrange(new_bins.shape[0]-1):
+            #for each spec and freq bin
+            dos_data[w,spec+1] = numpy.sum(numpy.exp(-((new_bins[w]-data[:,0])/de)**2)*(summed_weights[:,spec]))
+            #total phdos
+            dos_data[w,1]+=dos_data[w,spec+1]
 
     with open(appdos_fn[:-6]+'aphdos',"w") as fo:
         fo.write('freq'.ljust(21))

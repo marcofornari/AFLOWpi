@@ -187,7 +187,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 
 	pylab.xlim(yLim[0],yLim[1])
 	pylab.axvline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line
-	pylab.xticks(numpy.arange(yLim[0],yLim[1]+1,2))
+#	pylab.xticks(numpy.arange(yLim[0],yLim[1]+1,1))
      ##############################
      #to increase the linewidth of the axis
 	ax2.spines['bottom'].set_linewidth(1.5)
@@ -581,7 +581,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	pylab.xlim(yLim[0],yLim[1])
 
         #plot the ticks only on the bottom plot of the figure
-        ax2.set_xticks(numpy.arange(yLim[0],yLim[1]+1,2))
+#        ax2.set_xticks(numpy.arange(yLim[0],yLim[1]+1,1))
 
 
 	ax2.axvline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line
@@ -822,7 +822,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
         #plot the ticks only on the bottom plot of the figure
 
-        ax2.set_xticks(numpy.arange(yLim[0],yLim[1]+1,2))
+#        ax2.set_xticks(numpy.arange(yLim[0],yLim[1]+1,2))
 
 
 	ax2.axvline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line

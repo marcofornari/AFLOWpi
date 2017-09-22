@@ -377,7 +377,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 		ax2=pylab.subplot(122)
 		ax2.set_color_cycle(['k','r','g','b','c', 'm', 'y',])
-
+#		ax2.set_color_cycle(['r','g','b','c', 'm', 'y', 'k'])
 		filedos = os.path.join(subdir,'%s.phdos'%ID)
 		try:
 			data = open(filedos,'r').readlines()
@@ -411,8 +411,8 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		logging.info('Plotting Phonons and atom projected phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 
-
-
+		ax2.set_color_cycle(['k','r','g','b','c', 'm', 'y',])
+		ax2.set_color_cycle(['b','g','r','m','c', 'y', 'k',])
 		filedos = os.path.join(subdir,'%s.aphdos'%ID)
 		try:
 			data = open(filedos,'r').read()
