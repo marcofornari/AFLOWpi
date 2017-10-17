@@ -44,7 +44,7 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
 
     paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
 
-    paopy_input = 'inputfile.py'
+    paopy_input = 'inputfile.xml'
     try:
         command = '%s python %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
         print command
@@ -64,10 +64,16 @@ def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
 
 def paopy_spin_Hall_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID)""")
+    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID)"""
+    for ID,oneCalc in calcs.iteritems():
+        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'r') as ifo:
+            input_text = ifo.read()
+        input_text = re.sub('###_PAOFLOW_SPECIAL_###',command,input_text)
+        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'w') as ofo:
+            ofo.write(input_text)
 
-def paopy_berry_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_berry(oneCalc,ID)""")
+def paopy_Berry_wrapper(calcs):
+    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID)""")
 
 def paopy_dos_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)""")
@@ -75,8 +81,9 @@ def paopy_dos_wrapper(calcs):
 def paopy_pdos_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)""")
 
-def paopy_bands_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID)""")
+def paopy_bands_wrapper(calcs,topology=True):
+    AFLOWpi.prep.addToAll_(calcs,
+                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s)"""%topology)
 
 def paopy_transport_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID)""")
@@ -194,7 +201,7 @@ def _add_paopy_spin_Hall(oneCalc,ID,):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_spin','logical','T')
 
-def _add_paopy_berry(oneCalc,ID):
+def _add_paopy_Berry(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Berry','logical','T')

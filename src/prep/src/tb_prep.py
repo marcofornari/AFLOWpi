@@ -60,6 +60,7 @@ class tight_binding:
  
         self.step_counter+=1
         command='''if oneCalc["__execCounter__"]<=%s:
+     ###_PAOFLOW_SPECIAL_###
      AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
      oneCalc['__execCounter__']+=1
      AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,exec_prefix)
@@ -67,8 +68,39 @@ class tight_binding:
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
 
 #        command='''AFLOWpi.prep._rename_projectability(oneCalc,ID)'''
-        AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',command)
+#        AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',command)
         self.step_counter+=1
+
+
+    def shc(self,en_range=[0.05,5.05],de=0.05):
+#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
+#        raise SystemExit
+        ne=float(en_range[1]-en_range[0])/de
+
+        if self.step_counter==1:
+            self.do_ham=True
+        else:
+            self.do_ham=False
+	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs)
+
+
+        calc_type='Calculate SHC with PAO-TB Hamiltonian'
+        print '                 %s'% (calc_type)
+
+    def ahc(self,en_range=[0.05,5.05],de=0.05):
+#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
+#        raise SystemExit
+        ne=float(en_range[1]-en_range[0])/de
+
+        if self.step_counter==1:
+            self.do_ham=True
+        else:
+            self.do_ham=False
+	AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs)
+
+
+        calc_type='Calculate AHC with PAO-TB Hamiltonian'
+        print '                 %s'% (calc_type)
 
 
 
@@ -155,9 +187,9 @@ except: pass
             calc_type='Generate Fermi Surface data with PAO-TB Hamiltonian'
             print '                 %s'% (calc_type)
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True):
+    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,topology=True):
 
-	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs)
+	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,topology=True)
 
         calc_type='Calculate bands with PAO-TB Hamiltonian'
         print '                 %s'% (calc_type)
@@ -180,7 +212,12 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
         data_file_dft = os.path.join(save_dir,'data-file.xml')
         atomic_proj_dat = os.path.join(save_dir,'atomic_proj.xml')
 #        atomic_proj_dat = os.path.join(save_dir,'atomic_proj.dat')
-        shutil.copy(data_file_dft,TB_dir)
+        try:
+            shutil.copy(data_file_dft,TB_dir)
+        except:
+            data_file_dft = os.path.join(save_dir,'data-file-schema.xml')
+            shutil.copy(data_file_dft,TB_dir)
+
         shutil.copy(atomic_proj_dat,TB_dir)
     except Exception,e:
         print e

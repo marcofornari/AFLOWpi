@@ -42,10 +42,17 @@ import csv
 def _get_PAO_orb_count(ID,oneCalc):
     tmpdir = AFLOWpi.prep._get_tempdir()
     dfxml  = os.path.join(tmpdir,"%s.save/data-file.xml"%oneCalc["_AFLOWPI_PREFIX_"])
-    with open(dfxml) as ofo:
-        ofs = ofo.read()
 
-    tot_orbs = int(re.findall("NUMBER_OF_ATOMIC.*\n\s*(\d+)\s*",ofs)[-1])
+    if  os.path.isfile(dfxml):
+        with open(dfxml) as ofo:
+            ofs = ofo.read()
+
+        tot_orbs = int(re.findall("NUMBER_OF_ATOMIC.*\n\s*(\d+)\s*",ofs)[-1])
+    else:
+        dfxml  = os.path.join(tmpdir,"%s.save/data-file-schema.xml"%oneCalc["_AFLOWPI_PREFIX_"])
+        with open(dfxml) as ofo:
+            ofs = ofo.read()
+        tot_orbs = int(re.findall(        '<num_of_atomic_wfc>(\d+)</num_of_atomic_wfc>',ofs)[-1])
     
     return tot_orbs
 
@@ -1239,7 +1246,7 @@ for key in uValue.keys():
 logging.info('Completed scfuj convergence for final U values = {0}'.format(newUvals))
 print 'Completed scfuj convergence for final U values = ',str(newUvals).strip('{}')
 
-AFLOWpi.scfuj._get_ham_xml(oneCalc,ID)
+
 '''  % (uThreshDict,mixing,kp_mult,uThresh,nIters,uThresh,nIters-1)
             if AFLOWpi.prep._findInBlock(oneCalc,ID,block='RUN',string='uValue') == False:
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',loopblock)
