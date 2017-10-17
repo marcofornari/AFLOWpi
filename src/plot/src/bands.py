@@ -390,6 +390,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	else:
 		k_x,k_y = AFLOWpi.plot._clean_bands_data_qe(filebands,Efermi_shift)
 
+
+
+
 	a=k_x[1]   # a set of k point values for one band for axis scaling purposes
        	b=k_y[1]
 

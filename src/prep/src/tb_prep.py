@@ -681,14 +681,14 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         if not re.match('northo',execPostfix) or not re.match('no',execPostfix):
             execPostfix+=' -northo 1'
 
-        execPrefix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_prefix_serial')
-        execPostfix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_postfix_serial')            
+        execPrefix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_prefix')
+        execPostfix_LOCAL = AFLOWpi.prep._ConfigSectionMap('run','exec_postfix')            
         
         if 'pdos' not in oneCalc['__runList__']:
             pdosPath = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'projwfc.x')
 
-            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix_LOCAL,
-                                execPostfix=execPostfix_LOCAL,engine='espresso',calcType='custom',
+            AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix,
+                                execPostfix=execPostfix,engine='espresso',calcType='custom',
                                 executable='projwfc.x',execPath=pdosPath)
 #############
             oneCalc['__runList__'].append('pdos')
