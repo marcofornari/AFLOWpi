@@ -11,11 +11,14 @@ calcs.scf()
 # transport properties with WanT at 300K and 400K 
 
 tb = calcs.tight_binding()
-tb.bands(topology=True)
 # plot optical and transport
 # properties at 300K and 400K
+tb.transport()
+tb.optical()
+tb.dos()
+tb.bands(band_topology=True,fermi_surface=True)
 tb.ahc()
-tb.shc()
+tb.shc(spin_texture=True)
 
 
 # submit the workflow to run

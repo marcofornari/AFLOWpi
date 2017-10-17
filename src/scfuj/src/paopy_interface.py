@@ -63,8 +63,8 @@ def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=
         
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
 
-def paopy_spin_Hall_wrapper(calcs):
-    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID)"""
+def paopy_spin_Hall_wrapper(calcs,spin_texture=False):
+    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,spin_texture=%s)"""%spin_texture
     for ID,oneCalc in calcs.iteritems():
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'r') as ifo:
             input_text = ifo.read()
@@ -81,9 +81,9 @@ def paopy_dos_wrapper(calcs):
 def paopy_pdos_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)""")
 
-def paopy_bands_wrapper(calcs,topology=True):
+def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False):
     AFLOWpi.prep.addToAll_(calcs,
-                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s)"""%topology)
+                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s)"""%(band_topology,fermi_surface))
 
 def paopy_transport_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID)""")
@@ -168,14 +168,15 @@ def _add_paopy_pdos(oneCalc,ID):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
     
-def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True):
+def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False):
 
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_bands','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nk','int',nk)
     if topology==True:
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_topology','logical','T')
-
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_topology','logical','T')
+    if fermi_surface==True:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'fermisurf','logical','T')
 
 
 
@@ -188,7 +189,7 @@ def _add_paopy_optical(oneCalc,ID):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'epsilon','logical','T')
 
     
-def _add_paopy_spin_Hall(oneCalc,ID,):
+def _add_paopy_spin_Hall(oneCalc,ID,spin_texture=False):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     nl,sh = AFLOWpi.scfuj._get_spin_ordering(oneCalc,ID)
@@ -200,6 +201,9 @@ def _add_paopy_spin_Hall(oneCalc,ID,):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_spin','logical','T')
+
+    if spin_texture:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spintexture','logical','T')
 
 def _add_paopy_Berry(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')

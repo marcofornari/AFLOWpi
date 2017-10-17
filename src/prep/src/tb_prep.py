@@ -70,9 +70,9 @@ class tight_binding:
 #        command='''AFLOWpi.prep._rename_projectability(oneCalc,ID)'''
 #        AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',command)
         self.step_counter+=1
+        print 
 
-
-    def shc(self,en_range=[0.05,5.05],de=0.05):
+    def shc(self,en_range=[0.05,5.05],de=0.05,spin_texture=False):
 #        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
 #        raise SystemExit
         ne=float(en_range[1]-en_range[0])/de
@@ -81,11 +81,18 @@ class tight_binding:
             self.do_ham=True
         else:
             self.do_ham=False
-	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs)
+
+	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs,spin_texture=spin_texture)
 
 
-        calc_type='Calculate SHC with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        calc_type='Spin Hall Conductivity'
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+        if spin_texture:
+            calc_type='Spin Texture'
+            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
     def ahc(self,en_range=[0.05,5.05],de=0.05):
 #        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
@@ -99,9 +106,10 @@ class tight_binding:
 	AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs)
 
 
-        calc_type='Calculate AHC with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
 
+        calc_type='Anomalous Hall Conductivity'
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
 
@@ -116,8 +124,9 @@ class tight_binding:
             self.do_ham=False
 	AFLOWpi.scfuj.paopy_optical_wrapper(self.calcs)
 
-        calc_type='Calculate optical with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        calc_type='Optical Properties'
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
 
@@ -146,8 +155,7 @@ class tight_binding:
         AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs)
 
         calc_type='Transport Properties'
-
-        print AFLOWpi.run._colorize_message('\nADDING TB STEP:  ',level='GREEN',show_level=False)+\
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                                             AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
         ## no temperature parameter for WanT bands so only run 
         ## it once if run_bands=True in the input the method.
@@ -160,12 +168,17 @@ class tight_binding:
         AFLOWpi.scfuj.paopy_dos_wrapper(self.calcs)
         ne=float(dos_range[1]-dos_range[0])/de
 
-        calc_type='Calculate DOS with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        calc_type='Density of States'
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
         if projected==True:
             AFLOWpi.scfuj.paopy_pdos_wrapper(self.calcs)
-            calc_type='Calculate PDOS with PAO-TB Hamiltonian'
-            print '                 %s'% (calc_type)
+            calc_type='Projected Density of States'
+
+            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
             pdos_pp_str="""
 
 try:
@@ -184,17 +197,25 @@ except: pass
             AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',pdos_pp_str)
 
         if fermi_surface==True:
-            calc_type='Generate Fermi Surface data with PAO-TB Hamiltonian'
-            print '                 %s'% (calc_type)
+            calc_type='Fermi Surface'
+            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,topology=True):
+    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False):
 
-	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,topology=True)
+	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface)
 
-        calc_type='Calculate bands with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
-
-
+        calc_type='Electronic Band Structure'
+        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        if band_topology:
+            calc_type='Band Topology'
+            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        if fermi_surface:
+            calc_type='Fermi Surface'
+            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
 def _form_TB_dir(oneCalc,ID,from_ls=True):
