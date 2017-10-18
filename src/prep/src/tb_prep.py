@@ -72,9 +72,15 @@ class tight_binding:
         self.step_counter+=1
         print 
 
-    def shc(self,s_tensor,en_range=[0.05,5.05],de=0.05,spin_texture=False):
-#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
-#        raise SystemExit
+    def shc(self,s_tensor=None,en_range=[0.05,5.05],de=0.05,spin_texture=False):
+
+        if s_tensor==None:
+            s_tensor = [[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0],[1,2,0],[2,0,0],[2,1,0],[2,2,0], \
+                            [0,0,1],[0,1,1],[0,2,1],[1,0,1],[1,1,1],[1,2,1],[2,0,1],[2,1,1],[2,2,1], \
+                            [0,0,2],[0,1,2],[0,2,2],[1,0,2],[1,1,2],[1,2,2],[2,0,2],[2,1,2],[2,2,2]]
+
+
+
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
@@ -94,16 +100,20 @@ class tight_binding:
             print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-    def ahc(self,en_range=[0.05,5.05],de=0.05):
-#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
-#        raise SystemExit
+    def ahc(self,a_tensor=None,en_range=[0.05,5.05],de=0.05):
+
+        # Berry curvature
+        if a_tensor==None:
+            a_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+
+
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
             self.do_ham=True
         else:
             self.do_ham=False
-	AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs)
+	AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs,a_tensor)
 
 
 
@@ -113,16 +123,18 @@ class tight_binding:
 
 
 
-    def optical(self,en_range=[0.05,5.05],de=0.05):
-#        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
-#        raise SystemExit
+    def optical(self,d_tensor=None,en_range=[0.05,5.05],de=0.05):
+
+        if d_tensor==None:
+            d_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+
         ne=float(en_range[1]-en_range[0])/de
 
         if self.step_counter==1:
             self.do_ham=True
         else:
             self.do_ham=False
-	AFLOWpi.scfuj.paopy_optical_wrapper(self.calcs)
+	AFLOWpi.scfuj.paopy_optical_wrapper(self.calcs,d_tensor)
 
         calc_type='Optical Properties'
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
@@ -132,7 +144,7 @@ class tight_binding:
 
 
 
-    def transport(self,temperature=[300,],en_range=[-5.05,5.05],de=0.05):
+    def transport(self,t_tensor=None,temperature=[300,],en_range=[-5.05,5.05],de=0.05):
         '''
         Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
         in the high level user interface. Adds a new step to the workflow.
@@ -151,8 +163,13 @@ class tight_binding:
 
         '''		
 
+        # Boltzmann transport
+        if t_tensor==None:
+            t_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+
+
         ne=float(en_range[1]-en_range[0])/de
-        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs)
+        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor)
 
         calc_type='Transport Properties'
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\

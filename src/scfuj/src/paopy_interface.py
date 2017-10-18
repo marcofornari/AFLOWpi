@@ -72,8 +72,8 @@ def paopy_spin_Hall_wrapper(calcs,s_tensor,spin_texture=False):
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'w') as ofo:
             ofo.write(input_text)
 
-def paopy_Berry_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID)""")
+def paopy_Berry_wrapper(calcs,a_tensor):
+    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor))
 
 def paopy_dos_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)""")
@@ -85,11 +85,12 @@ def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False):
     AFLOWpi.prep.addToAll_(calcs,
                            'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s)"""%(band_topology,fermi_surface))
 
-def paopy_transport_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID)""")
+def paopy_transport_wrapper(calcs,t_tensor):
+    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor))
     AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
-def paopy_optical_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID)""")
+
+def paopy_optical_wrapper(calcs,d_tensor):
+    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor))
     AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
 
 def paopy_acbn0_wrapper(calcs):
@@ -186,14 +187,15 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False):
 
 
 
-def _add_paopy_transport(oneCalc,ID):
+def _add_paopy_transport(oneCalc,ID,t_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Boltzmann','logical','T')
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'t_tensor','int',t_tensor,degree=2)
 
-def _add_paopy_optical(oneCalc,ID):
+def _add_paopy_optical(oneCalc,ID,d_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'epsilon','logical','T')
-
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'d_tensor','int',d_tensor,degree=2)
     
 def _add_paopy_spin_Hall(oneCalc,ID,s_tensor,spin_texture=False):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
@@ -212,7 +214,7 @@ def _add_paopy_spin_Hall(oneCalc,ID,s_tensor,spin_texture=False):
     if spin_texture:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spintexture','logical','T')
 
-def _add_paopy_Berry(oneCalc,ID):
+def _add_paopy_Berry(oneCalc,ID,a_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Berry','logical','T')
@@ -220,7 +222,7 @@ def _add_paopy_Berry(oneCalc,ID):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminAH','decimal',-12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxAH','decimal',12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_Berry','logical','T')
-
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'a_tensor','int',a_tensor,degree=2)
 
 
 def _mult_kgrid(oneCalc,mult=5.0):
