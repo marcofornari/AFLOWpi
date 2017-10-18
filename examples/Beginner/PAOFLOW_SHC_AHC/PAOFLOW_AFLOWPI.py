@@ -19,7 +19,11 @@ tb.dos()
 tb.bands(band_topology=True,fermi_surface=True)
 tb.ahc()
 
-s_tensor=[[0,1,1],[0,1,2],[2,2,0]]
+
+s_tensor=[[0,1,1], # xy component, y spin component
+          [0,1,2], # xy component, z spin component
+          [2,2,0]] # zz component, x spin component
+
 tb.shc(s_tensor,spin_texture=True)
 
 
