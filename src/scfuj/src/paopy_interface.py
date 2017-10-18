@@ -63,8 +63,8 @@ def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=
         
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
 
-def paopy_spin_Hall_wrapper(calcs,spin_texture=False):
-    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,spin_texture=%s)"""%spin_texture
+def paopy_spin_Hall_wrapper(calcs,s_tensor,spin_texture=False):
+    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,%s,spin_texture=%s)"""%(repr(s_tensor),spin_texture)
     for ID,oneCalc in calcs.iteritems():
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'r') as ifo:
             input_text = ifo.read()
@@ -99,16 +99,22 @@ def paopy_acbn0_wrapper(calcs):
 
 
 
-def _add_paopy_xml(filename,var_name,var_type,var_val,array=False):  
+def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):  
 
     with open(filename,'r') as ifo:                                                                                   
         lines=ifo.readlines()
                                                                                          
     var_size=1
-    if array:
+    if degree==2:
+        tensor = '\t<%s>\n'%var_name
+        for i in range(len(var_val)):
+            tensor+='\t\t<a type="%s" size="%s">%s</a>\n'%(var_type,len(var_val[i]),' '.join(map(str,var_val[i])))
+        tensor+="\t</%s>"%var_name
+        lines[-1]=tensor        
+    elif degree==1:
         var_size = len(var_val)
         var_val = ' '.join(map(str,var_val))
-        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)            
+        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)        
     else:
         lines[-1]='\t<%s type="%s" size="%s">%s</%s>'%(var_name,var_type,var_size,var_val,var_name)            
     lines.extend(['\n</root>'])                                                                                       
@@ -189,13 +195,14 @@ def _add_paopy_optical(oneCalc,ID):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'epsilon','logical','T')
 
     
-def _add_paopy_spin_Hall(oneCalc,ID,spin_texture=False):
+def _add_paopy_spin_Hall(oneCalc,ID,s_tensor,spin_texture=False):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     nl,sh = AFLOWpi.scfuj._get_spin_ordering(oneCalc,ID)
 
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'sh','int',sh,array=True)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nl','int',nl,array=True)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'sh','int',sh,degree=1)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nl','int',nl,degree=1)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'s_tensor','int',s_tensor,degree=2)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spin_Hall','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-12.0)

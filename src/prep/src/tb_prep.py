@@ -72,7 +72,7 @@ class tight_binding:
         self.step_counter+=1
         print 
 
-    def shc(self,en_range=[0.05,5.05],de=0.05,spin_texture=False):
+    def shc(self,s_tensor,en_range=[0.05,5.05],de=0.05,spin_texture=False):
 #        print 'Optical with PAO-TB DISABLED. Coming Soon. Exiting..'
 #        raise SystemExit
         ne=float(en_range[1]-en_range[0])/de
@@ -82,7 +82,7 @@ class tight_binding:
         else:
             self.do_ham=False
 
-	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs,spin_texture=spin_texture)
+	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs,s_tensor,spin_texture=spin_texture)
 
 
         calc_type='Spin Hall Conductivity'

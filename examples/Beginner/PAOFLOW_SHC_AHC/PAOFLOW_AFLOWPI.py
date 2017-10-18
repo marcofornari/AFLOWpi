@@ -18,7 +18,9 @@ tb.optical()
 tb.dos()
 tb.bands(band_topology=True,fermi_surface=True)
 tb.ahc()
-tb.shc(spin_texture=True)
+
+s_tensor=[[0,1,1],[0,1,2],[2,2,0]]
+tb.shc(s_tensor,spin_texture=True)
 
 
 # submit the workflow to run
