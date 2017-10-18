@@ -282,22 +282,21 @@ def _get_spin_ordering(oneCalc,ID):
 
     l_list= []
     for i in res:
-         l_list.append(int(i[4]))
+         l_list.append([int(i[1]),int(i[4])])
 
     grouped_l = [list(g) for k, g in itertools.groupby(l_list)] 
     sh = []
     nl = []
 
     for i in xrange(len(grouped_l)):
-        sh.append(grouped_l[i][0])
-        if grouped_l[i][0]==0:
+        sh.append(grouped_l[i][0][1])
+        if grouped_l[i][0][1]==0:
             nl.append(len(grouped_l[i])/2)
-        if grouped_l[i][0]==1:
+        if grouped_l[i][0][1]==1:
             nl.append(len(grouped_l[i])/6)
-        if grouped_l[i][0]==2:
+        if grouped_l[i][0][1]==2:
             nl.append(len(grouped_l[i])/10)
-        if grouped_l[i][0]==3:
+        if grouped_l[i][0][1]==3:
             nl.append(len(grouped_l[i])/14)
-
 
     return nl,sh
