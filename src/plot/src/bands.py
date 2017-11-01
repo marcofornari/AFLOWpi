@@ -26,7 +26,7 @@
 import AFLOWpi
 import numpy
 import matplotlib
-matplotlib.use('PDF')
+matplotlib.use('pdf')
 from matplotlib import pylab
 from matplotlib import pyplot
 import os
