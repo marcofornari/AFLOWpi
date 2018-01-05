@@ -564,7 +564,7 @@ def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,conf
 
 #############################################################################################################
 #############################################################################################################
-def _skeletonRun(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+def _skeletonRun(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None,calcType=None,execPath=None):
     """
     Wrapper to set up a custom calculation. Inputs and oneCalc calculation
     dictionary must be created before calling this.
@@ -586,7 +586,19 @@ def _skeletonRun(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,
           
     """
 
-    testOne(calcs,calcType=None,engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+    testOne(calcs,calcType=calcType,engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+
+    if calcType != None:
+        for ID,oneCalc in calcs.iteritems():
+            try:
+#                AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType=calcType)
+                AFLOWpi.run._onePrep(oneCalc,ID,calcType=calcType,execPath=execPath,execPostfix=execPostfix)
+            except Exception,e:
+                AFLOWpi.run._fancy_error_log(e)
+            try:
+                AFLOWpi.run._testOne(ID,oneCalc,calcType=calcType)
+            except Exception,e:
+                AFLOWpi.run._fancy_error_log(e)        
 
 def scf(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None,exit_on_error=True):
     """
@@ -717,7 +729,7 @@ def bands(calcs,engine='',execPrefix=None,execPostfix=' ',holdFlag=True,config=N
           config (str): DEFUNCT. NEEDS REMOVAL
           
 
-    Returns:
+    Return:
           None
           
     """
@@ -1412,7 +1424,7 @@ def _restartPW(oneCalc,ID,a,__submitNodeName__,):
             resubmitID = oneCalc['__qsubFileName__'][1:-5]
 
             #resubmit
-            '''if we're at within 15 seconds of the end of walltime. don't submit and let restartScript do it'''
+            '''if we're at within 10 seconds of the end of walltime. don't submit and let restartScript do it'''
 
             oneCalc['__status__']['Restart']+=1
 
@@ -2298,8 +2310,8 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
             AFLOWpi.run._generic_restart_check(oneCalc,ID,__submitNodeName__)
             if calcType in ['scf']:    
                 oneCalc,ID = AFLOWpi.run._setupRestartPW(oneCalc,ID,__submitNodeName__)
-
-
+            if calcType in ["gdir1","gdir2","gdir3"]:    
+                oneCalc,_ = AFLOWpi.run._setupRestartPW(oneCalc,ID+'_'+calcType,__submitNodeName__)
 
             if calcType in ['emr','nmr','hyperfine','gvectors']:
                 oneCalc,ID,restartBool = __setupRestartGIPAW(oneCalc,ID)
@@ -2312,8 +2324,9 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
 
     try:
         if calcType!='scf' and calcType!=None and calcType!='custom':
+            pp_in = AFLOWpi.run._makeInput(oneCalc,engine,calcType,ID=ID)
             with open(os.path.join(rd,"%s_%s.in") % (ID,calcType),'w+') as PPInput:
-                PPInput.write(AFLOWpi.run._makeInput(oneCalc,engine,calcType,ID=ID))
+                    PPInput.write(pp_in)
 
     except Exception,e:
         _fancy_error_log(e)
@@ -2390,11 +2403,9 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
             ri = ID+'.in'
             ro = ID+'.out'
 
-
         if execPath==None:
             execPath=''
             executable = AFLOWpi.run._getExecutable(engine,calcType)
-
             executable = os.path.join('./',executable)
         else:
             execPath = execPath
@@ -2428,7 +2439,11 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
 #################################################################################################################    
 #################################################################################################################     
             if clusterType.upper() in ['PBS','SLURM','UGE']:
-                AFLOWpi.run._restartPW(oneCalc,ID,a,__submitNodeName__) 
+                if calcType in ['gdir1','gdir2','gdir3']:
+                    AFLOWpi.run._restartPW(oneCalc,ID+'_'+calcType,a,
+                                           __submitNodeName__) 
+                else:
+                    AFLOWpi.run._restartPW(oneCalc,ID,a,__submitNodeName__) 
 
             if job.returncode==0:
                 try:
@@ -2439,7 +2454,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
 
-            if job.returncode==1 or job.returncode==255:
+            elif job.returncode==1 or job.returncode==255:
                 logging.warning('%s in %s returned exit code: %s'%(ID,oneCalc['_AFLOWPI_FOLDER_'],job.returncode))
 
                 try:
@@ -2476,7 +2491,17 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                     logging.error(err_msg)
                     AFLOWpi.prep._from_local_scratch(oneCalc,ID)
                     sys.exit(0)
-
+            else:
+                #empty text file is created in the AFLOWpi folder
+                #is created and the keys of the failed to converge
+                #calculations is written in the file
+                oneCalc['__status__']['Error']='QE ERR %s' % job.returncode
+                AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+                if exit_on_error==True:
+                    err_msg='Encountered Error in execution of %s during step #%02d Exiting'%(executable,oneCalc['__chain_index__'])
+                    logging.error(err_msg)
+                    AFLOWpi.prep._from_local_scratch(oneCalc,ID)
+                    sys.exit(0)
 
 #################################################################################################################     
 #################################################################################################################     
@@ -2551,7 +2576,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
 
 
 
-def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcType='',alt_ID=None,exit_on_error=True):
+def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcType='',alt_ID=None,exit_on_error=True,execPath=None):
     """
     Prepares one calculation run an engine executable
     
@@ -2609,10 +2634,10 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
         execString+='''if oneCalc['__execCounter__']<=%s:
         AFLOWpi.run._oneRun''' % oneCalc['__execCounterBkgrd__']
 
-        execString+='''(__submitNodeName__,oneCalc,%s,execPrefix='%s',execPostfix='%s',engine='%s',calcType='%s',exit_on_error=%s)
+        execString+='''(__submitNodeName__,oneCalc,%s,execPrefix='%s',execPostfix='%s',engine='%s',calcType='%s',exit_on_error=%s,execPath=%s)
         oneCalc['__execCounter__']+=1
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-        '''  % (write_ID,execPrefix,execPostfix,engine,calcType,exit_on_error)
+        '''  % (write_ID,execPrefix,execPostfix,engine,calcType,exit_on_error,execPath)
 
         oneCalc['__execCounterBkgrd__']+=1
 
@@ -2621,7 +2646,7 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
 
 
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',execString)
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"'%s'" % ID)
+#        AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"'%s'" % ID)
 
 
     except Exception,e:
