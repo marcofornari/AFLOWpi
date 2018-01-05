@@ -51,6 +51,86 @@ def _increase_celldm1(oneCalc,ID,amount):
     return oneCalc,ID
 
 
+def _get_gruneisen_ap(oneCalc,ID):
+    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+
+    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax')
+
+    norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    expn_vol = AFLOWpi.retr.getCellVolume(oneCalc,expn_vol_ID,string=False,conventional=False)
+
+    bohr2meter=5.29177e-11
+#    norm_vol*=bohr2meter**3.0
+#    expn_vol*=bohr2meter**3.0
+
+
+    extension="eig.ap"
+
+
+    norm_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,norm_ID)
+    expn_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,expn_ID)
+
+    grun=[]
+    q_point=[]
+    omega=[]
+
+
+
+
+
+    grun = numpy.zeros((norm_freq.shape[0],norm_freq.shape[1]+1),dtype=float)
+
+    grun[:,0] = norm_freq[:,0]
+    grun[:,1] = ((expn_freq[:,0]-norm_freq[:,0])/(expn_vol-norm_vol) * \
+                numpy.nan_to_num(-1.0*norm_vol/norm_freq[:,0]))**2
+
+    grun[:,2:] = grun[:,1][:,None]*norm_freq[:,1:]
+
+
+
+
+    labels = numpy.asarray(labels[3:])
+
+    ap_grun = numpy.zeros((grun.shape[0],numpy.unique(labels).shape[0]+1),dtype=float)
+
+
+    ap_grun[:,0] = grun[:,0]
+    ap_grun[:,1] = grun[:,1]
+
+    unique_labels = numpy.unique(labels[1:])
+
+    for lab in xrange(1,unique_labels.shape[0]+1):
+        lab_val = numpy.unique(labels)[lab-1]
+
+        lab_ind = numpy.where(labels==lab_val)[0]
+
+        ap_grun[:,lab+1] = numpy.sum(norm_freq[:,lab_ind],axis=1)*ap_grun[:,1]
+        
+
+
+
+    unique_labels = unique_labels.tolist()
+
+    temp = ['freq','total']
+    temp.extend(unique_labels)
+    unique_labels=temp
+    print unique_labels
+
+
+
+
+    grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.ap'%ID)
+    numpy.savetxt(grun_file_name,ap_grun,fmt='% 4.8f',header=' '.join(unique_labels))
+#    with open(grun_file_name,'w') as gpfo:
+#        gpfo.write(grun_data_str)
+    
+
+        
+###################################################################################################
+###################################################################################################    
+###################################################################################################
+
 def _get_gruneisen(oneCalc,ID,band=True):
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
@@ -61,25 +141,20 @@ def _get_gruneisen(oneCalc,ID,band=True):
     expn_vol = AFLOWpi.retr.getCellVolume(oneCalc,expn_vol_ID,string=False,conventional=False)
 
     bohr2meter=5.29177e-11
-    norm_vol*=bohr2meter**3.0
-    expn_vol*=bohr2meter**3.0
-
-
-#    print expn_vol/norm_vol
-#    print 
+#    norm_vol*=bohr2meter**3.0
+#    expn_vol*=bohr2meter**3.0
  
     if band==True:
        print band
        raise SystemExit
        extension='phBAND.gp'
     else:
-#        extension=''
-        extension='eig.ap'
+        extension="phDOS.gp"
+
+
 
     norm_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,norm_ID,extension=extension)
     expn_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,expn_ID,extension=extension)
-
-
 
     grun=[]
     q_point=[]
@@ -91,7 +166,7 @@ def _get_gruneisen(oneCalc,ID,band=True):
         for j in range(len(norm_freq[i])):
             try:
                     deriv  = (expn_freq[i][j]-norm_freq[i][j])/(expn_vol-norm_vol)
-                    deriv *= -1.0*norm_vol/norm_freq[i][j]
+                    deriv *= numpy.nan_to_num(-1.0*norm_vol/norm_freq[i][j])
                     if not numpy.isnan(deriv) and not numpy.isinf(deriv):
                         try:
                             grun[i].append(deriv)
@@ -119,15 +194,7 @@ def _get_gruneisen(oneCalc,ID,band=True):
             except Exception,e:
                 AFLOWpi.run._fancy_error_log(e)
 
-#                print e
 
-
-#    print len(grun)
-#    print len(q_point_old)
-#    print len(q_point)
-
-
-#   raise SystemExit
     if band:
         grun_data_str='%s          %s                  %s                 %s'%('q','TA',"TA'",'LA')
         for i in range(len(grun)):
@@ -144,21 +211,9 @@ def _get_gruneisen(oneCalc,ID,band=True):
         for i in range(len(grun)):
             try:
                 for j in range(len(grun[i])):
-#                    print grun[i][j]
-#                    print grun[i][j]**2.0
                     grun_data_str+='%16.16f %16.16f\n'%(omega[i][j],grun[i][j]**2.0)
             except:
                 continue
- #   if len(grun)==3:
- #       pass
-    # else:
-    #     for i in range(len(grun[0][3:-1])):
-    #         grun_data_str+='Optical             '
-    #     for i in range(len(q_point)):
-    #         grun_data_str+='\n%10.8f %16.16f %16.16f  %16.16f'%(q_point[i],grun[0][i],grun[1][i],grun[2][i])
-    #         for j in range(len(grun[i][3:-1])):
-    #             grun_data_str+='%16.16f'%(grun[i][j])
-        
 
     if band:
         grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phGRUN.gp'%ID)
@@ -173,12 +228,11 @@ def _get_gruneisen(oneCalc,ID,band=True):
     av_LA      = sum(grun[2])/len(grun[2])
         
     return [av_TA,av_TA_prime,av_LA]
-        
-    
-            
 
-#    frequency = 
-#    delta_vol_frequency= 
+###################################################################################################
+###################################################################################################    
+###################################################################################################
+
 def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
 
     data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
@@ -194,20 +248,54 @@ def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
     fs=fs[1:]
     for line in fs:
         if len(line.strip())!=0:
+            try:
+                dat_temp = map(float,line.split())
+                temp_one = [dat_temp[0]]
+                temp_one.extend(dat_temp[:4])
+                data.append(temp_one)
+            except: pass
+    data = numpy.asarray(data)
+
+
+    ret_dat=numpy.zeros(data.shape)
+
+    ret_dat[:,0]=data[:,0]
+    for i in range(1,ret_dat.shape[1]):
+        ret_dat[:,i] = data[:,0]*data[:,i]
+
+    return ret_dat,ret_dat[1]
+
+
+def _get_ph_dos_data_ap(oneCalc,ID,postfix=''):
+
+    extension='eig.ap'
+
+    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s%s.%s'%(ID,postfix,extension))
+
+
+    #data =numpy.loadtxt(data_file_name,dtype=numpy.float64,)
+    data = []
+
+    with open(data_file_name,'r') as fo:
+        fs=fo.read()
+    fs=fs.split('\n')
+    labels=fs[0].split()
+    fs=fs[1:]
+    for line in fs:
+        if len(line.strip())!=0:
             dat_temp = map(float,line.split())
             temp_one = [dat_temp[3]]
             temp_one.extend(dat_temp[4:])
             data.append(temp_one)
     data = numpy.asarray(data)
-#    print data
 
     ret_dat=numpy.zeros(data.shape)
-    print ret_dat
+
     ret_dat[:,0]=data[:,0]
     for i in range(1,ret_dat.shape[1]):
-        ret_dat[:,i] = data[:,0]*data[:,i]
-    print ret_dat
-    return ret_dat,ret_dat[1]
+        ret_dat[:,i] = data[:,i]
+
+    return ret_dat,ret_dat[1],labels
 
 
 def _get_ph_band_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
@@ -227,7 +315,7 @@ def _get_ph_band_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
         if len(line.strip())!=0:
             data.append(map(float,line.split()))
     data = numpy.asarray(data)
-    print data
+#    print data
     return data[:,1:],data[:,0]
 
 
@@ -243,15 +331,15 @@ def _get_debye_freq(oneCalc,ID):
     path_str = AFLOWpi.run._phonon_band_path(oneCalc,ID)
 
     path_pts_list = [int(i.split()[1]) for i in path_str.split('\n')[1:] if len(i.strip())!=0]
-#    print path_pts_list
+
     freq,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
     TA       = freq[:,0]
     TA_prime = freq[:,1]
     LA       = freq[:,2]
-#    q_vals   = freq[-1]
+
 
     total=0
-#    for i in range(len(path_pts_list)):
+
     path_index= []
     for i in range(len(path_pts_list)):
         if path_pts_list[i]==0:
@@ -262,72 +350,90 @@ def _get_debye_freq(oneCalc,ID):
             path_index.append([sum(path_pts_list[:i]),sum(path_pts_list[:i+1])])
     
 
-
-    
-#    index = for i in path_pts_list
-#    print path_index
-#    print TA
     average_freq_TA       = numpy.average([max(TA[i[0]:i[1]]) for i in path_index])
     average_freq_TA_prime = numpy.average([max(TA_prime[i[0]:i[1]]) for i in path_index])
     average_freq_LA       = numpy.average([max(LA[i[0]:i[1]]) for i in path_index])
     return average_freq_TA,average_freq_TA_prime,average_freq_LA
 
-def _get_debye_temp(oneCalc,ID):
-    #get the frequencies for TA, TA', and LA
-    frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
+# def _get_debye_temp(oneCalc,ID):
+#     #get the frequencies for TA, TA', and LA
+#     frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
 
-    #q vals so we can find v_debye near gamma
-#    q_vals = frequencies[-1]
+#     #q vals so we can find v_debye near gamma
 
-    
-#    frequencies[0] = [i*0.0299792458 for i in frequencies[0]]
-#    frequencies[1] = [i*0.0299792458 for i in frequencies[1]]
-#    frequencies[2] = [i*0.0299792458 for i in frequencies[2]]
-    #get volume of original cell
-    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
-    cell_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+#     #get volume of original cell
+#     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+#     cell_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+#     #convert to meters
+#     bohr2meter=5.29177e-11
+#     V=cell_vol*bohr2meter**3.0
+
+#     #get num atoms in cell
+#     N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
+
+#     #some constants
+#     h_bar=1.0545718*10**-34 
+#     k_b=1.38064852*10**-23
+
+#     #get v_debye for each branch
+#     v_i = AFLOWpi.retr._get_debye_freq(oneCalc,ID)
+#     v_s_TA       = v_i[0]
+#     v_s_TA_prime = v_i[1]
+#     v_s_LA       = v_i[2]
+
+
+#     #calculate debye temperature for each branch
+#     wo_v           = 2.0*numpy.pi*h_bar/k_b#*(6.0*numpy.pi**2.0*N/V)**(1.0/3.0)
+#     debye_TA       = wo_v*v_s_TA
+#     debye_TA_prime = wo_v*v_s_TA_prime
+#     debye_LA       = wo_v*v_s_LA
+
+#     return debye_TA,debye_TA_prime,debye_L
+
+def _get_debye_temp(v_i,cell_vol,nat):
+
     #convert to meters
     bohr2meter=5.29177e-11
     V=cell_vol*bohr2meter**3.0
 
     #get num atoms in cell
-    N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
+
 
     #some constants
     h_bar=1.0545718*10**-34 
     k_b=1.38064852*10**-23
 
     #get v_debye for each branch
-    v_i = AFLOWpi.retr._get_debye_freq(oneCalc,ID)
     v_s_TA       = v_i[0]
     v_s_TA_prime = v_i[1]
     v_s_LA       = v_i[2]
 
 
     #calculate debye temperature for each branch
-    wo_v           = 2.0*numpy.pi*h_bar/k_b#*(6.0*numpy.pi**2.0*N/V)**(1.0/3.0)
+    wo_v           = h_bar/k_b*(6.0*numpy.pi**2.0*nat/V)**(1.0/3.0)
     debye_TA       = wo_v*v_s_TA
     debye_TA_prime = wo_v*v_s_TA_prime
     debye_LA       = wo_v*v_s_LA
 
-
-#    print debye_TA
-#    print debye_TA_prime
-#    print debye_LA
-
     return debye_TA,debye_TA_prime,debye_LA
 
 
+def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
 
-def _therm_pp(oneCalc,ID):
-#    grun_i  = AFLOWpi.retr._get_gruneisen(oneCalc,ID)
+
     grun_i=[0.0,0.0,0.0]
-    AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
 
-    theta_i = AFLOWpi.retr._get_debye_temp(oneCalc,ID)
-#    print theta_i
-    #get volume of original cell
+    AFLOWpi.retr._get_gruneisen_ap(oneCalc,ID)
+    grun_i = AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
+
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+
+    v_i = AFLOWpi.run.do_sound_velocity(__submitNodeName__,oneCalc,norm_ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,
+                                        r_max=0.05,theta_range=[-numpy.pi/2.0,numpy.pi/2.0],phi_range=[0.0,2.0*numpy.pi],
+                                        origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0,run_matdyn=run_matdyn)
+
+    print v_i
+    #get volume of original cell
     cell_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
     #convert to meters
     bohr2meter=5.29177e-11
@@ -337,6 +443,8 @@ def _therm_pp(oneCalc,ID):
     #get num atoms in cell
     N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
 
+
+    theta_i = AFLOWpi.retr._get_debye_temp(v_i,cell_vol,N)
 
     cell_mass = AFLOWpi.retr._get_cell_mass(oneCalc,ID)
     
@@ -348,31 +456,36 @@ def _therm_pp(oneCalc,ID):
     #get the frequencies for TA, TA', and LA
     frequencies,q_vals = AFLOWpi.retr._get_ph_dos_data(oneCalc,ID)
 
-    v_i=AFLOWpi.retr._get_debye_freq(oneCalc,ID)
-
+#    v_i=AFLOWpi.retr._get_debye_freq(oneCalc,ID)
+    therm_stat_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_therm_stats.dat'%ID)
+    with open(therm_stat_file,"w") as ofo:
+        ofo.write("       TA         TA'        LA\n")
+        ofo.write("Grun   % 9.3f     % 9.3f     % 9.3f\n"%(grun_i[0],grun_i[1],grun_i[2]))
+        ofo.write("Vel    % 9.3f     % 9.3f     % 9.3f\n"%(v_i[0],v_i[1],v_i[2]))
+        ofo.write("Debye  % 9.3f     % 9.3f     % 9.3f\n"%(theta_i[0],theta_i[1],theta_i[2]))
     print Vol
-    print Mass
+    
     print grun_i
     print v_i
     print theta_i
 
 
-    therm_cond_data_str="T       Total        TA           TA'          La"
-    TEMP = numpy.linspace(0.0,2000.0,400.0)
+    therm_cond_data_str="T       Total        TA           TA'          LA"
+    TEMP = numpy.linspace(1.0,1201.0,1200.0)
 
-    Vol   = 375.60264000000006 # volume of one cell in angstrom^3                                                      
-    Vol  *= 10.0**(-30.0) # convert angstrom to m^3                                                                    
-    Vol  /= 8.0 # do volume per atom                                                                                   
+#    Vol   = 375.60264000000006 # volume of one cell in angstrom^3                                                      
+#    Vol  *= 10.0**(-30.0) # convert angstrom to m^3                                                                    
+#    Vol  /= N # do volume per atom                                                                                   
 
-    Mass   = 63.5463*3.0  # 3 Cu                                                                                       
-    Mass += 78.9718*4.0  # 4 Se                                                                                        
-    Mass += 121.760*1.0  # 1 Antimony                                                                                  
-    Mass *= 1.66054e-27 # convert amu to kg                                                                            
-    Mass /= 8.0        # average mass per atom      
+#    Mass   = 63.5463*3.0  # 3 Cu                                                                                       
+#    Mass += 78.9718*4.0  # 4 Se                                                                                        
+#    Mass += 121.760*1.0  # 1 Antimony                                                                                  
+#    Mass *= 1.66054e-27 # convert amu to kg                                                                            
+#    Mass /= 8.0        # average mass per atom      
 
-    v_i     = [1485.0, 1699.0, 3643.0] #TA, TA', LA                                                                         
-    theta_i = [60.0,   65.0,   78.0  ] #TA, TA', LA                                                                      
-    grun_i  = [1.27,   1.14,   1.26, ] #TA, TA', LA     
+#    v_i     = [1485.0, 1699.0, 3643.0] #TA, TA', LA                                                                         
+#    theta_i = [60.0,   65.0,   78.0  ] #TA, TA', LA                                                                      
+#    grun_i  = [1.27,   1.14,   1.26, ] #TA, TA', LA     
 
 
     for T in TEMP:
@@ -388,39 +501,7 @@ def _therm_pp(oneCalc,ID):
 def _test_therm_pp():
 
     therm_cond_data_str="T       Total        TA           TA'          La"
-#   TEMP = numpy.linspace(1.0,2001.0,2000.0)
-    TEMP = [80.0,
-            87.3333333333333,
-            94.6666666666667 ,
-            102,
-            109.333333333333,
-            116.666666666667,
-            124,
-            131.333333333333,
-            138.666666666667,
-            146,
-            153.333333333333,
-            160.666666666667,
-            168,
-            175.333333333333,
-            182.666666666667,
-            190,
-            197.333333333333,
-            204.666666666667,
-            212,
-            219.333333333333,
-            226.666666666667,
-            234,
-            241.333333333333,
-            248.666666666667,
-            256,
-            263.333333333333,
-            270.666666666667,
-            278,
-            285.333333333333,
-            292.666666666667,
-            300,
-            ]
+    TEMP = numpy.linspace(1.0,1001.0,1000.0)
 
     Vol   = 375.60264000000006 # volume of one cell in angstrom^3                                                      
     Vol  *= 10.0**(-30.0) # convert angstrom to m^3                                                                    
@@ -602,9 +683,9 @@ def _do_therm(v_i,theta_i,grun_i,Mass,Vol,T):
     max_TA    = theta_TA/T
     max_TA1   = theta_TA1/T
     max_LA    = theta_LA/T
-    print max_TA,max_TA1,max_LA
-    print 
-    print 
+#    print max_TA,max_TA1,max_LA
+#    print 
+#    print 
     
     ##################################################################################
     #calculate the three integrals for TA phonon and find lattice k for TA
