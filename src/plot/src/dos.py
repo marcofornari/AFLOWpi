@@ -342,6 +342,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	skips over orbitals for atomic species that are not there
 	'''
 	orbitalList = ['s','p','d','f','All']
+	orbitalList = ['s','p','d','f']
 
 	'''
 	globs for the file names that match the expression to sort out files for
@@ -502,6 +503,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	maxDOS=0
 	minDOS=0
 	orbitalList = ['s','p','d','f',"All"]
+	orbitalList = ['s','p','d','f',]
 	pDOSFiles= glob.glob(os.path.join(subdir,'%s_*.sumpdos' % (atom)))
 
 	pDOSNoPath = []
@@ -747,6 +749,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	maxDOS=0
 	minDOS=0
 	orbitalList = ['s','p','d','f',"All"]
+	orbitalList = ['s','p','d','f',]
 	pDOSFiles= glob.glob(os.path.join(subdir,'%s_*.sumpdos' % (atom)))
 
 	pDOSNoPath = []

@@ -592,7 +592,7 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
         Returns:
 
 	'''
-	print ep_data_file
+
 	with open(ep_data_file,'r') as epsilon_data_file:
 		ep_data_string=epsilon_data_file.read()
 		

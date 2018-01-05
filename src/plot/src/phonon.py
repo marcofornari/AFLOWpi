@@ -441,10 +441,9 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		plot_dos_y=[]
 		pre_sort=[]
 		#smooth the phDOS
-	#	dos = AFLOWpi.plot.__smoothGauss(dos)   
-	#	freq_dos = AFLOWpi.plot.__smoothGauss(freq_dos)   
+
 		if w_range==None:
-			w_range=[numpy.amin(freq_dos[:,0])/1.1,numpy.amax(freq_dos[:,0])/1.1]
+			w_range=[numpy.amin(freq_dos[:,0]),numpy.amax(freq_dos[:,0])]
 		freq_dos = freq_dos[numpy.where(numpy.logical_and(freq_dos[:,0]>=w_range[0]*1.1,freq_dos[:,0]<=w_range[1]*1.1))]
 
 

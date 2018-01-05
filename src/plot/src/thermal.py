@@ -31,8 +31,8 @@ import numpy
 import matplotlib
 import StringIO
 import logging 
-
-
+import scipy
+import matplotlib.gridspec as gridspec
 
 
 def __plot_gruneisen(oneCalc,ID,optical=False):
@@ -437,7 +437,7 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
     therm_data  = numpy.vstack({tuple(row) for row in therm_data})
 #   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
     for i in range(len(therm_data)):
-	    if therm_data[i][0]<1.1:
+	    if therm_data[i][0]<1.1 or therm_data[i][1]>10000.0:
 		    therm_data[i][1]=0.0
 	    
 
@@ -488,10 +488,11 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 	therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
 	therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_thermal_cond.dat'%therm_ID)
 
-	data=numpy.loadtxt(therm_file_name, dtype=numpy.float, comments='#',)
+	data=numpy.loadtxt(therm_file_name, dtype=numpy.float, comments='#',skiprows=1)
 	matplotlib.pyplot.plot(data[:,0],data[:,1])
 
-	data_cut = scipy.where(data[0]>temp_range[0] and data[0]<temp_range[1],data)
+	dc = scipy.where(numpy.logical_and(data[:,0]>temp_range[0],data[:,0]<temp_range[1]))
+	data_cut=data[dc]
 	max_y = numpy.amax(data_cut[:,1])*1.1
 	matplotlib.pyplot.ylim([0.0,max_y])
 
@@ -501,8 +502,99 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 	figtitle = 'Lattice Thermal Conductivity: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
 	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
-	matplotlib.pyplot.ylabel('$\kappa_{lat}$ $(\frac{W}{m\cdotK})$')
+	matplotlib.pyplot.ylabel(r'$\kappa_{lat}$ $(\frac{W}{m\cdot K})$')
 
 
 	fig_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"LATTICE_TC_%s_%s.pdf"%(AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID))
 	matplotlib.pyplot.savefig(fig_file_name,bbox_inches='tight')
+
+
+
+
+
+def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
+    matplotlib.rc("font", size=20)             #to set the font size
+
+    therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+
+    therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.ap'%therm_ID)
+#    therm_data =numpy.loadtxt(therm_file_name,dtype=numpy.float64,)
+
+    therm_data=[]
+
+    with open(therm_file_name,"r") as fo:
+        data = fo.read()
+
+    data=data.split('\n')
+    labs = data[0].split()[2:]
+    print labs
+
+    therm_data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
+    
+    therm_data=numpy.asarray(therm_data)
+    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=0)
+    therm_data[:,1:]=numpy.around(therm_data[:,1:],decimals=2)
+
+#    therm_data = numpy.unique(b).view(therm_data.dtype).reshape(-1, therm_data.shape[1])
+    
+    therm_data  = numpy.vstack({tuple(row) for row in therm_data})
+
+
+#   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
+    therm_data[numpy.where(therm_data[:,0]<1.1)[0]]=0.0
+
+	    
+
+
+
+#    therm_data[:,1:] = numpy.ma.masked_equal(therm_data[:,1:],0.0)
+#    therm_data = numpy.ma.masked_equal(therm_data,0.0)
+    therm_data[:,1:] = numpy.ma.masked_greater(therm_data[:,1:],100.0)
+#    therm_data[:,0] = numpy.ma.masked_less_equal(therm_data[:,0],1.0)
+
+    width  = 18.0
+    height = len(labs)*4.0
+    
+
+    fig = pylab.figure(figsize=(width, height))#to adjust the figure size
+    gs = gridspec.GridSpec(len(labs),1)
+    gs.update(hspace=0.10)
+
+    
+
+    color_cycle=['k','r', 'g', 'b', 'c', 'm', 'y']
+
+
+
+    if w_range==None:
+	    w_range=[0.0,numpy.amax(therm_data[:,0])]
+    if grun_range==None:
+	    grun_range=[0.0,numpy.amax(therm_data[:,1])*1.05]
+
+
+    for i in range(len(labs)):
+	    ax = pylab.subplot(gs[i])
+	    ax.plot(therm_data[:,0],therm_data[:,i+1],linestyle=' ',
+		    marker='o',fillstyle='none',label=labs[i],
+		    color=color_cycle[i%len(color_cycle)])
+	    if i<(len(labs)-1):
+		    ax.set_xticklabels([])
+	    print i%len(color_cycle)
+	    ax.set_ylabel('$\gamma^{2}$')
+
+	    ax.set_ylim(grun_range)
+	    ax.set_xlim(w_range)
+	    ax.legend()
+
+    ax.set_xlabel('$\omega$ $(cm^{-1})$')
+    figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
+    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
+
+    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
+	
+    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+
+    pyplot.cla()
+    pyplot.clf()
+    pyplot.close()
+
