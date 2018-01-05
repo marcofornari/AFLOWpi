@@ -4595,7 +4595,7 @@ EXITING.
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix=""):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4615,7 +4615,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -4656,8 +4656,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True):
 		workf = self.workflow
-		print 'thermal DISABLED. Coming soon.'
-		raise SystemExit
+#		print 'thermal DISABLED. Coming soon.'
+#		raise SystemExit
 		#check to see if phonon was already done and the structure hasn't changed since
 		#if structure has changed redo first set of phonons if it hasn't then skip doing
 		#it and just do the volume increase and the phonons at larger vol
@@ -4704,12 +4704,17 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		delta_celldm1=delta_volume**(1.0/3.0)
 		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
 		self.addToAll(block='PREPROCESSING',addition=loadModString)				
-
+		    
 		#increasing the index to make sure the previous step gets loaded 
 		self.load_index+=1
 		self.initial_calcs.append(self.int_dict)
 
 		self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=atom_sym,)
+
+		#add special phonon dos calc with scaled grid for gruneisen
+		loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
+		self.addToAll(block='PREPROCESSING',addition=loadModString)				
+
 
 		#fixing the loading index to make sure the previous step won't get loaded later
 		self.load_index-=1
@@ -4725,7 +4730,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.addToAll(block='PREPROCESSING',addition=workflow_add_command)		
 
 		#adding post processing for thermal stuff
-		workflow_add_command='''AFLOWpi.retr._therm_pp(oneCalc,ID)'''
+		workflow_add_command='''AFLOWpi.retr._therm_pp(__submitNodeName__,oneCalc,ID)'''
 		self.addToAll(block='POSTPROCESSING',addition=workflow_add_command)	
 
 		calc_type='Expanded Volume Phonon for Thermal Conductivity and Gruneisen Parameter'
@@ -4733,7 +4738,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=False,disp_sym=False,atom_sym=False,field_strength=0.003,field_cycles=3,proj_phDOS=True,raman=False):
+	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
 		
 		#flag to determine if we need to recalculate the TB hamiltonian if 
 		#the user has chosen to calculate it on a later step in the workflow
@@ -4773,7 +4778,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 								   subset_tasks=task_list,
 								   substep_name='FD_FIELD',
 								   keep_file_names=True,
-								   clean_input=False)
+								   clean_input=False,pass_through=True)
 
 
 
@@ -4963,6 +4968,42 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		if project==True:
 			calc_type+=' with atomic projection'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+
+        def berry(self,kpFactor=2):
+		'''
+		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
+		Adds a new step to the workflow.
+
+		Arguments:
+		      self: the _calcs_container object
+
+		Keyword Arguments:
+		      kpFactor (float): factor to which the k-point grid is made denser in each direction
+		      project (bool): if True: do the projected DOS after completing the DOS
+
+		Returns:
+		      None
+
+		'''
+		self.tight_banding=False
+		self.type='berry'
+		self.new_step(update_positions=True,update_structure=True)
+
+#		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=0)
+		add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kpFactor
+		self.addToAll(block='PREPROCESSING',addition=add)
+		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir1",execPath='"./pw.x"',execPostfix="-northo 1")
+		add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kpFactor
+		self.addToAll(block='RUN',addition=add)	  
+		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir2",execPath='"./pw.x"',execPostfix="-northo 1")
+		add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kpFactor
+		self.addToAll(block='RUN',addition=add)   
+		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir3",execPath='"./pw.x"',execPostfix="-northo 1")
+
+		calc_type='Berry phase and Polarization'
+
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
         def bands(self,dk=None,nk=100,n_conduction=None):

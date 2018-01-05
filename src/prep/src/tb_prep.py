@@ -488,7 +488,6 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                         pdos_dict[new_name]=[orig_name]
 
         for k,v in pdos_dict.iteritems():
-
             old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[0])
             dat = numpy.loadtxt(old_name_path)                    
             for i in xrange(1,len(v)):
@@ -718,13 +717,13 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
             except Exception,e:
                 try:
-                    nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,
-                                                                      unoccupied_states=unoccupied_bands)	
+                    nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,
+                                                                      band_factor=band_factor)	
 
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
 
-
+        
 
 ##################################################################################################################
         if 'nscf' not in oneCalc['__runList__']:

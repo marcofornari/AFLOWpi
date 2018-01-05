@@ -249,7 +249,7 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
                 outString+= ' | '.join(string)+'\n'
             #copy back for return of subset
             calcsList[step]=copy.deepcopy(calcCopy)
-
+            print outString
 
     return calcsList
             
