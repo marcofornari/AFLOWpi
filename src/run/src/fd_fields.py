@@ -208,10 +208,12 @@ def _gen_fd_input(oneCalc,ID,for_type='raman',de=0.003):
           
     """
 
+    filemodes=""
     if for_type=='raman':
         card='RAMAN_TENSOR'
         input_name_type='raman'
         npol=4
+        filemodes="filemodes='%s.phBAND.modes'"%ID
     elif for_type=='born':
         card='BORN_CHARGES'        
         input_name_type='zeu'
@@ -223,11 +225,12 @@ def _gen_fd_input(oneCalc,ID,for_type='raman',de=0.003):
 
 
     header='''&inputfd
+   %s
    prefix='%s'
    de_%s=%s
    npol_%s=%s
 /
-'''% (oneCalc['_AFLOWPI_PREFIX_'],input_name_type,de,input_name_type,npol)
+'''% (filemodes,oneCalc['_AFLOWPI_PREFIX_'],input_name_type,de,input_name_type,npol)
 
 
 
