@@ -177,7 +177,7 @@ def _write_matdyn_in(oneCalc,ID,in_cart_flat):
     matdyn_in.close()
 
 
-def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,r_max=0.05,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0):
+def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,r_max=0.05,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0,run_matdyn=True):
 
 
 
@@ -201,7 +201,8 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     _write_matdyn_in(oneCalc,ID,in_cart_flat)
 
     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
-#    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phVEL'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
+    if run_matdyn:
+        AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_matdyn_phVEL'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./matdyn.x' )
 
 
 
@@ -240,10 +241,10 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
 
     
-    print E_kp_radial
-    print np.mean(E_kp_radial,axis=0)
-    print np.amin(E_kp_radial,axis=0)
-    print np.amax(E_kp_radial,axis=0)
+
+    return np.mean(E_kp_radial,axis=0)
+
+
 
 
     fig  = plt.figure(        figsize=(12,4)) 
