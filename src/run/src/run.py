@@ -1019,11 +1019,14 @@ def _qsubGen(oneCalc,ID):
 
         #not sure if this will work on UGE so we'll leave it only for PBS
         if clusterType=='PBS':
+#    os.chdir(os.path.abspath(oneCalc['_AFLOWPI_FOLDER_']))
                 dash_e_regex=re.compile(r'#PBS\s+-e\s+.*\n')
                 dash_o_regex=re.compile(r'#PBS\s+-o\s+.*\n')
                 dash_oe_regex=re.compile(r'#PBS\s+-oe\s+.*\n')
                 stderr_name=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'_cluster'+'.stderr')
                 stdout_name=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'_cluster'+'.stdout')
+#                stdout_name ='./_'+ID+'_cluster'+'.stdout'
+#                stderr_name = './_'+ID+'_cluster'+'.stderr'
                 if len(dash_e_regex.findall(qsubRef)):
                     qsubRef=dash_e_regex.sub('\n#PBS -e %s\n'%stderr_name,qsubRef)
                 else:
@@ -1040,6 +1043,7 @@ def _qsubGen(oneCalc,ID):
                 
         if clusterType=='SLURM':                
             pass
+
 
         with open(qsubFilename,'w') as qsubFile:
             qsubSub='''%scd %s

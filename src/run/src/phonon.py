@@ -34,7 +34,7 @@ import numpy
 import collections
 
 def _one_phon(oneCalc,ID):
-    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_PHONON'+'/displaced*.in'))
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/'+ID+'_FD_PHONON'+'/displaced*.in'))
 
 
 def _phonon_band_path(oneCalc,ID,nk=400):
@@ -145,7 +145,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
         AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd_ifc'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ifc.x' ) 
 
     # get ifc file for matdyn
-    header_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'FD_PHONON','header.txt')
+    header_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_PHONON'%ID,'header.txt')
     with open(header_file,'r') as header_fileobj:
         header_string=header_fileobj.read()
 
@@ -155,7 +155,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
     else:
         field_list=[]
 
-    epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/FD_FIELD/epol.*")
+    epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/%s_FD_FIELD/epol.*"%ID)
     if len(epol_list)!=0:
       try:
         for field in field_list:
@@ -214,13 +214,13 @@ T
     if raman==True:
         field_list=['raman']
     
-        epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/FD_FIELD/epol.*")
+        epol_list=glob.glob(oneCalc['_AFLOWPI_FOLDER_']+"/%s_FD_FIELD/epol.*"%ID)
         if len(epol_list)!=0:
             for field in field_list:
                 try:
 
                     AFLOWpi.run._gen_fd_input(oneCalc,ID,for_type=field,de=field_strength)
-                    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
+                    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x',exit_on_error=False)
 
 
                 except Exception,e:
@@ -236,7 +236,7 @@ T
     	    AFLOWpi.run._fancy_error_log(e)
     #remove the fd.x output files in case we do another phonon calc
     try:
-	    globpath=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'FD_PHONON')
+	    globpath=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_PHONON'%ID)
 	    phil = glob.glob(globpath+'/displaced*.in')
 	    for i in phil:
 		    os.remove(i)
@@ -290,7 +290,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
  fd_prefix      = '%s' 
  fd_outdir      = './'
  fd_outfile     = 'displaced'
- fd_outfile_dir = './FD_PHONON'
+ fd_outfile_dir = './%s_FD_PHONON'
  noatsym        = %s
  nodispsym      = %s
  nrx1           = %i
@@ -326,7 +326,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 '
 '
 /
-'''%(oneCalc['_AFLOWPI_PREFIX_'],noatsym,nodispsym,nrx1,nrx2,nrx3,innx,de)
+'''%(oneCalc['_AFLOWPI_PREFIX_'],ID,noatsym,nodispsym,nrx1,nrx2,nrx3,innx,de)
     FD_in_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_fd.in'%ID)
     with open(FD_in_path,'w') as fd_in_file:
         fd_in_file.write(fd_template)
@@ -341,14 +341,14 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
       nrx3=%i,
       innx=%i,
       de=%f,
-      file_force='./FD_PHONON/force',
+      file_force='./%s_FD_PHONON/force',
       file_out='./%s_ifc'
       noatsym        = %s
       nodispsym      = %s
       verbose=.true.
       hex=.false.
     /
-     '''%(oneCalc['_AFLOWPI_PREFIX_'],nrx1,nrx2,nrx3,innx,de,ID,noatsym,nodispsym)
+     '''%(oneCalc['_AFLOWPI_PREFIX_'],nrx1,nrx2,nrx3,innx,de,ID,ID,noatsym,nodispsym)
 
     FD_ifc_in_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_fd_ifc.in'%ID)
     with open(FD_ifc_in_path,'w') as fd_ifc_in_file:
@@ -489,7 +489,7 @@ def clean_cell_params(output):
     for j in params:
         output+=' '.join([str(i) for i in j])+'\n'
 
-
+    
     return output
 
 
@@ -539,9 +539,11 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']
-    globpath=os.path.join(ocd,'FD_PHONON')
+    globpath=os.path.join(ocd,'%s_FD_PHONON'%ID)
 
+    
     phil = glob.glob(globpath+'/displaced*.in')
+
 
 
 

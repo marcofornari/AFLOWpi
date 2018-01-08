@@ -63,7 +63,7 @@ def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=
 def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep_name='SUBSET',keep_file_names=False,clean_input=True,check_function=None,fault_tolerant=False,pass_through=False):
 
 
-
+        
 #####################################################################
         AFLOWpi.run._skeletonRun(calcs) 
         if check_function!=None:
@@ -76,9 +76,9 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
 		execString='''if oneCalc['__execCounter__']<=%s:
     ''' % oneCalc['__execCounterBkgrd__']
 		execString+='''
-     oneCalc,ID = AFLOWpi.prep.construct_and_run(__submitNodeName__,oneCalc,ID,build_command="""%s""",subset_tasks=%s,mult_jobs=%s,subset_name='%s',keep_file_names=%s,clean_input=%s,check_function=%s,fault_tolerant=%s,pass_through=%s)
+     oneCalc,ID = AFLOWpi.prep.construct_and_run(__submitNodeName__,oneCalc,ID,build_command="""%s""",subset_tasks=%s,mult_jobs=%s,subset_name='%s_%s',keep_file_names=%s,clean_input=%s,check_function=%s,fault_tolerant=%s,pass_through=%s)
 
-''' % (subset_creator,repr(subset_tasks),mult_jobs,substep_name,keep_file_names,clean_input,check_function,fault_tolerant,pass_through)  
+''' % (subset_creator,repr(subset_tasks),mult_jobs,ID,substep_name,keep_file_names,clean_input,check_function,fault_tolerant,pass_through)  
 #''' % (subset_creator,exit_command,repr(subset_tasks),mult_jobs)  
                 oneCalc['__execCounterBkgrd__']+=1
 		AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
@@ -105,7 +105,7 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
 
 def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_tasks=[],fault_tolerant=False,mult_jobs=True,subset_name='SUBSET',keep_file_names=False,clean_input=True,check_function=None,pass_through=False):
 
-
+#        subset_name = ID + "_" + subset_name
 
         sub_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name)
         if not os.path.exists(sub_path):

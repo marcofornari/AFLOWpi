@@ -28,9 +28,10 @@ import os
 import re
 import copy 
 import glob
+import shutil
 
 def _fd_field_gath(oneCalc,ID):
-    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_FIELD'+'/finite_field*.in'))
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/'+ID+'_FD_FIELD'+'/finite_field*.in'))
 
 
 def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
@@ -64,7 +65,7 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
     force_out_str=''
     for index in num:
         try:
-            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./FD_FIELD/%s.%d'%(val_type,index))
+            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./%s_FD_FIELD/%s.%d'%(ID,val_type,index))
             with open(force_file_path,'r') as force_file:
                 force_str=force_file.read()
                 force_out_str+=force_str
@@ -329,13 +330,13 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     num_calcs=19
 
-    if not os.path.exists(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD')):
-        os.mkdir(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD'))
+    if not os.path.exists(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID)):
+        os.mkdir(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID))
 
     for index in range(len(num)):        
         fd_input = AFLOWpi.run._field_factory(input_string,field_strength=field_strength,for_type=for_type,field_cycles=field_cycles,dir_index=num[index])
 
-        fd_field_fn = os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD',"finite_field.%s.in"%index)
+        fd_field_fn = os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID,"finite_field.%s.in"%index)
         with open(fd_field_fn,"w") as ifo:
             ifo.write(fd_input)
          
@@ -453,3 +454,39 @@ def _field_factory(input_str,field_strength=0.001,for_type='raman',field_cycles=
 
         
     return new_input
+
+
+
+
+def _fd_field_copy_wfc(oneCalc,ID,root_prefix):
+    return oneCalc,ID
+    dirn = os.path.join(os.path.dirname(os.path.dirname(oneCalc["_AFLOWPI_FOLDER_"])),
+                            root_prefix+".wfc*")
+    dirn_list = glob.glob(dirn)
+
+
+    for one_dirn in dirn_list:
+        try:
+            ext  = one_dirn.split(".")[-1]
+            dest = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],oneCalc["_AFLOWPI_PREFIX_"]+"."+ext)
+            shutil.copy(one_dirn,dest)
+        except Exception,e:
+            return oneCalc,ID
+
+
+
+    if len(dirn_list)==0:
+        return oneCalc,ID
+        # try:
+        #     dirn = os.path.join(os.path.dirname(os.path.dirname(oneCalc["_AFLOWPI_FOLDER_"])),
+        #                         root_prefix+".save")
+
+
+        #     dest = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],oneCalc["_AFLOWPI_PREFIX_"]+".save")
+
+        #     if not os.path.exists(dest):
+        #         shutil.copytree(dirn,dest)
+        # except Exception,e:
+        #     print e        
+
+    return AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&electrons','startingwfc','"file"')

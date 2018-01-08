@@ -242,8 +242,8 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
     
 
-    return np.mean(E_kp_radial,axis=0)
 
+    band_min1=band_min2=band_min3=0.0
 
 
 
@@ -257,11 +257,11 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
 
 # #######
-#     ax1 = plt.subplot(gs[0:10,0], projection='3d')
+    ax1 = plt.subplot(gs[:20,0], projection='3d')
 #     ax1.view_init(0, 0)
-#     ax2 = plt.subplot(gs[10:20,0], projection='3d')
+    ax2 = plt.subplot(gs[:20,1], projection='3d')
 #     ax2.view_init(45,45)
-#     ax3 = plt.subplot(gs[20:30,0], projection='3d')
+    ax3 = plt.subplot(gs[:20,2], projection='3d')
 #     ax3.view_init(0, 90)
 
 
@@ -345,18 +345,18 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
     band_min1=np.amin(E_kp_radial[:,0])
     band_max1=np.amax(E_kp_radial[:,0])
-    surf1 = ax1.imshow(plot_arr[:,:,0],cmap=cmap1,interpolation="None",
-                       vmin=band_min1,vmax=band_max1)
+#    surf1 = ax1.imshow(plot_arr[:,:,0],cmap=cmap1,interpolation="None",
+#                       vmin=band_min1,vmax=band_max1)
 
     band_min2=np.amin(E_kp_radial[:,1])
     band_max2=np.amax(E_kp_radial[:,1])
-    surf1 = ax2.imshow(plot_arr[:,:,1],cmap=cmap1,interpolation="None",
-                       vmin=band_min2,vmax=band_max2)
+#    surf1 = ax2.imshow(plot_arr[:,:,1],cmap=cmap1,interpolation="None",
+#                       vmin=band_min2,vmax=band_max2)
 
     band_min3=np.amin(E_kp_radial[:,2])
     band_max3=np.amax(E_kp_radial[:,2])
-    surf1 = ax3.imshow(plot_arr[:,:,2],cmap=cmap1,interpolation="None",
-                       vmin=band_min3,vmax=band_max3)
+#    surf1 = ax3.imshow(plot_arr[:,:,2],cmap=cmap1,interpolation="None",
+#                       vmin=band_min3,vmax=band_max3)
 
     ax4 = plt.subplot(gs[21, 0])
     ax5 = plt.subplot(gs[21, 1])
@@ -368,5 +368,6 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     cb3 = matplotlib.colorbar.ColorbarBase(ax6, cmap=cmap1,norm=plt.Normalize(band_min3,band_max3), orientation='horizontal')
    # cb2.ax.set_title(r'$\frac{d^{2}E(k_{r})}{dk_{r}^{2}}$',fontsize=22,va="bottom")
 
-    plt.savefig('test.pdf')
+    plt.savefig('sound_vel.pdf')
     plt.close()    
+    return np.mean(E_kp_radial,axis=0)
