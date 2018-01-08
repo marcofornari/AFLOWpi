@@ -315,7 +315,7 @@ def _cleanInputStringSCF(inputString,convert=True):
         splitInput = inputString.split('\n')         
 
         for lineNum in range(len(splitInput)): 
-           if len(re.findall(r'\s*&control\s*',splitInput[lineNum]))==0:
+           if len(re.findall(r'\s*&control\s*',splitInput[lineNum],re.IGNORECASE))==0:
                splitInput[lineNum]=''
            else:
                 break
@@ -4301,6 +4301,7 @@ class calcs_container:
 		self.workflow=[]
 		self.submit_flag=False
 		self.__add_provenance()
+		self._add_block_buffer = []
 		
 	def __add_provenance(self):
 		prov_error = '''
@@ -4486,15 +4487,30 @@ EXITING.
 
 		AFLOWpi.run.scf(self.int_dict)	
 		
+
 	def addToAll(self,block=None,addition=None):
 		if block==None or addition==None:
 			return
+
+		AFTER  = ["RUN","POSTPROCESSING","PLOT","CALCTRANSFORM","SUBMITNEXT","BATCH","CLEANUP",]
+		BEFORE = ["CONFIGFILE","LOGGING","ONECALC","LOADCALC","ID","RESTART","PREPROCESSING","LOCK"]
+		if block in BEFORE:
+			self._add_block_buffer.append([block,addition])
+		else:
+			self._addToAll(block,addition)
+
+
+	def _addToAll(self,block=None,addition=None):
+		if block==None or addition==None:
+			return
+
 		for ID,oneCalc in self.int_dict.iteritems():
 			AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 				
 
 	def update_cell(self,update_positions=True,update_structure=True):
-		self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
+		addit = "oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,update_structure=%s,update_positions=%s,override_lock=False)"%(update_positions,update_structure)
+		self.addToAll(block='PREPROCESSING',addition=addit)		
 	
         def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
 		if self.step_index==0:
@@ -4523,21 +4539,24 @@ EXITING.
 		'''update the calc logs'''
 		AFLOWpi.prep.updatelogs(self.int_dict,'step_%02d'%self.step_index,runlocal=True)
 
-#		'chooses if the positions and/or structs to update'
-#		if self.split==True:
-#			pre = 'split_%02d' % self.step_index
-#			self.int_dict = AFLOWpi.prep.modifyInputPrefixPW(self.int_dict,repr(pre))
-
-#			self.split=False
-
-
 		#add workflow to each step
 		for k,v in self.int_dict.iteritems():
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
 			self.int_dict[k]["__chain_index__"] = self.step_index
 		workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
-		self.addToAll(block='PREPROCESSING',addition=workflow_add_command)		
-				
+		self._addToAll(block='PREPROCESSING',addition=workflow_add_command)		
+
+
+		#release addtoall
+		for block,addition in self._add_block_buffer:
+			self._addToAll(block,addition)
+		self._add_block_buffer=[]
+
+
+
+
+
+
 		self.plot=plotter(self.int_dict)
 
 
@@ -4545,12 +4564,32 @@ EXITING.
 		if not os.path.isabs(directory):
 			directory=os.path.join(os.path.dirname(os.path.realpath(__main__.__file__)),directory)
 
-		
-		self.int_dict = changeCalcs(self.int_dict,keyword='pseudos',value=directory)
+		loadModString = "oneCalc,ID = AFLOWpi.prep._oneChangeCalcs(oneCalc,ID,keyword='%s',value=%s)" %("pseudos",repr(directory))
+		self.addToAll(block='PREPROCESSING',addition=loadModString)				
 
 
 	def change_input(self,namelist=None,parameter=None,value=None):
-		self.int_dict=modifyNamelistPW(self.int_dict,namelist,parameter,value)
+	    if value!=None:
+		    del_value=True
+		    if "'" in value:
+			    try:
+				    value.replace("'",'"')
+			    except:
+				    pass
+
+		    del_value=False
+	    else:
+		    del_value=True
+
+	    addition="oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'%s','%s','''%s''',del_value=%s)" \
+		%(namelist,parameter,value,del_value)
+	    self.addToAll(block='PREPROCESSING',addition=addition)
+
+
+
+
+
+
 
 
 		
@@ -4581,7 +4620,7 @@ EXITING.
 
 
 		loadModString = '''oneCalc,ID = AFLOWpi.run._extrapolate_smearing(oneCalc,ID)'''
-		self.addToAll(block='POSTPROCESSING',addition=loadModString)		
+		self._addToAll(block='POSTPROCESSING',addition=loadModString)		
 		#displays that this step has been added to the workflow. Nothing special but nice to have
 		#this so that the user can verify their workflow is as they expect it to be.
 		calc_type='Smearing Convergence'
@@ -4632,7 +4671,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.new_step(update_positions=True,update_structure=True)
 		#adds prep_fd to be run to every calculation in the set
 		loadModString = '''AFLOWpi.run._prep_elastic(oneCalc,ID,eta_max=%s,num_dist=%s,use_stress = %s,order=%s)'''%(eta_max,num_dist,use_stress,order)
-		self.addToAll(block='PREPROCESSING',addition=loadModString)		
+		self._addToAll(block='PREPROCESSING',addition=loadModString)		
 
 		output_move_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._copy_qe_out_file(oneCalc,ID)')"""
 		task_list=['AFLOWpi.run.scf(calc_subset)',output_move_string]
@@ -4646,7 +4685,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 							   clean_input=False)
 
 		loadModString = '''AFLOWpi.run._pp_elastic(oneCalc,ID)'''
-		self.addToAll(block='POSTPROCESSING',addition=loadModString)		
+		self._addToAll(block='POSTPROCESSING',addition=loadModString)		
 
 		calc_type='Elastic Constants'
 
@@ -4703,7 +4742,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		delta_volume+=1.0
 		delta_celldm1=delta_volume**(1.0/3.0)
 		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
-		self.addToAll(block='PREPROCESSING',addition=loadModString)				
+		self._addToAll(block='PREPROCESSING',addition=loadModString)				
 		    
 		#increasing the index to make sure the previous step gets loaded 
 		self.load_index+=1
@@ -4713,7 +4752,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		#add special phonon dos calc with scaled grid for gruneisen
 		loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
-		self.addToAll(block='PREPROCESSING',addition=loadModString)				
+		self._addToAll(block='PREPROCESSING',addition=loadModString)				
 
 
 		#fixing the loading index to make sure the previous step won't get loaded later
@@ -4727,11 +4766,11 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		for k,v in self.int_dict.iteritems():
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
 		workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
-		self.addToAll(block='PREPROCESSING',addition=workflow_add_command)		
+		self._addToAll(block='PREPROCESSING',addition=workflow_add_command)		
 
 		#adding post processing for thermal stuff
 		workflow_add_command='''AFLOWpi.retr._therm_pp(__submitNodeName__,oneCalc,ID)'''
-		self.addToAll(block='POSTPROCESSING',addition=workflow_add_command)	
+		self._addToAll(block='POSTPROCESSING',addition=workflow_add_command)	
 
 		calc_type='Expanded Volume Phonon for Thermal Conductivity and Gruneisen Parameter'
 		print '                 %s'% (calc_type)
@@ -4752,7 +4791,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.new_step(update_positions=True,update_structure=True)
 		#adds prep_fd to be run to every calculation in the set
 		loadModString = '''AFLOWpi.run.prep_fd(__submitNodeName__,oneCalc,ID,nrx1=%i,nrx2=%i,nrx3=%i,innx=%i,de=%f,atom_sym=%s,disp_sym=%s,proj_phDOS=%s)'''%(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,proj_phDOS)
-		self.addToAll(block='PREPROCESSING',addition=loadModString)		
+		self._addToAll(block='PREPROCESSING',addition=loadModString)		
 		#adds the command to pull the forces from the calculations in the subset
 		#after they've finished. All tasks that are to be performed on the subset
 		#need to take a dictionary of dictionaries called "calc_subset" which is 
@@ -4761,16 +4800,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		force_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_forces(oneCalc,ID)')"""
 		#adds the command to run the FD phonon calculations with pw.x and to add the command
 		#to run finite fields calculations for raman to the calculations in the subset
+
 		pol_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_polarization(oneCalc,ID)')"""
+
+		copy_wfc_str="""AFLOWpi.prep._addToAll(calc_subset,'PREPROCESSING','oneCalc,ID = AFLOWpi.run._fd_field_copy_wfc(oneCalc,ID,"%s")'%oneCalc['_AFLOWPI_PREFIX_'])"""
 		if raman==True:
 			LOTO=True
 			ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="raman")"""%(field_strength,field_cycles)
 				                 	   
 
-			task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
-				   force_pull_string,pol_pull_string]
 
-			self.addToAll(block='RUN',addition=ff_add)		
+			task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
+				   force_pull_string,pol_pull_string,copy_wfc_str]
+
+			self._addToAll(block='RUN',addition=ff_add)		
 
 			self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
 								   'AFLOWpi.run._fd_field_gath(oneCalc,ID)',
@@ -4778,19 +4821,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 								   subset_tasks=task_list,
 								   substep_name='FD_FIELD',
 								   keep_file_names=True,
-								   clean_input=False,pass_through=True)
+								   clean_input=False,pass_through=False)
 
 
 
 		#adds the command to run the FD phonon calculations with pw.x and to add the command
 		#to run finite fields calculations for eps_inf and Z* to the calculations in the subset
 		elif LOTO==True:
-			ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="born")"""%(field_strength,field_cycles)
-				                 	   
-			self.addToAll(block='RUN',addition=ff_add)		
+			ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="born")"""%(field_strength,field_cycles)	
+
+
+			self._addToAll(block='RUN',addition=ff_add)		
 
 			task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
-				   force_pull_string,pol_pull_string]
+				   force_pull_string,pol_pull_string,copy_wfc_str]
 				   
 			self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
 								   'AFLOWpi.run._fd_field_gath(oneCalc,ID)',
@@ -4819,7 +4863,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		#after all the calculations in the subset have finshed we do some kind of postprocessing 
 		#routine(s) to extract/process data
 		loadModString = '''AFLOWpi.run._pp_phonon(__submitNodeName__,oneCalc,ID,de=%s,raman=%s,LOTO=%s,field_strength=%s,project_phDOS=%s)'''%(de,raman,LOTO,field_strength,proj_phDOS)
-		self.addToAll(block='POSTPROCESSING',addition=loadModString)		
+		self._addToAll(block='POSTPROCESSING',addition=loadModString)		
 		#displays that this step has been added to the workflow. Nothing special but nice to have
 		#this so that the user can verify their workflow is as they expect it to be.
 		calc_type='Phonon'
@@ -4993,13 +5037,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 #		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=0)
 		add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kpFactor
-		self.addToAll(block='PREPROCESSING',addition=add)
+		self._addToAll(block='PREPROCESSING',addition=add)
 		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir1",execPath='"./pw.x"',execPostfix="-northo 1")
 		add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kpFactor
-		self.addToAll(block='RUN',addition=add)	  
+		self._addToAll(block='RUN',addition=add)	  
 		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir2",execPath='"./pw.x"',execPostfix="-northo 1")
 		add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kpFactor
-		self.addToAll(block='RUN',addition=add)   
+		self._addToAll(block='RUN',addition=add)   
 		AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir3",execPath='"./pw.x"',execPostfix="-northo 1")
 
 		calc_type='Berry phase and Polarization'
