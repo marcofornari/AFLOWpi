@@ -172,8 +172,6 @@ def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_pdos','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
     
 def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
