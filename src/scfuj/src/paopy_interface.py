@@ -81,9 +81,9 @@ def paopy_dos_wrapper(calcs):
 def paopy_pdos_wrapper(calcs):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)""")
 
-def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False):
+def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
     AFLOWpi.prep.addToAll_(calcs,
-                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s)"""%(band_topology,fermi_surface))
+                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol))
 
 def paopy_transport_wrapper(calcs,t_tensor):
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor))
@@ -175,11 +175,14 @@ def _add_paopy_pdos(oneCalc,ID):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
     
-def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False):
+def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_bands','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nk','int',nk)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ipol','int',ipol)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'jpol','int',jpol)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spol','int',spol)
     if topology==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_topology','logical','T')
     if fermi_surface==True:

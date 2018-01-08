@@ -218,9 +218,9 @@ except: pass
             print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False):
+    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
-	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface)
+	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol)
 
         calc_type='Electronic Band Structure'
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
