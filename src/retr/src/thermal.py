@@ -112,7 +112,7 @@ def _get_gruneisen_ap(oneCalc,ID):
 
     unique_labels = unique_labels.tolist()
 
-    temp = ['freq','total']
+    temp = ['Freq','Total']
     temp.extend(unique_labels)
     unique_labels=temp
     print unique_labels

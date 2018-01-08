@@ -518,7 +518,6 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
     therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
 
     therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.ap'%therm_ID)
-#    therm_data =numpy.loadtxt(therm_file_name,dtype=numpy.float64,)
 
     therm_data=[]
 
@@ -527,30 +526,26 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 
     data=data.split('\n')
     labs = data[0].split()[2:]
-    print labs
+
 
     therm_data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
     
     therm_data=numpy.asarray(therm_data)
-    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=0)
-    therm_data[:,1:]=numpy.around(therm_data[:,1:],decimals=2)
+    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=1)
+    therm_data[:,1:]=numpy.around(therm_data[:,1:],decimals=1)
 
-#    therm_data = numpy.unique(b).view(therm_data.dtype).reshape(-1, therm_data.shape[1])
+
     
     therm_data  = numpy.vstack({tuple(row) for row in therm_data})
 
-
-#   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
     therm_data[numpy.where(therm_data[:,0]<1.1)[0]]=0.0
-
 	    
 
 
 
-#    therm_data[:,1:] = numpy.ma.masked_equal(therm_data[:,1:],0.0)
-#    therm_data = numpy.ma.masked_equal(therm_data,0.0)
+    therm_data = numpy.ma.masked_equal(therm_data,0.0)
     therm_data[:,1:] = numpy.ma.masked_greater(therm_data[:,1:],100.0)
-#    therm_data[:,0] = numpy.ma.masked_less_equal(therm_data[:,0],1.0)
+
 
     width  = 18.0
     height = len(labs)*4.0
@@ -558,7 +553,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 
     fig = pylab.figure(figsize=(width, height))#to adjust the figure size
     gs = gridspec.GridSpec(len(labs),1)
-    gs.update(hspace=0.10)
+    gs.update(hspace=0.10,top=0.915)
 
     
 
@@ -580,19 +575,19 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 	    if i<(len(labs)-1):
 		    ax.set_xticklabels([])
 	    print i%len(color_cycle)
-	    ax.set_ylabel('$\gamma^{2}$')
+	    ax.set_ylabel('$\gamma^{2}$',fontsize=24)
 
 	    ax.set_ylim(grun_range)
 	    ax.set_xlim(w_range)
-	    ax.legend()
+	    ax.legend(fontsize=24)
 
-    ax.set_xlabel('$\omega$ $(cm^{-1})$')
+    ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
+    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
 
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
 	
-    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight')
 
     pyplot.cla()
     pyplot.clf()
