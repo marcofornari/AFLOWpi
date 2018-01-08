@@ -78,7 +78,7 @@ class tight_binding:
             s_tensor = [[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0],[1,2,0],[2,0,0],[2,1,0],[2,2,0], \
                             [0,0,1],[0,1,1],[0,2,1],[1,0,1],[1,1,1],[1,2,1],[2,0,1],[2,1,1],[2,2,1], \
                             [0,0,2],[0,1,2],[0,2,2],[1,0,2],[1,1,2],[1,2,2],[2,0,2],[2,1,2],[2,2,2]]
-
+            s_tensor = [[0,1,2],]
 
 
         ne=float(en_range[1]-en_range[0])/de
@@ -105,7 +105,7 @@ class tight_binding:
         # Berry curvature
         if a_tensor==None:
             a_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
-
+            a_tensor = [[0,1],]
 
         ne=float(en_range[1]-en_range[0])/de
 
@@ -556,6 +556,35 @@ class tb_plotter:
 	'''
 	def __init__(self,calcs):
 		self.calcs=calcs
+
+	def topology(self):
+            AFLOWpi.plot.band_topology(self.calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False)
+
+            calc_type='Plot Band Topology'
+            print '                 %s'% (calc_type)
+
+
+	def ahc(self):
+            addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=False,real=False)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+            addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=False,real=True)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+            addit = "AFLOWpi.plot.__plot_berry_cond(oneCalc,ID,spin=False)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+
+            calc_type='Plot Anomalous Hall Conductivity'
+            print '                 %s'% (calc_type)
+
+	def shc(self):
+            addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=True,real=False)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+            addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=True,real=True)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+            addit = "AFLOWpi.plot.__plot_berry_cond(oneCalc,ID,spin=True)"
+            AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
+
+            calc_type='Plot Spin Hall Conductivity'
+            print '                 %s'% (calc_type)
 
 	def opdos(self,yLim=[-5,5],runlocal=False,postfix=''):
             AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
