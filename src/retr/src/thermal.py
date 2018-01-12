@@ -37,8 +37,13 @@ def _increase_celldm1(oneCalc,ID,amount):
 
     #change prefix in input file so it doesn't conflict with later calculations after thermal
 
-    oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','prefix','"%s_vol"'%oneCalc['_AFLOWPI_PREFIX_'])
-    oneCalc["_AFLOWPI_PREFIX_"]=oneCalc["_AFLOWPI_PREFIX_"]+"_vol"
+    if amount > 1.0:
+        oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','prefix','"%s_volup"'%oneCalc['_AFLOWPI_PREFIX_'])
+        oneCalc["_AFLOWPI_PREFIX_"]=oneCalc["_AFLOWPI_PREFIX_"]+"_volup"
+    else:
+        oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','prefix','"%s_voldn"'%oneCalc['_AFLOWPI_PREFIX_'])
+        oneCalc["_AFLOWPI_PREFIX_"]=oneCalc["_AFLOWPI_PREFIX_"]+"_voldn"
+
 
     inp_file = AFLOWpi.retr._getInputFileString(oneCalc,ID)
     celldm1 = float(AFLOWpi.retr._splitInput(inp_file)['&system']['celldm(1)'])
@@ -53,22 +58,31 @@ def _increase_celldm1(oneCalc,ID,amount):
 
 def _get_gruneisen_ap(oneCalc,ID):
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
-    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+    cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
+    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 
-    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax')
+    if cont_ID == None:
+        cont_ID = norm_ID
+
+    cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
+    if cont_vol_ID == None:
+        cont_vol_ID = norm_ID
+    
+
+    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
+
 
     norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    cont_vol = AFLOWpi.retr.getCellVolume(oneCalc,cont_vol_ID,string=False,conventional=False)
     expn_vol = AFLOWpi.retr.getCellVolume(oneCalc,expn_vol_ID,string=False,conventional=False)
 
     bohr2meter=5.29177e-11
-#    norm_vol*=bohr2meter**3.0
-#    expn_vol*=bohr2meter**3.0
-
 
     extension="eig.ap"
 
 
     norm_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,norm_ID)
+    cont_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,cont_ID)
     expn_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,expn_ID)
 
     grun=[]
@@ -82,7 +96,7 @@ def _get_gruneisen_ap(oneCalc,ID):
     grun = numpy.zeros((norm_freq.shape[0],norm_freq.shape[1]+1),dtype=float)
 
     grun[:,0] = norm_freq[:,0]
-    grun[:,1] = ((expn_freq[:,0]-norm_freq[:,0])/(expn_vol-norm_vol) * \
+    grun[:,1] = ((expn_freq[:,0]-cont_freq[:,0])/(expn_vol-cont_vol) * \
                 numpy.nan_to_num(-1.0*norm_vol/norm_freq[:,0]))**2
 
     grun[:,2:] = grun[:,1][:,None]*norm_freq[:,1:]
@@ -133,16 +147,25 @@ def _get_gruneisen_ap(oneCalc,ID):
 
 def _get_gruneisen(oneCalc,ID,band=True):
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
-    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+    cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
+    expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 
-    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax')
+    if cont_ID == None:
+        cont_ID = norm_ID
+
+    cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
+    if cont_vol_ID == None:
+        cont_vol_ID = norm_ID
+    
+
+    expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
+
 
     norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
+    cont_vol = AFLOWpi.retr.getCellVolume(oneCalc,cont_vol_ID,string=False,conventional=False)
     expn_vol = AFLOWpi.retr.getCellVolume(oneCalc,expn_vol_ID,string=False,conventional=False)
 
     bohr2meter=5.29177e-11
-#    norm_vol*=bohr2meter**3.0
-#    expn_vol*=bohr2meter**3.0
  
     if band==True:
        print band
@@ -154,6 +177,7 @@ def _get_gruneisen(oneCalc,ID,band=True):
 
 
     norm_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,norm_ID,extension=extension)
+    cont_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,cont_ID,extension=extension)
     expn_freq,q_point_old = AFLOWpi.retr._get_ph_dos_data(oneCalc,expn_ID,extension=extension)
 
     grun=[]
@@ -165,7 +189,8 @@ def _get_gruneisen(oneCalc,ID,band=True):
             q_point.append(q_point_old[i])
         for j in range(len(norm_freq[i])):
             try:
-                    deriv  = (expn_freq[i][j]-norm_freq[i][j])/(expn_vol-norm_vol)
+#                if norm_freq[i][j] > 1.0:
+                    deriv  = (expn_freq[i][j]-cont_freq[i][j])/(expn_vol-cont_vol)
                     deriv *= numpy.nan_to_num(-1.0*norm_vol/norm_freq[i][j])
                     if not numpy.isnan(deriv) and not numpy.isinf(deriv):
                         try:
@@ -222,12 +247,15 @@ def _get_gruneisen(oneCalc,ID,band=True):
 
     with open(grun_file_name,'w') as gpfo:
         gpfo.write(grun_data_str)
-    
-    av_TA       = sum(grun[0])/len(grun[0])
-    av_TA_prime = sum(grun[1])/len(grun[1])
-    av_LA      = sum(grun[2])/len(grun[2])
+
+    gar =  numpy.asarray(grun)
+    av = numpy.mean(gar,axis=0)
+
+    # av_TA       = sum(grun[0])/len(grun[0])
+    # av_TA_prime = sum(grun[1])/len(grun[1])
+    # av_LA      = sum(grun[2])/len(grun[2])
         
-    return [av_TA,av_TA_prime,av_LA]
+    return [av[0],av[1],av[2]]
 
 ###################################################################################################
 ###################################################################################################    
@@ -251,7 +279,8 @@ def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
             try:
                 dat_temp = map(float,line.split())
                 temp_one = [dat_temp[0]]
-                temp_one.extend(dat_temp[:4])
+                temp_one = []
+                temp_one.extend(dat_temp[1:])
                 data.append(temp_one)
             except: pass
     data = numpy.asarray(data)

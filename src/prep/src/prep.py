@@ -4448,11 +4448,12 @@ EXITING.
 		self.scf_complete=True
 		self.tight_banding==False
 		self.load_index+=1
+		self.change_input('&control','calculation','"scf"')#,change_initial=False)
 		self.type='scf'
 		self.new_step(update_positions=True,update_structure=True)
 		self.initial_calcs.append(self.int_dict)
-		self.change_input('&control','calculation','"scf"')#,change_initial=False)
-		calc_type='scf'
+
+		calc_type='Self-consistent'
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 		AFLOWpi.run.scf(self.int_dict)	
 
@@ -4462,9 +4463,11 @@ EXITING.
 		self.tight_banding==False
 		self.type='relax'
 		self.load_index+=1
+		self.change_input('&control','calculation','"relax"')#,change_initial=False)
+
 		self.new_step(update_positions=True,update_structure=True,)
 		self.initial_calcs.append(self.int_dict)
-		self.change_input('&control','calculation','"relax"')#,change_initial=False)
+
 
 		calc_type='Ionic Relaxation'
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
@@ -4478,9 +4481,10 @@ EXITING.
 		self.tight_banding==False
 		self.type='vcrelax'
 		self.load_index+=1
+		self.change_input('&control','calculation','"vc-relax"')#,change_initial=False)
 		self.new_step(update_positions=True,update_structure=True)
 		self.initial_calcs.append(self.int_dict)
-		self.change_input('&control','calculation','"vc-relax"')#,change_initial=False)
+
 
 		calc_type='Variable Cell Relaxation'
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
@@ -4693,7 +4697,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
-	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True):
+	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True,central_diff=False):
 		workf = self.workflow
 #		print 'thermal DISABLED. Coming soon.'
 #		raise SystemExit
@@ -4715,13 +4719,66 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                  structure will change between Initial and volume expanded phonon 
                  calculation. Initial phonon at regular volume will be calculated.'''
 
+
+
+		if central_diff:
+			#do relaxation with expanded volume
+			self.type='thermal_dn'
+			#hydrostatic_expansion: True  - keep lattice vector ratio and angles
+			#                                between them fixed between V and V'
+			#                       False - allow ratio between lattice vectors and angles 
+			#                               between them to change but keep the V' fixed
+			if hydrostatic_expansion==True:
+				self.change_input('&control','calculation','"relax"')
+			else:
+				self.change_input('&control','calculation','"vc-relax"')
+				self.change_input('&cell','cell_dofree','"shape"')
+
+			self.new_step(update_positions=True,update_structure=True)
+
+			calc_type='Atomic position relaxation calculation at contracted volume.'
+			print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+			#reset the last entry in the workflow because the relax is with increased volume
+			self.workflow[-1]='thermal_relax_dn'
+
+			#run the relax
+			AFLOWpi.run.scf(self.int_dict)	
+			#add the command to change the celldm(1) by cube root of
+			#1.00+percent and add the '_vol' to the end of the QE prefix
+
+
+			delta_celldm1=(1.0-delta_volume/2.0)**(1.0/3.0)
+			loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
+			self._addToAll(block='PREPROCESSING',addition=loadModString)				
+
+			#increasing the index to make sure the previous step gets loaded 
+			self.load_index+=1
+			self.initial_calcs.append(self.int_dict)
+
+			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=atom_sym,)
+
+			#add special phonon dos calc with scaled grid for gruneisen
+			loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
+			self._addToAll(block='PREPROCESSING',addition=loadModString)				
+
+
+			#fixing the loading index to make sure the previous step won't get loaded later
+			self.load_index-=1
+			self.initial_calcs.pop()
+
+			#reset the last entry in the workflow because the second phonon calc wont have LOTO
+			self.workflow[-1]='thermal_dn'
+
+			#fixing the workflow written in _<ID>.py 
+			for k,v in self.int_dict.iteritems():
+				self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
+			workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
+			self._addToAll(block='PREPROCESSING',addition=workflow_add_command)		
+
+
 		#do relaxation with expanded volume
-		self.type='thermal'
-		self.new_step(update_positions=True,update_structure=True)
-
-		calc_type='Atomic position relaxation calculation at expanded volume.'
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-
+		self.type='thermal_up'
 		#hydrostatic_expansion: True  - keep lattice vector ratio and angles
 		#                                between them fixed between V and V'
 		#                       False - allow ratio between lattice vectors and angles 
@@ -4732,15 +4789,24 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 			self.change_input('&control','calculation','"vc-relax"')
 			self.change_input('&cell','cell_dofree','"shape"')
 
+		self.new_step(update_positions=True,update_structure=True)
+
+		calc_type='Atomic position relaxation calculation at expanded volume.'
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
 		#reset the last entry in the workflow because the relax is with increased volume
-		self.workflow[-1]='thermal_relax'
+		self.workflow[-1]='thermal_relax_up'
 
 		#run the relax
 		AFLOWpi.run.scf(self.int_dict)	
 		#add the command to change the celldm(1) by cube root of
 		#1.00+percent and add the '_vol' to the end of the QE prefix
-		delta_volume+=1.0
-		delta_celldm1=delta_volume**(1.0/3.0)
+
+		if central_diff:
+			delta_celldm1=(1.0+delta_volume/2.0)**(1.0/3.0)
+		else:
+			delta_celldm1=(delta_volume+1.0)**(1.0/3.0)
+
 		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
 		self._addToAll(block='PREPROCESSING',addition=loadModString)				
 		    
@@ -4760,13 +4826,14 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.initial_calcs.pop()
 
 		#reset the last entry in the workflow because the second phonon calc wont have LOTO
-		self.workflow[-1]='thermal'
+		self.workflow[-1]='thermal_up'
 		
 		#fixing the workflow written in _<ID>.py 
 		for k,v in self.int_dict.iteritems():
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
 		workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
 		self._addToAll(block='PREPROCESSING',addition=workflow_add_command)		
+
 
 		#adding post processing for thermal stuff
 		workflow_add_command='''AFLOWpi.retr._therm_pp(__submitNodeName__,oneCalc,ID)'''
