@@ -276,7 +276,7 @@ def _getOutputString(oneCalc,ID):
         return outFileString
     except:
         logging.warning('could not get output file: %s' % outFilePath)
-        print 'could not get output file: %s' % outFilePath
+#        print 'could not get output file: %s' % outFilePath
 
 def getCellVolume(oneCalc,ID,conventional=True,string=True):
     '''
@@ -298,7 +298,6 @@ def getCellVolume(oneCalc,ID,conventional=True,string=True):
 
 
     try:
-        print ID
         outFileString = AFLOWpi.retr._getOutputString(oneCalc,ID)
         vol = float(re.findall(ur'unit-cell volume\s*=\s*([0-9.-]*)',outFileString)[-1])
 
@@ -314,8 +313,8 @@ def getCellVolume(oneCalc,ID,conventional=True,string=True):
         except Exception,e:
             print e
             raise SystemExit
-            logging.warning('could not get volume from output')
-            print 'could not get volume from output'
+
+
 
     if conventional==True:
         ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])

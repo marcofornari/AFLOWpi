@@ -50,7 +50,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
               None
 
 	"""
-        grun_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+        grun_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
         grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phGRUN.gp'%grun_ID)
 
         with open(grun_file_name,'r') as gpfo:
@@ -415,53 +415,63 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 def __gruneisen_of_omega(oneCalc,ID,projected=True):
     matplotlib.rc("font", size=24)             #to set the font size
 
-    therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
-
-    therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.gp'%therm_ID)
-#    therm_data =numpy.loadtxt(therm_file_name,dtype=numpy.float64,)
-
-    therm_data=[]
-
-    with open(therm_file_name,"r") as fo:
-        data = fo.read()
-
-    data=data.split('\n')
-    therm_data = numpy.asarray([map(float,x.split()) for x in data if len(x.strip())!=0])
-    
-    therm_data=numpy.asarray(therm_data)
-    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=0)
-    therm_data[:,1]=numpy.around(therm_data[:,1],decimals=2)
-
-#    therm_data = numpy.unique(b).view(therm_data.dtype).reshape(-1, therm_data.shape[1])
-    
-    therm_data  = numpy.vstack({tuple(row) for row in therm_data})
-#   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
-    for i in range(len(therm_data)):
-	    if therm_data[i][0]<1.1 or therm_data[i][1]>10000.0:
-		    therm_data[i][1]=0.0
-	    
-
-
-
-    therm_data[:,1] = numpy.ma.masked_equal(therm_data[:,1],0.0)
-#    therm_data = numpy.ma.masked_equal(therm_data,0.0)
-    therm_data[:,1] = numpy.ma.masked_greater(therm_data[:,1],100.0)
-#    therm_data[:,0] = numpy.ma.masked_less_equal(therm_data[:,0],1.0)
-    print therm_data.shape
     width = 10.0
-    height = 8.0
+    height = 24.0
     pylab.figure(figsize=(width, height))#to adjust the figure size
-    
-    ax1=pylab.subplot(111)	
-    pylab.ylabel('$\gamma^{2}$')
-    pylab.xlabel('$\omega$ $(cm^{-1})$')
-    pylab.plot(therm_data[:,0],therm_data[:,1],'k',linestyle=' ',marker='o',fillstyle='none')
+    gs = gridspec.GridSpec(3,1)
+    therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
+    for branch in xrange(3):
+	    therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER_%s.gp'%(therm_ID,branch))
 
-    figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
-    pylab.xlim([0.0,numpy.amax(therm_data[:,0])])
-    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
-	
+	    therm_data=[]
+
+	    with open(therm_file_name,"r") as fo:
+		data = fo.read()
+
+	    data=data.split('\n')
+	    therm_data = numpy.asarray([map(float,x.split()) for x in data if len(x.strip())!=0])
+
+	    therm_data=numpy.asarray(therm_data)
+	    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=2)
+#	    therm_data[:,1]=numpy.around(therm_data[:,1],decimals=2)
+
+	#    therm_data = numpy.unique(b).view(therm_data.dtype).reshape(-1, therm_data.shape[1])
+
+	    therm_data  = numpy.vstack({tuple(row) for row in therm_data})
+	#   therm_data[:,0] = numpy.ma.masked_where(therm_data[:,0] <= 1.0, therm_data, copy=False)
+	    for i in range(len(therm_data)):
+		    if therm_data[i][0]<1.1 or therm_data[i][1]>10000.0:
+			    therm_data[i][1]=0.0
+
+
+	    x = numpy.sort(numpy.unique(therm_data[:,0]))
+	    y = numpy.zeros_like(x)
+	    for i in xrange(x.shape[0]):
+		    inds = numpy.where(therm_data[:,0]==x[i])[0]
+		    y[i] = numpy.mean(therm_data[inds,1])
+	    from scipy.signal import savgol_filter
+	    y1 = savgol_filter(y, 199, 2)
+
+	    therm_data[:,1] = numpy.ma.masked_equal(therm_data[:,1],0.0)
+	    therm_data = numpy.ma.masked_equal(therm_data,0.0)
+	    therm_data[:,1] = numpy.ma.masked_greater(therm_data[:,1],100.0)
+
+	    print therm_data.shape
+
+	    ax1 = pylab.subplot(gs[branch])
+	    pylab.ylabel('$\gamma^{2}$')
+	    pylab.xlabel('$\omega$ $(cm^{-1})$')
+	    pylab.plot(therm_data[:,0],therm_data[:,1],'k',linestyle=' ',marker='o',fillstyle='none')
+
+	    
+	    pylab.axhline(numpy.mean(therm_data[:,1]),color='b',linewidth=2.0)
+	    pylab.plot(x,y1,'r',marker='',linewidth=2.0)
+	    figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
+	    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
+	    pylab.xlim([0.0,numpy.amax(therm_data[:,0])])
+
+    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID))
+
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
     pyplot.cla()
@@ -485,7 +495,7 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 
 	fname = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],)
 
-	therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+	therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 	therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_thermal_cond.dat'%therm_ID)
 
 	data=numpy.loadtxt(therm_file_name, dtype=numpy.float, comments='#',skiprows=1)
@@ -515,7 +525,7 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
     matplotlib.rc("font", size=20)             #to set the font size
 
-    therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal')
+    therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 
     therm_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.ap'%therm_ID)
 

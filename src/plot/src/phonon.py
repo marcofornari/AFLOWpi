@@ -76,7 +76,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
-        filebands = os.path.join(subdir,'%s.phBAND.gp'%ID)
+        filebands = os.path.join(subdir,'%s.phBAND.gp'%calcID)
 
 
 
@@ -378,7 +378,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		ax2=pylab.subplot(122)
 		ax2.set_color_cycle(['k','r','g','b','c', 'm', 'y',])
 #		ax2.set_color_cycle(['r','g','b','c', 'm', 'y', 'k'])
-		filedos = os.path.join(subdir,'%s.phdos'%ID)
+		filedos = os.path.join(subdir,'%s.phdos'%calcID)
 		try:
 			data = open(filedos,'r').readlines()
 		except Exception:
