@@ -5232,7 +5232,23 @@ class plotter:
 
 		calc_type='Plot Phonon Bands and DOS'
 
-		print '                 %s'% (calc_type)		
+		print '                 %s'% (calc_type)
+
+	def gruneisen(self):
+		add = 'AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID)'
+		AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+		calc_type='Plot Frequency Resolved Gruneisen Parameter'
+
+		print '                 %s'% (calc_type)
+
+
+	def thermal_cond(self,temp_range=None):
+		add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
+		AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+		calc_type='Plot Lattice Thermal Conductivity'
+
+		print '                 %s'% (calc_type)
+		
 
 	def bands(self,yLim=[-10,10],DOSPlot='',runlocal=False,postfix=''):
 		'''
