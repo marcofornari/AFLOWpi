@@ -1125,18 +1125,22 @@ def _getHighSymPoints(oneCalc,ID=None):
     
     ibrav = 0
     ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
-    
-    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
 
-    if ibrav==0:
-            return
-    if ibrav < 0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
+    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
+    print ibrav
+#    if ibrav==0:
+#            return
+#    if ibrav < 0:
+#        print 'Lattice type %s is not implemented' % ibrav
+#        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
+#        raise Exception
 
 
     alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
+    orig_ibrav = oneCalc['_AFLOWPI_ORIG_IBRAV_']
+    if orig_ibrav!=0:
+        ibrav = orig_ibrav
+
     cellOld=cellOld.getA()
 
 #    raise SystemExit
@@ -1935,12 +1939,12 @@ def _getPath(dk, oneCalc,ID=None,points=False):
     ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
     ibrav = int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[0])	
 
-    if ibrav==0:
-            return
-    if ibrav<0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
+    # if ibrav==0:
+    #         return
+    # if ibrav<0:
+    #     print 'Lattice type %s is not implemented' % ibrav
+    #     logging.error('The ibrav value from expresso has not yet been implemented to the framework')
+    #     raise Exception
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
     BohrToAngstrom = 1.0/1.889727

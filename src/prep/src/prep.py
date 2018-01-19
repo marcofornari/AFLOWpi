@@ -948,7 +948,6 @@ def _transformInput(inputString):
 
     '''
     #convert to QE convention
-    input_dict = AFLOWpi.retr._splitInput(inputString)
 
     try:
 	    positionMatrix = AFLOWpi.retr._getPositions(inputString)
@@ -3242,6 +3241,10 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 #####################################################################################################################
                         try:
                             inputfile2 = AFLOWpi.prep._resolveEqualities(inputfile2)
+			    input_dict = AFLOWpi.retr._splitInput(inputfile2)
+			    orig_ibrav = int(input_dict['&system']['ibrav'])
+			    D['_AFLOWPI_ORIG_IBRAV_']=orig_ibrav
+
                             inputfile2 = AFLOWpi.prep._cleanInputStringSCF(inputfile2,convert=convert)                       
                             calc_label = AFLOWpi.prep._hash64String(inputfile2)
 
@@ -3658,6 +3661,10 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                 print e
                 AFLOWpi.run._fancy_error_log(e)
                 
+
+	    input_dict = AFLOWpi.retr._splitInput(inputfile)
+	    orig_ibrav = int(input_dict['&system']['ibrav'])
+	    DICT['_AFLOWPI_ORIG_IBRAV_']=orig_ibrav
 
 	    if clean_input==True:
 		    inputfile = AFLOWpi.prep._cleanInputStringSCF(inputfile)                            
@@ -5944,9 +5951,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 			if len(item)!=0:
 			    temp.append([float(x) for x in item.split(' ') if len(x)!=0])
 
-		    # if 'CELL_PARAMETERS' in splitInput.keys():
-		    # 	    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
-		    # 		    alat=1.0
 
 		    cellParaMatrix = np.array(temp).astype(np.float)
 		    in_copy_split["&system"]["ibrav"]=0
@@ -5966,9 +5970,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 			    del in_copy_split["&system"]["celldm(6)"]
 		    except: pass
 
-
-#		    print in_copy_split["&system"]["celldm(1)"]
-#		    print cellParaMatrix
 		    cell_vec = cellParaMatrix*alat
 
 
@@ -5976,17 +5977,12 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 		    celldm1 = vol**(1.0/3.0)
 
 		    cell_vec /= celldm1
-#		    print celldm1
-#		    print cell_vec
-#		    raise SystemExit
 		    in_copy_split["&system"]["celldm(1)"] = celldm1
 		    in_copy_split["CELL_PARAMETERS"]={}
 		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
 		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{alat}'
 		    out_in = AFLOWpi.retr._joinInput(in_copy_split)
-
 		    break
-
 
 		else:
 		    pass
@@ -6015,7 +6011,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 
     inputfile=AFLOWpi.retr._joinInput(split_tmp)
-
     oneCalc["_AFLOWPI_INPUT_"]=inputfile
 
 
@@ -6027,8 +6022,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
     except Exception,e:
          AFLOWpi.run._fancy_error_log(e)
-
-
 
     return oneCalc,ID
 
