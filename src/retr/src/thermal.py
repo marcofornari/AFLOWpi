@@ -304,7 +304,7 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
 
     v_i = AFLOWpi.run.do_sound_velocity(__submitNodeName__,oneCalc,norm_ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,
-                                        r_max=0.1,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],
+                                        r_max=0.05,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],
                                         origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0,run_matdyn=run_matdyn)
 
 
@@ -313,7 +313,6 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     #convert to meters
     bohr2meter=5.29177e-11
     V=cell_vol*bohr2meter**3.0
-
 
     #get num atoms in cell
     N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
@@ -346,9 +345,18 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     theta_a = [i*N**(-1.0/3.0) for i in theta_i]
     
     therm_stat_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_therm_stats.dat'%ID)
-
+    therm_tex_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_therm_stats.tex'%ID)
     comp_name=AFLOWpi.retr._getStoicName(oneCalc,strip=True)
     total,TA_cont,TA_prime_cont,LA_cont = AFLOWpi.retr._do_therm(v_i,theta_i,grun_i,Mass,Vol,300.0)
+    try:
+        with open(therm_tex_file,"w") as ofo:
+            ofo.write("%5.5s % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f&% 12.3f& % 12.3f& % 12.3f& % 12.3f& % 12.3f & % 12.3f \\ \n"%\
+                          (comp_name,grun_i[0],grun_i[1],grun_i[2],(grun_i[0]+grun_i[1]+grun_i[2])/3,
+                           v_i[0],v_i[1],v_i[2],(v_i[0]+v_i[1]+v_i[2])/3,
+                           theta_i[0],theta_i[1],theta_i[2],(theta_i[0]+theta_i[1]+theta_i[2])/3,
+                           TA_cont,TA_prime_cont,LA_cont,total))
+    except Exception,e:
+        print e
     with open(therm_stat_file,"w") as ofo:
         ofo.write("--------------------------------------------------------------\n")
         ofo.write("%s\n"%comp_name)

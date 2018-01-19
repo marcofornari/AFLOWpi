@@ -7,7 +7,7 @@ from matplotlib import cm
 matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-
+from scipy.optimize import curve_fit
 
 
 def radial_grid(origin=[0.0,0.0,0.0],nk_r=3,nk_theta=30,nk_phi=30,phi_range=[0.0,2.0*np.pi],theta_range=[0.0,np.pi],r_max=0.05):
@@ -126,9 +126,9 @@ def _read_matdyn_out(oneCalc,ID):
     inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 
 
-    eigs = np.loadtxt("%s.phVEL.gp"%ID)
 
-    return eigs[:,1:4]
+
+    return  np.loadtxt("%s.phVEL.gp"%ID,usecols=(1,2,3))
 
 def _write_matdyn_in(oneCalc,ID,in_cart_flat):
 
@@ -188,9 +188,9 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     nk_phi=int(np.abs(np.diff(phi_range))[0]/dk_phi)
     nk_r=int(r_max/dk_r)
 
-    nk_theta =  100
-    nk_phi   =  100
-    nk_r     =  1
+    nk_theta =  30
+    nk_phi   =  30
+    nk_r     =  16
 
     # Define k-point mesh for radial grid (flattened)
     in_cart_flat=radial_grid(origin=origin,nk_r=nk_r,nk_theta=nk_theta,nk_phi=nk_phi,
@@ -210,27 +210,58 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     kq=np.zeros((3,nkpi))
     kq=np.copy(in_cart_flat.T)
 
-    #get it in the right format for the fft
-    
-    E_kp = _read_matdyn_out(oneCalc,ID)
-
-    #filter only the bands we want
 
 
     alat = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])["&system"]["celldm(1)"])
-    #alat to angstrom
-    alat *= 0.529177249
-    #convert to Hz
-    E_kp*=0.0299792458*1.e12*alat
 
-    E_kp_radial = E_kp/(r_max*1.e10)
+
+    #2pi/alat units
+    rad_points = np.linspace(0.0,r_max,nk_r/2+1,endpoint=True)
+
+    #alat to angstrom     
+    alat *= 0.529177249
+    #angstrom to m
+    alat /= 1.e10
+
+    conv = 1.0
+    #convert cm-1 to THz
+    conv *= 0.0299792458
+    #convert THz to Hz
+    conv *= 1.e12
+
+    # 1/s/m = m/s
+    conv *= alat
+#    print conv
+    #load freq    
+    W_qp = _read_matdyn_out(oneCalc,ID)
+    #reshape to angular directions
+    W_qp_radial = AFLOWpi.run.define_vec_direction(W_qp,nk_r,nk_phi,nk_theta)
+
+#    print W_qp_radial[:,:,0]
+#    print W_qp_radial.shape
+
+    fit_func = lambda x,a: a*x
+
+    sol = np.zeros(W_qp_radial.shape[0])
+    res=[]
+    for branch in xrange(3):
+#        # get linear term
+#        for i in xrange(sol.shape[0]):
+#            sol[i] = curve_fit(fit_func,rad_points,W_qp_radial[i,(nk_r/2):,branch])[0][0]
+        sol = np.polyfit(rad_points,W_qp_radial[:,(nk_r/2):,branch].T,4)
+        print sol.T
+        res.append(np.mean(sol[-2])*conv)
+
+
+    print res
+    return res
 
     """reorganize eigenvalues for K point in radial grid"""
     #into rays from the origin of the radial grid
 
     plot_arr = np.zeros((nk_phi*nk_theta,3))
-    plot_arr[nk_phi:] = E_kp_radial[:-2]
-    plot_arr[:nk_phi] = E_kp_radial[-2]
+    plot_arr[nk_phi:] = W_qp_radial[:-2]
+    plot_arr[:nk_phi] = W_qp_radial[-2]
 
     plot_arr2 = np.zeros((nk_phi*nk_theta*2,3))
 
@@ -343,18 +374,18 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
 
 
-    band_min1=np.amin(E_kp_radial[:,0])
-    band_max1=np.amax(E_kp_radial[:,0])
+    band_min1=np.amin(W_qp_radial[:,0])
+    band_max1=np.amax(W_qp_radial[:,0])
 #    surf1 = ax1.imshow(plot_arr[:,:,0],cmap=cmap1,interpolation="None",
 #                       vmin=band_min1,vmax=band_max1)
 
-    band_min2=np.amin(E_kp_radial[:,1])
-    band_max2=np.amax(E_kp_radial[:,1])
+    band_min2=np.amin(W_qp_radial[:,1])
+    band_max2=np.amax(W_qp_radial[:,1])
 #    surf1 = ax2.imshow(plot_arr[:,:,1],cmap=cmap1,interpolation="None",
 #                       vmin=band_min2,vmax=band_max2)
 
-    band_min3=np.amin(E_kp_radial[:,2])
-    band_max3=np.amax(E_kp_radial[:,2])
+    band_min3=np.amin(W_qp_radial[:,2])
+    band_max3=np.amax(W_qp_radial[:,2])
 #    surf1 = ax3.imshow(plot_arr[:,:,2],cmap=cmap1,interpolation="None",
 #                       vmin=band_min3,vmax=band_max3)
 
@@ -368,6 +399,16 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     cb3 = matplotlib.colorbar.ColorbarBase(ax6, cmap=cmap1,norm=plt.Normalize(band_min3,band_max3), orientation='horizontal')
    # cb2.ax.set_title(r'$\frac{d^{2}E(k_{r})}{dk_{r}^{2}}$',fontsize=22,va="bottom")
 
-    plt.savefig('sound_vel.pdf')
+#    plt.savefig('sound_vel.pdf')
     plt.close()    
-    return np.mean(E_kp_radial,axis=0)
+    return np.mean(W_qp_radial,axis=0)
+
+
+
+#        for i in xrange(W_qp_radial.shape[0]):
+#            fit[i] = curve_fit(fit_func,rad_points,W_qp_radial[i,:,branch],maxfev=10000)
+#        res.append(np.mean(fit))
+#        print popt
+
+
+
