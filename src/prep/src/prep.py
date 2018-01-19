@@ -4563,6 +4563,8 @@ EXITING.
 			outp = "\n*** Generating Execution Pipeline from Workflow Script ***"
 			print AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)
 
+		self.update_cell()
+
 		self.step_index+=1
 
 		try:
@@ -5946,11 +5948,8 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 		    # 	    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
 		    # 		    alat=1.0
 
-		    cellParaMatrix = alat*np.array(temp).astype(np.float)
+		    cellParaMatrix = np.array(temp).astype(np.float)
 		    in_copy_split["&system"]["ibrav"]=0
-		    try:
-			    del in_copy_split["&system"]["celldm(1)"]
-		    except: pass
 		    try:
 			    del in_copy_split["&system"]["celldm(2)"]
 		    except: pass
@@ -5967,9 +5966,24 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 			    del in_copy_split["&system"]["celldm(6)"]
 		    except: pass
 
+
+#		    print in_copy_split["&system"]["celldm(1)"]
+#		    print cellParaMatrix
+		    cell_vec = cellParaMatrix*alat
+
+
+		    vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
+		    celldm1 = vol**(1.0/3.0)
+
+		    cell_vec /= celldm1
+#		    print celldm1
+#		    print cell_vec
+#		    raise SystemExit
+		    in_copy_split["&system"]["celldm(1)"] = celldm1
 		    in_copy_split["CELL_PARAMETERS"]={}
-		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cellParaMatrix)
-		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{bohr}'
+		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
+		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{alat}'
+		    out_in = AFLOWpi.retr._joinInput(in_copy_split)
 
 		    break
 
@@ -5982,109 +5996,29 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 
     out_in = AFLOWpi.retr._joinInput(in_copy_split)
-    oneCalc["_AFLOWPI_INPUT_"]=out_in    
-    try:	    
+    split_tmp = AFLOWpi.retr._splitInput(out_in)
 
 
-	    iso    = AFLOWpi.prep.isotropy()
-	    iso.qe_input(out_in,accuracy=0.005)
-	    tmp_in = iso.convert(ibrav=True,)
-	    split_tmp = AFLOWpi.retr._splitInput(tmp_in)
-	    
-            ###################################################################################################
-	    ibr = splitInput["&system"]["ibrav"]
-	    try:
-		    cdm1 = float(splitInput["&system"]["celldm(1)"])
-	    except: cdm1 = None
-	    try:
-		    cdm2 = float(splitInput["&system"]["celldm(2)"])
-	    except: cdm2 = None
-	    try:
-		    cdm3 = float(splitInput["&system"]["celldm(3)"])
-	    except: cdm3 = None
-	    try:
-		    cdm4 = float(splitInput["&system"]["celldm(4)"])
-	    except: cdm4 = None
-	    try:
-		    cdm5 = float(splitInput["&system"]["celldm(5)"])
-	    except: cdm5 = None
-	    try:
-		    cdm6 = float(splitInput["&system"]["celldm(6)"])
-	    except: cdm6 = None
+    try:
 
-	    old_cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
-				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
-
-
-	    ibr = split_tmp["&system"]["ibrav"]
-	    try:
-		    cdm1 = float(split_tmp["&system"]["celldm(1)"])
-	    except: cdm1 = None
-	    try:
-		    cdm2 = float(split_tmp["&system"]["celldm(2)"])
-	    except: cdm2 = None
-	    try:
-		    cdm3 = float(split_tmp["&system"]["celldm(3)"])
-	    except: cdm3 = None
-	    try:
-		    cdm4 = float(split_tmp["&system"]["celldm(4)"])
-	    except: cdm4 = None
-	    try:
-		    cdm5 = float(split_tmp["&system"]["celldm(5)"])
-	    except: cdm5 = None
-	    try:
-		    cdm6 = float(split_tmp["&system"]["celldm(6)"])
-	    except: cdm6 = None
-
-	    cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
-				     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
-
-	    oldk = splitInput["K_POINTS"]["__content__"]
-            new_grid = AFLOWpi.prep.getMPGrid(cell_vec/0.529177249,offset=True,string=True,oldk=oldk,oldLat=old_cell_vec)
-            '''recip lattice'''
-            '''find the order from smallest to largest of the recip lattice vec'''
-
-            splitInput['K_POINTS']['__content__'] =  new_grid
-	    
-            ###################################################################################################
-
-	    splitInput["&system"]["nat"]=split_tmp["&system"]["nat"]
-	    splitInput["&system"]["ibrav"]=split_tmp["&system"]["ibrav"]
-	    splitInput["&system"]["celldm(1)"]=split_tmp["&system"]["celldm(1)"]
-	    splitInput["&system"]["celldm(2)"]=split_tmp["&system"]["celldm(2)"]
-	    splitInput["&system"]["celldm(3)"]=split_tmp["&system"]["celldm(3)"]
-	    splitInput["&system"]["celldm(4)"]=split_tmp["&system"]["celldm(4)"]
-	    splitInput["&system"]["celldm(5)"]=split_tmp["&system"]["celldm(5)"]
-	    splitInput["&system"]["celldm(6)"]=split_tmp["&system"]["celldm(6)"]
-
-	    #if ibrav changes. use the k points scaled to match the new cell vectors
-#	    if splitInput["&system"]["ibrav"]!=split_tmp["&system"]["ibrav"]:
-#	    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
-
-
-	    try:
-		    mod = split_tmp["K_POINTS"]["__modifier__"].strip("{").strip("}").strip("(").strip(")").lower()
-		    if mod=='automatic':
-			    splitInput["K_POINTS"]["__content__"]=split_tmp["K_POINTS"]["__content__"]
-	    except Exception,e:
-		    print e
-		    
-	    splitInput["ATOMIC_POSITIONS"]["__content__"]=split_tmp["ATOMIC_POSITIONS"]["__content__"]
-	    atom_pos_input = splitInput['ATOMIC_POSITIONS']['__content__']
+	    atom_pos_input = split_tmp['ATOMIC_POSITIONS']['__content__']
 
 	    fakeFlags,flags=AFLOWpi.retr.detachPosFlags(atom_pos_input)
 	    atmPos,outputflags=AFLOWpi.retr.detachPosFlags(split_tmp['ATOMIC_POSITIONS']['__content__'])
 	    atmPos=AFLOWpi.retr.attachPosFlags(atmPos,flags)
-	    splitInput['ATOMIC_POSITIONS']['__content__']=atmPos	    
+	    split_tmp['ATOMIC_POSITIONS']['__content__']=atmPos	    
 
     except Exception,e:
 	    AFLOWpi.run._fancy_error_log(e)
 	    print e
 
-    inputfile=AFLOWpi.retr._joinInput(splitInput)
 
+
+    inputfile=AFLOWpi.retr._joinInput(split_tmp)
 
     oneCalc["_AFLOWPI_INPUT_"]=inputfile
+
+
     logging.debug('exiting _oneUpdateStructs')
     '''written funny because output needs to be oneCalc,ID'''
     try:
@@ -6093,6 +6027,8 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
     except Exception,e:
          AFLOWpi.run._fancy_error_log(e)
+
+
 
     return oneCalc,ID
 
