@@ -2140,7 +2140,7 @@ def _splitInput(inFileString):
         if len(cellParamRegex.findall(inFileString)):
             paramUnits=unitsRegex.findall(inFileString)[-1].strip()
             paramUnits = paramUnits.lower()
-            if paramUnits in ['cubic','crystal','angstrom','bohr']:
+            if paramUnits in ['cubic','crystal','angstrom','bohr','alat']:
                 if len(paramUnits.strip()):
                     paramUnits = '{%s}' % paramUnits
                 else:

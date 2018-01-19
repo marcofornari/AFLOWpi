@@ -42,7 +42,7 @@ import ConfigParser
 import sys
 import AFLOWpi.qe
 import __main__
-import numpy
+import numpy as np    
 import glob
 import time
 import multiprocessing
@@ -524,7 +524,7 @@ def _parseRef(refFile,dictFlag=False):
         for item in refFileSplit['&system'].keys():
             if len(re.findall('celldm',item))!=0:
                 celldm = refFileSplit['&system'][item]
-                refFileSplit['&system'][item] = '%14.12f' % numpy.around(numpy.float(celldm),decimals=5)
+                refFileSplit['&system'][item] = '%14.12f' % np.around(np.float(celldm),decimals=5)
 
         kpointString = refFileSplit['K_POINTS']['__content__']
         kpointMod = refFileSplit['K_POINTS']['__modifier__']
@@ -721,44 +721,33 @@ def _transformParamsInput(inputString):
             paramUnits = paramUnits.lower()
 
             if paramUnits=='angstrom':
-                cellParamMatrix*=1/0.529177249
+		    cellParamMatrix /= BohrToAngstrom
+	    if paramUnits=='' or paramUnits == 'alat':
+		    if 'a' in inputDict['&system'].keys():
+			    A = float(inputDict['&system']['a'])
+			    del inputDict['&system']['a']
+			    cellParamMatrix /= BohrToAngstrom
+		    if 'A' in inputDict['&system'].keys():
+			    A = float(inputDict['&system']['A'])
+			    del inputDict['&system']['A']
+			    cellParamMatrix /= BohrToAngstrom
+		    if 'celldm(1)' in inputDict['&system'].keys():
+			    A = float(inputDict['&system']['celldm(1)'])
 
-            else:
-                if 'a' in inputDict['&system'].keys():
-                    mult = float(inputDict['&system']['a'])
-                elif paramUnits=='angstrom':
-                    mult=1/0.529177249
-                elif 'celldm(1)' in inputDict['&system'].keys():
-                    mult = float(inputDict['&system']['celldm(1)'])
-                else: 
-                    mult=1.0
-                cellParamMatrix*=mult
+		    cellParamMatrix *= A
 
-            ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
-	    ibravDict_prime = AFLOWpi.retr._getCelldm2freeDict(ibravDict)
-	    new_prim_mat = AFLOWpi.retr.celldm2free(**ibravDict_prime) 
-	    new_prim_mat = AFLOWpi.retr._cellStringToMatrix(new_prim_mat)
-	    orig =  AFLOWpi.retr._prim2ConvVec(cellParamMatrix)        
-	    new  =  AFLOWpi.retr._prim2ConvVec(new_prim_mat)        
-	    slam = numpy.linalg.inv(new.astype(numpy.float32)).dot(orig)
-            ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
-	    
-	    
-            for param,value in ibravDict.iteritems():
-                if param.strip()=='celldm(1)':
-                    scaled = str(float(value)/BohrToAngstrom)
-                    if 'a' in inputDict['&system'].keys():
-                        value = str(float(value)/BohrToAngstrom)
-                    inputDict['&system'][param]=str(float(value))
-                else:
-                    inputDict['&system'][param]=value
 
-            try:
-                del inputDict['CELL_PARAMETERS']
-            except Exception,e:
-                print e
+	    vol = np.sum(np.dot(cellParamMatrix[0],np.cross(cellParamMatrix[1],cellParamMatrix[2]).T))
+	    celldm1 = vol**(1.0/3.0)
+	    cellParamMatrix /= celldm1
+	    inputDict['&system']['celldm(1)'] = celldm1
+	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+	    inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
+
+
 
             inputString = AFLOWpi.retr._joinInput(inputDict)
+
 
             return inputString    
 
@@ -810,15 +799,71 @@ def _transformParamsInput(inputString):
             inputDictCopy['&system'][k]=v
 
 
-        inputString = AFLOWpi.retr._joinInput(inputDictCopy)
-
-
-        return inputString    
-
+	inputString = AFLOWpi.retr._joinInput(inputDictCopy)       
 
     elif 'celldm(1)' in inputDict['&system'].keys():
-        inputDict = AFLOWpi.retr._splitInput(inputString)        
-        return AFLOWpi.retr._joinInput(inputDict)
+        pass
+    
+    inputDict = AFLOWpi.retr._splitInput(inputString)       
+
+
+
+    ###################################################################################################
+    ibr = inputDict["&system"]["ibrav"]
+    try:
+	    cdm1 = float(inputDict["&system"]["celldm(1)"])
+    except: cdm1 = None
+    try:
+	    cdm2 = float(inputDict["&system"]["celldm(2)"])
+    except: cdm2 = None
+    try:
+	    cdm3 = float(inputDict["&system"]["celldm(3)"])
+    except: cdm3 = None
+    try:
+	    cdm4 = float(inputDict["&system"]["celldm(4)"])
+    except: cdm4 = None
+    try:
+	    cdm5 = float(inputDict["&system"]["celldm(5)"])
+    except: cdm5 = None
+    try:
+	    cdm6 = float(inputDict["&system"]["celldm(6)"])
+    except: cdm6 = None
+
+    cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
+					celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
+ 
+
+    vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
+    celldm1 = vol**(1.0/3.0)
+    cell_vec /= celldm1
+    inputDict['&system']['celldm(1)'] = celldm1
+    try:
+	    del inputDict['&system']['celldm(2)']
+    except: pass
+    try:
+	    del inputDict['&system']['celldm(3)']
+    except: pass
+    try:
+	    del inputDict['&system']['celldm(4)']
+    except: pass
+    try:
+	    del inputDict['&system']['celldm(5)']
+    except: pass
+    try:
+	    del inputDict['&system']['celldm(6)']
+    except: pass
+    try:
+	    inputDict['&system']['ibrav'] = 0
+    except: pass
+
+    inputDict['CELL_PARAMETERS'] = {}
+    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+    inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cell_vec)
+    
+
+    inputString = AFLOWpi.retr._joinInput(inputDict)
+
+    return AFLOWpi.retr._joinInput(inputDict)
 
 
 def _transformPositionsInput(inputString):
@@ -868,7 +913,7 @@ def _transformPositionsInput(inputString):
 
         for entry in range(len(symMatrix.getA())):
 
-            posLineStr = ' '.join(['%20.18f' % (decimal.Decimal(str(numpy.around(i,16)))) for i in symMatrix.getA()[entry]])+'\n'
+            posLineStr = ' '.join(['%20.18f' % (decimal.Decimal(str(np.around(i,16)))) for i in symMatrix.getA()[entry]])+'\n'
             outputString+='%4s ' % (labels[entry])+posLineStr
         
         outputString = AFLOWpi.retr.attachPosFlags(outputString,flags)
@@ -882,6 +927,9 @@ def _transformPositionsInput(inputString):
         return inputString
 
     returnString =   AFLOWpi.retr._joinInput(splitInput)
+
+
+
 
 
     return returnString
@@ -901,12 +949,6 @@ def _transformInput(inputString):
     '''
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
-    if 'CELL_PARAMETERS' in input_dict.keys():
-	    isotropy_obj    = AFLOWpi.prep.isotropy()
-	    isotropy_obj.qe_input(inputString,accuracy=0.005)
-	    inputString = isotropy_obj.convert(ibrav=True,)
-
-	    
 
     try:
 	    positionMatrix = AFLOWpi.retr._getPositions(inputString)
@@ -3702,18 +3744,18 @@ def getMPGrid(primLatVec,offset=True,string=True,oldk=None,oldLat=None):
         kpointList=[]
         a,b,c,alpha,beta,gamma =  AFLOWpi.retr.free2abc(primLatVec,cosine=False,bohr=False,string=False)
 	if oldk==None or oldLat==None:
-		kpointList.append(int(numpy.floor(200.0/(a*2*numpy.pi))))
-		kpointList.append(int(numpy.floor(200.0/(b*2*numpy.pi))))
-		kpointList.append(int(numpy.floor(200.0/(c*2*numpy.pi))))
+		kpointList.append(int(np.floor(200.0/(a*2*np.pi))))
+		kpointList.append(int(np.floor(200.0/(b*2*np.pi))))
+		kpointList.append(int(np.floor(200.0/(c*2*np.pi))))
 	else:
 		old_a,old_b,old_c,al,be,ga = AFLOWpi.retr.free2abc(oldLat,cosine=False,bohr=False,string=False)
 
 
 
 		old = [int(x) for x in oldk.split()][:3]
-		kpointList.append(int(numpy.around(old[0]*old_a/a,decimals=0)))
-		kpointList.append(int(numpy.around(old[1]*old_b/b,decimals=0)))
-		kpointList.append(int(numpy.around(old[2]*old_c/c,decimals=0)))
+		kpointList.append(int(np.around(old[0]*old_a/a,decimals=0)))
+		kpointList.append(int(np.around(old[1]*old_b/b,decimals=0)))
+		kpointList.append(int(np.around(old[2]*old_c/c,decimals=0)))
 
 
 
@@ -5797,7 +5839,7 @@ def updateStructs(calcs,update_structure=True,update_positions=True):
 
 
 
-import numpy as np    
+
 @newstepWrapper(_check_lock)
 def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,override_lock=False):
     '''
@@ -6327,7 +6369,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
         if param[item] in changeList:
             if param[item] not in constraint_var_list:
 
-                productList.append(numpy.linspace(abcDict[param[item]]*(1.0-amount[item]),abcDict[param[item]]*(1.0+amount[item]),steps[item]).tolist())
+                productList.append(np.linspace(abcDict[param[item]]*(1.0-amount[item]),abcDict[param[item]]*(1.0+amount[item]),steps[item]).tolist())
 
     modifierList = list(it.product(*productList))
     param=[x for x in param if x in changeList]
@@ -6365,7 +6407,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                         for parameter,value in tempDict.items()[1:]:
                             if parameter not in constraint_var_list:
                                 if parameter in ['alpha','beta','gamma']:
-                                    volDiv*=numpy.sin(value*(numpy.pi/180.0))
+                                    volDiv*=np.sin(value*(np.pi/180.0))
                                 if parameter in ['a','b','c']:
                                     volDiv*=value
 
@@ -6373,7 +6415,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                         remaining = vol/volDiv
                         
                         if constraint_var_list[item] in ['alpha','beta','gamma']:
-                            remaining = numpy.arcsin(remaining)*180.0/numpy.pi
+                            remaining = np.arcsin(remaining)*180.0/np.pi
 
                         tempDict[param[some_param]]=remaining
 
@@ -6945,9 +6987,9 @@ def _calcsFromCalcList(calcList):
 #     transposedPositions=symMatrix.T
 #     returnMatrix = copy.deepcopy(transposedPositions)
 
-#     returnMatrix[0] = numpy.copy(transposedPositions[order[0]-1])
-#     returnMatrix[1] = numpy.copy(transposedPositions[order[1]-1])
-#     returnMatrix[2] = numpy.copy(transposedPositions[order[2]-1])
+#     returnMatrix[0] = np.copy(transposedPositions[order[0]-1])
+#     returnMatrix[1] = np.copy(transposedPositions[order[1]-1])
+#     returnMatrix[2] = np.copy(transposedPositions[order[2]-1])
         
 #     '''transpose the positions again so they're back to normal'''
 #     return returnMatrix.T
@@ -6971,7 +7013,7 @@ def _calcsFromCalcList(calcList):
 #     ibrav=AFLOWpi.retr.getIbravFromVectors(cell)
 
 #     if ibrav==13:
-#         CONV_MCLC=numpy.array([
+#         CONV_MCLC=np.array([
 #                 [1.0,  0.0,  0.0,],
 #                 [0.0,  0.0,  1.0,],
 #                 [0.0,  1.0,  0.0,],
@@ -6981,12 +7023,12 @@ def _calcsFromCalcList(calcList):
 
 
 
-#         a = numpy.sqrt(cell[0].dot(cell[0].T)).getA()[0][0]
-#         b = numpy.sqrt(cell[1].dot(cell[1].T)).getA()[0][0]
-#         c = numpy.sqrt(cell[2].dot(cell[2].T)).getA()[0][0]
-#         alpha = numpy.arccos(cell[1].dot(cell[2].T).getA()[0][0]/(b*c))*180.0/numpy.pi
-#         beta  = numpy.arccos(cell[0].dot(cell[2].T).getA()[0][0]/(a*c))*180.0/numpy.pi
-#         gamma = numpy.arccos(cell[0].dot(cell[1].T).getA()[0][0]/(a*b))*180.0/numpy.pi
+#         a = np.sqrt(cell[0].dot(cell[0].T)).getA()[0][0]
+#         b = np.sqrt(cell[1].dot(cell[1].T)).getA()[0][0]
+#         c = np.sqrt(cell[2].dot(cell[2].T)).getA()[0][0]
+#         alpha = np.arccos(cell[1].dot(cell[2].T).getA()[0][0]/(b*c))*180.0/np.pi
+#         beta  = np.arccos(cell[0].dot(cell[2].T).getA()[0][0]/(a*c))*180.0/np.pi
+#         gamma = np.arccos(cell[0].dot(cell[1].T).getA()[0][0]/(a*b))*180.0/np.pi
 
 # 	b_temp=b
 # 	c_temp=c
@@ -7028,7 +7070,7 @@ def _calcsFromCalcList(calcList):
 # 	inputString=AFLOWpi.retr._joinInput(inputDict)
 
 #     if int(ibrav)==4:
-# 	    trans=numpy.array([
+# 	    trans=np.array([
 # 			    [ 1.,  1.,  0.,],
 # 			    [-1.,  0.,  0.,],
 # 			    [ 0.,  0.,  1.,],
