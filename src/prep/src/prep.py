@@ -738,7 +738,7 @@ def _transformParamsInput(inputString):
 
 
 	    vol = np.sum(np.dot(cellParamMatrix[0],np.cross(cellParamMatrix[1],cellParamMatrix[2]).T))
-	    celldm1 = vol**(1.0/3.0)
+	    celldm1 = 1.0
 	    cellParamMatrix /= celldm1
 	    inputDict['&system']['celldm(1)'] = celldm1
 	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
@@ -834,7 +834,7 @@ def _transformParamsInput(inputString):
  
 
     vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
-    celldm1 = vol**(1.0/3.0)
+    celldm1 = 1.0
     cell_vec /= celldm1
     inputDict['&system']['celldm(1)'] = celldm1
     try:
@@ -5974,7 +5974,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 
 		    vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
-		    celldm1 = vol**(1.0/3.0)
+		    celldm1 = 1.0
 
 		    cell_vec /= celldm1
 		    in_copy_split["&system"]["celldm(1)"] = celldm1

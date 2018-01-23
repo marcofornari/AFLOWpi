@@ -82,6 +82,27 @@ def _get_gruneisen_ap(oneCalc,ID):
     cont_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,cont_ID)
     expn_freq,q_point_old,labels =AFLOWpi.retr._get_ph_dos_data_ap(oneCalc,expn_ID)
 
+
+
+
+
+    # de=0.5
+    # dmax = np.amax(norm_freq)
+    # dmin = np.amin(norm_freq)
+    # nbin = np.ceil(dmax/de+1.0)
+    # freqs= np.linspace(dmin,dmax,nbin)
+    # dos_data = np.zeros((freqs.shape[0]))
+    # data = np.ravel(norm_freq)
+
+
+
+    # for w in xrange(freqs.shape[0]):
+    #     dos_data[w] = np.sum(np.exp(-((freqs[w]-data)/de)**2))/float(norm_freq.shape[0])
+
+    # print np.cumsum(dos_data)
+
+    # raise SystemExit
+
     grun=[]
     q_point=[]
     omega=[]
