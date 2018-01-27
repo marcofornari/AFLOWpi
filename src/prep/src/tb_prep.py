@@ -34,7 +34,7 @@ import numpy
 import time
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing=None):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -47,9 +47,9 @@ class tight_binding:
         tb_plotter=AFLOWpi.prep.tb_plotter(calcs)
 
         AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')""")
-#        AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_header(oneCalc,ID)""")
-        AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',thresh=proj_thr,tb_kp_mult=tb_kp_mult)
-#        AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING',"""AFLOWpi.scfuj._get_ham_xml(oneCalc,ID)""")
+
+        AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing)
+
 
         command='''if oneCalc["__execCounter__"]<=%s:
      oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=%s,band_factor=%s)
@@ -612,7 +612,7 @@ class tb_plotter:
 
 		AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
 		
-		calc_type='Plot Optical and Transport properties'
+		calc_type='Plot Boltzmann Transport'
 		print '                 %s'% (calc_type)
 
 
@@ -636,7 +636,7 @@ class tb_plotter:
 
 		AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
 		
-		calc_type='Plot Optical  properties'
+		calc_type='Plot Optical Epsilon'
 		print '                 %s'% (calc_type)
 
 
@@ -774,9 +774,9 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             AFLOWpi.retr._writeEfermi(nscf_calc,nscf_ID)
 
             abortIFRuntimeError(subdir, nscf_ID)
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+
             oneCalc['__runList__'].append('nscf')
-	
+            AFLOWpi.prep._saveOneCalc(oneCalc,ID)	
 ##################################################################################################################
         pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,paw=False,ovp=ovp)
 

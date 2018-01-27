@@ -303,9 +303,14 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         bnd = comm.bcast(bnd,root=0)
         shift = comm.bcast(shift,root=0)
 
+        emaxBT=10.0
+        eminBT=emin
+
         emaxAH = np.amin(np.array([shift,emaxAH]))
         emaxSH = np.amin(np.array([shift,emaxSH]))
         emax = np.amin(np.array([shift,emax]))
+        emaxBT = np.amin(np.array([shift,emaxBT]))
+        epsmax = emaxBT
 
     except Exception as e:
         print('Rank %d: Exception in Building Projectability'%rank)
@@ -1376,9 +1381,9 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             for ispin in xrange(nspin):
     
                 if smearing == None:
-                    ene,L0,L1,L2 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor)
+                    ene,L0,L1,L2 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor,eminBT,emaxBT)
                 else:
-                    ene,L0 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor)
+                    ene,L0 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor,eminBT,emaxBT)
     
                 #----------------------
                 # Conductivity (in units of 1.e21/Ohm/m/s)

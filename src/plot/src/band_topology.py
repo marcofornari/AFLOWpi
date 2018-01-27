@@ -98,8 +98,6 @@ def __band_topology(oneCalc,ID,DOSPlot='',postfix='',tight_banding=False):
         oneCalc = (ID,oneCalc)
 
 	for topo_type in ['BC','SBC']:
-
-
 		if topo_type=='SBC':
 			dem_files = glob.glob(oneCalc[1]['_AFLOWPI_FOLDER_']+'/Omegaj_*')
 		else:
@@ -116,12 +114,11 @@ def __band_topology(oneCalc,ID,DOSPlot='',postfix='',tight_banding=False):
 			jpol=dir_dict[dat_split_name[-1][1]]
 			if topo_type=='SBC':
 			    spol=dir_dict[dat_split_name[-2]]
-			else:
-			    spol=2
+			else: spol=2
+			    
 
 			AFLOWpi.plot.__band_topology_Plot(oneCalc,ipol,jpol,spol=spol,postfix=postfix,
 							  tight_banding=tight_banding,topo_type=topo_type)
-
 
 def __getPath_Topo(oneCalc,ID):
     '''

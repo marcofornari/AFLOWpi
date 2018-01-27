@@ -486,6 +486,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 #
 
 			Ojn_path = os.path.join(subdir,'Omegajn_z_xy.dat')
+			BC=True
+			if BC:
+				Ojn_path = os.path.join(subdir,'Omegajn_z_xy.dat')
 
 
 			if SBC==True and os.path.exists(Ojn_path):
@@ -1156,6 +1159,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	if SBC:
 		compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
 		description='Electronic Band Structure and Spin Berry Curvature'
+		if BC: description='Electronic Band Structure and Berry Curvature'
+			
 		figtitle = '%s: %s' % (description,compoundNameLatex) 
 		ax1.set_title(figtitle,fontsize=24)
 
@@ -1254,7 +1259,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		cbar.ax.tick_params('both',width=2,length=29)
 		cbarneg.ax.tick_params('both',width=2,length=29)
 		cbar.ax.tick_params(direction='in')
-		cbar.ax.set_title('  $\Omega^{z}_{xy}$\n',size=44 )
+
+		if BC:
+			cbar.ax.set_title('  $\Omega_{xy}$\n',size=44 )
+		else:
+			cbar.ax.set_title('  $\Omega^{z}_{xy}$\n',size=44 )
 
 
 		ax1.set_position([0.07,0.1,0.90,0.95]) #[left,bottom,width,height] 		
