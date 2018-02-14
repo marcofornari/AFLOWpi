@@ -39,6 +39,15 @@ import matplotlib.lines as mlines
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Rectangle
 
+
+def _get_plot_ext_type():
+	plot_ext_type = AFLOWpi.prep._ConfigSectionMap('plot','plot_file_type')
+	if plot_ext_type == "":
+		plot_ext_type = "pdf"	
+	if plot_ext_type.lower() not in ["png","pdf"]:
+		plot_ext_type = "pdf"	
+	return plot_ext_type
+
 def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False):
 	'''
 	Generates electronic band structure plots for the calculations in the dictionary of dictionaries
@@ -353,7 +362,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	if spin_dir!='':
 		postfix+='_'+spin_dir
 	subdir=oneCalc['_AFLOWPI_FOLDER_']
-       	fileplot = os.path.join(subdir,'BANDS_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),calcID,postfix))
+
+	petype = AFLOWpi.plot._get_plot_ext_type()
+       	fileplot = os.path.join(subdir,'BANDS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),calcID,postfix,petype))
 
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
@@ -440,7 +451,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 #		ax1.legend(handles[-2:], labels[-2:],numpoints=1)
 		up_legend_lab = mlines.Line2D([], [], color='red',label='$\uparrow$')
 		dn_legend_lab = mlines.Line2D([], [], color='black',label='$\downarrow$')
-		ax1.legend(handles=[up_legend_lab,dn_legend_lab])
+		ax1.legend(handles=[up_legend_lab,dn_legend_lab],loc=1)
 	else:
 		SOC=False
 		try:
@@ -909,8 +920,14 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	if DOSPlot == 'APDOS':
 		print 'Plotting electronic band structure and projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
 		logging.info('Plotting electronic band structure and projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
-
-		fileplot = os.path.join(subdir,'BANDPDOS_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),calcID,postfix))	
+		petype = AFLOWpi.plot._get_plot_ext_type()
+		fileplot = os.path.join(subdir,'BANDPDOS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),calcID,postfix,petype))	
+		ax3=pylab.subplot(122)
+		ax3.xaxis.set_ticks([])
+		ax3.yaxis.set_ticks([])
+		pylab.xlabel('arbitrary units',fontsize = 20)
+		ax3.set_position([0.75,0.1,0.20,0.8]) 
+		ax3.axes.xaxis.set_label_position('bottom')
 		ax2=pylab.subplot(122)
 
 		def getPlotData(sumpdosFile):
@@ -1010,12 +1027,12 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		handles, labels = ax2.get_legend_handles_labels()
 
 		if LSDA:
-			ax2.legend(handles[::-2], labels[::-2],fontsize=14)
+			ax2.legend(handles[::-2], labels[::-2],fontsize=14,loc=1)
 			dosRange=max([minDOS,maxDOS])
 			pylab.xlim(-1.1*dosRange,1.1*dosRange) # scales DOS to larges value of DOS in the given energy range 
 			pylab.axvline(0.0, color = 'k', linewidth = 1.3) #line separating up and down spin
 		else:
-			ax2.legend(handles[::-1], labels[::-1],fontsize=14)
+			ax2.legend(handles[::-1], labels[::-1],fontsize=14,loc=1)
 			pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 		pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
@@ -1029,26 +1046,28 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		ax1.set_position([0.07,0.1,0.67,0.8]) #[left,bottom,width,height] 
 		ax2.set_position([0.75,0.1,0.20,0.8]) #other useful options for the frame! :D
 
-		ax2.yaxis.set_ticks([])
+
 		ax2.yaxis.set_ticks_position('left')
 		pylab.xlabel('Density of States (States/eV)',fontsize=20)
 		ax2.axes.xaxis.set_label_position('top')
 		locs, labels = pylab.xticks()
 		
-		for item in range(len(labels)):
-			if item == len(labels)/2:
-				labels[item]='arbitrary units'
-			else:
-				labels[item]=''
-		
-		ax2.set_xticklabels(labels,fontsize = 20)
+		# for item in range(len(labels)):
+		# 	if item == len(labels)/2:
+		# 		labels[item]=
+		# 	else:
+		# 		labels[item]=''
+	
+
+#		ax3.set_xticklabels(labels,fontsize = 20)
 
 ##########################################################################################################
 	     #to plot the DOS
 	if DOSPlot == 'DOS':
 		print 'Plotting electronic band structure and DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
 		logging.info('Plotting electronic band structure and DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
-		fileplot = os.path.join(subdir,'BANDDOS_%s%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),oneCalc['_AFLOWPI_PREFIX_'],postfix))
+		petype = AFLOWpi.plot._get_plot_ext_type()
+		fileplot = os.path.join(subdir,'BANDDOS_%s%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),oneCalc['_AFLOWPI_PREFIX_'],postfix,petype))
 		ax2=pylab.subplot(122)
 
 		try:

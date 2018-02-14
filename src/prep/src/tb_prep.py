@@ -752,8 +752,10 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
 
+        nscf_exec_postfix = execPostfix_LOCAL = AFLOWpi.prep._ConfigSectionMap('TB','exec_postfix_nscf')            
+        if nscf_exec_postfix != "":
+            execPostfix = nscf_exec_postfix 
         
-
 ##################################################################################################################
         if 'nscf' not in oneCalc['__runList__']:
 

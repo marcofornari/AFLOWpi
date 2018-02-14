@@ -3502,6 +3502,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 		    del inputCalc['ATOMIC_SPECIES']['__content__']
 	    except:
 		    pass
+
+	    
                     
 	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC','IBRAV','CALCULATION']
 
@@ -3526,6 +3528,10 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
+
+
+	    if "ibrav" not in inputCalc["&system"].keys():
+		    inputCalc["&system"]["ibrav"]="0"
 
             if 'ATOMIC_SPECIES' not in inputCalc.keys() or '__content__' not in inputCalc['ATOMIC_SPECIES'].keys() or inputCalc['ATOMIC_SPECIES']['__content__'].strip()=='':
                 inputCalc['ATOMIC_SPECIES']=collections.OrderedDict()

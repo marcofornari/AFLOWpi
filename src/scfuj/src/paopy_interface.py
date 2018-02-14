@@ -299,7 +299,7 @@ def _get_spin_ordering(oneCalc,ID):
     grouped_l = [list(g) for k, g in itertools.groupby(l_list)] 
     sh = []
     nl = []
-
+    print grouped_l
     for i in xrange(len(grouped_l)):
         sh.append(grouped_l[i][0][1])
         if grouped_l[i][0][1]==0:
