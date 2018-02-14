@@ -22,11 +22,11 @@ calcs.update_cell()
 # transport properties with WanT at 300K
 
 # adaptive smearing is incompatable with calc of kappa and seebeck
-# proj_thr set low for HT
+# proj_thr set low for HT..0.9 is liwest probably for Colusite HT
 # nscf_kp_grid = kp_factor*(scf_kp_grid)
 # PAOTB_kp_grid = tb_kp_factor*(scf_kp_grid)
 # I suggest tb_kp_factor=12 for Colusite HT (16+ if you want smoother transport plots)
-tb = calcs.tight_binding(smearing=None,proj_thr=0.90,kp_factor=2.0,tb_kp_factor=8.0)
+tb = calcs.tight_binding(smearing=None,proj_thr=0.85,kp_factor=2.0,tb_kp_factor=8.0)
 
 # dos+pdos
 tb.dos(projected=True)
