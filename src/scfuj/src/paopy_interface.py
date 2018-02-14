@@ -57,9 +57,9 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     
 
 
-def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4):
-    content = """AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s)""" % \
-        (shift_type,thresh,tb_kp_mult)
+def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None):
+    content = """AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s)""" % \
+        (shift_type,thresh,tb_kp_mult,repr(smearing))
         
     AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
 
@@ -124,7 +124,7 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
         ofo.write(outstr)
 
 
-def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing='gauss'):
+def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None):
     
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
@@ -150,6 +150,8 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'pthr','decimal',thresh)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'verbose','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'npool','int',1)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
+
     if float(tb_kp_mult)!=1.0:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
@@ -164,14 +166,14 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
 def _add_paopy_dos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_dos','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-5.0)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',5.0)
 
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_pdos','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
+
     
 def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
@@ -207,9 +209,9 @@ def _add_paopy_spin_Hall(oneCalc,ID,s_tensor,spin_texture=False):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nl','int',nl,degree=1)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'s_tensor','int',s_tensor,degree=2)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spin_Hall','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',12.0)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-5.0)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',5.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_spin','logical','T')
 
     if spin_texture:
@@ -219,9 +221,9 @@ def _add_paopy_Berry(oneCalc,ID,a_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Berry','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminAH','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxAH','decimal',12.0)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminAH','decimal',-5.0)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxAH','decimal',5.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_Berry','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'a_tensor','int',a_tensor,degree=2)
 
@@ -297,7 +299,7 @@ def _get_spin_ordering(oneCalc,ID):
     grouped_l = [list(g) for k, g in itertools.groupby(l_list)] 
     sh = []
     nl = []
-
+    print grouped_l
     for i in xrange(len(grouped_l)):
         sh.append(grouped_l[i][0][1])
         if grouped_l[i][0][1]==0:

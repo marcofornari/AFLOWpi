@@ -32,6 +32,7 @@ import glob
 import re
 import numpy
 import collections
+import xml.etree.ElementTree as ET
 
 def _one_phon(oneCalc,ID):
     return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/'+ID+'_FD_PHONON'+'/displaced*.in'))
@@ -115,7 +116,18 @@ def _pull_forces(oneCalc,ID):
     with open(os.path.join(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_']),'force.%s'%force_postfix),'w+') as out_file_obj:
         out_string = out_file_obj.write(force_out_string)
 
+    try:
+        fffn = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.xml'%oneCalc['_AFLOWPI_PREFIX_'])
+        tree = ET.parse(fffn)
+        root = tree.getroot()
+        output = root.find("output")
+        forces = output.find("forces").text
+        forces = numpy.array([map(float,i.split()) for i in forces.split("\n") if len(i.strip())!=0])
+        forces *= 2.0
 
+        ffname = os.path.join(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_']),'force.%s'%force_postfix)
+        numpy.savetxt(ffname,forces)
+    except Exception,e: print e
 
 
 def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_strength=0.001,project_phDOS=True,run_matdyn=True,run_fd_ifc=True):

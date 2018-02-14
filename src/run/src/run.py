@@ -997,7 +997,8 @@ def _qsubGen(oneCalc,ID):
                 configFileLocation = AFLOWpi.prep._getConfigFile()
                 configFileLocation = os.path.dirname(configFileLocation)
                 qsubRefFileName =  os.path.join(configFileLocation, qsubRefFileName)        
-            qsubRefString = file(qsubRefFileName,'r').read()
+            with open (qsubRefFileName,'r') as ifo:
+                qsubRefString = ifo.read()
             qsubRef = generateSubRef(qsubRefString,oneCalc,ID)['qsubRef']
             qsubRef = AFLOWpi.prep.remove_blank_lines(qsubRef)
 

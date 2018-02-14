@@ -3547,6 +3547,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 		    del inputCalc['ATOMIC_SPECIES']['__content__']
 	    except:
 		    pass
+
+	    
                     
 	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC','IBRAV','CALCULATION']
 
@@ -3571,6 +3573,10 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
+
+
+	    if "ibrav" not in inputCalc["&system"].keys():
+		    inputCalc["&system"]["ibrav"]="0"
 
             if 'ATOMIC_SPECIES' not in inputCalc.keys() or '__content__' not in inputCalc['ATOMIC_SPECIES'].keys() or inputCalc['ATOMIC_SPECIES']['__content__'].strip()=='':
                 inputCalc['ATOMIC_SPECIES']=collections.OrderedDict()
@@ -4689,7 +4695,7 @@ EXITING.
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing=None,tb_kp_factor=4.0):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4709,7 +4715,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
