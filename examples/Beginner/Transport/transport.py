@@ -9,7 +9,7 @@ calcs = session.from_file('transport.in')
 calcs.vcrelax()
 # run calcs for spin polarized NiO for optical and
 # transport properties with WanT at 300K and 400K 
-
+calcs.update_cell()
 tb = calcs.tight_binding()
 tb.transport()
 # plot optical and transport

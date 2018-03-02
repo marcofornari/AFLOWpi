@@ -36,6 +36,11 @@ def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor,eminB
     de = (emax-emin)/1000
     ene = np.arange(emin,emax,de,dtype=float)
 
+    metal=True
+    if metal:
+        ene -= np.amin(ene[ene>=0])
+
+
     L0 = np.zeros((3,3,ene.size),dtype=float)
     L0aux = np.zeros((3,3,ene.size),dtype=float)
 
