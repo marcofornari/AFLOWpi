@@ -115,7 +115,7 @@ def _delta_dyn(oneCalc,ID):
     grun      =  np.nan_to_num(grun*PF)
 
 
-    grun_i = np.mean(grun[:,:3],axis=0)**(0.5)
+    grun_i = np.mean(grun[:,:3]**2,axis=0)**(0.5)
 
 
 
