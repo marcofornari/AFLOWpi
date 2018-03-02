@@ -237,7 +237,7 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     #reshape to angular directions
     W_qp_radial = AFLOWpi.run.define_vec_direction(W_qp,nk_r,nk_phi,nk_theta)
 
-    print W_qp_radial[:,(nk_r/2):,0]
+#    print W_qp_radial[:,(nk_r/2):,0]
 #    print W_qp_radial.shape
 
     fit_func = lambda x,a: a*x
@@ -255,7 +255,7 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
         res.append(np.mean(sol[3])*conv)
 
 
-    print res
+#    print res
     return res
 
     """reorganize eigenvalues for K point in radial grid"""
