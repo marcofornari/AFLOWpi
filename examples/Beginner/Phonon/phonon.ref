@@ -6,7 +6,7 @@
     nstep=200                                                                                                         
 /                                                                                                                     
 &system                                                                                                              
-    ibrav=2,A = 5.806447108750862
+    ibrav=2,A = 5.66
     nat=4,ntyp=2,                                                                                                     
     ecutwfc = 50.,                                                                                                    
 !    ecutrho = 400.,                                                                                                   

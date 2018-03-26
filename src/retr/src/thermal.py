@@ -110,8 +110,12 @@ def _get_gruneisen_ap(oneCalc,ID):
     grun = np.zeros((norm_freq.shape[0],norm_freq.shape[1]+1),dtype=float)
 
     grun[:,0] = norm_freq[:,0]
-    grun[:,1] = ((expn_freq[:,0]-cont_freq[:,0])/(expn_vol-cont_vol) * \
-                np.nan_to_num(-1.0*norm_vol/norm_freq[:,0]))**2
+
+
+
+    grun[:,1],grun_i = AFLOWpi.retr._delta_dyn(oneCalc,ID)
+#    grun[:,1],_ = AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
+
 
     grun[:,2:] = grun[:,1][:,None]*norm_freq[:,1:]
 
@@ -141,6 +145,7 @@ def _get_gruneisen_ap(oneCalc,ID):
     grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER.ap'%ID)
     np.savetxt(grun_file_name,ap_grun,fmt='% 4.8f',header=' '.join(unique_labels))
     
+    return grun_i
 
         
 ###################################################################################################
@@ -186,22 +191,42 @@ def _get_gruneisen(oneCalc,ID,band=True):
     q_point=[]
     omega=[]
 
-    grun = (expn_freq-cont_freq)/(expn_vol-cont_vol) * \
-        np.nan_to_num(1.0*norm_vol/norm_freq)
+
+    PF = np.nan_to_num(1.0*norm_vol/norm_freq)
+#    PF = np.nan_to_num((expn_vol+cont_vol)/(expn_freq+cont_freq))
+
+    PF_inf_ind = np.where(np.isinf(PF**2))
+    PF[PF_inf_ind] = 0.0
+    
+    grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'PF.dat')
+    np.savetxt(grun_file_name,np.concatenate([np.ravel(norm_freq,order="C")[:,None],np.ravel(PF,order="C")[:,None]],axis=1),fmt='% 4.8f')
+
+
+
+
+    grun = -(expn_freq-cont_freq)/(expn_vol-cont_vol) * PF
+#    grun = -(expn_freq-cont_freq)/(expn_vol-cont_vol) * 1.0
 
     av = np.sqrt(np.mean(grun**2,axis=0))
 
+
+    grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER_old.gp'%ID)
+    np.savetxt(grun_file_name,np.concatenate([np.ravel(norm_freq,order="C")[:,None],np.ravel(grun,order="C")[:,None]],axis=1),fmt='% 4.8f')
     grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER_0.gp'%ID)
     np.savetxt(grun_file_name,np.concatenate([norm_freq[:,0:1],grun[:,0:1]**2],axis=1),fmt='% 4.8f')
     grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER_1.gp'%ID)
     np.savetxt(grun_file_name,np.concatenate([norm_freq[:,1:2],grun[:,1:2]**2],axis=1),fmt='% 4.8f')
     grun_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phSCATTER_2.gp'%ID)
     np.savetxt(grun_file_name,np.concatenate([norm_freq[:,2:3],grun[:,2:3]**2],axis=1),fmt='% 4.8f')
-        
-    cm1_to_k = 1.2398e-4*1.16045221e4
-    theta = np.amax(norm_freq[:,:3],axis=0)*cm1_to_k
 
-    return [av[0],av[1],av[2]],theta
+    
+    
+    
+
+    theta = np.amax(norm_freq[:,:3],axis=0)*1.2398e-4*1.16045221e4
+
+
+    return np.ravel(grun,order="C"),theta
 
 ###################################################################################################
 ###################################################################################################    
@@ -304,7 +329,7 @@ def _get_debye_temp(v_i,cell_vol,nat):
 
 
     #calculate debye temperature for each branch
-    wo_v           = h_bar/k_b*(6.0*np.pi**2.0*nat/V)**(1.0/3.0)
+    wo_v           = h_bar/k_b#*(6.0*np.pi**2.0*nat/V)**(1.0/3.0)
     debye_TA       = wo_v*v_s_TA
     debye_TA_prime = wo_v*v_s_TA_prime
     debye_LA       = wo_v*v_s_LA
@@ -318,9 +343,13 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     grun_i=[0.0,0.0,0.0]
 
     #for plotting
-    AFLOWpi.retr._get_gruneisen_ap(oneCalc,ID)
+
     #for DC model
-    grun_i,theta_i = AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
+    _,theta_i = AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
+
+
+    grun_i = AFLOWpi.retr._get_gruneisen_ap(oneCalc,ID)
+#    raise SystemExit
 
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
 
@@ -339,7 +368,7 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     N = float(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
 
 
-#    theta_i = AFLOWpi.retr._get_debye_temp(v_i,cell_vol,N)
+
 
     cell_mass = AFLOWpi.retr._get_cell_mass(oneCalc,ID)
     
