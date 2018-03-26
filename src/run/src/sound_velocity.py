@@ -190,7 +190,7 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
     nk_theta =  30
     nk_phi   =  30
-    nk_r     =  16
+    nk_r     =  8
 
     # Define k-point mesh for radial grid (flattened)
     in_cart_flat=radial_grid(origin=origin,nk_r=nk_r,nk_theta=nk_theta,nk_phi=nk_phi,
@@ -237,23 +237,25 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
     #reshape to angular directions
     W_qp_radial = AFLOWpi.run.define_vec_direction(W_qp,nk_r,nk_phi,nk_theta)
 
-#    print W_qp_radial[:,:,0]
+#    print W_qp_radial[:,(nk_r/2):,0]
 #    print W_qp_radial.shape
 
     fit_func = lambda x,a: a*x
 
     sol = np.zeros(W_qp_radial.shape[0])
     res=[]
+#    print W_qp_radial[:,:,1]
     for branch in xrange(3):
 #        # get linear term
 #        for i in xrange(sol.shape[0]):
 #            sol[i] = curve_fit(fit_func,rad_points,W_qp_radial[i,(nk_r/2):,branch])[0][0]
         sol = np.polyfit(rad_points,W_qp_radial[:,(nk_r/2):,branch].T,4)
-        print sol.T
-        res.append(np.mean(sol[-2])*conv)
+#        print sol.T
+        print sol.shape
+        res.append(np.mean(sol[3])*conv)
 
 
-    print res
+#    print res
     return res
 
     """reorganize eigenvalues for K point in radial grid"""

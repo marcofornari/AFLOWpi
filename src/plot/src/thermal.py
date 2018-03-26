@@ -401,7 +401,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
  	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
 	handles, labels = ax1.get_legend_handles_labels()
-	ax1.legend(handles, labels,numpoints=1)
+	ax1.legend(handles, labels,numpoints=1,loc=1)
 
   	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
@@ -459,7 +459,7 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
 	    print therm_data.shape
 
 	    ax1 = pylab.subplot(gs[branch])
-	    pylab.ylabel('$\gamma^{2}$')
+	    pylab.ylabel('$\gamma$')
 	    pylab.xlabel('$\omega$ $(cm^{-1})$')
 	    pylab.plot(therm_data[:,0],therm_data[:,1],'k',linestyle=' ',marker='o',fillstyle='none')
 
@@ -541,8 +541,8 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
     therm_data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
     
     therm_data=numpy.asarray(therm_data)
-    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=1)
-    therm_data[:,1:]=numpy.around(therm_data[:,1:],decimals=1)
+#    therm_data[:,0]=numpy.around(therm_data[:,0],decimals=1)
+#    therm_data[:,1:]=numpy.around(therm_data[:,1:],decimals=1)
 
 
     
@@ -555,7 +555,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 
     therm_data = numpy.ma.masked_equal(therm_data,0.0)
     therm_data[:,1:] = numpy.ma.masked_greater(therm_data[:,1:],100.0)
-
+    
 
     width  = 18.0
     height = len(labs)*4.0
@@ -566,39 +566,84 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
     gs.update(hspace=0.10,top=0.915)
 
     
+    dw =numpy.linspace(0.0,numpy.amax(therm_data[:,0]),1000,endpoint=True)
+
+
+    avg=numpy.zeros((dw.shape[0]-1,2))
+    for i in xrange(dw.shape[0]-1):
+	    inds=numpy.where(therm_data[:,0]<dw[i+1])[0]
+	    if len(inds)==0:
+		    avg[i,1]  = 0.0
+	    else:
+		    avg[i,1] = numpy.mean(therm_data[inds,1]**2)**(0.5)
+	    avg[i,0] = dw[i]
+	    
+
 
     color_cycle=['k','r', 'g', 'b', 'c', 'm', 'y']
-
-
+		    
+		    
 
     if w_range==None:
 	    w_range=[0.0,numpy.amax(therm_data[:,0])]
     if grun_range==None:
-	    grun_range=[0.0,numpy.amax(therm_data[:,1])*1.05]
+	    if numpy.amin(therm_data[:,1])<0.0:
+		    grun_range=[numpy.amin(therm_data[:,1])*1.05,numpy.amax(therm_data[:,1])*1.05]
+	    else:
+		    grun_range=[numpy.amin(therm_data[:,1])*0.95,numpy.amax(therm_data[:,1])*1.05]
+#	    grun_range=[0.0,numpy.amax(therm_data[:,1])*1.05]
 
 
     for i in range(len(labs)):
 	    ax = pylab.subplot(gs[i])
+	    print labs[i],(numpy.mean(therm_data[:,i+1]))**(0.5)
 	    ax.plot(therm_data[:,0],therm_data[:,i+1],linestyle=' ',
 		    marker='o',fillstyle='none',label=labs[i],
 		    color=color_cycle[i%len(color_cycle)])
+#	    if labs[i]=="Total":
+#		    ax.plot(avg[:,0],avg[:,1],color="r")
 	    if i<(len(labs)-1):
 		    ax.set_xticklabels([])
-	    print i%len(color_cycle)
-	    ax.set_ylabel('$\gamma^{2}$',fontsize=24)
+
+	    ax.set_ylabel('$\gamma$',fontsize=24)
 
 	    ax.set_ylim(grun_range)
 	    ax.set_xlim(w_range)
-	    ax.legend(fontsize=24)
+	    ax.legend(fontsize=24,loc=1)
+	    ax.axhline(0.0,color="k",ls="--")
 
     ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
     t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
 
-    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
+    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_ap_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
 	
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight')
+    matplotlib.pyplot.close()
 
+    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
+
+    fig = pylab.figure(figsize=(12, 10))#to adjust the figure size
+    ax = pylab.subplot(111)
+    ax.plot(therm_data[:,0],therm_data[:,1],linestyle=' ',
+	    marker='o',fillstyle='none',color="k")
+
+
+    ax.set_ylabel('$\gamma$',fontsize=24)
+
+
+
+    ax.set_ylim([0.0,numpy.amax(therm_data[:,1])*1.05])
+    ax.set_ylim(grun_range)
+    ax.set_xlim(w_range)
+    
+    ax.axhline(0.0,color="k",ls="--")
+
+    ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
+    figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
+    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
+    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight')
+	    
     pyplot.cla()
     pyplot.clf()
     pyplot.close()
