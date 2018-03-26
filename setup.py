@@ -161,7 +161,8 @@ try:
 
                       
          package_data = {
-                                  'AFLOWpi':['ISOTROPY/*','PAOpy/src/*/*','PAOpy/src/*','scfuj/acbn0_support/*'],
+                                  'AFLOWpi':['ISOTROPY/*','PAOpy/src/*/*','PAOpy/src/*',
+                                             'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
                                   },
 
@@ -184,16 +185,19 @@ try:
    FINDSYM_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','findsym')
    COMSUBS_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','comsubs')
    SMODES_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','smodes')
+   AFLOW_EXEC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM','aflow')
 
 
 
-   if not os.access(SMODES_EXEC,3) and not os.access(COMSUBS_EXEC,3) and not os.access(FINDSYM_EXEC,3):
+
+   if not os.access(SMODES_EXEC,3) or not os.access(COMSUBS_EXEC,3) or not os.access(FINDSYM_EXEC,3) or not os.access(AFLOW_EXEC,3):
       print "INSTALLING ISOTROPY"
       print
       print 'Setting permission to for the user to read and execute (733) to the ISOTROPY executables findsym, smodes, and comsubs.'
       os.chmod(FINDSYM_EXEC,733)
       os.chmod(COMSUBS_EXEC,733)
       os.chmod(SMODES_EXEC,733)
+      os.chmod(AFLOW_EXEC,733)
       print 
       print 'Done.'
       

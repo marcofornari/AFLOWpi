@@ -726,14 +726,14 @@ def _transformParamsInput(inputString):
 		    if 'a' in inputDict['&system'].keys():
 			    A = float(inputDict['&system']['a'])
 			    del inputDict['&system']['a']
-			    cellParamMatrix /= BohrToAngstrom
+
 		    if 'A' in inputDict['&system'].keys():
 			    A = float(inputDict['&system']['A'])
 			    del inputDict['&system']['A']
-			    cellParamMatrix /= BohrToAngstrom
+
 		    if 'celldm(1)' in inputDict['&system'].keys():
 			    A = float(inputDict['&system']['celldm(1)'])
-
+			    cellParamMatrix *= BohrToAngstrom
 		    cellParamMatrix *= A
 
 
@@ -741,7 +741,7 @@ def _transformParamsInput(inputString):
 	    celldm1 = 1.0
 	    cellParamMatrix /= celldm1
 	    inputDict['&system']['celldm(1)'] = celldm1
-	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{angstrom}'
 	    inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
 
 
@@ -828,6 +828,8 @@ def _transformParamsInput(inputString):
     try:
 	    cdm6 = float(inputDict["&system"]["celldm(6)"])
     except: cdm6 = None
+
+    cdm1 *= 0.529177249
 
     cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
 					celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
