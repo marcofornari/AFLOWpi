@@ -28,18 +28,13 @@ comm=MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor,eminBT,emaxBT):
+def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor):
     # Compute the L_alpha tensors for Boltzmann transport
 
-    emin = eminBT
-    emax = emaxBT
-    de = (emax-emin)/1000
+    emin = -2.0 # To be read in input
+    emax = 2.0
+    de = (emax-emin)/500
     ene = np.arange(emin,emax,de,dtype=float)
-
-    metal=True
-    if metal:
-        ene -= np.amin(ene[ene>=0])
-
 
     L0 = np.zeros((3,3,ene.size),dtype=float)
     L0aux = np.zeros((3,3,ene.size),dtype=float)
@@ -83,7 +78,6 @@ def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor,eminB
         return(ene,L0)
 
 def L_loop(ene,E_k,velkp,kq_wght,temp,ispin,alpha,deltak,smearing,t_tensor):
-
     # We assume tau=1 in the constant relaxation time approximation
 
     L = np.zeros((3,3,ene.size),dtype=float)
@@ -98,7 +92,7 @@ def L_loop(ene,E_k,velkp,kq_wght,temp,ispin,alpha,deltak,smearing,t_tensor):
                 j = t_tensor[l][1]
                 if smearing == None:
                     L[i,j,:] += np.sum((1.0/temp * kq_wght[0]*velkp[:,i,n,ispin]*velkp[:,j,n,ispin] * \
-                                1.0/2.0 * (1.0/(1.0+np.cosh(Eaux[:,:]/temp)) * np.power(Eaux[:,:],alpha)).T),axis=1)
+                                1.0/2.0 * (1.0/(1.0+0.5*(np.exp(Eaux[:,:]/temp)+np.exp(-Eaux[:,:]/temp))) * np.power(Eaux[:,:],alpha)).T),axis=1)
 
 
     if smearing == 'gauss':
