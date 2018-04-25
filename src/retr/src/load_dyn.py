@@ -2,7 +2,7 @@ import numpy as np
 import os
 import re 
 import AFLOWpi
-
+import scipy.linalg
 
 def load_dyn(fn,nat,nq):
 
@@ -40,7 +40,7 @@ def load_dyn(fn,nat,nq):
     return dyn
 
 
-def _delta_dyn(oneCalc,ID):    
+def _delta_dyn(oneCalc,ID,dat_type="DOS"):    
 
     norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
@@ -62,27 +62,28 @@ def _delta_dyn(oneCalc,ID):
     dV = (expn_vol-cont_vol)/norm_vol
     nat = int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nat'])
 
-    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.phDOS.gp'%norm_ID)
+    
+    data_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.ph%s.gp'%(norm_ID,dat_type))
     tdata= np.loadtxt(data_file_name,usecols=(1,2))
     nq=tdata.shape[0]
 
     tdata = None
     print nat,dV,nq
-    appdos_fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.eig.ap"%ID)
 
-    AFLOWpi.run._get_ph_weights(appdos_fn)
 
-    fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.phDOS.dyn"%norm_ID)
+
+
+    fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(norm_ID,dat_type))
     print "loading dynmat for V"
     dyn = AFLOWpi.retr.load_dyn(fn,nat,nq)
 
-    fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.phDOS.dyn"%expn_ID)
+    fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(expn_ID,dat_type))
     print "loading dynmat for V+dV"
     delDq = AFLOWpi.retr.load_dyn(fn,nat,nq)
 
 
     if cont_ID!=norm_ID:
-        fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.phDOS.dyn"%cont_ID)
+        fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(cont_ID,dat_type))
         print "loading dynmat for V-dV"
         delDq -= AFLOWpi.retr.load_dyn(fn,nat,nq)
     else:
@@ -98,7 +99,7 @@ def _delta_dyn(oneCalc,ID):
     print np.linalg.eigh(dyn[0])[0]
 
     for i in xrange(dyn.shape[0]):
-        eig[i],vq[i] = np.linalg.eigh(dyn[i])
+        eig[i],vq[i] = scipy.linalg.eigh(dyn[i])
         grun[i]      = -1.0*np.real(np.conj(vq[i].T).dot((delDq[i]/dV).dot(vq[i])))[n,n]
 
     
@@ -118,5 +119,9 @@ def _delta_dyn(oneCalc,ID):
     grun_i = np.mean(grun[:,:3]**2,axis=0)**(0.5)
 
 
+    if dat_type=="DOS":
+        return np.ravel(grun,order="C"),grun_i
 
-    return np.ravel(grun,order="C"),grun_i
+    else:
+        fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.phSCATTER.band"%norm_ID)
+        np.savetxt(fn,grun)

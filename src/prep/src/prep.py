@@ -4576,7 +4576,16 @@ EXITING.
 
 	def update_cell(self,update_positions=True,update_structure=True):
 		addit = "oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,update_structure=%s,update_positions=%s,override_lock=False)"%(update_positions,update_structure)
-		self.addToAll(block='PREPROCESSING',addition=addit)		
+
+		
+
+		try:
+			prepended = [['PREPROCESSING',addit]]
+			prepended.extend(self._add_block_buffer)
+			self._add_block_buffer = prepended
+
+		except:
+			self.addToAll(block='PREPROCESSING',addition=addit)		
 	
         def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
 		if self.step_index==0:
@@ -4823,8 +4832,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=atom_sym,)
 
 			#add special phonon dos calc with scaled grid for gruneisen
-			loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
-			self._addToAll(block='PREPROCESSING',addition=loadModString)				
+#			loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
+#			self._addToAll(block='PREPROCESSING',addition=loadModString)				
 
 
 			#fixing the loading index to make sure the previous step won't get loaded later
@@ -4871,8 +4880,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		else:
 			delta_celldm1=(delta_volume+1.0)**(1.0/3.0)
 
-		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
-		self._addToAll(block='PREPROCESSING',addition=loadModString)				
+#		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
+#		self._addToAll(block='PREPROCESSING',addition=loadModString)				
 		    
 		#increasing the index to make sure the previous step gets loaded 
 		self.load_index+=1
@@ -5918,9 +5927,10 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    
 
 	    pos_re=AFLOWpi.qe.regex.atomic_positions('','content','regex')
+
 	    try:
 		    pos=pos_re.findall(outputfile)[-1]
-		    
+
 		    in_copy_split['ATOMIC_POSITIONS']['__content__']=pos	    
 		    break
 	    except Exception,e:
@@ -6042,7 +6052,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
     inputfile=AFLOWpi.retr._joinInput(split_tmp)
     oneCalc["_AFLOWPI_INPUT_"]=inputfile
-
+    print inputfile
 
     logging.debug('exiting _oneUpdateStructs')
     '''written funny because output needs to be oneCalc,ID'''

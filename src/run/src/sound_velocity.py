@@ -243,12 +243,14 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
     sol = np.zeros(W_qp_radial.shape[0])
     res=[]
+    print W_qp_radial[:,:,0]
+
 
     for branch in xrange(3):
 
 
 
-        sol = np.polyfit(rad_points,W_qp_radial[:,(nk_r/2):,branch].T,4)
+        sol = np.polyfit(rad_points,W_qp_radial[:,:,branch].T,4)
 
         print sol.shape
         res.append(np.mean(sol[3])*conv)

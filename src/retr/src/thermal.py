@@ -344,6 +344,14 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
 
     #for plotting
 
+    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
+
+    v_i = AFLOWpi.run.do_sound_velocity(__submitNodeName__,oneCalc,norm_ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,
+                                        r_max=0.05,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],
+                                        origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0,run_matdyn=run_matdyn)
+
+
+
     #for DC model
     _,theta_i = AFLOWpi.retr._get_gruneisen(oneCalc,ID,band=False)
 
@@ -351,11 +359,6 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     grun_i = AFLOWpi.retr._get_gruneisen_ap(oneCalc,ID)
 #    raise SystemExit
 
-    norm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='phonon')
-
-    v_i = AFLOWpi.run.do_sound_velocity(__submitNodeName__,oneCalc,norm_ID,dk_theta=0.1,dk_phi=0.2,dk_r=0.0125,
-                                        r_max=0.05,theta_range=[-np.pi/2.0,np.pi/2.0],phi_range=[0.0,2.0*np.pi],
-                                        origin=[0.0,0.0,0.0],nspin=1,kpi=0,read_S=False,shift=0.0,run_matdyn=run_matdyn)
 
 
     #get volume of original cell
