@@ -4832,8 +4832,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,LOTO=LOTO,field_strength=field_strength,field_cycles=field_cycles,disp_sym=disp_sym,atom_sym=atom_sym,)
 
 			#add special phonon dos calc with scaled grid for gruneisen
-#			loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
-#			self._addToAll(block='PREPROCESSING',addition=loadModString)				
+			loadModString = """AFLOWpi.run.write_fdx_template(oneCalc,ID,nrx1=%s,nrx2=%s,nrx3=%s,innx=%s,de=%s,atom_sym=%s,disp_sym=%s,scale_dos_grid=%s)""" %(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,delta_celldm1)
+			self._addToAll(block='PREPROCESSING',addition=loadModString)				
 
 
 			#fixing the loading index to make sure the previous step won't get loaded later
@@ -4880,8 +4880,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		else:
 			delta_celldm1=(delta_volume+1.0)**(1.0/3.0)
 
-#		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
-#		self._addToAll(block='PREPROCESSING',addition=loadModString)				
+		loadModString='oneCalc,ID = AFLOWpi.retr._increase_celldm1(oneCalc,ID,%s)'%delta_celldm1
+		self._addToAll(block='PREPROCESSING',addition=loadModString)				
 		    
 		#increasing the index to make sure the previous step gets loaded 
 		self.load_index+=1
