@@ -32,9 +32,10 @@ import shutil
 import glob
 import numpy
 import time
+from collections import OrderedDict
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing=None):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss'):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -449,7 +450,7 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
             rename_info_re = re.compile(r'state #\s*(\d*): atom\s*(\d+)\s*\(\s*(\S*)\s*\).*wfc\s*(\d+).*l=(\d+).*m_j=([\s-][.\d]+).*\n')
             state_info_list = rename_info_re.findall(qe_pdos_out_str)
 
-        pdos_dict={}
+        pdos_dict=OrderedDict()
         if len(state_info_list)!=0:
             for i in range(len(state_info_list)):
 
@@ -488,6 +489,7 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                         pdos_dict[new_name]=[orig_name]
 
         for k,v in pdos_dict.iteritems():
+
             old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[0])
             dat = numpy.loadtxt(old_name_path)                    
             for i in xrange(1,len(v)):

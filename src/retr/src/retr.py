@@ -999,7 +999,7 @@ def _getAtomNum(inputString,strip=False):
     return numOfEach
 
 from collections import OrderedDict
-def _getStoicName(oneCalc,strip=False,latex=False,order=True,gcd=True):
+def _getStoicName(oneCalc,strip=False,latex=False,order=False,gcd=True):
     '''
     Determines the name of the compound by looking at the input and
     finds the stoichiometric number of species in the compound
@@ -1861,7 +1861,8 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
         outFileString = iso.cif
 
         cif_prefix='INPUT_'
-        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
+        cmp_name  = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
+        joiner = filePrefix+'STRUCT_'+cmp_name+'_'+cif_prefix+ID+'.cif'
 
         with open(os.path.join(outputFolder,joiner),'w') as outFile:
             outFile.write(outFileString)
@@ -1873,7 +1874,8 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
         
         outFileString = iso.cif
         cif_prefix='OUTPUT_'
-        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
+        cmp_name  = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
+        joiner = filePrefix+'STRUCT_'+cmp_name+'_'+cif_prefix+ID+'.cif'
 
         with open(os.path.join(outputFolder,joiner),'w') as outFile:
             outFile.write(outFileString)

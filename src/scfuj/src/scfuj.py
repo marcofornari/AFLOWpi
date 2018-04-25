@@ -928,6 +928,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 		try:
 			#Get cell parameters, arranged as a single string in pattern a1i, a1j, a1k, a2i, a2j, a2k, a3i, a3j, a3k
 			a,cellParaMatrix=AFLOWpi.retr._getCellParams(oneCalc,oneCalcID)
+                        ALAT = float(AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])["&system"]["celldm(1)"])
+
 
                         """THINK OF A BETTER WAY TO CHECK THIS"""
 
@@ -946,14 +948,17 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 			lines = fin.read()
                         splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
 			atmPosRegex = re.compile(r"positions \(alat units\)\n((?:.*\w*\s*tau\(.*\)\s=.*\(.*\)\n)+)",re.MULTILINE) 
+                        FROM_INPUT=False
                         try:
                             positions = AFLOWpi.retr.getPositionsFromOutput(oneCalc,oneCalcID)
                             positions = AFLOWpi.retr._cellMatrixToString(positions)
                             
                             if positions=="":
+                                FROM_INPUT=True
                                 splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
                                 positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
                         except:
+                            FROM_INPUT=True
                             splitInput = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
                             positions= splitInput["ATOMIC_POSITIONS"]["__content__"]
 
@@ -976,7 +981,10 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
                         #in bohr
+
+                        positions*=ALAT
                         positions*=a
+                        print positions
 
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
@@ -1407,7 +1415,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
         AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True,band_factor=1.0)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
-        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=1,shift=0.1,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True)
+        AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=1,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True,smearing='gauss')
         AFLOWpi.scfuj._run_paopy(oneCalc,ID,acbn0=True)
 
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)

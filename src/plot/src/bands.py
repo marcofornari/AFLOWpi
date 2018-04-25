@@ -440,11 +440,22 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 			try:
 				
 				if tight_banding==True:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
-					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",
+						   linestyle=" ",label="$\uparrow$",linewidth=2)
 				else:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
-					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",
+						   linestyle=" ",label="$\uparrow$",linewidth=2)
+			except:
+				pass
+		for i in range(len(k_x_up)):
+			try:
+				
+				if tight_banding==True:
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",
+						   linestyle=" ",label="$\downarrow$",linewidth=2)
+				else:
+					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",
+						   linestyle=" ",label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
@@ -1028,9 +1039,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 		if LSDA:
 			ax2.legend(handles[::-2], labels[::-2],fontsize=14,loc=1)
-			dosRange=max([minDOS,maxDOS])
-			pylab.xlim(-1.1*dosRange,1.1*dosRange) # scales DOS to larges value of DOS in the given energy range 
-			pylab.axvline(0.0, color = 'k', linewidth = 1.3) #line separating up and down spin
+			dosRange=max([numpy.abs(minDOS),numpy.abs(maxDOS)])
+			pylab.xlim(1.1*minDOS,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range 
+			pylab.axvline(0.0, color = 'k', linewidth = 2.0) #line separating up and down spin
 		else:
 			ax2.legend(handles[::-1], labels[::-1],fontsize=14,loc=1)
 			pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range

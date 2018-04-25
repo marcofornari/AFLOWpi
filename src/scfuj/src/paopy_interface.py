@@ -127,8 +127,8 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
 def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None):
     
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
-    ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
-
+    ibrav=oneCalc['_AFLOWPI_ORIG_IBRAV_']
+    
     nk1,nk2,nk3 = AFLOWpi.scfuj._mult_kgrid(oneCalc,mult=tb_kp_mult)
 
     blank = '''<?xml version="1.0"?>
@@ -188,6 +188,18 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0
     if fermi_surface==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'fermisurf','logical','T')
 
+    if oneCalc['_AFLOWPI_ORIG_IBRAV_']==0:
+        HSP,band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_path','character',band_path)
+        temp_HSP_list=[]
+        for k,v in HSP.iteritems():
+            tmp = [k]
+            tmp.extend(map(str,v))
+            temp_HSP_list.append(tmp)
+
+        HSP_ARRAY= np.asarray(temp_HSP_list)
+
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'high_sym_points','string',HSP_ARRAY,degree=2)
 
 
 def _add_paopy_transport(oneCalc,ID,t_tensor):

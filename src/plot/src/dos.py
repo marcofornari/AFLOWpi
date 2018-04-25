@@ -184,7 +184,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 		pylab.axhline(0.0, color = 'k', linewidth = 1.3) #line separating up and down spin
 #	else:
 #		pylab.ylim(0,dosMAX) # scales DOS to larges value of DOS in the given energy range
-
+	
 	pylab.xlim(yLim[0],yLim[1])
 	pylab.axvline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line
 #	pylab.xticks(numpy.arange(yLim[0],yLim[1]+1,1))
@@ -976,9 +976,11 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
 
                 ax.axes.set_ylim([1.05*old_low,1.05*old_high])
 		ax.axes.set_xlim(yLim[0],yLim[1])
+		if  LSDA:
+			ax.axes.axhline(0.0,linewidth=1.3,color="k")
 
 	subdir=oneCalc['_AFLOWPI_FOLDER_']
-
+		
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
 	'''name of file of the DOS plots is dosBandPlot_<_AFLOWPI_PREFIX_>'''

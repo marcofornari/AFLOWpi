@@ -1203,9 +1203,9 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             for ispin in xrange(nspin):
     
                 if smearing == None:
-                    ene,L0,L1,L2 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor)
+                    ene,L0,L1,L2 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor,emin,emax)
                 else:
-                    ene,L0 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor)
+                    ene,L0 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor,emin,emax)
     
                 #----------------------
                 # Conductivity (in units of 1.e21/Ohm/m/s)

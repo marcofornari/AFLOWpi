@@ -702,12 +702,7 @@ def _transformParamsInput(inputString):
     '''
 
     inputDict = AFLOWpi.retr._splitInput(inputString)
-    BohrToAngstrom = 0.529177249
-
-#    if int(inputDict['&system']['ibrav']) in [12,13]:
-#	    print 'IBRAV 12 and 13 not yet supported..stopping..'
-#	    print inputString
-#	    raise SystemExit
+    BohrToAngstrom = 0.52917726133
 	    
     CELL_PARAM_FLAG=False
 
@@ -724,24 +719,28 @@ def _transformParamsInput(inputString):
 		    cellParamMatrix /= BohrToAngstrom
 	    if paramUnits=='' or paramUnits == 'alat':
 		    if 'a' in inputDict['&system'].keys():
-			    A = float(inputDict['&system']['a'])
+			    A = float(inputDict['&system']['a'])/BohrToAngstrom
 			    del inputDict['&system']['a']
 
 		    if 'A' in inputDict['&system'].keys():
-			    A = float(inputDict['&system']['A'])
+			    A = float(inputDict['&system']['A'])/BohrToAngstro
 			    del inputDict['&system']['A']
 
 		    if 'celldm(1)' in inputDict['&system'].keys():
 			    A = float(inputDict['&system']['celldm(1)'])
-			    cellParamMatrix *= BohrToAngstrom
+
 		    cellParamMatrix *= A
 
+	    celldm1 = AFLOWpi.prep._standardize_alat(inputString)/BohrToAngstrom
 
-	    vol = np.sum(np.dot(cellParamMatrix[0],np.cross(cellParamMatrix[1],cellParamMatrix[2]).T))
-	    celldm1 = 1.0
+
+
+
+
+
 	    cellParamMatrix /= celldm1
 	    inputDict['&system']['celldm(1)'] = celldm1
-	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{angstrom}'
+	    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
 	    inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
 
 
@@ -829,15 +828,18 @@ def _transformParamsInput(inputString):
 	    cdm6 = float(inputDict["&system"]["celldm(6)"])
     except: cdm6 = None
 
-    cdm1 *= 0.529177249
+    cdm1 *= BohrToAngstrom
 
     cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
 					celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
  
 
-    vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
-    celldm1 = 1.0
+
+
+    celldm1 = AFLOWpi.prep._standardize_alat(inputString)
     cell_vec /= celldm1
+    celldm1 /= BohrToAngstrom
+
     inputDict['&system']['celldm(1)'] = celldm1
     try:
 	    del inputDict['&system']['celldm(2)']
@@ -860,6 +862,9 @@ def _transformParamsInput(inputString):
 
     inputDict['CELL_PARAMETERS'] = {}
     inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+
+
+
     inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cell_vec)
     
 
@@ -4697,7 +4702,7 @@ EXITING.
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing=None,tb_kp_factor=4.0):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4756,7 +4761,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
-	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True,central_diff=False):
+	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True,central_diff=False):
 		workf = self.workflow
 #		print 'thermal DISABLED. Coming soon.'
 #		raise SystemExit
@@ -4903,7 +4908,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.003,mult_jobs=False,LOTO=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
+	def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
 		
 		#flag to determine if we need to recalculate the TB hamiltonian if 
 		#the user has chosen to calculate it on a later step in the workflow
@@ -5033,9 +5038,10 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.tight_banding=True
 		self.load_index+=1
 		self.type='scfuj'
+		self.change_input('&control','calculation','"%s"'%relax)
 		self.new_step(update_positions=True,update_structure=True)
 		self.initial_calcs.append(self.int_dict)
-		self.change_input('&control','calculation','"%s"'%relax)
+
 
 
 		self.int_dict = AFLOWpi.scfuj.scfprep(self.int_dict,paodir=paodir)
@@ -5121,12 +5127,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		'''
 		self.tight_banding=False
 		self.type='dos'
+		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
 		self.new_step(update_positions=True,update_structure=True)
 		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
 
 
 
-		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
+
 
 		AFLOWpi.run.scf(self.int_dict)
 		AFLOWpi.run.dos(self.int_dict)
@@ -5199,11 +5206,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		'''
 		self.tight_banding=False
 		self.type='bands'
+
+		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
 		self.new_step(update_positions=True,update_structure=True)
 
 		postfix = ConfigSectionMap('run','exec_postfix')
 
-		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
+
 	
 		AFLOWpi.run.scf(self)
 
@@ -5911,8 +5920,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    pos_re=AFLOWpi.qe.regex.atomic_positions('','content','regex')
 	    try:
 		    pos=pos_re.findall(outputfile)[-1]
-
-
 		    
 		    in_copy_split['ATOMIC_POSITIONS']['__content__']=pos	    
 		    break
@@ -5978,17 +5985,32 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 			    del in_copy_split["&system"]["celldm(6)"]
 		    except: pass
 
-		    cell_vec = cellParaMatrix*alat
+		    cell_vec = cellParaMatrix
 
+		    temp_cell_vec =  cell_vec*alat*0.529177249
 
-		    vol = np.sum(np.dot(cell_vec[0],np.cross(cell_vec[1],cell_vec[2]).T))
-		    celldm1 = 1.0
-
-		    cell_vec /= celldm1
-		    in_copy_split["&system"]["celldm(1)"] = celldm1
 		    in_copy_split["CELL_PARAMETERS"]={}
-		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
+		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(temp_cell_vec)
+		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{angstrom}'
+		    try:
+			    del in_copy_split["&system"]["celldm(1)"]
+		    except: pass
+		    out_in = AFLOWpi.retr._joinInput(in_copy_split)
+		    print out_in
+		    new_celldm1 = AFLOWpi.prep._standardize_alat(out_in)/0.529177249
+
+
+
+		    in_copy_split = AFLOWpi.retr._splitInput(out_in)
+
+		    in_copy_split["CELL_PARAMETERS"]={}
 		    in_copy_split['CELL_PARAMETERS']['__modifier__']='{alat}'
+
+		    cell_vec *= alat/new_celldm1
+		    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
+
+
+		    in_copy_split["&system"]["celldm(1)"]=new_celldm1
 		    out_in = AFLOWpi.retr._joinInput(in_copy_split)
 		    break
 
