@@ -599,7 +599,7 @@ def projwfc(oneCalc,ID=None,paw=False,ovp=False):
                     prefix = oneCalc['_AFLOWPI_PREFIX_']
 		inputfile = """&PROJWFC
   prefix='%s'
-  filpdos='./%s_acbn0'
+  filpdos='./%s_TB'
   outdir='%s'
   lwrite_overlaps=%s
   lbinary_data  = .FALSE.

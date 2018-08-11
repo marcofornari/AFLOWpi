@@ -2049,7 +2049,7 @@ def bands(calcs,dk=None,nk=None,n_conduction=None):
 
 
 
-@newstepWrapper(_check_lock)
+@AFLOWpi.prep.newstepWrapper(AFLOWpi.prep._check_lock)
 def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 	"""
 	Add the ncsf with the electronic band structure path k points input to each 
@@ -3157,7 +3157,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 	DICT = collections.OrderedDict()
 
 	for k,v in allAFLOWpiVars.items():
-		if v != None:
+		if type(v) != type(None):
 			PARAM_VARS.append(v)
 			PARAM_LABELS.append(k)
 			
@@ -4706,8 +4706,8 @@ EXITING.
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 		
 
-	def shake_atoms(self,dist=0.2):		
-		command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s)'%dist
+	def shake_atoms(self,dist=0.2,weight=False):		
+		command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight=%s)'%(dist,weight)
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 

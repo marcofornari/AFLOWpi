@@ -1,9 +1,9 @@
 
 import AFLOWpi
 # load logs from each set of calcs
-calcs_CUB=AFLOWpi.prep.init('CRT','CUB',config='./CRT.config').load(1)
-calcs_TET=AFLOWpi.prep.init('CRT','TET',config='./CRT.config').load(1)
-calcs_RHO=AFLOWpi.prep.init('CRT','RHO',config='./CRT.config').load(1)
+calcs_CUB=AFLOWpi.prep.init('CRT','CUB',config='./CRTs.config').load(1)
+calcs_TET=AFLOWpi.prep.init('CRT','TET',config='./CRTs.config').load(1)
+calcs_RHO=AFLOWpi.prep.init('CRT','RHO',config='./CRTs.config').load(1)
 
 
 # plot the deltaE between the one of the sets of calculations and the rest of

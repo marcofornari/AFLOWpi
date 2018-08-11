@@ -34,7 +34,7 @@ import logging
 import StringIO
 import glob
 import re
-
+import copy
 
 def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=None,plot_title=None,xAxisStr=None,yAxisStr=None,fileName='grid_plot.pdf',runlocal=True):
 

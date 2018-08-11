@@ -49,7 +49,7 @@ class tight_binding:
 
         AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')""")
 
-        AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing)
+
 
 
         command='''if oneCalc["__execCounter__"]<=%s:
@@ -57,21 +57,34 @@ class tight_binding:
      oneCalc['__execCounter__']+=1
      AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,kp_factor,band_mult)
 
-        AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
- 
+        AFLOWpi.prep.addToAll_(self.calcs,'RUN',command) 
         self.step_counter+=1
+
         command='''if oneCalc["__execCounter__"]<=%s:
-     ###_PAOFLOW_SPECIAL_###
+#PAOFLOW_BLOCK
+
+#END_PAOFLOW_BLOCK
+
+     oneCalc['__execCounter__']+=1
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter)
+
+
+
+
+        AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
+        self.step_counter+=1
+
+        AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',
+                                           thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing)
+
+        command='''if oneCalc["__execCounter__"]<=%s:
      AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
      oneCalc['__execCounter__']+=1
      AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,exec_prefix)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command)
-
-#        command='''AFLOWpi.prep._rename_projectability(oneCalc,ID)'''
-#        AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',command)
         self.step_counter+=1
-        print 
+
 
     def shc(self,s_tensor=None,en_range=[0.05,5.05],de=0.05,spin_texture=False):
 
@@ -221,7 +234,7 @@ except: pass
 
     def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
-	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol)
+	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol,nk=nk)
 
         calc_type='Electronic Band Structure'
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\

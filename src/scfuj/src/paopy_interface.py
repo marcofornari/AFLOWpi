@@ -53,44 +53,40 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
         print e
 
 
-
-    
-
-
 def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None):
-    content = """AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s)""" % \
-        (shift_type,thresh,tb_kp_mult,repr(smearing))
+    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing))
         
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_spin_Hall_wrapper(calcs,s_tensor,spin_texture=False):
-    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,%s,spin_texture=%s)"""%(repr(s_tensor),spin_texture)
-    for ID,oneCalc in calcs.iteritems():
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'r') as ifo:
-            input_text = ifo.read()
-        input_text = re.sub('###_PAOFLOW_SPECIAL_###',command,input_text)
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'w') as ofo:
-            ofo.write(input_text)
+    command="""     AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,%s,spin_texture=%s)"""%(repr(s_tensor),spin_texture)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
 
 def paopy_Berry_wrapper(calcs,a_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor))
+    command="""     AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_dos_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)""")
+    command="""     AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)"""
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_pdos_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)""")
+    command="""     AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)"""
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
-    AFLOWpi.prep.addToAll_(calcs,
-                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol))
+def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2,nk=1000):
+    command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol,nk)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_transport_wrapper(calcs,t_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor))
+    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
     AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
 
 def paopy_optical_wrapper(calcs,d_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor))
+    command="""     AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
     AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
 
 def paopy_acbn0_wrapper(calcs):
@@ -102,7 +98,7 @@ def paopy_acbn0_wrapper(calcs):
 
 def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):  
 
-    with open(filename,'r') as ifo:                                                                                   
+    with open(filename,'r') as ifo:                                                                 
         lines=ifo.readlines()
                                                                                          
     var_size=1
@@ -115,12 +111,12 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
     elif degree==1:
         var_size = len(var_val)
         var_val = ' '.join(map(str,var_val))
-        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)        
+        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)   
     else:
-        lines[-1]='\t<%s type="%s" size="%s">%s</%s>'%(var_name,var_type,var_size,var_val,var_name)            
-    lines.extend(['\n</root>'])                                                                                       
-    outstr = ''.join(lines)                                                                                           
-    with open(filename,'w') as ofo:                                                                                   
+        lines[-1]='\t<%s type="%s" size="%s">%s</%s>'%(var_name,var_type,var_size,var_val,var_name)          
+    lines.extend(['\n</root>'])                                                                     
+    outstr = ''.join(lines)                                                                            
+    with open(filename,'w') as ofo:                                                                   
         ofo.write(outstr)
 
 

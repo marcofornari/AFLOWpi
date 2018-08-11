@@ -2,12 +2,16 @@ import AFLOWpi
 import numpy as np
 import os
 
-def _shake_atoms(oneCalc,ID,dist=0.1):
+def _shake_atoms(oneCalc,ID,dist=0.1,weight_by_mass=False):
 
 
     pos_str = AFLOWpi.retr._getPositions(oneCalc['_AFLOWPI_INPUT_'],matrix=False)
     pos_str,flags = AFLOWpi.retr.detachPosFlags(pos_str)
     labels = AFLOWpi.retr._getPosLabels(oneCalc['_AFLOWPI_INPUT_'])
+
+
+
+
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
@@ -21,6 +25,15 @@ def _shake_atoms(oneCalc,ID,dist=0.1):
     theta = np.random.random((cart_pos.shape[0]))*1.0*np.pi
 
     shift = np.zeros((cart_pos.shape[0],3))
+
+    weights = np.ones(cart_pos.shape[0])
+    if weight_by_mass:
+        for i in range(len(labels)):
+            sl = labels[i].strip("0123456789")
+            weights[i] = AFLOWpi.prep._getAMass(sl)[0]
+        weights = np.amin(weights)/weights
+
+    dist*=weights
 
     shift[:,0] = dist*np.sin(theta)*np.cos(phi)
     shift[:,1] = dist*np.sin(theta)*np.sin(phi)
