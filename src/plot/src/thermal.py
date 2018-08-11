@@ -25,10 +25,11 @@
 
 import AFLOWpi
 import os
+import matplotlib
+matplotlib.use('pdf')
 from matplotlib import pyplot
 from matplotlib import pylab
 import numpy as np
-import matplotlib
 import StringIO
 import logging 
 import scipy

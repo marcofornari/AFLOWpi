@@ -505,7 +505,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
                             
                         except Exception,e:
 				AFLOWpi.run._fancy_error_log(e)
-                                print e
+                                
 
                 except Exception,e:
                         AFLOWpi.run._fancy_error_log(e)
@@ -984,7 +984,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
                         positions*=ALAT
                         positions*=a
-                        print positions
+                       
 
                         atmPos=AFLOWpi.retr._cellMatrixToString(positions).split("\n")
                         
@@ -1169,7 +1169,7 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 					Uvals[isp] = float(acbn0_Uval)
 				except Exception,e:
 					AFLOWpi.run._fancy_error_log(e)
-					print e
+
 			else:
 				Uvals[isp] = 0.001
 
@@ -1220,7 +1220,7 @@ def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6):
                     except:
                         pass
             except Exception,e:
-                print e
+                AFLOWpi.run._fancy_error_log(e)
 
 	    loopblock = '''
 

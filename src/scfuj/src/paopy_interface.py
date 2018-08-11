@@ -30,7 +30,7 @@ import re
 import itertools
 
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
-    paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOpy/src','main.py')
+    paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/src','main.py')
 
     if exec_prefix=="":
 
@@ -42,7 +42,7 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     else:
         execPrefix=exec_prefix
 
-    paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
+    paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOFLOW.out'%ID)
 
     paopy_input = 'inputfile.xml'
     try:
@@ -53,8 +53,8 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
         print e
 
 
-def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None):
-    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing))
+def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000):
+    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s,emin=%s,emax=%s,ne=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing),emin,emax,ne)
         
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
@@ -79,8 +79,8 @@ def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol
     command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol,nk)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_transport_wrapper(calcs,t_tensor):
-    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor)
+def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step):
+    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s)"""%(repr(t_tensor),t_min,t_max,t_step)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
     AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
 
@@ -120,7 +120,7 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
         ofo.write(outstr)
 
 
-def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None):
+def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None,emin=-5.0,emax=5.0,ne=1000):
     
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     ibrav=oneCalc['_AFLOWPI_ORIG_IBRAV_']
@@ -148,6 +148,10 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'npool','int',1)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
 
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ne','int',ne)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',emin)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',emax)
+
     if float(tb_kp_mult)!=1.0:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
@@ -163,8 +167,6 @@ def _add_paopy_dos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_dos','logical','T')
 
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-5.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',5.0)
 
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
@@ -198,9 +200,12 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'high_sym_points','string',HSP_ARRAY,degree=2)
 
 
-def _add_paopy_transport(oneCalc,ID,t_tensor):
+def _add_paopy_transport(oneCalc,ID,t_tensor,t_min,t_max,t_step):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Boltzmann','logical','T')
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmin','decimal',t_min)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmax','decimal',t_max)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tstep','decimal',t_step)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'t_tensor','int',t_tensor,degree=2)
 
 def _add_paopy_optical(oneCalc,ID,d_tensor):
@@ -246,49 +251,60 @@ def _mult_kgrid(oneCalc,mult=5.0):
    
 def _rename_boltz_files(oneCalc,ID):
     nspin = AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID=ID)
-    temperature='300'
+
    
-    conv_dict={}
-    if nspin!=1:
-        conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_up_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_up_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_up_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_up_real.dat'%ID                        
-        conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_up_imag.dat'%ID                        
+    try:
+        test_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Seebeck_0.dat')
+        test_dat  = np.loadtxt(test_file)
+        temp = np.unique(test_dat[:,0])
+    except Exception,e: 
+        return
+ 
+    for T in range(temp.shape[0]):
+        conv_dict={}
+        if nspin!=1:
+            conv_dict['Seebeck_0.dat']  = '%s_PAOFLOW_seebeck_up_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_0.dat']    = '%s_PAOFLOW_cond_up_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_0.dat']    = '%s_PAOFLOW_kappa_up_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_0.dat']     = '%s_PAOFLOW_epsilon_up_real.dat'%ID                        
+            conv_dict['epsi_0.dat']     = '%s_PAOFLOW_epsilon_up_imag.dat'%ID                        
 
-        conv_dict['Seebeck_1.dat']  = '%s_PAOpy_seebeck_down_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_1.dat']    = '%s_PAOpy_cond_down_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_1.dat']    = '%s_PAOpy_kappa_down_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_1.dat']     = '%s_PAOpy_epsilon_down_real.dat'%ID                        
-        conv_dict['epsi_1.dat']     = '%s_PAOpy_epsilon_down_imag.dat'%ID                        
-    else:
-        conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_real.dat'%ID                        
-        conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_imag.dat'%ID                        
+            conv_dict['Seebeck_1.dat']  = '%s_PAOFLOW_seebeck_down_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_1.dat']    = '%s_PAOFLOW_cond_down_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_1.dat']    = '%s_PAOFLOW_kappa_down_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_1.dat']     = '%s_PAOFLOW_epsilon_down_real.dat'%ID                        
+            conv_dict['epsi_1.dat']     = '%s_PAOFLOW_epsilon_down_imag.dat'%ID                        
+        else:
+            conv_dict['Seebeck_0.dat']  = '%s_PAOFLOW_seebeck_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_0.dat']    = '%s_PAOFLOW_cond_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_0.dat']    = '%s_PAOFLOW_kappa_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_0.dat']     = '%s_PAOFLOW_epsilon_real.dat'%ID                        
+            conv_dict['epsi_0.dat']     = '%s_PAOFLOW_epsilon_imag.dat'%ID                        
 
-    for old,new in conv_dict.iteritems():
-        old_split = old.split('_')
-        try:
-            xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
-            yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
-            zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
-            print xx
-            xx_arr = np.loadtxt(xx)
-            yy_arr = np.loadtxt(yy)
-            zz_arr = np.loadtxt(zz)
-
-            comb_arr = np.concatenate((xx_arr[:,np.newaxis,0],xx_arr[:,np.newaxis,1],
-                                       yy_arr[:,np.newaxis,1],zz_arr[:,np.newaxis,1] ),axis=1)
-            new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
-
-            np.savetxt(new_path,comb_arr)
-
-        except Exception,e: 
+        for old,new in conv_dict.iteritems():
+            old_split = old.split('_')
             try:
-                os.rename(old,new)
-            except Exception,e: print e
+                xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
+                yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
+                zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
+          
+                xx_arr = np.loadtxt(xx)
+                yy_arr = np.loadtxt(yy)
+                zz_arr = np.loadtxt(zz)
+
+                comb_arr = np.concatenate((xx_arr[:,np.newaxis,0],xx_arr[:,np.newaxis,1],
+                                           yy_arr[:,np.newaxis,1],zz_arr[:,np.newaxis,1] ),axis=1)
+                new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
+
+                np.savetxt(new_path,comb_arr)
+
+            except Exception,e: 
+                try:
+                    dat = np.loadtxt(old)
+                    temp_dat = dat[np.where(dat[:,0]==temp[T])]
+                    np.savetxt(new,temp_dat[:,1:])
+                except:
+                    pass
 
 
 

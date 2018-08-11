@@ -355,8 +355,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		if type(Efermi)!=type(0.5):
 			Efermi=Efermi[0]
 
-	except Exception,e:
-            print e
+	except Exception,e:            
             Efermi=0.0
 	
 	if spin_dir!='':
@@ -488,7 +487,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 
 			SOC=True
-		except Exception,e:  print e
+		except Exception,e:  pass
 
 		if tight_banding==True:
 #			if negative_SBC!=True:
@@ -781,7 +780,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	pylab.ylabel('E(eV)')
 	pylab.xlim(min(k_x[1]),max(k_x[1])) 
 	pylab.ylim(yLim[0],yLim[1])    
-	pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
+#	pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
 
 	'''
         takes in a list of k points that was used as pw.x input for the 'bands'
@@ -845,7 +844,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 				else:
 					counter+=1
 			except Exception,e:
-				print e
+			
 				counter=1
 				HSPSymList.append(splitLine[4])
 
@@ -899,7 +898,6 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
                 pylab.axvline(a[sym], color = 'k',linewidth=2,zorder=10000)
             except Exception,e:
-
                 pylab.axvline(a[-1], color = 'k',linewidth=2,zorder=10000)
 		
                 pass
@@ -916,7 +914,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 		pylab.xticks(bars,SymPrint, fontsize = 24)
 	except Exception,e:
-                print e
+              
 		pylab.xticks([a[-1] for index in symIndex],SymPrint)
 
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3,zorder=10000) #fermi
@@ -947,7 +945,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 					data = cPickle.load(dataFile)
 
 			except Exception,e:
-				print e
+			
 				with open(sumpdosFile,'r') as dataFile:
 					data = dataFile.read()
 					data = data.split('\n')
@@ -994,9 +992,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 			if os.path.exists(filePath):
 				pDOSNoPath.append(filePath)
 		color = 'k'
-		ax2.set_color_cycle(['r','g','b','c', 'm', 'y', 'k'])
+		ax2.set_prop_cycle('color',['r','g','b','c', 'm', 'y', 'k'])
 		if LSDA:
-			ax2.set_color_cycle(['r','r','g','g','b','b','c','c','m','m', 'y','y','k','k'])
+			ax2.set_prop_cycle('color',['r','r','g','g','b','b','c','c','m','m', 'y','y','k','k'])
 		
 		for filepath in pDOSNoPath:
 			filename =  filepath.split('/')[-1]
@@ -1046,7 +1044,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 			ax2.legend(handles[::-1], labels[::-1],fontsize=14,loc=1)
 			pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
 
-		pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
+#		pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
 
 		ax2.spines['bottom'].set_linewidth(1.5)
 		ax2.spines['left'].set_linewidth(1.5)
@@ -1157,7 +1155,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	low_tick_bound=int(numpy.ceil(yLim[0]))
 	high_tick_bound=int(numpy.floor(yLim[1])+1.0)
 
-	ax1.yaxis.set_ticks(numpy.arange(low_tick_bound,high_tick_bound))
+#	ax1.yaxis.set_ticks(numpy.arange(low_tick_bound,high_tick_bound))
 
 	pylab.ylim(yLim[0],yLim[1])
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Fermi level line

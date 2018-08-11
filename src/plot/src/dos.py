@@ -561,11 +561,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	handles, labels = ax2.get_legend_handles_labels()
 
 	if LSDA:
-		ax2.legend(handles[::-2], labels[::-2])
+		ax2.legend(handles[::-2], labels[::-2],loc=1)
 		pylab.ylim(minDOS,maxDOS) # scales DOS to larges value of DOS in the given energy range
 		pylab.axhline(0.0, color = 'k', linewidth = 1.3) #line to separate up and down spin
 	else:
-		ax2.legend(handles[::-1], labels[::-1])
+		ax2.legend(handles[::-1], labels[::-1],loc=1)
 		pylab.ylim(0,maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 
@@ -806,11 +806,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	handles, labels = ax2.get_legend_handles_labels()
 
 	if LSDA:
-		ax2.legend(handles[::-2], labels[::-2])
+		ax2.legend(handles[::-2], labels[::-2],loc=1)
 		pylab.ylim(minDOS,maxDOS) # scales DOS to larges value of DOS in the given energy range
 		pylab.axhline(0.0, color = 'k', linewidth = 1.3) #line to separate up and down spin
 	else:
-		ax2.legend(handles[::-1], labels[::-1])
+		ax2.legend(handles[::-1], labels[::-1],loc=1)
 		pylab.ylim(0,maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 	try:

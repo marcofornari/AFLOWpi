@@ -77,7 +77,7 @@ def optical_plots(calcs,runlocal=False,postfix='',x_range=None):
 
 
 
-def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
+def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y_range=None):
 	'''
 
 
@@ -99,18 +99,18 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
                                             }
         trans_plot_dict['cond']          = {'pf':'cond_',
-                                            'ft':'$Conduction$:',
+                                            'ft':'$Conductivity$:',
                                             'lc':r'{\sigma/\tau}',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':r'$\sigma/\tau$ $(10^{21}$ $m/s/\Omega)$ ',
-                                            'fp':'CONDUCTION',
+                                            'yl':r'$\sigma/\tau$ $(10^{14}$ $ m \Omega^{-1} cm^{-1} s^{-1})$ ',
+                                            'fp':'CONDUCTIVITY',
 
                                             }
         trans_plot_dict['seebeck']       = {'pf':'seebeck_',
                                             'ft':'$Seebeck$:',
                                             'lc':'Seebeck ',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':'S $(10^{-3} $ $V/K)$',
+                                            'yl':'S $( \mu V/K)$',
                                             'fp':'SEEBECK',
                                             }
 
@@ -126,7 +126,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                                             'ft':'$\kappa$:',
                                             'lc':'\kappa ',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':'$\kappa$ $(10^{17}$ $W/m/K)$',
+                                            'yl':'$\kappa$ $(10^{14}$ $W/m/K)$',
                                             'fp':'KAPPA',
 
                                             }
@@ -174,12 +174,12 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 file_name_down=[]
                 for ID_ent in ID_list:
 
-                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
 
                     file_name.extend(glob.glob(search))
-		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
                     file_name_up.extend(glob.glob(search))
-		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOpy_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
 
                     file_name_down.extend(glob.glob(search))
 
@@ -300,16 +300,20 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
 
-#			    if Type=='kappa':
-#				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e14
 			    if Type=='sig_seebeck':
 				    y_vals=numpy.asarray(y_vals)/1.0e-9
 			    elif Type=='cond':
 				    y_vals=numpy.asarray(y_vals)
+				    y_vals /= 1.e14
+				    y_vals /= 1.e5
+			    elif Type=='seebeck':
+				    y_vals=numpy.asarray(y_vals)*1.e6
 
 			    if x_range==None:
-				    max_x=max(x_vals)
-				    min_x=min(x_vals)
+				    max_x=numpy.amax(x_vals)
+				    min_x=numpy.amin(x_vals)
 			    else:
 				    min_x=x_range[0]
 				    max_x=x_range[1]
@@ -318,18 +322,18 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
                             for i in [y_vals]:
-                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
 
                                 if set_max>max_val:
                                     max_val=set_max
 				
 			    for i in [y_vals]:
-			        set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+			        set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
 
                                 if set_min<min_val:
                                     min_val=set_min
 
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 
@@ -350,7 +354,6 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 				    except:
 					    continue
 			    else:
-#				    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}$ @ %sK'%int(sorted_dn[temp_index][0])
 				    label_text='%sK'%int(sorted_dn[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
@@ -360,17 +363,22 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             y_vals=sorted_dn[temp_index][1][1]
 
 
-#			    if Type=='kappa':
-#				    y_vals=numpy.asarray(y_vals)/1.0e17
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e14
 			    if Type=='sig_seebeck':
-				    y_vals=numpy.asarray(y_vals)/1.0e-3
+				    y_vals=numpy.asarray(y_vals)*1.0e6
 			    elif Type=='cond':
 				    y_vals=numpy.asarray(y_vals)
+				    y_vals /= 1.e14
+				    y_vals /= 1.e5
+			    elif Type=='seebeck':
+				    y_vals=numpy.asarray(y_vals)*1.e2
+
 
 
 			    if x_range==None:
-				    max_x=max(x_vals)
-				    min_x=min(x_vals)
+				    max_x=numpy.amax(x_vals)
+				    min_x=numpy.amin(x_vals)
 			    else:
 				    min_x=x_range[0]
 				    max_x=x_range[1]
@@ -380,17 +388,17 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 					    min_x=0.2
 
                             for i in [y_vals]:
-                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
                                 if set_max>max_val:
                                     max_val=set_max
                             for i in [y_vals]:
-                                set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+                                set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
                                 if set_min<min_val:
                                     min_val=set_min
 
-#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
 
-			    print y_vals
+
+
                             ax1.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
@@ -398,13 +406,12 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                             
 
                     pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
-#                    ax1.legend(loc=0,fontsize=26)
-                    ax1.legend(loc=0)
+                    ax1.legend(loc=1)
 		    if Type in ['ZT']:
 			    ax1.yaxis.set_ticks([0],)
 
 
-#		    pylab.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':26})
+
                     for temp_index in range(len(sorted_up)):                    
 		            if epsilon==True:
 				    try:
@@ -416,7 +423,6 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 					    continue
 
 			    else:
-#				    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}$ @ %sK'%int(sorted_up[temp_index][0])
 				    label_text='%sK'%int(sorted_up[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
@@ -427,8 +433,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
 			    if x_range==None:
-				    max_x=max(x_vals)
-				    min_x=min(x_vals)                    
+				    max_x=numpy.amax(x_vals)
+				    min_x=numpy.amin(x_vals)                    
 			    else:
 				    min_x=x_range[0]
 				    max_x=x_range[1]
@@ -447,11 +453,11 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 
                             for i in [y_vals]:
-                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+                                set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
                                 if set_max>max_val:
                                     max_val=set_max
                             for i in [y_vals]:
-                                set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>min_x and  x_vals[j]<max_x)])
+                                set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
                                 if set_min<min_val:
                                     min_val=set_min
 
@@ -461,22 +467,18 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 #			    ax2.tick_params(axis='both', which='major', labelsize=2)
 
 
-			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 			    ax1.set_position([0.04,0.465,0.96,0.435]) 
 			    ax2.set_position([0.04,0.02,0.96,0.435]) 
-#			    pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
-#			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':22})
-#                            ax2.xaxis.set_label(trans_plot_dict[Type]['xl'],)
- #                           ax2.yaxis.set_label(trans_plot_dict[Type]['yl'],)
 
  #line separating up and down spni
 
-		if x_range==None:
-			max_x=max(x_vals)
-			min_x=min(x_vals)
+		if type(x_range)==type(None):
+			max_x=numpy.amax(x_vals)
+			min_x=numpy.amin(x_vals)
 		else:
 			min_x=x_range[0]
 			max_x=x_range[1]
@@ -499,7 +501,10 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 try:
                     try:
                         ax1.set_ylim([min_val*mult_min,max_val*mult_max])
+			if type(y_range)!=type(None):
+				ax1.set_ylim(y_range[0],y_range[1])
                         ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) 
+                        ax1.axvline(0.0, color = 'k', linewidth = 1.0) 
 
 			if Type in ['ZT']:
 				ax1.yaxis.set_ticks([0.0])
@@ -511,8 +516,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 					min_x=0.2
                         ax1.set_xlim([min_x,max_x])
 
-                    except:
-                        pass
+                    except Exception,e:
+			    pass
 
                     pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':30})
                     pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
@@ -521,31 +526,35 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                     AFLOWpi.run._fancy_error_log(e)
                     pass
                 ax2.set_ylim([min_val*mult_min,max_val*mult_max])
-#                ax2.legend(loc=0,fontsize=26)
-                ax2.legend(loc=0)
+		if type(y_range)!=type(None):
+			ax2.set_ylim(y_range[0],y_range[1])
+
+                ax2.legend(loc=1)
 
 		if epsilon==True:
 			if min_x<=0.2:
 				min_x=0.2
                 ax2.set_xlim([min_x,max_x])
+
 		if Type in ['ZT']:
 			ax2.yaxis.set_ticks([0.0])
 
-#                pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':22})
+
 
 
                 compoundName = AFLOWpi.retr._getStoicName(oneCalc,strip=True,gcd=False)
                 compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True,gcd=False)
-#                ax2.legend(loc=0,fontsize=26)
-                ax2.legend(loc=0)
+                ax2.legend(loc=1)
 
 		if Type in ['ZT']:
 			ax2.yaxis.set_ticks([0])
 
-#                ax2.axes.yaxis.set_ticks_position('right')
+
+
 		try:
 			ax2.yaxis.set_label(trans_plot_dict[Type]['yl'])
 			ax2.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
+                        ax2.axvline(0.0, color = 'k', linewidth = 1.0) 
 		except Exception,e: 
 			AFLOWpi.run._fancy_error_log(e)
 
@@ -570,6 +579,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
                 fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.pdf'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append))
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+		pylab.close()
 
 
             except Exception,e:
@@ -596,7 +606,7 @@ def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
 	with open(ep_data_file,'r') as epsilon_data_file:
 		ep_data_string=epsilon_data_file.read()
 		
-	lines=ep_data_string.split('\n')[2:]
+	lines=ep_data_string.split('\n')
 	en_array=[]
 	val_array=[]
 

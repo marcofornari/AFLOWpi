@@ -227,7 +227,7 @@ def _resolveEqualities(inputString):
 
 
     #search for the pattern
-    equalities = re.findall(ur'===[^,\n]*===',inputString)
+    equalities = re.findall(ur'===[^=,\n]*===',inputString)
     allvars={}
     #get a all the variables and their values into a dictionary
 
@@ -2049,7 +2049,7 @@ def bands(calcs,dk=None,nk=None,n_conduction=None):
 
 
 
-@AFLOWpi.prep.newstepWrapper(AFLOWpi.prep._check_lock)
+@newstepWrapper(_check_lock)
 def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 	"""
 	Add the ncsf with the electronic band structure path k points input to each 
@@ -4711,7 +4711,7 @@ EXITING.
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4731,7 +4731,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -5918,7 +5918,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	in_copy_split=copy.deepcopy(splitInput)
 	for prevOut in reversed(oneCalc['prev']):
 	    oldFile = os.path.join(subdir,'%s.out' % prevOut)
-	    print oldFile
+	    
 	    if not os.path.exists(oldFile):
 		continue
 
@@ -5933,8 +5933,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 		    in_copy_split['ATOMIC_POSITIONS']['__content__']=pos	    
 		    break
-	    except Exception,e:
-		    print e
+	    except Exception,e:		   
 		    pass
 
 	for prevOut in reversed(oneCalc['prev']):
@@ -6006,7 +6005,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 			    del in_copy_split["&system"]["celldm(1)"]
 		    except: pass
 		    out_in = AFLOWpi.retr._joinInput(in_copy_split)
-		    print out_in
+
 		    new_celldm1 = AFLOWpi.prep._standardize_alat(out_in)/0.529177249
 
 
@@ -6046,13 +6045,13 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
     except Exception,e:
 	    AFLOWpi.run._fancy_error_log(e)
-	    print e
+
 
 
 
     inputfile=AFLOWpi.retr._joinInput(split_tmp)
     oneCalc["_AFLOWPI_INPUT_"]=inputfile
-    print inputfile
+
 
     logging.debug('exiting _oneUpdateStructs')
     '''written funny because output needs to be oneCalc,ID'''

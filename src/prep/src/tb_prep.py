@@ -35,7 +35,7 @@ import time
 from collections import OrderedDict
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss'):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss',emin=-5.0,emax=5.0,ne=1000):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -75,7 +75,7 @@ class tight_binding:
         self.step_counter+=1
 
         AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',
-                                           thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing)
+                                           thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing,emin=emin,emax=emax,ne=ne)
 
         command='''if oneCalc["__execCounter__"]<=%s:
      AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
@@ -158,7 +158,7 @@ class tight_binding:
 
 
 
-    def transport(self,t_tensor=None,temperature=[300,],en_range=[-5.05,5.05],de=0.05):
+    def transport(self,t_tensor=None,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05):
         '''
         Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
         in the high level user interface. Adds a new step to the workflow.
@@ -183,7 +183,7 @@ class tight_binding:
 
 
         ne=float(en_range[1]-en_range[0])/de
-        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor)
+        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor,t_min,t_max,t_step)
 
         calc_type='Transport Properties'
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
@@ -826,7 +826,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
         del oneCalc['__runList__']
 
-        dos_fermi = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_dos.efermi'%ID)
+        dos_fermi = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOFLOW_dos.efermi'%ID)
 
         with open(dos_fermi,'w') as ifo:
                 ifo.write(str(0.0))
