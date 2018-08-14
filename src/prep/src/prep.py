@@ -4733,6 +4733,8 @@ EXITING.
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne)
 
+
+
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
 		#the user has chosen to calculate it on a later step in the workflow
@@ -5009,6 +5011,62 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		calc_type='Phonon'
 		if raman==True:
 			calc_type+=' with Raman scattering'
+#		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+
+	def elph(self,mult_jobs=True,dx=0.1,tb_kp_mult=4.0,qp_mult=1.0):
+		
+		#flag to determine if we need to recalculate the TB hamiltonian if 
+		#the user has chosen to calculate it on a later step in the workflow
+		self.tight_banding=False
+		#the type of calculation is added to the workflow list and is used 
+		#by AFLOWpi sometimes to find the step number of a specific type of
+		#calculation in the workflow for processing later
+		self.type='elph'
+		#updates the structure and atomic positions from previous steps and
+		#sets up a new ID.py, ID.qsub (if applicable) and ID.in
+		self.new_step(update_positions=True,update_structure=True)
+		#adds prep_fd to be run to every calculation in the set
+		loadModString = '''AFLOWpi.elph.prep_elph(oneCalc,ID)'''
+		self._addToAll(block='PREPROCESSING',addition=loadModString)		
+		#adds the command to pull the forces from the calculations in the subset
+		#after they've finished. All tasks that are to be performed on the subset
+		#need to take a dictionary of dictionaries called "calc_subset" which is 
+		#generated from the list of files or strings representing inputs to the 
+		#calculation engine in AFLOWpi.prep.prep_split_step.
+		
+		proj_thr = 0.90
+		kp_factor= 1.0
+		proj_sh  = "'auto'"
+
+		exec_prefix = None
+		loadModString = '''tb = AFLOWpi.prep.tight_binding(calc_subset,cond_bands=True,proj_thr=%s,kp_factor=%s,proj_sh=%s,exec_prefix=%s,band_mult=1.0,smearing=None,tb_kp_mult=%s)'''%(proj_thr,kp_factor,exec_prefix,proj_sh,tb_kp_mult)
+
+		loadModString = 'AFLOWpi.elph._elph_pp(oneCalc,ID)'
+		self._addToAll(block='POSTPROCESSING',addition=loadModString)		
+
+		task_list=[loadModString]
+		build_com = 'AFLOWpi.elph._gen_elph_in(oneCalc,ID)'
+
+		#add the command to the ID.py that will generate the subset FD_PHONON and perform
+		#the tasks in task_list. The flags for mult_jobs (parallel cluster jobs) is passed
+		#into this function and that option will be written to the ID.py
+
+		self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
+							   build_com,
+							   mult_jobs=mult_jobs,
+							   subset_tasks=task_list,
+							   substep_name='FD_ELPH',keep_file_names=True,
+							   clean_input=False)
+		
+
+
+
+
+
+		calc_type='Electron-Phonon Coupling with PAOFLOW'
+
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 

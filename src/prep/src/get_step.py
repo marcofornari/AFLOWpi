@@ -65,10 +65,6 @@ def _get_step(oneCalc,ID,step_type=None,last=True):
 
 import numpy
 
-
-
-
-
 def _return_ID(oneCalc,ID,step_type=None,last=True,straight=False):
     index =AFLOWpi.prep._get_step(oneCalc,ID,step_type=step_type,last=last)
     

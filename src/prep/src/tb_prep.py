@@ -47,7 +47,21 @@ class tight_binding:
 
         tb_plotter=AFLOWpi.prep.tb_plotter(calcs)
 
+
         AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')""")
+
+
+        pwx_dir=AFLOWpi.prep._ConfigSectionMap('prep','engine_dir')
+        if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
+            symlink=True
+        else:
+            symlink=False
+        pwx_exec_loc = os.path.join(pwx_dir,'pw.x')
+        if not os.path.exists(pwx_exec_loc):
+            logging.error('ERROR: engine executables not found in %s please check your config file. EXITING' % pwx_dir)
+            print 'ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir
+            raise SystemExit
+        AFLOWpi.prep.totree(pwx_exec_loc, calcs,rename=None,symlink=symlink)
 
 
 
