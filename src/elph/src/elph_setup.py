@@ -26,7 +26,7 @@ def prep_elph(oneCalc,ID):
     bohr2ang = 0.529177249
     cell = AFLOWpi.retr.getCellMatrixFromInput(H0_file_str)*bohr2ang
     pos  = AFLOWpi.retr._convertFractional(pos,cell)
-    print pos
+
 
     labs = AFLOWpi.retr._getPosLabels(H0_file_str)
     spli['ATOMIC_POSITIONS']['__content__'] = AFLOWpi.retr._joinMatrixLabels(labs,pos)
@@ -109,8 +109,8 @@ def _gen_elph_in(oneCalc,ID):
 
     AFLOWpi.elph.write_scf_files ( elph_folder+'/', H0_file, nat, nq1, nq2, nq3, modes, orig_cell )
 
-    elph_input_files = glob.glob(elph_folder+'/*.in')
-#    print elph_input_files
+    elph_input_files = sorted(glob.glob(elph_folder+'/*.in'))
+
 
     return elph_input_files
 

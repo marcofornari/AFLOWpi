@@ -68,7 +68,7 @@ def read_modes( fn, natoms ):
 
 
 def get_phase( R, q ):
-  return np.exp(np.dot(q, 2.0j*np.pi*R))
+  return np.exp(np.dot(2.0j*np.pi*q,R))
 
 def displace_atomic_position( scdm, line, disp, q, ephase, d_frac=0.013 ):
 
@@ -79,7 +79,7 @@ def displace_atomic_position( scdm, line, disp, q, ephase, d_frac=0.013 ):
   phase = np.dot(q, new_pos)
   eiqr = complex(np.cos(phase), np.sin(phase))
 
-  eiqr /= ephase
+  eiqr = get_phase
 
   for i in range(len(new_pos)):
     disp[i] = np.real(disp[i]*eiqr)
@@ -96,7 +96,7 @@ def displace_atomic_position( scdm, line, disp, q, ephase, d_frac=0.013 ):
   return('  '.join(new_pos)+'\n')
 
 
-def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ):
+def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ,dfrac = 0.01 ):
 
   #read in supercell input file
   with open(fscf) as ifo:
@@ -108,34 +108,51 @@ def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ):
   pos  = AFLOWpi.retr._getPositions(ifs).A
   labs = AFLOWpi.retr._getPosLabels(ifs)
 
+  pos_cart = np.copy(pos)
+  pos_cart[:,0] *= nr1
+  pos_cart[:,1] *= nr2
+  pos_cart[:,2] *= nr3
+  pos_cart = pos_cart.dot(cell)
+
+  super_cell = np.copy(cell)
+  super_cell[0] *= nr1
+  super_cell[1] *= nr2
+  super_cell[2] *= nr3
+
+  nat_orig = pos_cart.shape[0]/(nr1*nr2*nr3)
+
+
   # Write New scf Files
   for key in modes[0].keys():
 
     ephase = []
     qp = np.asarray(modes[0][key])
     # calculate phase factor for atoms in supercell
-    for i1 in range(nr1):
-      for i2 in range(nr2):
-        for i3 in range(nr3):
-          ephase.append(get_phase(np.array([nr1,nr2,nr3]).dot(cell), qp))
+    for i in range(pos_cart.shape[0]):
+      ephase.append(get_phase(pos_cart[i], qp))
 
     ephase = np.asarray(ephase,dtype=complex)
+    
+    ephase /= np.tile(ephase[:nat_orig],nr1*nr2*nr3).T
+#    print ephase.real
+    eig_disp = np.repeat(np.reshape(modes[1][key],(nat_orig,3),order='C'),nr1*nr2*nr3,axis=0)
 
-    # repeat phase for number of atoms per original cell
-    ephase = np.repeat(ephase,len(modes[1][key]),axis=0)      
 
-    eig_disp  = np.tile(modes[1][key].T,nr1*nr2*nr3).T
-
-    # multiply the eigendisplacement by the phase factor
     eig_disp[:,0] *= ephase
     eig_disp[:,1] *= ephase
     eig_disp[:,2] *= ephase
 
+#    print eig_disp
+
+
+
     # convert eigdisplacements in 2pi/alat to crystal cords
-    eig_disp_crys = (eig_disp.real).dot(cell)
+    
 
+    eig_disp_real = (eig_disp.real*dfrac).dot(np.linalg.inv(super_cell))
+    pos += eig_disp_real
+    
 
-    pos += eig_disp_crys*0.05
 
     #add new displaced positions to input
     spli['ATOMIC_POSITIONS']['__content__'] = AFLOWpi.retr._joinMatrixLabels(labs,pos)
@@ -145,6 +162,7 @@ def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ):
     #write displaced supercell input
     with open(odir+key+'.in', 'w') as f:
       f.write(disp_input_str)
+
 
   # Write a Legend with KeyValue Pairs - { FilePrefix : qArray }
   with open(odir+'q_legend.txt', 'w') as f:
