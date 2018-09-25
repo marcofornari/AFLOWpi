@@ -1189,17 +1189,17 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
         for ID,oneCalc in calcs.iteritems():
             refFileDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
             paramList=[]
-            if 'celldm(1)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM1_' in oneCalc.keys():
                     paramList.append('A')
-            if 'celldm(2)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM2_' in oneCalc.keys():
                     paramList.append('B')
-            if 'celldm(3)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM3_' in oneCalc.keys():
                     paramList.append('C')
-            if 'celldm(4)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM4_' in oneCalc.keys():
                     paramList.append('alpha')
-            if 'celldm(5)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM5_' in oneCalc.keys():
                     paramList.append('beta')
-            if 'celldm(6)' in refFileDict['&system'].keys():
+            if '_AFLOWPI_ORIG_CDM6_' in oneCalc.keys():
                     paramList.append('gamma')
             break
 
@@ -1272,24 +1272,43 @@ def _crawlingMinimization(oneCalc,ID,fitVars=None,options=None,faultTolerant=Tru
 
 		centValList=[]
 		paramList=[]
-		if 'celldm(1)' in refFileDict['&system'].keys():
-			paramList.append('A')
-			centValList.append(refFileDict['&system']['celldm(1)'])
-		if 'celldm(2)' in refFileDict['&system'].keys():
-			paramList.append('B')
-			centValList.append(refFileDict['&system']['celldm(2)'])
-		if 'celldm(3)' in refFileDict['&system'].keys():
-			paramList.append('C')
-			centValList.append(refFileDict['&system']['celldm(3)'])
-		if 'celldm(4)' in refFileDict['&system'].keys():
-			paramList.append('alpha')
-			centValList.append(refFileDict['&system']['celldm(4)'])
-		if 'celldm(5)' in refFileDict['&system'].keys():
-			paramList.append('beta')
-			centValList.append(refFileDict['&system']['celldm(5)'])
-		if 'celldm(6)' in refFileDict['&system'].keys():
-			paramList.append('gamma')
-			centValList.append(refFileDict['&system']['celldm(6)'])
+                if '_AFLOWPI_ORIG_CDM1_' in oneCalc.keys():
+                    paramList.append('A')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM1_']))
+                if '_AFLOWPI_ORIG_CDM2_' in oneCalc.keys():
+                    paramList.append('B')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM2_']))
+                if '_AFLOWPI_ORIG_CDM3_' in oneCalc.keys():
+                    paramList.append('C')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM3_']))
+                if '_AFLOWPI_ORIG_CDM4_' in oneCalc.keys():
+                    paramList.append('alpha')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM4_']))
+                if '_AFLOWPI_ORIG_CDM5_' in oneCalc.keys():
+                    paramList.append('beta')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM5_']))
+                if '_AFLOWPI_ORIG_CDM6_' in oneCalc.keys():
+                    paramList.append('gamma')
+                    centValList.append(float(oneCalc['_AFLOWPI_ORIG_CDM6_']))
+
+		# if 'celldm(1)' in refFileDict['&system'].keys():
+		# 	paramList.append('A')
+		# 	centValList.append(refFileDict['&system']['celldm(1)'])
+		# if 'celldm(2)' in refFileDict['&system'].keys():
+		# 	paramList.append('B')
+		# 	centValList.append(refFileDict['&system']['celldm(2)'])
+		# if 'celldm(3)' in refFileDict['&system'].keys():
+		# 	paramList.append('C')
+		# 	centValList.append(refFileDict['&system']['celldm(3)'])
+		# if 'celldm(4)' in refFileDict['&system'].keys():
+		# 	paramList.append('alpha')
+		# 	centValList.append(refFileDict['&system']['celldm(4)'])
+		# if 'celldm(5)' in refFileDict['&system'].keys():
+		# 	paramList.append('beta')
+		# 	centValList.append(refFileDict['&system']['celldm(5)'])
+		# if 'celldm(6)' in refFileDict['&system'].keys():
+		# 	paramList.append('gamma')
+		# 	centValList.append(refFileDict['&system']['celldm(6)'])
 
 
 

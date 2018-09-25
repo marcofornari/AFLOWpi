@@ -3252,6 +3252,9 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 			    orig_ibrav = int(input_dict['&system']['ibrav'])
 			    D['_AFLOWPI_ORIG_IBRAV_']=orig_ibrav
 
+                            if orig_ibrav!=0:
+                                    oneCalc = AFLOWpi.prep.store_orig_cell_params(D,inputfile)
+
                             inputfile2 = AFLOWpi.prep._cleanInputStringSCF(inputfile2,convert=convert)                       
                             calc_label = AFLOWpi.prep._hash64String(inputfile2)
 
@@ -3673,12 +3676,17 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
             except Exception,e:
                 print e
                 AFLOWpi.run._fancy_error_log(e)
-                
+
 
 	    input_dict = AFLOWpi.retr._splitInput(inputfile)
 	    orig_ibrav = int(input_dict['&system']['ibrav'])
 	    DICT['_AFLOWPI_ORIG_IBRAV_']=orig_ibrav
 
+            if orig_ibrav!=0:
+                    DICT = AFLOWpi.prep.store_orig_cell_params(DICT,inputfile)
+
+
+                
 	    if clean_input==True:
 		    inputfile = AFLOWpi.prep._cleanInputStringSCF(inputfile)                            
 
@@ -5150,8 +5158,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		      None
 
 		'''
-		print 'crawling minimization coming soon. Exiting.'
-		raise SystemExit
+
 		self.scf_complete=True
 		self.tight_banding==False
 		self.load_index+=1
@@ -6305,6 +6312,10 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
 			  			  
     '''
 
+
+
+
+
     oneCalc=copy.deepcopy(oneCalc)
 
     constraint_type_list=[]
@@ -6332,15 +6343,48 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
     inputList=[]
 
     inputDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
+
     paramDict={}
     param=[x.lower() for x in param]
 
-    for namelist,paramlist in inputDict.iteritems():
-        for k,v in inputDict[namelist].iteritems():
-            if re.match(r'celldm.*',k.lower()):
-                paramDict[k.replace(')','').replace('(','')]=float(v)
-            if re.match(r'ibrav.*',k.lower()):
-                paramDict[k]=int(v)
+
+    ibrav = int(oneCalc['_AFLOWPI_ORIG_IBRAV_'])
+
+
+    if len(param) == 0:
+            if ibrav==1 or ibrav==2 or ibrav==3:
+                param=['a']
+            if ibrav==5:
+                param=['a','gamma']
+            if ibrav==6 or ibrav==7 or ibrav==4:
+                param=['a','c']
+            if ibrav==8 or ibrav==9 or ibrav==10 or ibrav==11:
+                param=['a','b','c']
+            if ibrav==12 or ibrav==13:
+                param=['a','b','c','alpha']
+            if ibrav==14:
+                param=['a','b','c','alpha','beta','gamma']
+
+
+
+    paramDict['ibrav'] = int(oneCalc['_AFLOWPI_ORIG_IBRAV_'])
+    paramDict['celldm1'] = float(oneCalc['_AFLOWPI_ORIG_CDM1_'])
+    try:
+            paramDict['celldm2'] = float(oneCalc['_AFLOWPI_ORIG_CDM2_'])
+    except: pass
+    try:
+            paramDict['celldm3'] = float(oneCalc['_AFLOWPI_ORIG_CDM3_'])
+    except: pass
+    try:
+            paramDict['celldm4'] = float(oneCalc['_AFLOWPI_ORIG_CDM4_'])
+    except: pass
+    try:
+            paramDict['celldm5'] = float(oneCalc['_AFLOWPI_ORIG_CDM5_'])
+    except: pass
+    try:
+            paramDict['celldm6'] = float(oneCalc['_AFLOWPI_ORIG_CDM6_'])
+    except: pass
+
 
     paramDict['cosine']=False
     paramDict['degrees']=True
@@ -6350,7 +6394,6 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
     for item in range(len(abcRes)):
         abcDict[abcList[item]]=abcRes[item]
 
-    
     ibrav=paramDict['ibrav']
     if ibrav==1 or ibrav==2 or ibrav==3:
         changeList=['a']
@@ -6366,7 +6409,6 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
         changeList=['a','b','c','alpha','beta','gamma']
 
 
-    
     try:
         numCalc=reduce(lambda x, y: x*y, steps)    
         if (len(changeList)-len(constraint))<3 and numCalc>1000:
@@ -6398,8 +6440,8 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                 productList.append(np.linspace(abcDict[param[item]]*(1.0-amount[item]),abcDict[param[item]]*(1.0+amount[item]),steps[item]).tolist())
 
     modifierList = list(it.product(*productList))
-    param=[x for x in param if x in changeList]
 
+    param=[x for x in param if x in changeList]
 
     modifierDictList=[]
     
@@ -6424,6 +6466,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                 if param[some_param] in constraint_var_list:
                     if constraint_type_list[item]=='fixed':
 			    tempDict[param[some_param]]=newDict[param[some_param]]
+
 
         for item in range(len(constraint_type_list)):
             for some_param in range(len(param)):
@@ -6454,7 +6497,10 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
         for k,v in inputDict['&system'].iteritems():
             if k in tempCelldmDict.keys():
                 inputDict['&system'][k]=tempCelldmDict[k]
+
+
         inputList.append(AFLOWpi.retr._joinInput(inputDict))
+
 
 
     return inputList
@@ -6859,6 +6905,63 @@ def _calcsFromCalcList(calcList):
         largeSet = dict(largeSet.items() + calcs.items())
     return largeSet
 
+
+
+
+def store_orig_cell_params(oneCalc,inputstring):
+
+        bohr2angs = 0.52917721092
+        
+        input_dict = AFLOWpi.retr._splitInput(inputstring)
+
+        ibrav = int(input_dict['&system']['ibrav'])
+
+        if 'celldm(1)' in input_dict['&system'].keys():
+                oneCalc['_AFLOWPI_ORIG_CDM1_']= float(input_dict['&system']['celldm(1)'])
+        if 'a' in input_dict['&system'].keys():
+                oneCalc['_AFLOWPI_ORIG_CDM1_']= float(input_dict['&system']['a'])/bohr2angs
+
+
+        if 'celldm(2)' in input_dict['&system'].keys():
+                oneCalc['_AFLOWPI_ORIG_CDM2_']= float(input_dict['&system']['celldm(2)'])
+        if 'b' in input_dict['&system'].keys():
+                B = float(input_dict['&system']['b'])/bohr2angs
+                oneCalc['_AFLOWPI_ORIG_CDM2_']= B/oneCalc['_AFLOWPI_ORIG_CDM1_']
+
+
+        if 'celldm(3)' in input_dict['&system'].keys():
+                oneCalc['_AFLOWPI_ORIG_CDM3_']=float(input_dict['&system']['celldm(3)'])
+        if 'c' in input_dict['&system'].keys():
+                C = float(input_dict['&system']['c'])/bohr2angs
+                oneCalc['_AFLOWPI_ORIG_CDM3_']= C/oneCalc['_AFLOWPI_ORIG_CDM1_']
+
+        if 'celldm(4)' in input_dict['&system'].keys():
+                CDM4 = float(input_dict['&system']['celldm(4)'])
+
+        if 'celldm(5)' in input_dict['&system'].keys():
+                CDM4 = float(input_dict['&system']['celldm(5)'])
+
+        if 'celldm(6)' in input_dict['&system'].keys():
+                CDM4 = float(input_dict['&system']['celldm(6)'])
+                
+        if 'cosab' in input_dict['&system'].keys():
+                if ibrav == 14:
+                        oneCalc['_AFLOWPI_ORIG_CDM6_']= float(input_dict['&system']['cosab'])
+                else:
+                        oneCalc['_AFLOWPI_ORIG_CDM4_']= float(input_dict['&system']['cosab'])
+                
+        if 'cosbc' in input_dict['&system'].keys():
+                oneCalc['_AFLOWPI_ORIG_CDM4_']= float(input_dict['&system']['cosbc'])
+
+        if 'cosac' in input_dict['&system'].keys():
+                if ibrav == 14:
+                        oneCalc['_AFLOWPI_ORIG_CDM5_']= float(input_dict['&system']['cosbc'])
+                else:
+                        oneCalc['_AFLOWPI_ORIG_CDM4_']= float(input_dict['&system']['cosab'])
+        
+
+
+        return oneCalc
 
 ####################################################################################################################
 ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ####

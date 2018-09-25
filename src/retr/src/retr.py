@@ -2656,7 +2656,6 @@ def celldm2abc(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,ce
         celldm5=0.0
         celldm6=0.0
 
-
         
     elif ibrav==6 or ibrav==7:
         celldm2=1.0
@@ -2680,6 +2679,7 @@ def celldm2abc(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,ce
 
         print 'ibrav=%s not supported' % ibrav
         logging.warning('ibrav=%s not supported' % ibrav)
+
         return
 
     a=celldm1
