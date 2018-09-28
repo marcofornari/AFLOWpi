@@ -1406,6 +1406,9 @@ def _writeTemplate(finp):
 #CALCTRANSFORM_BLOCK
 
 #END_CALCTRANSFORM_BLOCK
+#ITERATIVE_BLOCK
+
+#END_ITERATIVE_BLOCK
 #SUBMITNEXT_BLOCK
 
 #END_SUBMITNEXT_BLOCK
@@ -5311,6 +5314,33 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		calc_type='Brute Force Pseudotesting'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+
+
+	def force_oxidation(self,n_val_e,conv_thr=0.05,initial_step=1.0):
+		if len(n_val_e)==0:
+			print 'must include at least one value for forced oxidation state'
+			raise SystemExit
+
+
+		self.scf()
+
+		add = "oxy_dict=%s"%repr(n_val_e)
+		self._addToAll(block='PREPROCESSING',addition=add)   
+		add = "AFLOWpi.prep._prep_cDFT_oxy(oneCalc,ID,oxy_dict,%s)"%(initial_step)
+		self._addToAll(block='PREPROCESSING',addition=add)   
+
+
+
+		conv_func  = 'AFLOWpi.prep._check_cDFT_conv(oneCalc,ID,oxy_dict,%s)'%(conv_thr)
+		false_func = 'oneCalc,ID = AFLOWpi.prep._cDFT_newstep(oneCalc,ID,oxy_dict)'
+		true_func  = 'oneCalc,ID = AFLOWpi.prep._cDFT_cleanup(oneCalc,ID)'
+	
+		AFLOWpi.prep._setup_iterative(self.int_dict,conv_func,false_func,true_func)
+
+
+
+		raise SystemExit
 	
 
 	def _addToInit(self,block=None,addition=None):
@@ -5331,6 +5361,12 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 			AFLOWpi.run.addatexit__(AFLOWpi.run.submitFirstCalcs__,init_calcs,)
 
 		self.submit_flag=True
+
+
+
+
+
+
 
 class plotter:
 	'''
