@@ -439,6 +439,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 			try:
 				
 				if tight_banding==True:
+					if i==0: continue						
 					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=1.0,marker=".",
 						   linestyle=" ",label="$\uparrow$",linewidth=2)
 				else:
@@ -447,9 +448,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 			except:
 				pass
 		for i in range(len(k_x_up)):
-			try:
-				
+			try:				
 				if tight_banding==True:
+					if i==0: continue						
 					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=1.0,marker=".",
 						   linestyle=" ",label="$\downarrow$",linewidth=2)
 				else:
@@ -1053,7 +1054,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 		if LSDA:
 			ax2.legend(handles[::2], labels[::2],fontsize=14,loc=1)
-			dosRange=max([nump5Ay.abs(minDOS),numpy.abs(maxDOS)])
+			dosRange=max([numpy.abs(minDOS),numpy.abs(maxDOS)])
 			pylab.xlim(1.1*minDOS,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range 
 			pylab.axvline(0.0, color = 'k', linewidth = 2.0) #line separating up and down spin
 		else:

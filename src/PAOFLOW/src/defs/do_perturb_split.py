@@ -14,7 +14,7 @@ def do_perturb_split(op,rot_op,v_k,degen):
         ul = degen[i][-1]+1
 
         # diagonalize in degenerate subspace
-        _,weight = LAN.eigh(op[ll:ul,ll:ul])
+        _,weight = LAN.eigh(op[ll:ul,ll:ul]*1.0j)
 
         # linear combination of eigenvectors of H that diagonalize
         v_k_temp[:,ll:ul]=np.dot(v_k_temp[:,ll:ul],weight)

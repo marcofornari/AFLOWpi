@@ -197,14 +197,17 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 			
 	gdat = np.loadtxt(os.path.join(subdir,"%s.phSCATTER.band"%calcID)).T
 	print gdat.shape
-	
+#	gdat = np.sqrt(gdat)
+	gdat[np.where(gdat>15)]=15.0
+	gdat[np.where(gdat<-15)]=-15.0
+
 	cmap_neg = pylab.cm.get_cmap('YlGnBu_r')
 
-	
-	gdat = gdat
+	gdat =gdat
+
 #	gdat =gdat/np.amax(gdat)*255
 
-	gdat =gdat**2
+
 	colors=gdat
 
 
@@ -219,15 +222,15 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 
 
 
-	colors[np.where(k_y<1.0)]=1.e-16
-	csort = np.argsort(np.abs(colors))
+#	colors[np.where(k_y<1.0)]=1.e-16
+	csort = np.argsort(colors)
 #	print csort.shape
 
 	k_y = k_y[csort]#[::-1]
 	k_x = k_x[csort]#[::-1]
 
 	colors=colors[csort]#[::-1]
-#	sizes = 10*np.abs(colors)/np.amax(np.abs(colors))
+
 	print colors.shape
 #	print colors
 
@@ -421,15 +424,24 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 	
 	
 	
-	cbar.ax.set_title('\n  $\gamma^{2}$',size=32 ,va="bottom")
+	cbar.ax.set_title('\n  $\gamma$',size=32 ,va="bottom")
 			
+
+	labsti = [t.get_text() for t in cbar.ax.get_yticklabels() ]
+	labsti[-1]+="+"
+	print labsti
+	cbar.update_ticks()
+        tick_pos = cbar.get_ticks()
+
+	cbar.set_ticklabels(labsti,update_ticks=False)
+	cbar.update_ticks()
 
 
 
 # 	figtitle = 'Phonon Dispersion: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)) 
 # 	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
 
-  	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',dpi=300)
+  	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',dpi=500)
 
         pyplot.cla()
  	pyplot.clf()
@@ -547,7 +559,7 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 
 
 
-def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
+def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}):
     matplotlib.rc("font", size=20)             #to set the font size
 
     therm_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
@@ -583,7 +595,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
     
 
     width  = 18.0
-    height = len(labs)*4.0
+    height = (len(labs)-1)*4.0
     
 
     fig = pylab.figure(figsize=(width, height))#to adjust the figure size
@@ -611,7 +623,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 
 
 
-    color_cycle=['k','r', 'g', 'b', 'c', 'm', 'y']
+    color_cycle=['k','r', 'g', 'b', 'orange','c', 'm', 'y','k']
 		    
 		    
 
@@ -619,24 +631,29 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 	    w_range=[0.0,np.amax(therm_data[:,0])]
     if grun_range==None:
 	    if np.amin(therm_data[:,1])<0.0:
-		    grun_range=[np.amin(therm_data[:,1])*1.05,np.amax(therm_data[:,1])*1.05]
+#		    grun_range=[np.amin(therm_data[:,1])*1.05,np.amax(therm_data[:,1])*1.05]
+		    grun_range=[0.0,np.amax(therm_data[:,2:])*1.05]
 	    else:
 		    grun_range=[np.amin(therm_data[:,1])*0.95,np.amax(therm_data[:,1])*1.05]
 #	    grun_range=[0.0,np.amax(therm_data[:,1])*1.05]
 
 
-    for i in range(len(labs)):
+    for i in range(1,len(labs)):
+	    if labs[i] in label_map.keys():
+		    new_lab = label_map[labs[i]]
+	    else:
+		    new_lab = labs[i]
 	    ax = pylab.subplot(gs[i])
 	    print labs[i],(np.mean(therm_data[:,i+1]))**(0.5)
-#	    ax.plot(therm_data[:,0],therm_data[:,i+1],linestyle=' ',
-#		    marker='o',fillstyle='none',label=labs[i],
-#		    color=color_cycle[i%len(color_cycle)])
+	    ax.plot(therm_data[:,0],np.abs(therm_data[:,i+1]),linestyle=' ',
+		    marker='o',fillstyle='none',label=new_lab,
+		    color=color_cycle[i%len(color_cycle)])
 #	    if labs[i]=="Total":
 #		    ax.plot(avg[:,0],avg[:,1],color="r")
 	    if i<(len(labs)-1):
 		    ax.set_xticklabels([])
 
-	    ax.set_ylabel('$\gamma$',fontsize=24)
+	    ax.set_ylabel('$\|\gamma\|_{i \\alpha}$',fontsize=24)
 
 	    ax.set_ylim(grun_range)
 	    ax.set_xlim(w_range)
@@ -651,7 +668,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None):
 	
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
     matplotlib.pyplot.close()
-
+    raise SystemExit
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
 
     fig = pylab.figure(figsize=(12, 10))#to adjust the figure size
