@@ -5325,23 +5325,27 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		self.scf()
 
+                # add the target values to the _<ID>,py
 		add = "oxy_dict=%s"%repr(n_val_e)
+                # add the prep function for this optimization to _<ID>.py
 		self._addToAll(block='PREPROCESSING',addition=add)   
 		add = "AFLOWpi.prep._prep_cDFT_oxy(oneCalc,ID,oxy_dict,%s)"%(initial_step)
 		self._addToAll(block='PREPROCESSING',addition=add)   
 
 
-
+                # specifiy the name of the python function that checks if the value of the "cost"
+                # function is low enough to say the parameters are sufficiently optimized
 		conv_func  = 'AFLOWpi.prep._check_cDFT_conv(oneCalc,ID,oxy_dict,%s)'%(conv_thr)
+                # specify then function that updates the parameters if 
+                # the parameters are not sufficiently optimized.
 		false_func = 'oneCalc,ID = AFLOWpi.prep._cDFT_newstep(oneCalc,ID,oxy_dict)'
+                # specify the function that does cleanup if 
+                # the parameters are sufficiently optimized
 		true_func  = 'oneCalc,ID = AFLOWpi.prep._cDFT_cleanup(oneCalc,ID)'
 	
 		AFLOWpi.prep._setup_iterative(self.int_dict,conv_func,false_func,true_func)
 
 
-
-
-	
 
 	def _addToInit(self,block=None,addition=None):
 		if block==None or addition==None:
