@@ -372,7 +372,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 				    y_vals /= 1.e14
 				    y_vals /= 1.e5
 			    elif Type=='seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.e2
+				    y_vals=numpy.asarray(y_vals)*1.e6
 
 
 
@@ -439,16 +439,16 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 				    min_x=x_range[0]
 				    max_x=x_range[1]
 
-#			    if epsilon==True:
-#				    if min_x<=0.2:
-#					    min_x=0.2
-
-#			    if Type=='kappa':
-#				    y_vals=numpy.asarray(y_vals)/1.0e17
-#			    elif Type=='sigma_seebeck':
-#				    y_vals=numpy.asarray(y_vals)/1.0e-3
-#			    elif Type=='cond':
-#				    y_vals=numpy.asarray(y_vals)/1.0e20
+			    if Type=='kappa':
+				    y_vals=numpy.asarray(y_vals)/1.0e14
+			    if Type=='sig_seebeck':
+				    y_vals=numpy.asarray(y_vals)*1.0e6
+			    elif Type=='cond':
+				    y_vals=numpy.asarray(y_vals)
+				    y_vals /= 1.e14
+				    y_vals /= 1.e5
+			    elif Type=='seebeck':
+				    y_vals=numpy.asarray(y_vals)*1.e6
 
 
 

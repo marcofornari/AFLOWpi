@@ -72,7 +72,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 		postfix='_'+postfix
 
 	subdir=oneCalc['_AFLOWPI_FOLDER_']
-       	fileplot = os.path.join(subdir,'PHONON_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix))
+       	fileplot = os.path.join(subdir,'PHONON_%s_%s%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix))
 
 	"""get the path to the subdirectory of the calc that you are making plots for"""
 
@@ -490,7 +490,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
  	figtitle = 'Phonon Dispersion and DOS: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)) 
  	t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
 
-  	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+  	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',dpi=300)
 
         pyplot.cla()
  	pyplot.clf()

@@ -158,10 +158,10 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
                 AFLOWpi.run._fancy_error_log(e)    
     
     if int(matplotlib.__version__[0])<2:
-        im = pylab.imshow(Z,cmap=plot_color,aspect='auto',vmin=z_min,vmax=z_max,
+        im = pylab.imshow(Z,cmap=plot_color,aspect='equal',vmin=z_min,vmax=z_max,
                           interpolation=interp,extent=[X.min(), X.max(), Y.min(), Y.max()],origin='lower',hold=True)
     else:
-        im = pylab.imshow(Z,cmap=plot_color,aspect='auto',vmin=z_min,vmax=z_max,
+        im = pylab.imshow(Z,cmap=plot_color,aspect='equal',vmin=z_min,vmax=z_max,
                           interpolation=interp,extent=[X.min(), X.max(), Y.min(), Y.max()],origin='lower')
 
     cbar = pylab.colorbar()

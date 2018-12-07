@@ -399,7 +399,7 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
         except Exception,e:
@@ -450,7 +450,7 @@ def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,con
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
         except Exception,e:
@@ -828,7 +828,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
 
             logfile = os.path.abspath(os.path.join((os.path.dirname(calcs[random.choice(calcs.keys())]['_AFLOWPI_FOLDER_'])),'AFLOWpi','LOG.log'))
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
         
         #############################################################################################################
         try:
@@ -841,7 +841,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
                 calcs[ID]['calcType']=calcType                
 
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
         #############################################################################################################
         clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type')
         if clusterType=='':
@@ -873,7 +873,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
 
             firstCalcList=False
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
 
         logging.debug('exiting testOne')
 
@@ -1002,7 +1002,7 @@ def _qsubGen(oneCalc,ID):
             qsubRef = generateSubRef(qsubRefString,oneCalc,ID)['qsubRef']
             qsubRef = AFLOWpi.prep.remove_blank_lines(qsubRef)
 
-
+            
 
             #put the name of the AFLOWpi job in the  PBS submit script
             if clusterType=='UGE':
@@ -1011,15 +1011,19 @@ def _qsubGen(oneCalc,ID):
             elif clusterType=='PBS':
                 name_regex=re.compile(r'\s*#PBS.*-[nN].*\n')
                 calcNameString = '\n#PBS -N %s\n'%calcName
-            if clusterType in ['PBS','UGE']:
+            elif clusterType=='SLURM':
+                name_regex=re.compile(r'\s*#SBATCH.*-[jJ].*\n')
+                calcNameString = '\n#SBATCH -J %s\n'%calcName
+            if clusterType in ['PBS','UGE',"SLURM"]:
                 if len(name_regex.findall(qsubRef)):
                     qsubRef=name_regex.sub(calcNameString,qsubRef)
                 else:
-                    qsubRef=calcNameString+qsubRef
-
-
+                    if clusterType!="SLURM":
+                        qsubRef=calcNameString+qsubRef
+                    else:
+                        qsubRef=qsubRef+"\n"+calcNameString
         #not sure if this will work on UGE so we'll leave it only for PBS
-        if clusterType=='PBS':
+        if clusterType in ['PBS']:
 #    os.chdir(os.path.abspath(oneCalc['_AFLOWPI_FOLDER_']))
                 dash_e_regex=re.compile(r'#PBS\s+-e\s+.*\n')
                 dash_o_regex=re.compile(r'#PBS\s+-o\s+.*\n')
@@ -1043,7 +1047,26 @@ def _qsubGen(oneCalc,ID):
 
                 
         if clusterType=='SLURM':                
-            pass
+                dash_e_regex=re.compile(r'#SBATCH\s+-e\s+.*\n')
+                dash_o_regex=re.compile(r'#SBATCH\s+-o\s+.*\n')
+                dash_oe_regex=re.compile(r'#SBATCH\s+-oe\s+.*\n')
+                stderr_name=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'_cluster'+'.stderr')
+                stdout_name=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'_cluster'+'.stdout')
+
+
+                if len(dash_e_regex.findall(qsubRef)):
+                    qsubRef=dash_e_regex.sub('\n#SBATCH -e %s\n'%stderr_name,qsubRef)
+                else:
+                    qsubRef+='\n#SBATCH -e %s\n'%stderr_name
+                if len(dash_o_regex.findall(qsubRef)):
+                    qsubRef=dash_o_regex.sub('\n#SBATCH -o %s\n'%stdout_name,qsubRef)
+                else:
+                    qsubRef+='\n#SBATCH -o %s\n'%stdout_name
+                if len(dash_oe_regex.findall(qsubRef)):
+                    qsubRef=dash_oe_regex.sub('\n',qsubRef)
+                else:
+                    pass
+            
 
 
         with open(qsubFilename,'w') as qsubFile:
@@ -1124,7 +1147,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
 #            else:
 #                execPostfix=''
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
     try:
         engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')
@@ -1175,12 +1198,12 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
         elif clusterType==None:
             clusterType='None'
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
     try:
         stepsAsJobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs").lower()
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
     """
     sets the cluster type to none if:
@@ -1254,42 +1277,43 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             try:
                 submitCommand = AFLOWpi.run._get_cluster_submit_command()                
             except Exception,e:
-                _fancy_error_log(e)
+                AFLOWpi.run._fancy_error_log(e)
             
             qsubFilename = os.path.abspath(os.path.join(folder,'_'+submit_ID+'.qsub'))
-
-            calcName=AFLOWpi.run._get_qsub_name(oneCalc['_AFLOWPI_FOLDER_'])
+            if clusterType.upper() == 'PBS':            
+                calcName=' -N '+AFLOWpi.run._get_qsub_name(oneCalc['_AFLOWPI_FOLDER_'])
+            else:
+                calcName=" "
 
             queue = ''
             if AFLOWpi.prep._ConfigSectionMap("cluster","queue") !='':
                 queue = '-q %s ' %  AFLOWpi.prep._ConfigSectionMap("cluster","queue")
 
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
 
         #submit the job
         try:
-            command  = "ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
+            logging.info("Trying to submit job without ssh and -N option")
+            command = "%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags)
             job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
-            logging.info('submitted %s to the queue' % submit_ID)
         except Exception,e:
             try:
-                logging.info("Trying to submit job with no -N option")
-                command = "ssh -o StrictHostKeyChecking=no %s '%s %s %s' " % (__submitNodeName__,submitCommand,qsubFilename,additional_flags)
+                command  = "ssh -o StrictHostKeyChecking=no %s '%s %s %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags)
                 job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
+                logging.info('submitted %s to the queue' % submit_ID)
             except Exception,e:
                 try:
-                    logging.info("Trying to submit job without ssh option")
-                    command = "%s %s -N %s %s %s" % (submitCommand,queue,calcName,qsubFilename,additional_flags)
+                    logging.info("Trying to submit job with no -N option")
+                    command = "ssh -o StrictHostKeyChecking=no %s '%s %s %s' " % (__submitNodeName__,submitCommand,qsubFilename,additional_flags)
                     job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
                 except Exception,e:
                     try:
-                        logging.info("Trying to submit job without ssh and -N option")
-                        command = "%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags)
+                        logging.info("Trying to submit job without ssh option")
+                        command = "%s %s %s %s %s" % (submitCommand,queue,calcName,qsubFilename,additional_flags)
                         job =  subprocess.check_call(command,stderr = subprocess.PIPE,shell=True)
                     except Exception,e:
                         pass
-
             
     else:
         try:
@@ -1301,7 +1325,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             logging.debug('Got Keyboard Exit signal, exiting')
             sys.exit(0)
         except Exception,e:
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
 
     logging.debug('exiting _submitJob')
 
@@ -1443,7 +1467,7 @@ def _restartPW(oneCalc,ID,a,__submitNodeName__,):
             logging.debug('Job completed in time. No need for restart. Exiting AFLOWpi.run._restartPW')
 
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
 
 def _restartGIPAW(oneCalc,ID,a,__submitNodeName__,):
@@ -1505,7 +1529,7 @@ def _restartGIPAW(oneCalc,ID,a,__submitNodeName__,):
             '''and exit cleanly.'''
             sys.exit(0)
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
 
 
@@ -1541,7 +1565,7 @@ def _getWalltime(oneCalc,ID):
             try:
                 walltime = re.findall("--time\s*=\s*([0-9:]*)",qsubFileString)[-1]
             except:
-                walltime = re.findall("-t\s*=\s*([0-9:]*)",qsubFileString)[-1]
+                walltime = re.findall("-t\s*([0-9:]*)",qsubFileString)[-1]
         else:
             walltime='3000:00:00'
     except:
@@ -1706,7 +1730,7 @@ def _setupRestartPW(oneCalc,ID,__submitNodeName__):
 
         except Exception,e:
             logging.debug('if option to restart doesnt exist in the input of %s this will be thrown' % ID)
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
 
         return oneCalc,ID
 
@@ -1778,7 +1802,7 @@ def _setupRestartGIPAW(oneCalc,ID):
             oneCalc['_AFLOWPI_INPUT_']=restartInput
         except Exception,e:
             logging.debug('if option to restart doesnt exist in the input of %s this will be thrown' % ID)
-            _fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log(e)
 
         return oneCalc,ID
 
@@ -2334,7 +2358,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
                     PPInput.write(pp_in)
 
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 
 
     return oneCalc,ID
@@ -2423,7 +2447,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
             command='%s %s%s %s < %s  >  %s' % (execPrefix,execPath,executable,execPostfix,ri,ro)
 
     except Exception,e:
-        _fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log(e)
 ###############################################################################################################      
     try:	
         logging.info("starting %s in %s" % (command, home))
@@ -2537,7 +2561,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                     AFLOWpi.retr._moveToSavedir(log)
                 pdf = glob.glob('%s/*%s*.pdf' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
             except Exception,e:
-                _fancy_error_log(e)
+                AFLOWpi.run._fancy_error_log(e)
 
         logging.debug('STARTING DATA')
         if oneCalc['_AFLOWPI_PREFIX_'][1:]==ID:

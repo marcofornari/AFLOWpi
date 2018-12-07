@@ -46,6 +46,8 @@ def _get_plot_ext_type():
 		plot_ext_type = "pdf"	
 	if plot_ext_type.lower() not in ["png","pdf"]:
 		plot_ext_type = "pdf"	
+        plot_ext_type = "png"	
+#        plot_ext_type = "pdf"	
 	return plot_ext_type
 
 def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False):
@@ -308,8 +310,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 	'''
 	
 
-	matplotlib.rcParams['figure.dpi'] = 300
-	matplotlib.rcParams['savefig.dpi'] = 300
+	matplotlib.rcParams['figure.dpi'] = 600
+	matplotlib.rcParams['savefig.dpi'] = 600
 	calcCopy = oneCalc
 	calcID = oneCalc[0]
 	oneCalc = oneCalc[1]

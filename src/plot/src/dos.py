@@ -38,7 +38,7 @@ import cPickle
 import collections
 import math
 
-def __smoothGauss(list,strippedXs=False,degree=10):  
+def __smoothGauss(list,strippedXs=False,degree=2):  
 
 	'''
 
@@ -378,7 +378,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 					data = __combinePDOS(fileList)
 					with open(os.path.join(subdir,'%s_%s.sumpdos' % (atom,orbitalName)),'wb') as outputFile:
 						cPickle.dump(data,outputFile)
-					numpy.savetxt(os.path.join(subdir,'%s_%s.sumpdos.txt' % (atom,orbitalName)),data)
+#					numpy.savetxt(os.path.join(subdir,'%s_%s.sumpdos.txt' % (atom,orbitalName)),data)
 
 	byAtom={}
 	for atom in atomList:	
@@ -394,7 +394,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 		data = __combinePDOS(files)
 		with open(os.path.join(subdir,'%s.sumpdos' % (atom)),'wb') as outputFile:
 					cPickle.dump(data,outputFile)
-		numpy.savetxt(os.path.join(subdir,'%s.sumpdos.txt' % (atom)),data)
+#		numpy.savetxt(os.path.join(subdir,'%s.sumpdos.txt' % (atom)),data)
 
 			
 
@@ -890,7 +890,7 @@ def opdos(calcs,yLim=[-10,10],runlocal=False,postfix='',scale=False,tight_bindin
 
 
 
-def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
+def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map={}):
 
 	logging.info('Plotting Orbital Projected DOS')
 	logging.info('summing pdos for %s' % oneCalc['_AFLOWPI_FOLDER_'].split('/')[-1])
@@ -945,7 +945,12 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
 		ax = __plotByAtom(len(atomList),species,fig,atomList[species],oneCalc,ID,yLim,LSDA=LSDA,ax=ax_list,TB=tight_binding)
 
 		ax.axes.set_ylabel('Density of States (States/eV)')
-		ax.axes.set_title(atomList[species],weight='bold',loc='left',fontsize=18)
+
+                spec_lab=atomList[species]
+                if spec_lab in label_map.keys():
+                        spec_lab=label_map[spec_lab]
+
+		ax.axes.set_title(spec_lab,weight='bold',loc='left',fontsize=18)
 
 		ax.axes.set_autoscalex_on(False)
 		
