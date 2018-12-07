@@ -1254,6 +1254,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
     cluster_daemon_option = AFLOWpi.prep._ConfigSectionMap("cluster","daemon").lower()
     if cluster_daemon_option=='true':
         cluster_daemon=True
+
         
     if clusterType.upper() in ['PBS','SLURM','UGE']:
         '''if we're using a daemon then write the .submit file and return'''
@@ -1271,7 +1272,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
         additional_flags="" 
 #        if clusterType.upper() in ['PBS','SLURM']:
 #            additional_flags="" 
-        
+
             
         try:
             try:
