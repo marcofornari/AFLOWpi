@@ -5340,7 +5340,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-		raise SystemExit
+
 	
 
 	def _addToInit(self,block=None,addition=None):
