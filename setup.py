@@ -83,7 +83,7 @@ def __init__gen(src_folder):
 
    os.chdir(orig_dir)
 
-modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph']
+modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph',"environ"]
 for j in modules:
    try:
       os.remove('./src/%s/src/__init__.py'%j)
@@ -147,7 +147,9 @@ try:
                    'AFLOWpi.db',
                    'AFLOWpi.aflowlib',
                    'AFLOWpi.prep',
-                   'AFLOWpi.elph'],
+                   'AFLOWpi.environ',
+                   'AFLOWpi.elph'
+],
          package_dir = {'AFLOWpi'       :'src',
                       'AFLOWpi.qe'      :'src/qe',
                       'AFLOWpi.prep'    :'src/prep/src/',
@@ -158,6 +160,7 @@ try:
                       'AFLOWpi.pseudo'  :'src/pseudo/src/',
                       'AFLOWpi.db'      :'src/db/src/',
                       'AFLOWpi.elph'      :'src/elph/src/',
+                      'AFLOWpi.environ'      :'src/environ/src/',
                       'AFLOWpi.aflowlib':'src/aflowlib/src/'},
 
 
