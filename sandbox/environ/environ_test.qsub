@@ -1,0 +1,9 @@
+#!/bin/bash
+
+## uncomment to reserve entire node 
+## use only if necessary
+#SBATCH -C intel16
+#SBATCH -n 4
+
+#SBATCH -t 3:55:55
+#SBATCH --mem-per-cpu=4GB

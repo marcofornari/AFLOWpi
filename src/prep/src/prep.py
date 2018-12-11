@@ -4746,6 +4746,25 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
+
+	def environ(self):
+
+		self.type='iter-environ'
+		
+		self.new_step(update_positions=True,update_structure=True,)
+
+		self.initial_calcs.append(self.int_dict)
+		
+                AFLOWpi.environ._setup_environ(self.int_dict)
+		
+		calc_type='Environ: Solvation Free Energy'
+			
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
+level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+
+
+
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
 		#the user has chosen to calculate it on a later step in the workflow
