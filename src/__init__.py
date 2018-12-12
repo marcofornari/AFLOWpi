@@ -7,3 +7,5 @@ import AFLOWpi.pseudo
 import AFLOWpi.db
 import AFLOWpi.scfuj
 import AFLOWpi.aflowlib
+import AFLOWpi.elph
+import AFLOWpi.environ

@@ -4752,9 +4752,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.type='iter-environ'
 		
 		self.new_step(update_positions=True,update_structure=True,)
-
-		self.initial_calcs.append(self.int_dict)
-		
+		self.initial_calcs.append(self.int_dict)		
                 AFLOWpi.environ._setup_environ(self.int_dict)
 		
 		calc_type='Environ: Solvation Free Energy'
