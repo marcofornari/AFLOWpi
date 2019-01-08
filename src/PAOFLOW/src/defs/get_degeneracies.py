@@ -7,7 +7,7 @@ def get_degeneracies(E_k,bnd):
 
     all_degen = []
 
-    E_k_round = np.around(E_k,decimals=6)
+    E_k_round = np.around(E_k,decimals=4)
     
     for ispin in range(E_k_round.shape[2]):
 
@@ -16,11 +16,11 @@ def get_degeneracies(E_k,bnd):
             by_kp = []
             eV=  np.unique(E_k_round[ik,:,ispin][:-1]\
                                [np.isclose(E_k_round[ik,:,ispin][1:],
-                                           E_k_round[ik,:,ispin][:-1],atol=1.e-6)])
+                                           E_k_round[ik,:,ispin][:-1],atol=1.e-4)])
 
             for i in range(len(eV)):
-                inds= np.where(np.isclose(E_k_round[ik,:,ispin],eV[i],atol=1.e-6))[0]
-                if len(inds)>1:# and np.all(inds < bnd):                    
+                inds= np.where(np.isclose(E_k_round[ik,:,ispin],eV[i],atol=1.e-4))[0]
+                if len(inds)>1 and np.all(inds < bnd):                    
                     by_kp.append(inds)
 
             by_spin.append(by_kp)

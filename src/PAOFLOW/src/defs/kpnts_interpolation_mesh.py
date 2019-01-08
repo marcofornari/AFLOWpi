@@ -489,12 +489,12 @@ def kpnts_interpolation_mesh(ibrav,alat,cell,b_vectors,nk,inputpath,band_path,hi
 
 
     kq=np.copy(points)
-    cart = False
+    cart = True
     if cart:
-        for n in xrange(kq.shape[1]):
-            kq[:,n]=np.dot(kq[:,n],b_vectors)
+        for gn in xrange(kq.shape[1]):
+            kq[:,gn]=np.dot(kq[:,gn],b_vectors)
     for i in xrange(kq.shape[1]):
-        path_file+="%s %s %s\n"%(kq[0,i],kq[1,i],kq[2,i])
+        path_file+="% 20.16f % 20.16f % 20.16f\n"%(kq[0,i],kq[1,i],kq[2,i])
 
     if rank==0:
         with  open(os.path.join(inputpath,"kpath_points.txt"),"w") as pfo:
@@ -562,28 +562,37 @@ def get_path(ibrav,alat,cell,dk,band_path=None,high_sym_points=None):
             try:
                 point1 = a[index2]
                 point2 = a[index2+1]
+
                 p1 = special_points[point1]
                 p2 = special_points[point2]
-
+                
                 newDK = (2.0*np.pi/alat)*dk
                 numK = int(np.ceil((kdistance(hs, p1, p2)/newDK)))
+
                 totalK+=numK
 
                 path_file+="%s %s\n"%(point1,numK)
-                
                 numK = str(numK)
 
-                a0 = np.linspace(p1[0],p2[0],numK).astype(np.float16)
-                a1 = np.linspace(p1[1],p2[1],numK).astype(np.float16)
-                a2 = np.linspace(p1[2],p2[2],numK).astype(np.float16)
+                a0 = np.linspace(p1[0],p2[0],numK,endpoint=False).astype(np.float16)
+                a1 = np.linspace(p1[1],p2[1],numK,endpoint=False).astype(np.float16)
+                a2 = np.linspace(p1[2],p2[2],numK,endpoint=False).astype(np.float16)
 
                 kx = np.concatenate((kx,a0))
                 ky = np.concatenate((ky,a1))
                 kz = np.concatenate((kz,a2))
+                
 
             except Exception as e:
-                print(e)
+                print e
 
+        """ last point """
+        point1 = a[-1]
+        p1 = special_points[point1]            
+        kx = np.concatenate((kx,np.array([p1[0]])))
+        ky = np.concatenate((ky,np.array([p1[1]])))
+        kz = np.concatenate((kz,np.array([p1[2]])))
+        totalK+=1
 
         path_file+="%s %s\n"%(a[-1],0)
 
