@@ -1519,7 +1519,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
         index=int(nk1*nk2*nk3*nelec/spin_mult-1)
         efc=E_k_temp[index]
-        print(efc)
+
     else: efc=None
     efc=comm.bcast(efc)
 
