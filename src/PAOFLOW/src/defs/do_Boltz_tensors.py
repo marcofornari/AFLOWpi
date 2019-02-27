@@ -68,15 +68,15 @@ def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor,emin,
         comm.Reduce(L2aux,L2,op=MPI.SUM)
 
         L0[1,0] = L0[0,1]
-        L0[2,0] = L0[2,0]
+        L0[2,0] = L0[0,2]
         L0[2,1] = L0[1,2]
 
         L1[1,0] = L1[0,1]
-        L1[2,0] = L1[2,0]
+        L1[2,0] = L1[0,2]
         L1[2,1] = L1[1,2]
 
         L2[1,0] = L2[0,1]
-        L2[2,0] = L2[2,0]
+        L2[2,0] = L2[0,2]
         L2[2,1] = L2[1,2]
 
         return(ene,L0,L1,L2)

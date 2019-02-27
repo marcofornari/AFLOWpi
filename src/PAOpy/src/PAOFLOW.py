@@ -293,8 +293,8 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             if shift == 'auto': shift = np.amin(my_eigsmat[bnd,:,:])
     
         # Broadcast 
-        bnd = comm.bcast(bnd,root=0)
-        shift = comm.bcast(shift,root=0)
+        bnd = int(comm.bcast(bnd,root=0))
+        shift = float(comm.bcast(shift,root=0))
 
 
 

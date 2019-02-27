@@ -35,7 +35,8 @@ from kpnts_interpolation_mesh import *
 from do_non_ortho import *
 from load_balancing import *
 from communication import *
-
+from get_R_grid_fft import *
+import time 
 # initialize parallel execution
 comm=MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -50,7 +51,9 @@ def do_bands_calc(HRaux,SRaux,kq,R_wght,R,idx,read_S,inputpath,npool):
     kq_aux = scatter_full(kq.T,npool)
     kq_aux = kq_aux.T
 
- 
+
+    R,Rfft,R_wght,nrtot,idx = get_R_grid_fft_crys(nk1,nk2,nk3)
+    
     if read_S:
         Sks_aux = band_loop_S(nspin,nk1,nk2,nk3,nawf,SRaux,R_wght,kq_aux,R,idx)
     else: Sks_aux = None
@@ -93,7 +96,7 @@ def do_bands_calc(HRaux,SRaux,kq,R_wght,R,idx,read_S,inputpath,npool):
             f=open(os.path.join(inputpath,'bands_'+str(ispin)+'.dat'),'w')
             for ik in range(kq.shape[1]):
                 s="%d\t"%ik
-                for  j in E_kp[ik,:,ispin]:s += "% 3.5f\t"%j
+                for  j in E_kp[ik,:,ispin]:s += "% 3.5f "%j
                 s+="\n"
                 f.write(s)
             f.close()
@@ -104,10 +107,31 @@ def do_bands_calc(HRaux,SRaux,kq,R_wght,R,idx,read_S,inputpath,npool):
 
 def band_loop_H(nspin,nk1,nk2,nk3,nawf,HRaux,R_wght,kq,R,idx):
 
+    Raux=np.ascontiguousarray(R.T)
     HRaux = np.reshape(HRaux,(nawf,nawf,nk1*nk2*nk3,nspin),order='C')
-    kdot = np.zeros((kq.shape[1],R.shape[0]),dtype=complex,order="C")
-    kdot = np.tensordot(R,2.0j*np.pi*kq,axes=([1],[0]))
+
+    
+    
+
+    kdot = np.zeros((3,kq.shape[1],R.shape[0]),dtype=complex,order="C")
+    kdot = 2.0j*np.pi*kq[:,:,None]*Raux[:,None]
+    st=time.time()
     np.exp(kdot,kdot)
+    
+    nyq0 = np.where(Raux[0]==-nk1/2)[0]
+    nyq1 = np.where(Raux[1]==-nk2/2)[0]
+    nyq2 = np.where(Raux[2]==-nk3/2)[0]
+
+
+
+    kdot_bk=np.copy(kdot)
+    kdot[0,:,nyq0]=kdot[0,:,nyq0].real
+    kdot[1,:,nyq1]=kdot[1,:,nyq1].real
+    kdot[2,:,nyq2]=kdot[2,:,nyq2].real
+
+    kdot = np.prod(kdot,axis=0)
+
+    kdot = np.ascontiguousarray(kdot.T)
 
     auxh = np.zeros((nawf,nawf,kq.shape[1],nspin),dtype=complex,order="C")
 

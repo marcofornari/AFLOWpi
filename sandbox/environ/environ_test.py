@@ -11,9 +11,6 @@ session = AFLOWpi.prep.init('testing', 'environ',config='./environ_test.config')
 calcs = session.from_file(["si.in"])
 
 
-#not really needed..just to test
-calcs.scf()
-
 # doesnt do much right now..
 calcs.environ()
 

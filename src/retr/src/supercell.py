@@ -97,6 +97,7 @@ def _constructSupercell(inputString,numX=1,numY=1,numZ=1,stringOrMatrix='String'
     if '{crystal}' != splitInput['ATOMIC_POSITIONS']['__modifier__']:
         logging.error('unit in AFLOWpi.retr._constructSupercell not for ATOMIC_POSITIONS MUST BE {crystal}')
         return inputString
+
     cellParamMatrix = AFLOWpi.retr.getCellMatrixFromInput(inputString)
 
     labels =  AFLOWpi.retr._getPosLabels(inputString)
@@ -127,27 +128,18 @@ def _constructSupercell(inputString,numX=1,numY=1,numZ=1,stringOrMatrix='String'
 
     splitInput['&system']['celldm(1)']=str(float(splitInput['&system']['celldm(1)'])*numX)
 
-
-    scaleY = float(numY)/float(numX)
-    if 'celldm(2)' in splitInput['&system'].keys():
-        splitInput['&system']['celldm(2)']=str(float(splitInput['&system']['celldm(2)'])*scaleY)
-    else:
-        splitInput['&system']['celldm(2)']=str(float(scaleY))
-
-    scaleZ = float(numZ)/float(numX)
-    if 'celldm(3)' in splitInput['&system'].keys():
-        splitInput['&system']['celldm(3)']=str(float(splitInput['&system']['celldm(3)'])*scaleZ)
-    else:
-        splitInput['&system']['celldm(3)']=str(float(scaleZ))
-
+    
+    cellParamMatrix[1]*=float(numY)/float(numX)
+    cellParamMatrix[2]*=float(numZ)/float(numX)
+    splitInput['CELL_PARAMETERS']['__content__']=AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
 
 
     splitInput['ATOMIC_POSITIONS']['__content__']=outputString
 
     returnString=AFLOWpi.retr._joinInput(splitInput)
-    iso = AFLOWpi.prep.isotropy()
-    iso.qe_input(returnString,accuracy=0.001)
-    print iso.convert()
+
+
+
     return returnString
 
 
