@@ -1,9 +1,24 @@
 #!/bin/bash
-
-## uncomment to reserve entire node 
-## use only if necessary
-#SBATCH -C intel16
+######################################
+# Example of a SLURM job script for Talon3
+# Job Name: Sample_Job
+# Number of cores: 1
+# Number of nodes: 1
+# QOS: general
+# Run time: 12 hrs
+######################################
+ 
+#SBATCH -J test_pw
+#SBATCH -o test_pw.o%j
+#SBATCH -p public
+#SBATCH --qos general
+#SBATCH -N 1
 #SBATCH -n 4
+#SBATCH -t 1:00:00
+ 
+### Loading modules
+module purge
+module load slurm
+module load intel/compilers/17.0.4-ATX intel/mkl/17.0.4 openmpi/intel/2.1.0
+export PATH="/storage/scratch2/mat0330/anaconda3/envs/legacy/bin:$PATH"
 
-#SBATCH -t 3:55:55
-#SBATCH --mem-per-cpu=4GB

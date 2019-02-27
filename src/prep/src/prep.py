@@ -4029,7 +4029,7 @@ class init:
 		return scfs
 
 
-	def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,ref_override=True):
+	def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True):
 		"""
 		Reads in a string of an QE input file path, a string of an QE input, a file object of a 
 		QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -4056,7 +4056,7 @@ class init:
 
 
 		scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
-					       workdir=workdir,ref_override=ref_override)
+					       workdir=workdir,clean_input=clean_input,ref_override=ref_override)
 		return calcs_container(scfs)
 
 	def load(self,step=1):
@@ -4748,22 +4748,27 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-
-	def environ(self):
-
-		self.type='iter-environ'
-		
+	def environ_relax(self):
+		self.type='environ-relax'
 		self.new_step(update_positions=True,update_structure=True,)
-		self.initial_calcs.append(self.int_dict)		
-                AFLOWpi.environ._setup_environ(self.int_dict)
-		
-		calc_type='Environ: Solvation Free Energy'
-			
+		self.initial_calcs.append(self.int_dict)
+		print "environ setup function..."
+		AFLOWpi.environ.setup_relax(self.int_dict)
+		calc_type='Environ: Relax Step'
+
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+	
+	def environ_scf(self, config=None, environmode='from_file'):
+		self.type='environ-scf'
+		self.new_step(update_positions=True,update_structure=True,)
+		self.initial_calcs.append(self.int_dict)
+		print "environ setup function..."
+		AFLOWpi.environ.setup_scf(self.int_dict, config, environmode)
+		calc_type='Environ: Scf Step'
 
-
-
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
+level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
