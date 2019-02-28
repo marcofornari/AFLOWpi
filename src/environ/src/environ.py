@@ -192,6 +192,7 @@ def _run_environ_iterative(__submitNodeName__,oneCalc,ID):
 def _run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix):
 	oneCalcID = ID
 	engine = ''
+	config = None
 
 	if "__runList__" not in oneCalc.keys():
 		oneCalc["__runList__"] = []
@@ -229,6 +230,16 @@ def _run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix)
 				executable=None, exit_on_error=False)
 
 		oneCalc["__runList__"].append("environ_relax")
+		AFLOWpi.prep._saveOneCalc(oneCalc, ID)
+
+		return oneCalc, ID
+	else:
+		# ignore above check for now because I don't understand why it is defaulting
+		AFLOWpi.run._oneRun(__submitNodeName__, oneCalc, ID, execPrefix=execPrefix,
+				execPostfix=execPostfix, engine=engine, calcType="scf",
+				executable=None, exit_on_error=False)
+
+		oneCalc["__runList__"].append("environ_scf")
 		AFLOWpi.prep._saveOneCalc(oneCalc, ID)
 
 		return oneCalc, ID
