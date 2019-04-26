@@ -119,7 +119,7 @@ for j in modules:
 
 try:
    
-   ISOTROPY = glob.glob('src/ISOTROPY/*')
+
 
    PAOPY_SRC = glob.glob('src/PAOFLOW/src/*.py')
    PAOPY_DEF = glob.glob('src/PAOFLOW/src/defs/*.py')
@@ -166,7 +166,7 @@ try:
 
                       
          package_data = {
-                                  'AFLOWpi':['ISOTROPY/*','PAOFLOW/src/*/*','PAOFLOW/src/*.py',
+                                  'AFLOWpi':['PAOFLOW/src/*/*','PAOFLOW/src/*.py',
                                              'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
                                   },
@@ -187,23 +187,10 @@ except Exception,e:
 
 try:
 
-#    FINDSYM_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','findsym')
-#    COMSUBS_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','comsubs')
-#    SMODES_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','smodes')
    AFLOW_EXEC = os.path.join(os.getenv('HOME'),'.local/lib/python2.7/site-packages/AFLOWpi','AFLOWSYM','aflow')
    if not os.access(AFLOW_EXEC,3):
       os.chmod(AFLOW_EXEC,733)      
-#    if not os.access(SMODES_EXEC,3) or not os.access(COMSUBS_EXEC,3) or not os.access(FINDSYM_EXEC,3) or not os.access(AFLOW_EXEC,3):
 
-
-
-#       os.chmod(FINDSYM_EXEC,733)
-#       os.chmod(COMSUBS_EXEC,733)
-#       os.chmod(SMODES_EXEC,733)
-#       os.chmod(AFLOW_EXEC,733)
-#       print 
-#       print 'Done.'
-      
 except Exception,e:
     print 'Could not install ISOTROPY package:',e
    

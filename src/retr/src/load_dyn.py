@@ -68,7 +68,7 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
     nq=tdata.shape[0]
 
     tdata = None
-    print nat,dV,nq
+
 
 
 
@@ -95,8 +95,8 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
     grun = np.zeros_like(eig)
 
     n,n = np.diag_indices(nat*3)
-    print dyn[1]
-    print np.linalg.eigh(dyn[0])[0]
+
+
 
     for i in xrange(dyn.shape[0]):
         eig[i],vq[i] = scipy.linalg.eigh(dyn[i])

@@ -496,9 +496,9 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
 	    print therm_data.shape
 
 	    ax1 = pylab.subplot(gs[branch])
-	    pylab.ylabel('$\gamma$')
+	    pylab.ylabel('$\gamma^{2}$')
 	    pylab.xlabel('$\omega$ $(cm^{-1})$')
-	    pylab.plot(therm_data[:,0],therm_data[:,1],'k',linestyle=' ',marker='o',fillstyle='none')
+	    pylab.plot(therm_data[:,0],therm_data[:,1]**2,'k',linestyle=' ',marker='o',fillstyle='none')
 
 	    
 	    pylab.axhline(np.mean(therm_data[:,1]),color='b',linewidth=2.0)
@@ -668,29 +668,31 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
 	
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
     matplotlib.pyplot.close()
-    raise SystemExit
+
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
 
     fig = pylab.figure(figsize=(12, 10))#to adjust the figure size
     ax = pylab.subplot(111)
 
     therm_data[:,1] = np.ma.masked_equal(therm_data[:,1],0.0)
-    ax.plot(therm_data[:,0],therm_data[:,1],linestyle=' ',
-	    marker='o',fillstyle='none',color="r")
+    ax.plot(therm_data[:,0],therm_data[:,1]**2,linestyle=' ',
+	    marker='o',fillstyle='none',color="k")
 
 
-    ax.set_ylabel('$\gamma$',fontsize=24)
+    ax.set_ylabel('$\gamma^{2}$',fontsize=24)
 
+    sl = np.where(np.logical_and(therm_data[:,0]>=w_range[0],
+                                 therm_data[:,0]<=w_range[1]))
 
-    llim=np.amin(therm_data[:,1])*1.05
+    llim=np.amin(therm_data[sl,1]**2)*1.05
     if llim>0:
 	    llim=0
-    ulim=np.amax(therm_data[:,1])*1.05
+    ulim=np.amax(therm_data[sl,1]**2)*1.05
     if ulim<0:
 	    ulim=0
 
     ax.set_ylim([llim,ulim])
-    ax.set_ylim(grun_range)
+#    ax.set_ylim(grun_range)
     ax.set_xlim(w_range)
 #    ax.set_xlim([0.0,180.0])
     

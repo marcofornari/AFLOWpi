@@ -207,8 +207,9 @@ def _oneScfprep(oneCalc,ID,paodir=None):
 
 
         #Assign initial U values
-#        species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
-
+        species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
+#        temp_species,_ = AFLOWpi.prep._resolve_AS_order(inputfile)
+#        species = temp_species.keys()
         species = re.findall("(\w+).*UPF",inputfile)
         splitInput = AFLOWpi.retr._splitInput(inputfile)
 
@@ -269,8 +270,9 @@ def updateUvals(oneCalc, Uvals,ID=None):
 		inputfile = oneCalc['_AFLOWPI_INPUT_']
 		#Get species
 #                species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
-		species = re.findall("(\w+).*UPF",inputfile)
-
+#		species = re.findall("(\w+).*UPF",inputfile)
+		species = re.findall("(\w+)[-_.][A-Za-z].*(?:UPF|upf)",inputfile)
+#                AFLOWpi.prep._get_order_from_atomic_species(inputfile)
                 inputDict = AFLOWpi.retr._splitInput(inputfile)
                 inputDict['&system']['lda_plus_u']='.TRUE.'
 
@@ -286,7 +288,7 @@ def updateUvals(oneCalc, Uvals,ID=None):
                     inputDict['&system'][hub_entry] = Uvals[species[isp]]
          	#Update inputfile
                 oneCalc['_AFLOWPI_INPUT_']=AFLOWpi.retr._joinInput(inputDict)
-
+                print AFLOWpi.retr._joinInput(inputDict)
 	except Exception,e:
 		AFLOWpi.run._fancy_error_log(e)
 
@@ -1147,7 +1149,9 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 	#Get species
 	inputfile =oneCalc['_AFLOWPI_INPUT_']
         if byAtom==False:
-            species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
+#            species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
+            temp_species,_ = AFLOWpi.prep._resolve_AS_order(inputfile)
+            species = temp_species.keys()
             uvalLogName='_uValLog.log'
         else:
             splitInput = AFLOWpi.retr._splitInput(inputfile)

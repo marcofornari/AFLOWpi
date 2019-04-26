@@ -3456,7 +3456,6 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                     inputFile=inputFile
 
             '''try to open the reffile '''
-
             if reffile!=None:
 		if not os.path.exists(reffile):
 			refFileStr=reffile
@@ -3484,7 +3483,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 			
 
                     
-                    
+         
             inputFile = AFLOWpi.prep._removeComments(inputFile)
 
             if workdir==None:            
@@ -3518,6 +3517,9 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             numOfEach = AFLOWpi.retr._getAtomNum(inputfile,strip=False)
             numOfEachStripped = AFLOWpi.retr._getAtomNum(inputfile,strip=True)
+
+            # if order in ATOMIC_SPECIES is different than each of the unique first entries in ATOMIC_POSITION
+            numOfEach,numOfEachStripped = AFLOWpi.prep._resolve_AS_order(inputfile)
 
 	    num_map={}
 	    map_counter=1
@@ -4027,7 +4029,7 @@ class init:
 		return scfs
 
 
-	def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,ref_override=True):
+	def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True):
 		"""
 		Reads in a string of an QE input file path, a string of an QE input, a file object of a 
 		QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -4054,7 +4056,7 @@ class init:
 
 
 		scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
-					       workdir=workdir,ref_override=ref_override)
+					       workdir=workdir,clean_input=clean_input,ref_override=ref_override)
 		return calcs_container(scfs)
 
 	def load(self,step=1):
@@ -4746,22 +4748,27 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-
-	def environ(self):
-
-		self.type='iter-environ'
-		
+	def environ_relax(self):
+		self.type='environ-relax'
 		self.new_step(update_positions=True,update_structure=True,)
-		self.initial_calcs.append(self.int_dict)		
-                AFLOWpi.environ._setup_environ(self.int_dict)
-		
-		calc_type='Environ: Solvation Free Energy'
-			
+		self.initial_calcs.append(self.int_dict)
+		print "environ setup function..."
+		AFLOWpi.environ.setup_relax(self.int_dict)
+		calc_type='Environ: Relax Step'
+
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+	
+	def environ_scf(self, config=None, environmode='from_file'):
+		self.type='environ-scf'
+		self.new_step(update_positions=True,update_structure=True,)
+		self.initial_calcs.append(self.int_dict)
+		print "environ setup function..."
+		AFLOWpi.environ.setup_scf(self.int_dict, config, environmode)
+		calc_type='Environ: Scf Step'
 
-
-
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
+level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
 		#flag to determine if we need to recalculate the TB hamiltonian if 
@@ -4800,7 +4807,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
-	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True,central_diff=False):
+	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=False,hydrostatic_expansion=True,central_diff=False):
 		workf = self.workflow
 #		print 'thermal DISABLED. Coming soon.'
 #		raise SystemExit
@@ -7019,6 +7026,47 @@ def store_orig_cell_params(oneCalc,inputstring):
 
 
         return oneCalc
+
+
+def _resolve_AS_order(input_file):
+        numOfEach = AFLOWpi.retr._getAtomNum(input_file,strip=False)
+        numOfEachStripped = AFLOWpi.retr._getAtomNum(input_file,strip=True)
+        try:
+            ### to try to get correct order in ATOMIC_SPECIES ###
+            atomicSpecRegex = re.compile(r'ATOMIC_SPECIES\s*\n',(re.MULTILINE))
+            species_split_in = atomicSpecRegex.split(input_file)[1].split('\n')
+            ts_num_spec = len(numOfEach.keys())
+
+            ts_order=[]
+            for ts in species_split_in:
+                try:
+                        if len(ts.split()) not in [1,2,3]:
+                                continue
+                        ts_lab = ts.split()[0]
+
+                        if ts_lab in numOfEach.keys():
+                               ts_order.append(ts_lab)
+                               if len(ts_order)==ts_num_spec:
+                                        break
+                except: pass
+
+            if ts_order!=numOfEach.keys():
+                    tempNumOfEachStripped = collections.OrderedDict()
+                    tempNumOfEach = collections.OrderedDict()
+                    for ts_temp in ts_order:
+                            ts_temp_stripped = ts_temp.strip('0123456789')
+                            tempNumOfEach[ts_temp]=numOfEach[ts_temp]
+                            tempNumOfEachStripped[ts_temp_stripped]=numOfEachStripped[ts_temp_stripped]
+                    if len(tempNumOfEach)==len(numOfEach):
+                            return tempNumOfEach,tempNumOfEachStripped
+                    return numOfEach,numOfEachStripped
+ 
+        except Exception,e: print e
+        return numOfEach,numOfEachStripped
+
+def _get_order_from_atomic_species(input_file):
+        noe,_ = AFLOWpi.prep._resolve_AS_order(input_file)
+        return noe,keys()
 
 ####################################################################################################################
 ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ###NOT FINISHED ####
