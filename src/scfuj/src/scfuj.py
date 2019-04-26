@@ -210,7 +210,9 @@ def _oneScfprep(oneCalc,ID,paodir=None):
         species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
 #        temp_species,_ = AFLOWpi.prep._resolve_AS_order(inputfile)
 #        species = temp_species.keys()
-        species = re.findall("(\w+).*UPF",inputfile)
+        species = re.findall("(.*).*UPF",inputfile)
+        species = [x.split()[0] for x in species]
+        print species
         splitInput = AFLOWpi.retr._splitInput(inputfile)
 
         Uvals = {}
@@ -226,6 +228,7 @@ def _oneScfprep(oneCalc,ID,paodir=None):
 
             else:
                 Uvals[species[isp]] = 0.001	
+
 
 
 	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=Uvals)
@@ -271,7 +274,9 @@ def updateUvals(oneCalc, Uvals,ID=None):
 		#Get species
 #                species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
 #		species = re.findall("(\w+).*UPF",inputfile)
-		species = re.findall("(\w+)[-_.][A-Za-z].*(?:UPF|upf)",inputfile)
+
+                species = re.findall("(.*).*UPF",inputfile)
+                species = [x.split()[0] for x in species]
 #                AFLOWpi.prep._get_order_from_atomic_species(inputfile)
                 inputDict = AFLOWpi.retr._splitInput(inputfile)
                 inputDict['&system']['lda_plus_u']='.TRUE.'
@@ -462,7 +467,7 @@ def maketree(oneCalc,ID, paodir=None):
 
         return oneCalc
 
-def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25):
+def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25,tetra_nscf=False):
         """
         Add the ncsf input to each subdir and update the master dictionary
         
@@ -495,6 +500,15 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
 			'''Add nosym = .true. and noinv = .true. to file '''
 
                         try:
+                            if "occupations" in splitInput['&system'].keys() and tetra_nscf:
+                                splitInput['&system']['occupations']='"tetrahedra"'
+                                try:
+                                    del splitInput['&system']['smearing']
+                                except: pass
+                                try:
+                                    del splitInput['&system']['degauss']
+                                except: pass
+
                             splitInput['&electrons']['conv_thr']='1.0D-6'
                             splitInput['&system']['nosym']='.True.'
                             splitInput['&system']['noinv']='.True.'
@@ -538,6 +552,11 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
 #                        kpFactor=2.0    
 
 			for kpoint in range(len(scfKPointSplit)-3):
+                            try:
+                                kpFactor[0]
+				scfKPointSplit[kpoint] = str(int(math.ceil(scfKPointSplit[kpoint]\
+                                                                           *kpFactor[kpoint])))
+                            except:
 				scfKPointSplit[kpoint] = str(int(math.ceil(scfKPointSplit[kpoint]*kpFactor)))
 			for kpoint in range(3,len(scfKPointSplit)):
 				scfKPointSplit[kpoint] = '0'
@@ -601,7 +620,7 @@ def projwfc(oneCalc,ID=None,paw=False,ovp=False):
                     prefix = oneCalc['_AFLOWPI_PREFIX_']
 		inputfile = """&PROJWFC
   prefix='%s'
-  filpdos='./%s_TB'
+  filpdos='./%s'
   outdir='%s'
   lwrite_overlaps=%s
   lbinary_data  = .FALSE.

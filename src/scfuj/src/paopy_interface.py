@@ -152,11 +152,15 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',emin)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',emax)
 
-    if float(tb_kp_mult)!=1.0:
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft2','int',nk2)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft3','int',nk3)
+
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft2','int',nk2)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft3','int',nk3)
+
+
+
     if acbn0==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write2file','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write_binary','logical','T')
@@ -245,7 +249,12 @@ def _mult_kgrid(oneCalc,mult=5.0):
 
     inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
     kpt_str  = inputDict['K_POINTS']['__content__']    
-    k_grid = [int(np.ceil(float(x)*mult)) for x in kpt_str.split()[:3]]
+    try:
+        mult[0]
+        tmp_kps = kpt_str.split()[:3]
+        k_grid = [int(np.ceil(float(tmp_kps[x])*mult[x])) for x in range(len(tmp_kps))]
+    except:
+        k_grid = [int(np.ceil(float(x)*mult)) for x in kpt_str.split()[:3]]
 
     return k_grid[0],k_grid[1],k_grid[2]
    

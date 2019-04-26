@@ -142,13 +142,6 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         ac_cond_Berry,spin_Hall,eminBT,emaxBT,eminSH,emaxSH,ac_cond_spin,eff_mass,tmin,tmax,tstep,\
         carrier_conc,high_sym_points,band_path, out_vals = read_inputfile_xml(inputpath,inputfile)
         
-        if double_grid:
-            if nfft1%2!=0 or nfft2%2!=0 or nfft3%2!=0:
-                nfft1 = 2*((nfft1+1)//2)
-                nfft2 = 2*((nfft2+1)//2)
-                nfft3 = 2*((nfft3+1)//2)
-                print('Warning: nfft grid has been modified to support double_grid,')
-                print('modified nfft grid:{} {} {}\n'.format(nfft1,nfft2,nfft3))
        
         fpath = os.path.join(inputpath, fpath)
 
@@ -159,8 +152,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             outDict = {}
             if len(out_vals) > 0:
                 for i in out_vals:
-                    outDict[i] = None
- 
+                    outDict[i] = None 
         #----------------------
         # Check for fftw libraries
         #----------------------
@@ -175,7 +167,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         comm.Barrier()
     except Exception as e:
         print('Rank %d: Exception in FFT Library or Dimension Check'%rank)
-        traceback.print_exc()
+        print(traceback.print_exc())
         comm.Abort()
         raise Exception
     
@@ -254,6 +246,21 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         tau = comm.bcast(tau,root=0)
 
 
+        if double_grid:
+            print_warn=False
+            if nfft1%2!=0 and nk1!=nfft1:
+                print_warn=True
+                nfft1 = 2*((nfft1+1)//2)
+            if nfft2%2!=0 and nk2!=nfft2: 
+                print_warn=True
+                nfft2 = 2*((nfft2+1)//2)
+            if nfft3%2!=0 and nk3!=nfft3:
+                print_warn=True
+                nfft3 = 2*((nfft3+1)//2)
+            if print_warn:
+                print('Warning: nfft grid has been modified to support double_grid,')
+                print('modified nfft grid:{} {} {}\n'.format(nfft1,nfft2,nfft3))
+
 
         #set npool to minimum needed if npool isnt high enough
         int_max = 2147483647
@@ -307,10 +314,18 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                     bnd += 1
             Pn = None
             if verbose: print('# of bands with good projectability > {} = {}'.format(pthr,bnd))
-            if verbose and bnd < nbnds: print('Range of suggested shift ',np.amin(my_eigsmat[bnd,:,:]),' , ', \
-                                            np.amax(my_eigsmat[bnd,:,:]))
-            if shift == 'auto': shift = np.amin(my_eigsmat[bnd,:,:])
+            if verbose and bnd < nbnds:
+                print('Range of suggested shift ',np.amin(my_eigsmat[bnd,:,:]),' , ', \
+                      np.amax(my_eigsmat[bnd,:,:]))
+            elif verbose and bnd == nbnds:
+                print('Range of suggested shift ',np.amin(my_eigsmat[bnd-1,:,:]),' , ', \
+                      np.amax(my_eigsmat[bnd-1,:,:]))
 
+            if shift == 'auto': 
+                try:
+                    shift = np.amin(my_eigsmat[bnd,:,:])
+                except:
+                    shift = np.amax(my_eigsmat[bnd-1,:,:])
     
         # Broadcast 
         bnd = comm.bcast(bnd,root=0)

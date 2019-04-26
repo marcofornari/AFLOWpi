@@ -3,6 +3,7 @@ import AFLOWpi
 import re
 import subprocess
 import os 
+import numpy as np
 
 def _standardize_alat(in_str):
 
@@ -14,10 +15,10 @@ def _standardize_alat(in_str):
         alat=float(si["&system"]["a"])
         return alat
     try:
-
+        a
         AFLOWSYM_LOC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM')
         AFLOW_EXE    = os.path.join(AFLOWSYM_LOC,'aflow')
-        find_sym_process = subprocess.Popen('%s --edata=1.e-9'%AFLOW_EXE,stdin=subprocess.PIPE,stdout=subprocess.PIPE,shell=True)
+        find_sym_process = subprocess.Popen('%s --edata=1.e-1 --no_scan'%AFLOW_EXE,stdin=subprocess.PIPE,stdout=subprocess.PIPE,shell=True)
         output = find_sym_process.communicate(input=in_str)[0]
 
         standard_input = re.findall('SCONV.*\n((?:.*\n)+)',output)[0]
@@ -32,8 +33,13 @@ def _standardize_alat(in_str):
             if alat==0:
                 alat=cell[2][0]
 
+
     except Exception,e:
-        print e
-        alat=0.529177
+#        print e
+        cell_vec = AFLOWpi.retr.getCellMatrixFromInput(in_str).getA()
+
+        lens = np.sqrt(np.sum(cell_vec**2,axis=1))
+        alat=np.amin(lens)*0.529177
+
 
     return alat

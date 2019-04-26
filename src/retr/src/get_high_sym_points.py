@@ -482,13 +482,13 @@ def _path_by_lattice_variation(ibrav_var):
         band_path = 'gG-Y-F-H-Z-I|H1-Y1-X-gG-N|M-gG'
     if ibrav_var=='MCLC5':
         band_path = 'gG-Y-F-L-I|I1-Z-H-F1|H1-Y1-X-gG-N|M-gG'
-    if ibrav_var=='TRI1A':         
+    if ibrav_var=='TRI1a':         
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG' 
-    if ibrav_var=='TRI2A':        
+    if ibrav_var=='TRI2a':        
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-    if ibrav_var=='TRI1B':        
+    if ibrav_var=='TRI1b':        
         band_path = "X-gG-Y|L-gG-Z|N-gG-M|R-gG"
-    if ibrav_var=='TRI2B':        
+    if ibrav_var=='TRI2b':        
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
 
     return band_path

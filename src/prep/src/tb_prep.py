@@ -35,7 +35,7 @@ import time
 from collections import OrderedDict
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss',emin=-5.0,emax=5.0,ne=1000):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss',emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -67,9 +67,9 @@ class tight_binding:
 
 
         command='''if oneCalc["__execCounter__"]<=%s:
-     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=%s,band_factor=%s)
+     oneCalc,ID=AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=%s,band_factor=%s,tetra_nscf=%s)
      oneCalc['__execCounter__']+=1
-     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,kp_factor,band_mult)
+     AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,kp_factor,band_mult,tetra_nscf)
 
         AFLOWpi.prep.addToAll_(self.calcs,'RUN',command) 
         self.step_counter+=1
@@ -174,17 +174,20 @@ class tight_binding:
 
     def transport(self,t_tensor=None,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05):
         '''
-        Wrapper method to call AFLOWpi.scfuj.prep_transport and AFLOWpi.scfuj.run_transport 
-        in the high level user interface. Adds a new step to the workflow.
-
-
+        Wrapper method to call AFLOWpi.scfuj.prep_transport and 
+        AFLOWpi.scfuj.run_transport in the high level user interface. 
+        Adds a new step to the workflow.
 
         Arguments:
               self: the _calcs_container object
 
         Keyword Arguments:
-              epsilon (bool): if True episilon tensor will be computed 
-              temperature (list): list of temperature(s) at which to calculate transport properties
+              tensor (array): 2D array of directions to calculate transport
+              t_min (float): min of temp range to calculate
+              t_max (float): max of temp range to calculate
+              t_step (float): temperature step
+              en_range (array): floats of min and max for energy range
+              de (float): energy step
 
         Returns:
               None
@@ -197,13 +200,21 @@ class tight_binding:
 
 
         ne=float(en_range[1]-en_range[0])/de
-        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor,t_min,t_max,t_step)
+        AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor,t_min,t_max,
+                                              t_step)
 
         calc_type='Transport Properties'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-        ## no temperature parameter for WanT bands so only run 
-        ## it once if run_bands=True in the input the method.
+        calc_type_color = AFLOWpi.run._colorize_message(calc_type,
+                                                        level='DEBUG',
+                                                        show_level=False)
+
+
+        add_step_str = AFLOWpi.run._colorize_message('ADDING TB STEP:  ',
+                                                     level='GREEN',
+                                                     show_level=False)
+        print add_step_str + calc_type_color
+
+        return None
 
 
 
@@ -534,13 +545,13 @@ def _combine_pol_pdos(oneCalc,ID):
     glob_ID =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True,straight=False)
     glob_ID +='_TB'
 
-    glob_ID_up=glob_ID#+'_up'
+    glob_ID_up=glob_ID+'_up'
     glob_ID_dn=glob_ID+'_down'
 
     subdir=oneCalc['_AFLOWPI_FOLDER_']
 
-    pdos_files_up = glob.glob(os.path.join(subdir,'%s.pdos_atm*' % (glob_ID_up)))
-    pdos_files_dn = glob.glob(os.path.join(subdir,'%s.pdos_atm*' % (glob_ID_dn)))
+    pdos_files_up = sorted(glob.glob(os.path.join(subdir,'%s.pdos_atm*' % (glob_ID_up))))
+    pdos_files_dn = sorted(glob.glob(os.path.join(subdir,'%s.pdos_atm*' % (glob_ID_dn))))
                              
     for pdos_file in range(len(pdos_files_up)):
         output_list=[]
@@ -622,6 +633,13 @@ class tb_plotter:
             print '                 %s'% (calc_type)
 
 
+	def apdos(self,yLim=[-5,5],runlocal=False,postfix=''):
+            AFLOWpi.plot.apdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
+
+            calc_type='Plot Atom Projected DOS of PAO-TB Representation'
+            print '                 %s'% (calc_type)
+
+
 	def transport(self,runlocal=False,postfix='',x_range=None):
 		'''
 		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
@@ -684,7 +702,7 @@ class tb_plotter:
             pass
 
 
-def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25):
+def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25,tetra_nscf=False):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -761,7 +779,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
 
 
 
-            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond,band_factor=band_factor)  
+            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond,band_factor=band_factor,tetra_nscf=tetra_nscf)  
 
 
 

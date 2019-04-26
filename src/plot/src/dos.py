@@ -861,6 +861,233 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	except:
 		return ''
 
+def apdos(calcs,yLim=[-10,10],runlocal=False,postfix='',scale=False,tight_binding=False):
+	'''
+	Generates electronic band structure plots for the calculations in the dictionary of dictionaries
+	of calculations with the option to have a DOS or PDOS plot to accompany it.
+
+	Arguments:
+              calcs (dict): dictionary of dictionaries representing the set of calculations
+              
+	Keyword Arguments:
+              yLim (list): List or tuple of two integers for max and min range in horizontal axis of DOS plot
+              LSDA (bool): To plot DOS as spin polarized or not (calculation must have been done as spin polarized)
+              runlocal (bool): Do the plotting right now or if False do it when the calculations are running
+              postfix (str): Postfix to the filename of the plot
+              tight_banding (bool): Whether to treat the input data as from Quantum Espresso or WanT bands.x
+
+        Returns:
+              None
+
+	'''
+
+	for ID,oneCalc in calcs.iteritems():	
+		if runlocal:
+			AFLOWpi.plot.__apdos(oneCalc,ID,yLim,postfix=postfix,scale=scale,tight_binding=tight_binding)
+		else:
+			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__apdos(oneCalc,ID,[%s,%s],postfix='%s',scale=%s,tight_binding=%s)" % (yLim[0],yLim[1],postfix,scale,tight_binding))
+
+
+def __apdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map={}):
+
+        AFLOWpi.plot.__sumpdos(oneCalc,ID,TB=tight_binding)	
+        subdir = oneCalc['_AFLOWPI_FOLDER_']
+
+
+        print 'Plotting atomic projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+        logging.info('Plotting atomic projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
+        petype = AFLOWpi.plot._get_plot_ext_type()
+        fileplot = os.path.join(subdir,'APDOS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix,petype))	
+
+        LSDA=False
+        nspin = int(AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID))
+        if nspin!=1:
+            LSDA=True
+
+	try:
+            if tight_binding==True:
+		    fermi_ID = '%s_WanT_dos'%calcID
+
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
+            else:
+		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
+		    if type(Efermi)!=type(0.5):
+			    Efermi=Efermi[0]
+	except Exception,e:
+		Efermi=0.0
+
+
+        dos_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='bands',last=True)
+
+        width = 12
+	height = 8
+	pylab.figure(figsize=(width, height)) #to adjust the figure size
+
+        ax2=pylab.subplot(111)
+
+
+
+        def getPlotData(sumpdosFile):
+                try:
+                        with open(sumpdosFile,'rb') as dataFile:
+                                data = cPickle.load(dataFile)
+
+                except Exception,e:
+
+                        with open(sumpdosFile,'r') as dataFile:
+                                data = dataFile.read()
+                                data = data.split('\n')
+                                for entry in range(len(data)):
+                                        data[entry]=data[entry].split()
+
+
+
+                en = []
+                pdos = []
+                ldos = []
+                ldosDOWN = []
+                for i in range(1, len(data)):      #append DOS data to en,dos,dosw lists
+                        try:
+                                #to shift all the y values with respect to the Fermi level
+                                en.append(float(data[i][0])-Efermi) 
+                                ldos.append(float(data[i][1]))
+                                pdos.append(float(data[i][2]))
+                                ldosDOWN.append(-1*float(data[i][2]))
+
+                        except Exception, e:
+                                pass
+
+                endos=map(float,en)  #to convert the list x from float to numbers
+                floatdos=map(float,ldos)
+                floatdosDOWN=map(float,ldosDOWN)
+                enshift = numpy.array(endos) #to treat the list b as an array?
+
+                return enshift,floatdos,floatdosDOWN
+
+        maxDOS=0
+        minDOS=0
+        atomName= []
+        pDOSNoPath = []
+        atomList=[]
+
+        if os.path.exists(os.path.join(subdir,'%s_dos.dat'%dos_ID)):
+                pDOSNoPath.append(os.path.join(subdir,'%s_dos.dat'%dos_ID))
+
+
+        alab = AFLOWpi.retr._getPosLabels(oneCalc['_AFLOWPI_INPUT_'])
+
+
+        atomList = []
+        for i in alab:
+                if i not in atomList:
+                        atomList.append(i)
+
+
+        for species in atomList:
+                filePath = os.path.join(subdir,'%s_All.sumpdos' % species)
+                if os.path.exists(filePath):
+                        pDOSNoPath.append(filePath)
+        color = 'k'
+
+        colors = ['b','g','r','m','c', 'y', 'k',"orange"]
+        for fi in range(len(pDOSNoPath)):
+                filename =  pDOSNoPath[fi].split('/')[-1]
+
+                try:
+                        species = re.findall(r'(.+?)_.+',filename)[0]
+
+                except:
+                        if filename=='%s_dos.dat'%dos_ID:
+                                species='TOTAL'
+
+                '''gets the energy and the DOS for the orbital for the atom'''
+
+                enshift, floatdos,floatdosDOWN = getPlotData(pDOSNoPath[fi])
+                """makes a sum of all the pdos for a total"""
+
+
+
+
+                ''' scales DOS to larges value of DOS in the given energy range and finds the largest DOS between the different orbitals'''
+                try:
+                        if max([floatdos[k] for k in range(len(floatdos)) if enshift[k] < yLim[1] and enshift[k] > yLim[0] ]) > maxDOS:
+                                maxDOS = max([floatdos[k] for k in range(len(floatdos)) if enshift[k] < yLim[1] and enshift[k] > yLim[0] ])
+
+                        if min([floatdosDOWN[k] for k in range(len(floatdosDOWN)) if enshift[k] < yLim[1] and enshift[k] > yLim[0] ]) < minDOS:
+                                minDOS = min([floatdosDOWN[k] for k in range(len(floatdosDOWN)) if enshift[k] < yLim[1] and enshift[k] > yLim[0] ])
+                except:
+                    pass
+
+
+                if species in label_map.keys():
+                        species_lab = label_map[species]
+                else:
+                        species_lab = species
+
+                if species=='TOTAL':	
+                        pylab.plot(enshift,floatdos,'-',label=species_lab,color='k',linewidth=2)       
+                else:
+                        pylab.plot(enshift,floatdos,'-',label=species_lab,linewidth=2,color=colors[fi%len(colors)])			   
+
+
+
+
+                if LSDA:
+                        if species=='TOTAL':
+                                pylab.plot(enshift,floatdosDOWN,'-',label=species_lab,color='k',linewidth=2) 
+                        else:
+                                pylab.plot(enshift,floatdosDOWN,'-',label=species_lab,linewidth=2,color=colors[fi%len(colors)])		      
+
+        handles, labels = ax2.get_legend_handles_labels()
+
+        pylab.axvline(0.0, color = 'k', linewidth = 2.0,linestyle='--') #line separating up and down spin
+
+        if LSDA:
+                ax2.legend(handles[::2], labels[::2],fontsize=14,loc=1)
+                dosRange=max([numpy.abs(minDOS),numpy.abs(maxDOS)])
+                pylab.ylim(1.1*minDOS,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range 
+
+                pylab.axhline(0.0, color = 'k', linewidth = 2.0) #line separating up and down spin
+        else:
+                ax2.legend(handles, labels,fontsize=14,loc=1)
+                pylab.ylim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
+
+        pylab.xlim(yLim)
+
+
+
+        ax2.spines['bottom'].set_linewidth(1.5)
+        ax2.spines['left'].set_linewidth(1.5)
+        ax2.spines['right'].set_linewidth(1.5)
+        ax2.spines['top'].set_linewidth(1.5)
+
+
+
+
+
+
+        ax2.yaxis.set_ticks_position('left')
+        pylab.ylabel('Density of States (States/eV)',fontsize=20)
+	pylab.xlabel('E (eV)',fontsize=20)
+
+        ax2.axes.set_yticklabels([])
+#        ax2.axes.xaxis.set_label_position('top')
+        locs, labels = pylab.xticks()
+
+
+	#save fig
+	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+
+	try:
+		AFLOWpi.retr._moveToSavedir(fileplot)
+	except Exception,e:
+		pass
+
+        pyplot.cla()
+	pyplot.clf()
+	pyplot.close()
+
+
 
 def opdos(calcs,yLim=[-10,10],runlocal=False,postfix='',scale=False,tight_binding=False):
 	'''
@@ -887,7 +1114,6 @@ def opdos(calcs,yLim=[-10,10],runlocal=False,postfix='',scale=False,tight_bindin
 			AFLOWpi.plot.__opdos(oneCalc,ID,yLim,postfix=postfix,scale=scale,tight_binding=tight_binding)
 		else:
 			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__opdos(oneCalc,ID,[%s,%s],postfix='%s',scale=%s,tight_binding=%s)" % (yLim[0],yLim[1],postfix,scale,tight_binding))
-
 
 
 def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map={}):

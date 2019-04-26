@@ -4724,7 +4724,7 @@ EXITING.
 		self.addToAll(block='PREPROCESSING',addition=command)
 
 
-	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000):
+	def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
 		self.scf_complete=True
 		self.tight_banding==False
 		self.type='PAO-TB'
@@ -4744,7 +4744,7 @@ EXITING.
 			
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
-		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne)
+		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne,tetra_nscf=tetra_nscf)
 
 
 
@@ -5426,6 +5426,35 @@ class plotter:
 
 		calc_type='Plot Orbital Projected DOS'
 		print '                 %s'% (calc_type)
+
+	def apdos(self,yLim=[-10,10],runlocal=False,postfix=''):
+		'''
+		Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.
+
+		Arguments:
+		      self: the plotter object
+
+		Keyword Arguments:
+		      yLim (list): a tuple or list of the range of energy around the fermi/Highest
+		                    occupied level energy that is to be included in the plot.
+		      LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
+		                    calculation.
+		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
+               	                        or write it to the _ID.py to run during the workflow
+		      postfix (string): a string of an optional postfix to the plot filename for every
+		                         calculation.
+
+		Returns:
+		      None
+
+		'''
+
+		AFLOWpi.plot.apdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
+
+		calc_type='Plot Atom Projected DOS'
+		print '                 %s'% (calc_type)
+
+
 
 
 	def phonon(self,runlocal=False,postfix='',THz=True):
