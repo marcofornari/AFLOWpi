@@ -21,7 +21,7 @@ def _setup_environ(calcs):
 
         AFLOWpi.prep.totree(pwx_exec_loc, calcs,rename=None,symlink=symlink)
 
-        step_counter+=1
+
 
         command='''if oneCalc["__execCounter__"]<=%s:
      oneCalc,ID=AFLOWpi.environ._run_environ_iterative(__submitNodeName__,oneCalc,ID)
@@ -30,7 +30,7 @@ def _setup_environ(calcs):
 
         AFLOWpi.prep.addToAll_(calcs,'RUN',command) 
 
-
+        step_counter+=1
 
 
 

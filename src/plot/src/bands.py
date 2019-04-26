@@ -874,10 +874,11 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 		if int(HSPList[i]) == 0 and i<len(HSPList)-2: # for the end of a path (where the number of k points between one point and another is zero)
 			continue
 		elif int(HSPList[i+1]) == 0 and i!=len(HSPList)-2: # for the point that begins a new path where the end of the last path (which has zero k points from it to this k point)
-			if not tight_banding:
-				totalX +=(int(HSPList[i])+1)
-			else:
-				totalX +=(int(HSPList[i]))
+                        totalX +=(int(HSPList[i])+1)
+			# if not tight_banding:
+			# 	totalX +=(int(HSPList[i])+1)
+			# else:
+			# 	totalX +=(int(HSPList[i]))
 			symIndex.append(totalX)
 			mid = '|'
 			pathBetweenString = HSPSymList[i+1]+mid+HSPSymList[i+2]
