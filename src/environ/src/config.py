@@ -34,7 +34,7 @@ class EnvironConfig():
 
 			# by default set to fa-sscs, maybe change
 			self.config['environment'] = 'water'
-			self.config['interface'] = 'fa-sscs'
+			self.config['interface'] = 'fa-ionic'
 
 		# read from existing environ-config file 
 		elif mode == 'run':
@@ -48,6 +48,12 @@ class EnvironConfig():
 		self.config['pdict'][param] = rangelist
 		self.config['mode'] = 'loop'
 		self.config['param'] = param
+
+	def edit(self, key, val):
+		if 'edit' in self.config:
+			self.config['edit'].append([key, val])
+		else:
+			self.config['edit'] = [[key, val]]
 
 	def set_sccs(self):
 		pass
