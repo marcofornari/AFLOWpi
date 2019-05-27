@@ -274,7 +274,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
                         oneJobBool=True
                         sajO=False
-
+                    raise SystemExit
                     AFLOWpi.run._submitJob(ID_new,oneCalc_new,__submitNodeName__,forceOneJob=oneJobBool,sajOverride=sajO)
                 if not pass_through:
                     sys.exit(0)                    

@@ -558,10 +558,8 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
     
     phil = glob.glob(globpath+'/displaced*.in')
 
-
-
-
     infile=    reduce_kpoints(oneCalc["_AFLOWPI_INPUT_"],[nrx1,nrx2,nrx3,])
+
     splitInput = AFLOWpi.retr._splitInput(infile)
     kpoints = splitInput['K_POINTS']['__content__']
     mod = splitInput['K_POINTS']['__modifier__']

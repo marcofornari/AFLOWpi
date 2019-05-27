@@ -3482,8 +3482,9 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 		    refDict=collections.OrderedDict() 
 			
 
+
                     
-         
+        
             inputFile = AFLOWpi.prep._removeComments(inputFile)
 
             if workdir==None:            
@@ -3509,6 +3510,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                     pseudodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), pseudodir))
 
             inputfile = inputFile
+
             configFileName = AFLOWpi.prep._getConfigFile()
 
             DICT = collections.OrderedDict()
@@ -3555,7 +3557,6 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
 
             atomicSpecString='\n'.join(atomicSpeciesList)+'\n'
-
             inputCalc = AFLOWpi.retr._splitInput(inputfile)
 	    #set atomic_species card to blank so it can be filled in later
 	    try:
@@ -3563,32 +3564,52 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 	    except:
 		    pass
 
-	    
+
+
+            #clean up DP float from CELL_PARAMETERS
+            try:
+
+#                    print inputCalc.keys()
+                    fort = inputCalc['CELL_PARAMETERS']['__content__']
+                    cellParamMatrix = AFLOWpi.retr._cellStringToMatrix(fort)
+                    fort = AFLOWpi.retr._cellMatrixToString(cellParamMatrix)
+                    inputCalc['CELL_PARAMETERS']['__content__'] = fort
+            except Exception,e: pass
+
                     
-	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC','IBRAV','CALCULATION']
+	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)',
+                                 'CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC',
+                                 'COSBC','IBRAV','CALCULATION','__CONTENT__','__MODIFIER__']
 
             for namelist,entries in refDict.iteritems():
                 try:
                     if namelist not in inputCalc.keys():
                         '''if an input namelist from the ref isn't in the input file add it '''
                         inputCalc[namelist]=collections.OrderedDict()
+
                     for variable,value in entries.iteritems():
                         #replace entries in input from ref input when both in ref and input
                         #only if we have the ref_override flag set to True.
                         if ref_override == True:
 				if variable.upper() not in do_not_replace_list:
-					'''if a variable from the namelist in the ref isn't in the input file add it'''
+					'''if a variable from the namelist in the
+                                           ref isn't in the input file add it'''
 					inputCalc[namelist][variable]=value
 			else:
                                 if variable not in inputCalc[namelist].keys():
-					'''don't replace the celldm and A,B,C in the input files with ones from ref'''
-					if variable.upper() not in do_not_replace_list:
-					     inputCalc[namelist][variable]=value
+
+					'''don't replace the celldm and A,B,C in
+                                           the input files with ones from ref'''
+                                        if variable.upper() not in do_not_replace_list:
+
+                                                inputCalc[namelist][variable]=value
 
                 except Exception,e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
 
+            inputCalc = AFLOWpi.retr._orderSplitInput(inputCalc)
+            inputfile = AFLOWpi.retr._joinInput(inputCalc)
 
 	    if "ibrav" not in inputCalc["&system"].keys():
 		    inputCalc["&system"]["ibrav"]="0"
@@ -3645,7 +3666,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             inputCalc = AFLOWpi.retr._orderSplitInput(inputCalc)
             inputfile = AFLOWpi.retr._joinInput(inputCalc)
-
+            
 	    CONFIG_FILE='../AFLOWpi/CONFIG.config'
             DICT.update({'_AFLOWPI_CONFIG_':CONFIG_FILE})
 
@@ -3689,8 +3710,6 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             if orig_ibrav!=0:
                     DICT = AFLOWpi.prep.store_orig_cell_params(DICT,inputfile)
-
-
                 
 	    if clean_input==True:
 		    inputfile = AFLOWpi.prep._cleanInputStringSCF(inputfile)                            
