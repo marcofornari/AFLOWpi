@@ -5264,7 +5264,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def epsilon(self,kpFactor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False,occ=False):
+        def epsilon(self,kpFactor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
 		'''
 		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
 		Adds a new step to the workflow.
@@ -5297,6 +5297,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.new_step(update_positions=True,update_structure=True)
 		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
                 
+                occ=False
 
                 command = "AFLOWpi.run._write_qe_eps_in(oneCalc,ID,intersmear=%s,wmin=%s,wmax=%s,nw=%s,smeartype='%s',intrasmear=%s,metalcalc=%s,jdos=%s,offdiag=%s,occ=%s)"%(intersmear,wmin,wmax,nw,smeartype,intrasmear,metalcalc,jdos,offdiag,occ)
 		self._addToAll(block='PREPROCESSING',addition=command)	
