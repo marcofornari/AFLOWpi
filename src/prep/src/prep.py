@@ -5263,6 +5263,90 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
 
+
+        def epsilon(self,kpFactor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False,occ=False):
+		'''
+		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
+		Adds a new step to the workflow.
+
+		Arguments:
+		      self: the _calcs_container object
+
+		Keyword Arguments:
+		      kpFactor (float): factor to which the k-point grid is made denser in each direction                              
+                      wmin (float): min frequency (default is 0.0)
+                      wmax (float): max frequency (default is 30.0)
+                      nw (int) number of frequency sampling points (default is 600)
+                      smeartype (string): type of smearing (default is 'gauss')
+                      intersmear (float): smearing width for inter-band elements (in eV)
+                      intrasmear (float): smearing width for intra-band elements (in eV)
+                      metalcalc (bool): consider using if system is metallic (default is False)
+                      jdos (bool):  if True: calculate joint density of states (default is False)
+                      offdiag (bool): if True: calculate off diag matrix elementes of dielectric tensor (default is False)
+                      occ (bool): if True: calculate occupation factors and its first derivative (default is False)
+
+		Returns:
+		      None
+
+		'''
+		self.tight_banding=False
+		self.type='epsilon'
+                self.change_input('&system','nosym','.TRUE.')
+		self.change_input('&system','noinv','.TRUE.')
+		self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)		
+		self.new_step(update_positions=True,update_structure=True)
+		self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
+                
+
+                command = "AFLOWpi.run._write_qe_eps_in(oneCalc,ID,intersmear=%s,wmin=%s,wmax=%s,nw=%s,smeartype='%s',intrasmear=%s,metalcalc=%s,jdos=%s,offdiag=%s,occ=%s)"%(intersmear,wmin,wmax,nw,smeartype,intrasmear,metalcalc,jdos,offdiag,occ)
+		self._addToAll(block='PREPROCESSING',addition=command)	
+
+
+		AFLOWpi.run.scf(self.int_dict)
+
+                AFLOWpi.run._skeletonRun(self.int_dict,calcType="eps",
+                                         execPath='"./epsilon.x"')
+
+
+		calc_type='Epsilon'
+		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+                if jdos:
+                        AFLOWpi.run._skeletonRun(self.int_dict,calcType="eps_jdos",
+                                                 execPath='"./epsilon.x"')
+                        calc_type='Joint Density of States'
+                        print AFLOWpi.run._colorize_message('ADDING EPS STEP: ',level='GREEN',show_level=False)+\
+                                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+                if offdiag:
+                        AFLOWpi.run._skeletonRun(self.int_dict,calcType="eps_offdiag",
+                                                 execPath='"./epsilon.x"')
+                        calc_type='Off Diagonal Elements'
+                        print AFLOWpi.run._colorize_message('ADDING EPS STEP: ',level='GREEN',show_level=False)+\
+                                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+                if occ:
+                        AFLOWpi.run._skeletonRun(self.int_dict,calcType="eps_occ",
+                                                 execPath='"./epsilon.x"')
+                                                 
+                        calc_type='Occupation Factors'
+                        print AFLOWpi.run._colorize_message('ADDING EPS STEP: ',level='GREEN',show_level=False)+\
+                                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+
+
+                engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')	
+                if os.path.isabs(engineDir) == False:
+                        configFileLocation = AFLOWpi.prep._getConfigFile()
+                        configFileLocation = os.path.dirname(configFileLocation)
+                        engineDir =  os.path.join(configFileLocation, engineDir)
+
+                eps_path = os.path.join(engineDir,'epsilon.x')
+
+                AFLOWpi.prep.totree(eps_path, self.int_dict,rename=None,symlink=False)
+
+
+
+
+
+
         def berry(self,kpFactor=2):
 		'''
 		Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
