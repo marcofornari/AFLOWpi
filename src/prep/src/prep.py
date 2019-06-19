@@ -3204,17 +3204,17 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 
 
 	if CALCS_TUPLE[0]:
-
                 index=0
 		for i in CALCS_TUPLE:
 			inputfile2 = inputfile
 			D = copy.deepcopy(DICT)
 			for k,v in enumerate(i):
+
                             try:
 				key = PARAM_LABELS[k]
 				D[key] = v
 				inputfile2 = re.sub(key,v,inputfile2)
-
+                                
                             except Exception,e:
                                 AFLOWpi.run._fancy_error_log(e)
 #################################################################################################################### 
@@ -3255,10 +3255,14 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 			    orig_ibrav = int(input_dict['&system']['ibrav'])
 			    D['_AFLOWPI_ORIG_IBRAV_']=orig_ibrav
 
+
                             if orig_ibrav!=0:
-                                    oneCalc = AFLOWpi.prep.store_orig_cell_params(D,inputfile)
+                                    oneCalc = AFLOWpi.prep.store_orig_cell_params(D,inputfile2)
+
 
                             inputfile2 = AFLOWpi.prep._cleanInputStringSCF(inputfile2,convert=convert)                       
+
+
                             calc_label = AFLOWpi.prep._hash64String(inputfile2)
 
                             kp = '_AFLOWPI_PREFIX_'
