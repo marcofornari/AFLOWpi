@@ -12,11 +12,8 @@ Iron
     ecutwfc = 44.0, ecutrho = 482.0
     report=1,
     occupations='smearing', smearing='marzari-vanderbilt', degauss=0.02
-    noncolin = .true.
-    lspinorb=.true.
-    starting_magnetization(1) = 0.5
-    angle1(1) =  0.1
-    angle2(1) = -0.1
+    starting_magnetization(1)=0.5
+    nspin=2,
  /
  &electrons
     startingwfc='random'

@@ -15,7 +15,7 @@ calcs = session.from_file("GaAs.in")
 calcs.change_input("K_POINTS","__content__","8 8 8 1 1 1")
 
 calcs.scf()
-calcs.epsilon(offdiag=True,occ=True,jdos=True)
+calcs.epsilon(offdiag=True,jdos=True)
 
 
 calcs.submit()
