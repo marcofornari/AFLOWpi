@@ -1,0 +1,22 @@
+&ENVIRON
+  environ_type = "input"
+  env_surface_tension = 50.000000
+  env_pressure = -0.350000
+  env_static_permittivity = 78.300000
+  env_electrostatic = .TRUE.
+/
+&BOUNDARY
+  radius_mode = "muff"
+  solvent_mode = "fa-ionic"
+  boundary_core = "lowmem"
+  alpha = 1.120000
+  field_awareness = 0.010000
+  charge_asymmetry = 0.000000
+  field_min = 10.000000
+  field_max = 12.000000
+/
+&ELECTROSTATIC
+  pbc_correction = "parabolic"
+  pbc_dim = 0
+  tol = 1.000000e-10
+/

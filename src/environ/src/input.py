@@ -159,7 +159,7 @@ class EnvironFile():
 			
 			return
 
-		elif interface == 'fa-sscs':
+		elif interface == 'fa-ionic':
 			# set defaults in case they changed (remove in the future?)
 			self.set_defaults()
 
@@ -244,6 +244,14 @@ class EnvironFile():
 					f.write(s+'tol = %e\n'%(self.edict['tol']))
 				f.write('/\n')
 
+	def edit(self, key, val):
+		if not key in self.edict:
+			print 'key not found, have you set up the environ file correctly?'
+			return
+		# TODO sanity check the input
+		self.edict[key] = val
+		return
+
 def get_environ_input(mode, wdir=None, **kwargs):
 	if mode == 'from_file':
 		# try and see if there is an existing environ file and if so copy
@@ -278,6 +286,10 @@ def get_environ_input(mode, wdir=None, **kwargs):
 		interface = configd['interface']
 		mode = configd['environment']
 		efile = EnvironFile(mode=mode, interface=interface)
+		# edit depending on config file
+		if 'edit' in configd and configd['edit']:
+			for edit in configd['edit']:
+				efile.edit(edit[0], edit[1])
 		print kwargs
 		if 'loopval' in kwargs and 'loopparam' in kwargs:
 			# part of a loop, thus do a substitution based on the param fed in

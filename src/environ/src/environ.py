@@ -76,7 +76,7 @@ def setup_scf(calcs, config=None, environmode='from_file'):
 	pwx, symlink = _execheck()
 
 	AFLOWpi.prep.totree(pwx, calcs, rename=None, symlink=symlink)
-	
+
 	execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 	execPostfix=AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
 	runcommand='''oneCalc, ID = AFLOWpi.environ._run_environ_scf(__submitNodeName__, oneCalc, ID, execPrefix="%s",
