@@ -7,7 +7,6 @@
 import os
 import csv
 import sys
-import scipy.io as sio
 import numpy as np
 from numpy import linalg as la
 from scipy import linalg as sla
@@ -135,9 +134,11 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
         #Mind that Hk has to be in nonorthogonal basis
         Hk = Hks[:,:,ik]
         Sk = Sks[:,:,ik] 
+        
+        load = False
 
         w,v =sla.eigh(Hk,Sk) #working with the transposes
-
+        
         #arranging the eigs
         evals     =np.sort(w)
         evecs     =v[:,w.argsort()]
@@ -172,10 +173,14 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
         Nlm_k[:,:nocc_mo,ik]=n_lm_2e
         uuvv_evecs=evecs[:,occ_indexes]
         n_lm_dm_sum=np.sum(n_lm_dm,0)
-        for uu in range(nbasis):
-            uu_vec=uuvv_evecs[uu]*n_lm_dm_sum 
-            for vv in range(nbasis):
-                Dk[uu,vv,ik] = np.vdot(uu_vec,uuvv_evecs[vv]) 
+
+        try:
+           Dk[:,:,ik] = np.tensordot(np.conj(uuvv_evecs*n_lm_dm_sum),uuvv_evecs,axes=([1],[1])) 
+        except:
+            for uu in range(nbasis):
+                uu_vec=uuvv_evecs[uu]*n_lm_dm_sum 
+                for vv in range(nbasis):
+                    Dk[uu,vv,ik] = np.vdot(uu_vec,uuvv_evecs[vv]) 
 
 
 
