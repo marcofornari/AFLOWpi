@@ -310,7 +310,7 @@ def __combinePDOS(dosfiles):
 def __sumpdos(oneCalc,ID,TB=False):
 	'''
 	Takes the output files from projwfx.x that is called in the ppDOS function and sums 
-	the projected orbitals across the files of each orbital for each atomic species
+	the projected orbitals across the files of each orbital for each atomic speci5Bes
 	and outputs the summed data in files named <species>_<orbital>.sumpdos.
 
 
@@ -332,10 +332,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	'''get a list of all the pdos files to be combined then plotted'''
 	atomList = []
 	pDOSDict = {}
-	for k,v in oneCalc.iteritems():
-		if re.match(r'_AFLOWPI_[A-Z][0-9]*_',k):
-			atomList.append(v)
-
+        atomList=AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=False).keys()
 	
 	'''
 	just the possible names of orbitals that projwfc.x will output
@@ -1137,11 +1134,9 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         atomList=[]
 	atomPlotArray = collections.OrderedDict()
 	perSpecies = collections.OrderedDict()
-        for k,v in oneCalc.iteritems():
-                if re.match(r'_AFLOWPI_[A-Z][0-9]*_',k):
-                        atomList.append(v)
 
-	atomList = sorted(list(set(atomList)))
+        atomList=AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=False).keys()
+
 
 
 	#to set figure size and default fonts
