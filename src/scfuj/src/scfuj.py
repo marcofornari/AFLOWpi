@@ -156,13 +156,13 @@ def _getPAOfilename(atom,PAOdir=None):
 
 
 #def scfprep(allAFLOWpiVars,refFile,pseudodir=None,paodir=None,build_type='product'):
-def scfprep(calcs,paodir=None):
+def scfprep(calcs,paodir=None,U_eff=True):
     output_calcs=copy.deepcopy(calcs)
     for ID,oneCalc in calcs.iteritems():
-        AFLOWpi.prep._addToBlock(oneCalc,ID,'PREPROCESSING','oneCalc,ID = AFLOWpi.scfuj._oneScfprep(oneCalc,ID)') 
+        AFLOWpi.prep._addToBlock(oneCalc,ID,'PREPROCESSING','oneCalc,ID = AFLOWpi.scfuj._oneScfprep(oneCalc,ID,U_eff=%s)'%U_eff) 
     return output_calcs
 
-def _oneScfprep(oneCalc,ID,paodir=None):
+def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
 	"""
 	Read a ref file (str), the dictionary defining the calculations, and the dictionary with the aflowkeys Create the dir 
         tree for the run and return a dictionary dictAllcalcs with all the calculations. Store the dictionary in a log file
@@ -215,24 +215,33 @@ def _oneScfprep(oneCalc,ID,paodir=None):
         print species
         splitInput = AFLOWpi.retr._splitInput(inputfile)
 
+
         Uvals = {}
+        Jvals = {}
         uppered_system={}
         for k,v in splitInput['&system'].iteritems():
             uppered_system[k.upper()]=v
 
+
         for isp in range(len(species)):
             if 'HUBBARD_U(%s)' % (isp+1) in uppered_system.keys():
                 startingUval = float(uppered_system['HUBBARD_U(%s)' % (isp+1)])
-
                 Uvals[species[isp]] = startingUval
-
             else:
-                Uvals[species[isp]] = 0.001	
+                Uvals[species[isp]] = 0.001
+
+            if U_eff==False:
+                if 'HUBBARD_J0(%s)' % (isp+1) in uppered_system.keys():
+                    startingJval = float(uppered_system['HUBBARD_J0(%s)' % (isp+1)])
+                    Jvals[species[isp]] = startingJval
+                else:
+                    Jvals[species[isp]] = 0.001	
 
 
 
 	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=Uvals)
-        new_calc = updateUvals(oneCalc,Uvals,ID=ID)
+	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='jValue',value=Jvals)
+        new_calc = updateUvals(oneCalc,Uvals,Jvals,ID=ID,U_eff=U_eff)
 
         new_inputfile = new_calc['_AFLOWPI_INPUT_']
         calc_label = ID
@@ -260,7 +269,7 @@ def _oneScfprep(oneCalc,ID,paodir=None):
         
 	return output_oneCalc,calc_label
 
-def updateUvals(oneCalc, Uvals,ID=None):
+def updateUvals(oneCalc, Uvals,Jvals,ID=None,U_eff=True):
 	"""
 	Modify scf input file to do a lda+u calculation.
 	
@@ -291,6 +300,10 @@ def updateUvals(oneCalc, Uvals,ID=None):
                 for isp in range(len(species)):
                     hub_entry = 'Hubbard_U(%s)'% str(isp+1)
                     inputDict['&system'][hub_entry] = Uvals[species[isp]]
+                    if U_eff==False:
+                        hubj_entry = 'Hubbard_J0(%s)'% str(isp+1)
+                        inputDict['&system'][hubj_entry] = Jvals[species[isp]]
+
          	#Update inputfile
                 oneCalc['_AFLOWPI_INPUT_']=AFLOWpi.retr._joinInput(inputDict)
                 print AFLOWpi.retr._joinInput(inputDict)
@@ -467,7 +480,7 @@ def maketree(oneCalc,ID, paodir=None):
 
         return oneCalc
 
-def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25,tetra_nscf=False):
+def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25,tetra_nscf=False,wsyminv=False):
         """
         Add the ncsf input to each subdir and update the master dictionary
         
@@ -510,8 +523,11 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
                                 except: pass
 
                             splitInput['&electrons']['conv_thr']='1.0D-6'
+
+                            
                             splitInput['&system']['nosym']='.True.'
                             splitInput['&system']['noinv']='.True.'
+
                             splitInput['&control']['verbosity']='"high"'
 #                            splitInput['&control']['wf_collect']='.TRUE.'
                             splitInput['&control']['calculation']='"nscf"'
@@ -1003,7 +1019,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                         positions=AFLOWpi.retr._convertCartesian(positions,cellParaMatrix,scaleFactor=1.0)
                         #in bohr
 
-                        positions*=ALAT
+
                         positions*=a
                        
 
@@ -1078,13 +1094,16 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
        				#Get list of all orbitals of type ql of the same species
                                     eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s.*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
-#                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s.*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
+
+
                                     
                                     eqOrbList = map(int, map(float, eqOrbRegex.findall(proj_lines)))
                                     red_basis = [x - 1 for x in eqOrbList]
 
+                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
 				#Get ones relevant for hubbard center
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*%s.*l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
+
+
                                 else:
 
                                     getSpecByAtomRegex = re.compile(r"state #\s*(?:\d*): atom\s*%s\s*\(([a-zA-Z]+)"%atmSp)
@@ -1104,7 +1123,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                               
 
 				eqOrbList = map(int, map(float,eqOrbRegex.findall(proj_lines)))#;print eqOrbList
-
+                            
 				red_basis_for2e = [x - 1 for x in eqOrbList]
 				#Get list of orbitals of type l for one atom of the species
 				red_basis_2e = []
@@ -1160,7 +1179,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 	run_acbn0(acbn0_inFileList)
 
 
-def getU_frmACBN0out(oneCalc,ID,byAtom=False):
+def getU_frmACBN0out(oneCalc,ID,byAtom=False,U_eff=True):
 
         oneCalcID = ID#oneCalc['_AFLOWPI_PREFIX_'][1:] 
         subdir = oneCalc['_AFLOWPI_FOLDER_'] 
@@ -1178,7 +1197,10 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
             uvalLogName='_uValLog_byAtom.log'
         
 	Uvals = {}
-                
+	Jvals = {}
+                                    
+
+
         for isp in species:
         	#Check for acbn0 output in the work directory
 		try:
@@ -1188,13 +1210,19 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 				try:
 					lines = file(acbn0_outFile, 'r').read()
 					acbn0_Uval = re.findall("U_eff\s*=\s*([-]*\d+.\d+)",lines)[0]
+                                        acbn0_Jval = 0.0
+                                        if not U_eff:
+                                            acbn0_Uval = re.findall("Parameter U=\s*([-]*\d+.\d+)",lines)[0]
+                                            acbn0_Jval = re.findall("Parameter J=\s*([-]*\d+.\d+)",lines)[0]
 
 					Uvals[isp] = float(acbn0_Uval)
+					Jvals[isp] = float(acbn0_Jval)
 				except Exception,e:
 					AFLOWpi.run._fancy_error_log(e)
 
 			else:
 				Uvals[isp] = 0.001
+				Jvals[isp] = 0.001
 
 		except Exception,e:
 			AFLOWpi.run._fancy_error_log(e)
@@ -1209,19 +1237,23 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 	except Exception,e:
 		AFLOWpi.run._fancy_error_log(e)
 
-	return Uvals
+	return Uvals,Jvals
 
 
-def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6):
+def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6,U_eff=False):
 
     temp_calcs=copy.deepcopy(calcs)
     for ID,oneCalc in calcs.iteritems():
 	    uThreshDict={}
+	    jThreshDict={}
 	    for key in oneCalc.keys():
 
                 if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
                     
                     uThreshDict[oneCalc[key]]=uThresh
+                    if U_eff==False:
+                        jThreshDict[oneCalc[key]]=uThresh/2.0
+                    
             
             '''
             in the chance that the input file to the frame already has
@@ -1238,8 +1270,12 @@ def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6):
                         pass                  
                 for i in range(len(isolated_spec)):
                     try:
+
                         initial_U = splitInput['&system']['Hubbard_U(%s)'%(i+1)]
                         uThreshDict[isolated_spec[i]] = float(initial_U)
+                        if U_eff==False:
+                            initial_J = splitInput['&system']['Hubbard_J0(%s)'%(i+1)]
+                            jThreshDict[isolated_spec[i]] = float(initial_J)
                     except:
                         pass
             except Exception,e:
@@ -1249,7 +1285,7 @@ def run(calcs,uThresh=0.001,nIters=20,mixing=0.10,kp_mult=1.6):
 
 uValue = %s
 
-oneCalc, newUvals = AFLOWpi.scfuj._run(__submitNodeName__,oneCalc,ID,config=configFile,mixing=%s,kp_mult=%s)
+oneCalc, newUvals = AFLOWpi.scfuj._run(__submitNodeName__,oneCalc,ID,config=configFile,mixing=%s,kp_mult=%s,U_eff=%s)
 print "New U values ", str(newUvals).strip('{}')
 logging.info('newUvals = {0}'.format(newUvals))
 for key in uValue.keys():
@@ -1278,7 +1314,7 @@ logging.info('Completed scfuj convergence for final U values = {0}'.format(newUv
 print 'Completed scfuj convergence for final U values = ',str(newUvals).strip('{}')
 
 
-'''  % (uThreshDict,mixing,kp_mult,uThresh,nIters,uThresh,nIters-1)
+'''  % (uThreshDict,mixing,kp_mult,U_eff,uThresh,nIters,uThresh,nIters-1)
             if AFLOWpi.prep._findInBlock(oneCalc,ID,block='RUN',string='uValue') == False:
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',loopblock)
             if AFLOWpi.prep._findInBlock(oneCalc,ID,block='IMPORT',string='import sys') == False:
@@ -1370,7 +1406,7 @@ print 'Completed scfuj convergence for final U values = ',str(newUvals).strip('{
 #     return oneCalcOrig
 
 
-def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
+def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff=True):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -1423,7 +1459,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
         subdir = oneCalc['_AFLOWPI_FOLDER_']
 	oneCalc['_AFLOWPI_CONFIG_']=config
 
-        nscf_calc,nscf_ID= nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult,band_factor=1.0)	
+        nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult,band_factor=1.0,wsyminv=True)	
 ##################################################################################################################
 	
 ##################################################################################################################
@@ -1467,8 +1503,10 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
 
-        newUvals = getU_frmACBN0out(oneCalc,ID)
+        newUvals,newJvals = getU_frmACBN0out(oneCalc,ID,U_eff=U_eff)
         Uvals=newUvals
+        Jvals=newJvals
+
         #slight to help with oscillation
         try:
             old_U = oneCalc['_AFLOWPI_UVALS_']
@@ -1481,9 +1519,10 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6):
 
 
         oneCalc['_AFLOWPI_UVALS_']=newUvals
+        oneCalc['_AFLOWPI_JVALS_']=newJvals
 
         #Update Uvals
-        oneCalc = updateUvals(oneCalc, newUvals,ID=ID)
+        oneCalc = updateUvals(oneCalc, newUvals,newJvals,ID=ID,U_eff=U_eff)
 	#update Uvals in _<ID>.py
 	AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=newUvals)
 
