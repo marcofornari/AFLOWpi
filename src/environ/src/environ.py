@@ -15,12 +15,16 @@ def _execheck():
 		raise SystemExit
 	return pwx_exec_loc, symlink
 
-def setup_relax(calcs):
+def setup_relax(calcs, config=None, environmode='from_file'):
 	"""SETUP_RELAX
 	this function should only need to worry about making sure
 	calculation is a relax and that the environ.in file is
 	correctly copied over
 	"""
+
+	print "entering SETUP"
+	if config is not None:
+		print "config set to not None"
 
 	# TODO remove commented code once testing is complete
 
@@ -41,19 +45,26 @@ def setup_relax(calcs):
 	
 	execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 	execPostfix=AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-	command='''oneCalc, ID = AFLOWpi.environ._run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix="%s",
+	runcommand='''oneCalc, ID = AFLOWpi.environ._run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix="%s",
 		execPostfix="%s")
 oneCalc['__execCounter__']+=1
 AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(execPrefix, execPostfix)
 
-	AFLOWpi.prep.addToAll_(calcs,'RUN',command) 
-
 	working_directory = os.getcwd() + "/"
-	print "trying to copy environ file...", working_directory
-	environ_copy = """import shutil
-shutil.copy("%s" + "environ.in", os.getcwd() + "/" + "environ.in")"""%(working_directory)
+	param_pre = """wdir = '%s'"""%(working_directory)
+	if config is not None:
+		param_pre = AFLOWpi.environ.set_params(config)
+	if config is None:
+		environ_pre = """AFLOWpi.environ.get_environ_input('%s', wdir)"""%(environmode)
+	else:
+		environ_pre = """import shutil"""
 
-	AFLOWpi.prep.addToAll_(calcs, 'PREPROCESSING', environ_copy) 
+	AFLOWpi.prep.addToAll_(calcs, 'PREPROCESSING', param_pre)
+	AFLOWpi.prep.addToAll_(calcs, 'PREPROCESSING', environ_pre)
+
+	if config is not None:
+		runcommand = AFLOWpi.environ.set_workflow(config, 'relax', execPrefix, execPostfix)
+	AFLOWpi.prep.addToAll_(calcs, 'RUN', runcommand)
 
 def setup_scf(calcs, config=None, environmode='from_file'):
 	"""SETUP_SCF
@@ -96,7 +107,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(execPrefix, execPostfix)
 	AFLOWpi.prep.addToAll_(calcs, 'PREPROCESSING', environ_pre)
 
 	if config is not None:
-		runcommand = AFLOWpi.environ.set_workflow(config, execPrefix, execPostfix)
+		runcommand = AFLOWpi.environ.set_workflow(config, 'scf', execPrefix, execPostfix)
 	AFLOWpi.prep.addToAll_(calcs, 'RUN', runcommand)
 
 def _run_environ_iterative(__submitNodeName__,oneCalc,ID):

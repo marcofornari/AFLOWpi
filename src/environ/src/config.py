@@ -32,9 +32,10 @@ class EnvironConfig():
 			self.config['pdict'] = {}
 			self.config['workdir'] = workdir
 
-			# by default set to fa-sscs, maybe change
-			self.config['environment'] = 'water'
+			# by default set to fa-ionic, maybe change
+			self.config['solvent'] = 'water'
 			self.config['interface'] = 'fa-ionic'
+			self.config['diffuse'] = 'none'
 
 		# read from existing environ-config file 
 		elif mode == 'run':
@@ -55,8 +56,11 @@ class EnvironConfig():
 		else:
 			self.config['edit'] = [[key, val]]
 
-	def set_sccs(self):
-		pass
+	def set_interface(self, interface):
+		self.config['interface'] = interface
+
+	def set_diffuse(self, diffuse):
+		self.config['diffuse'] = diffuse
 
 	def write_to_file(self):
 		with open(os.path.join(self.config['workdir'], 'AFLOWpi', 'environ.json'), 'w') as f:
@@ -71,14 +75,14 @@ def set_params(config):
 	print 'set_params output: %s'%(astr)
 	return astr
 
-def set_workflow(config, execPrefix, execPostfix):
-	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_scf(__submitNodeName__, oneCalc, ID,
+def set_workflow(config, mode, execPrefix, execPostfix):
+	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_%s(__submitNodeName__, oneCalc, ID,
 		execPrefix="%s", execPostfix="%s")
 oneCalc['__execCounter__']+=1
-AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(execPrefix, execPostfix)
+AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(mode, execPrefix, execPostfix)
 
 	astr = ""
-	if config.config['mode'] == 'loop':
+	if 'mode' in config.config and config.config['mode'] == 'loop':
 		# 1D loop add to script
 		param = config.config['param']
 		plist = config.config['pdict'][param]
@@ -88,6 +92,10 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(execPrefix, execPostfix)
 			astr += ("loopidx += 1\n")
 			astr += scfsingle + '\n'
 			astr += ("shutil.copy(ID+'.out', 'STEP_%02d'%loopidx)\n")
+	else:
+		# no loops
+		astr += "AFLOWpi.environ.get_environ_input('from_config')\n"
+		astr += scfsingle + '\n'
 	print 'set_workflow output: %s'%(astr)
 	return astr
 

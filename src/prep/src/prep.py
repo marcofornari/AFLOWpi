@@ -4748,12 +4748,12 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def environ_relax(self):
+	def environ_relax(self, config=None, environmode='from_file'):
 		self.type='environ-relax'
 		self.new_step(update_positions=True,update_structure=True,)
 		self.initial_calcs.append(self.int_dict)
 		print "environ setup function..."
-		AFLOWpi.environ.setup_relax(self.int_dict)
+		AFLOWpi.environ.setup_relax(self.int_dict, config, environmode)
 		calc_type='Environ: Relax Step'
 
 		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),

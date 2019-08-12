@@ -6,14 +6,15 @@ import logging
 class EnvironFile():
 	# TODO change defaults to something more general
 	# TODO consider changing to a dictionary
-	def __init__(self, mode='default', interface='sscs'):
+	def __init__(self, solvent='vacuum', interface='ionic', diffuse='none'):
 		self.edict = {}
 		self.set_defaults()
 		## EXTERNAL_CHARGES (ignore for now)
 		## DIELECTRIC_REGIONS (ignore for now)
 
 		self.set_interface_mode(interface)
-		self.set_mode(mode)
+		self.set_solvent_mode(solvent)
+		self.set_diffuse_mode(diffuse)
 
 	def sanity_check(self, mode):
 		pass
@@ -21,6 +22,9 @@ class EnvironFile():
 
 	def set_defaults(self):
 		self.edict = {
+			## MISC FLAGS
+			# diffuse layer check
+			'diffuse_layer': False,
 			## &ENVIRON namelist
 			# environ type is input by default, other options are useful, however, for the purposes of
 			# specific tweaking, use input for everything and set special cases via functions
@@ -73,6 +77,8 @@ class EnvironFile():
 			'add_jellium': False,
 			# gaussian spread of electrolyte atoms
 			'atomicspread': [],
+			# linearized electrolyte subroutines
+			'electrolyte_linearized': False,
 			
 			## &BOUNDARY namelist
 			# solvent mode sets interface model
@@ -92,15 +98,15 @@ class EnvironFile():
 			# if interface function is system, below parameters necessary
 			'solvent_distance': 1.0,
 			'solvent_spread': 0.5,
-			# stern mode
-			'stern_mode': 'electronic',
-			'stern_rhomax': 0.005,
-			'stern_rhomin': 0.0001,
-			'stern_tbeta': 4.8,
-			'stern_alpha': 1.0,
-			'stern_softness': 0.5,
-			'stern_distance': 1.0,
-			'stern_spread': 0.5,
+			# electrolyte
+			'electrolyte_mode': 'electronic',
+			'electrolyte_rhomax': 5e-3,
+			'electrolyte_rhomin': 1e-4,
+			'electrolyte_tbeta': 4.8,
+			'electrolyte_alpha': 1.0,
+			'electrolyte_softness': 0.5,
+			'electrolyte_distance': 0.0,
+			'electrolyte_spread': 0.5,
 			# shape of environment region
 			'stype': 1,
 			# atomic radii
@@ -137,21 +143,25 @@ class EnvironFile():
 		}
 
 	def set_interface_mode(self, interface):
-		if interface == 'sscs':
+		# TODO, remove a lot of the assumptions that don't have anything to do with the interface
+		if interface == 'electronic':
+			self.set_defaults()
+
+			self.edict['solvent_mode'] = 'electronic'
+			self.edict['stype'] = 2
+
+			return
+
+		elif interface == 'ionic':
 			# set defaults in case they changed (remove in the future?)
 			self.set_defaults()
 
-			# set to a standard SSCS input (assume vacuum, to be overwritten by set_mode if necessary)
-			self.edict['env_surface_tension'] = 0.0
-			self.edict['env_pressure'] = 0.0
-			self.edict['env_static_permittivity'] = 1.0
-			self.edict['environ_type'] = 'input'
+			# set to a standard ionic input (assume vacuum, to be overwritten by set_mode if necessary)
 			self.edict['env_electrostatic'] = True
 
 			self.edict['radius_mode'] = 'muff'
 			self.edict['solvent_mode'] = 'ionic'
 			self.edict['boundary_core'] = 'lowmem'
-			self.edict['alpha'] = 1.12
 
 			self.edict['pbc_correction'] = 'parabolic'
 			self.edict['pbc_dim'] = 0
@@ -175,10 +185,10 @@ class EnvironFile():
 			self.edict['solvent_mode'] = 'fa-ionic'
 			self.edict['boundary_core'] = 'lowmem'
 			self.edict['alpha'] = 1.12
-			self.edict['field_awareness'] = 0.01
-			self.edict['charge_asymmetry'] = 0.0
-			self.edict['field_min'] = 10.0
-			self.edict['field_max'] = 12.0
+			self.edict['field_awareness'] = 0.12
+			self.edict['charge_asymmetry'] = -0.354
+			self.edict['field_min'] = 2.0
+			self.edict['field_max'] = 3.0
 
 			self.edict['pbc_correction'] = 'parabolic'
 			self.edict['pbc_dim'] = 0
@@ -188,17 +198,56 @@ class EnvironFile():
 
 			# set to a 
 
-	def set_mode(self, mode):
-		if mode == 'vacuum':
+	def set_solvent_mode(self, solvent):
+		if solvent == 'vacuum':
 			# defaults
+			self.edict['environ_type'] = 'input'
 			self.edict['env_surface_tension'] = 0.0
 			self.edict['env_pressure'] = 0.0
 			self.edict['env_static_permittivity'] = 1.0
 
-		elif mode == 'water':
+			s = self.edict['solvent_mode']
+			if s == 'ionic' or s == 'fa-ionic':
+				self.edict['alpha'] = 1.12
+			elif s == 'electronic' or s == 'fa-electronic':
+				self.edict['rhomin'] = 1e-4
+				self.edict['rhomax'] = 5e-3
+
+		elif solvent == 'water':
+			self.edict['environ_type'] = 'input'
 			self.edict['env_surface_tension'] = 50.0
 			self.edict['env_pressure'] = -0.35
 			self.edict['env_static_permittivity'] = 78.3
+
+			s = self.edict['solvent_mode']
+			if s == 'ionic' or s == 'fa-ionic':
+				self.edict['alpha'] = 1.12
+			elif s == 'electronic' or s == 'fa-electronic':
+				self.edict['rhomin'] = 1e-4
+				self.edict['rhomax'] = 5e-3
+
+	def set_diffuse_mode(self, diffuse):
+		if diffuse == 'none':
+			# defaults
+			pass
+
+		elif diffuse == '3d':
+			self.edict['diffuse_layer'] = True
+			self.edict['env_electrolyte_ntyp'] = 2
+			self.edict['zion'] = [1, -1]
+			self.edict['cion'] = [1.0, 1.0]
+			self.edict['cionmax'] = 10.0
+			self.edict['temperature'] = 300.0
+
+			self.edict['electrolyte_mode'] = 'electronic'
+
+			self.edict['pbc_correction'] = 'parabolic'
+			self.edict['pbc_dim'] = 0
+			self.edict['pbc_axis'] = 3
+			self.edict['tol'] = 5e-13
+			self.edict['inner_tol'] = 5e-18
+
+			return
 
 	def write_file(self, output, indent=2):
 		# ignore most of the options for now, just have workable writefile for SSCS
@@ -219,6 +268,18 @@ class EnvironFile():
 				f.write(s+'env_electrostatic = .%s.\n'%(str(self.edict['env_electrostatic']).upper()))
 			if self.edict['environ_thr'] != 0.1:
 				f.write(s+'environ_thr = %e\n'%(self.edict['environ_thr']))
+			if self.edict['diffuse_layer']:
+				f.write(s+'env_electrolyte_ntyp = %d\n'%(self.edict['env_electrolyte_ntyp']))
+				for n_electrolyte in range(self.edict['env_electrolyte_ntyp']):
+					# TODO more graceful checking.. for now just expect it exists and panic if not
+					key = 'zion(%d)'%(n_electrolyte+1)
+					f.write(s+'%s = %d\n'%(key, self.edict['zion'][n_electrolyte]))
+					key = 'cion(%d)'%(n_electrolyte+1)
+					f.write(s+'%s = %f\n'%(key, self.edict['cion'][n_electrolyte]))
+				if self.edict['cionmax'] > 0.0:
+					f.write(s+'cionmax = %f\n'%(self.edict['cionmax']))
+				f.write(s+'temperature = %f\n'%(self.edict['temperature']))
+				f.write(s+'electrolyte_linearized = .%s.\n'%(str(self.edict['electrolyte_linearized']).upper()))
 			f.write('/\n&BOUNDARY\n')
 			if self.edict['radius_mode'] != 'uff':
 				f.write(s+'radius_mode = "%s"\n'%(self.edict['radius_mode']))
@@ -227,7 +288,27 @@ class EnvironFile():
 			if self.edict['boundary_core'] != 'analytic':
 				f.write(s+'boundary_core = "%s"\n'%(self.edict['boundary_core']))
 			if self.edict['environ_type'] == 'input':
-				f.write(s+'alpha = %f\n'%(self.edict['alpha']))
+				if self.edict['solvent_mode'] == 'ionic' or self.edict['solvent_mode'] == 'fa-ionic':
+					f.write(s+'alpha = %f\n'%(self.edict['alpha']))
+				elif self.edict['solvent_mode'] == 'electronic' or self.edict['solvent_mode'] == 'fa-electronic':
+					f.write(s+'rhomin = %e\n'%(self.edict['rhomin']))
+					f.write(s+'rhomax = %e\n'%(self.edict['rhomax']))
+			if self.edict['stype'] != 1:
+				f.write(s+'stype = %d\n'%(self.edict['stype']))
+			if self.edict['diffuse_layer']:
+				f.write(s+'electrolyte_mode = "%s"\n'%(self.edict['electrolyte_mode']))
+			if self.edict['electrolyte_distance'] != 0.0:
+				f.write(s+'electrolyte_distance = %f\n'%(self.edict['electrolyte_distance']))
+			if self.edict['electrolyte_spread'] != 0.5:
+				f.write(s+'electrolyte_spread = %f\n'%(self.edict['electrolyte_spread']))
+			if self.edict['electrolyte_rhomin'] != 1e-4:
+				f.write(s+'electrolyte_rhomin = %e\n'%(self.edict['electrolyte_rhomin']))
+			if self.edict['electrolyte_rhomax'] != 5e-3:
+				f.write(s+'electrolyte_rhomax = %e\n'%(self.edict['electrolyte_rhomax']))
+			if self.edict['electrolyte_tbeta'] != 4.8:
+				f.write(s+'electrolyte_tbeta = %f\n'%(self.edict['electrolyte_tbeta']))
+			if self.edict['electrolyte_alpha'] != 1.0:
+				f.write(s+'electrolyte_alpha = %f\n'%(self.edict['electrolyte_alpha']))
 			if self.edict['solvent_mode'] == 'fa-ionic':
 				# add field aware parameters
 				f.write(s+'field_awareness = %f\n'%(self.edict['field_awareness']))
@@ -240,8 +321,19 @@ class EnvironFile():
 				if self.edict['pbc_correction'] != 'none':
 					f.write(s+'pbc_correction = "%s"\n'%(self.edict['pbc_correction']))
 					f.write(s+'pbc_dim = %d\n'%(self.edict['pbc_dim']))
+					f.write(s+'pbc_axis = %d\n'%(self.edict['pbc_axis']))
 				if self.edict['tol'] != 1e-5:
 					f.write(s+'tol = %e\n'%(self.edict['tol']))
+				f.write('/\n')
+			elif self.edict['diffuse_layer']:
+				f.write('&ELECTROSTATIC\n')
+				if self.edict['pbc_correction'] != 'none':
+					f.write(s+'pbc_correction = "%s"\n'%(self.edict['pbc_correction']))
+					f.write(s+'pbc_dim = %d\n'%(self.edict['pbc_dim']))
+					f.write(s+'pbc_axis = %d\n'%(self.edict['pbc_axis']))
+				if self.edict['tol'] != 1e-5:
+					f.write(s+'tol = %e\n'%(self.edict['tol']))
+				f.write(s+'inner_tol = %e\n'%(self.edict['inner_tol']))
 				f.write('/\n')
 
 	def edit(self, key, val):
@@ -284,12 +376,19 @@ def get_environ_input(mode, wdir=None, **kwargs):
 
 		# read dictionary and parse contents into a template environ file
 		interface = configd['interface']
-		mode = configd['environment']
-		efile = EnvironFile(mode=mode, interface=interface)
+		solvent = configd['solvent']
+		diffuse = configd['diffuse']
+		efile = EnvironFile(solvent=solvent, interface=interface, diffuse=diffuse)
 		# edit depending on config file
 		if 'edit' in configd and configd['edit']:
 			for edit in configd['edit']:
 				efile.edit(edit[0], edit[1])
+
+		if not kwargs:
+			# no loop, just write the environ file
+			efile.write_file(os.getcwd() + '/' + 'environ.in')
+			return
+
 		print kwargs
 		if 'loopval' in kwargs and 'loopparam' in kwargs:
 			# part of a loop, thus do a substitution based on the param fed in
@@ -299,5 +398,5 @@ def get_environ_input(mode, wdir=None, **kwargs):
 		efile.write_file(os.getcwd() + '/' + 'environ.in')
 
 if __name__ == '__main__':
-	e = EnvironFile(interface='fa-sscs', mode='water')
+	e = EnvironFile(interface='electronic', solvent='water', diffuse='3d')
 	e.write_file('environ.in')
