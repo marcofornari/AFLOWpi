@@ -2803,6 +2803,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      prefix='%s'
      outdir='%s'
      filband='./%s_band_data.out'
+     lsym=.false.
  /
  """ %  (prefix,temp_dir,ID),
 
