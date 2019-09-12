@@ -112,9 +112,6 @@ for j in modules:
       __init__gen('./src/%s/tests/'%j)      
    except Exception,e:
       pass
-#      print e
-
-
 
 
 try:

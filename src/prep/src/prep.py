@@ -5131,7 +5131,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kp_mult=1.0,U_eff=True):
+	def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kpFactor=1.0,U_eff=True):
 		'''
 		Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
 		user interface. Adds a new step to the workflow.
@@ -5171,7 +5171,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		self.int_dict = AFLOWpi.scfuj.scfprep(self.int_dict,paodir=paodir,U_eff=U_eff)
 		AFLOWpi.scfuj.run(self.int_dict,uThresh=thresh, nIters=nIters,mixing=mixing,
-                                  kp_mult=kp_mult,U_eff=U_eff)
+                                  kp_mult=kpFactor,U_eff=U_eff)
 
 		self.initial_calcs.append(self.int_dict)
 
