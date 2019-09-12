@@ -524,9 +524,9 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
 
                             splitInput['&electrons']['conv_thr']='1.0D-6'
 
-                            
-                            splitInput['&system']['nosym']='.True.'
-                            splitInput['&system']['noinv']='.True.'
+                            if not wsyminv:
+                                splitInput['&system']['nosym']='.True.'
+                                splitInput['&system']['noinv']='.True.'
 
                             splitInput['&control']['verbosity']='"high"'
 #                            splitInput['&control']['wf_collect']='.TRUE.'
@@ -1213,8 +1213,10 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False,U_eff=True):
                                         acbn0_Jval = 0.0
                                         if not U_eff:
                                             acbn0_Uval = re.findall("Parameter U=\s*([-]*\d+.\d+)",lines)[0]
-                                            acbn0_Jval = re.findall("Parameter J=\s*([-]*\d+.\d+)",lines)[0]
-
+                                            try:
+                                                acbn0_Jval = re.findall("Parameter J=\s*([-]*\d+.\d+)",lines)[0]
+                                            except:
+                                                acbn0_Jval="0.0"
 					Uvals[isp] = float(acbn0_Uval)
 					Jvals[isp] = float(acbn0_Jval)
 				except Exception,e:
@@ -1459,7 +1461,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
         subdir = oneCalc['_AFLOWPI_FOLDER_']
 	oneCalc['_AFLOWPI_CONFIG_']=config
 
-        nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult,band_factor=1.0,wsyminv=True)	
+        nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult,band_factor=1.0,wsyminv=False)	
 ##################################################################################################################
 	
 ##################################################################################################################
@@ -1471,7 +1473,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
 
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
-        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True,band_factor=1.0)
+        AFLOWpi.prep._run_tb_ham_prep(__submitNodeName__,oneCalc,ID,kp_factor=kp_mult,cond=0,ovp=True,band_factor=1.0,wsyminv=True)
 
         AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['.save'])
         AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=1,shift=1.0,thresh=0.90,tb_kp_mult=1.0,acbn0=True,ovp=True,smearing='gauss')

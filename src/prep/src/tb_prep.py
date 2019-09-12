@@ -702,7 +702,7 @@ class tb_plotter:
             pass
 
 
-def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25,tetra_nscf=False):
+def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25,tetra_nscf=False,wsyminv=False):
 	execPrefix = ''
 	execPostfix = ''
         oneCalcID = ID
@@ -779,7 +779,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
 
 
 
-            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond,band_factor=band_factor,tetra_nscf=tetra_nscf,wsyminv=False)  
+            nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,unoccupied_states=cond,band_factor=band_factor,tetra_nscf=tetra_nscf,wsyminv=wsyminv)  
 
 
 
