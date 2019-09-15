@@ -31,7 +31,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 import copy
@@ -86,7 +86,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(float(oneCalc[variable1]))
         Y.append(float(oneCalc[variable2]))
         Z.append(float(oneCalc[zaxis]))
@@ -154,7 +154,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
                                 ax.add_patch(circ)
 
 
-        except Exception,e:
+        except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)    
     
     if int(matplotlib.__version__[0])<2:
@@ -178,7 +178,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    pass
 
 
@@ -217,7 +217,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(oneCalc[variable1])
         Y.append(oneCalc[yaxis])
 	
@@ -252,7 +252,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
 
 	    pyplot.legend(['data','interpolated','min'], loc='best')	    
 
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)    
     
     
@@ -266,6 +266,6 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 

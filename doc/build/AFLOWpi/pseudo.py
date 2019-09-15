@@ -31,13 +31,13 @@ def __qe_to_exiting_scf_input(qe_input):
 
     for i in range(len(lab)):
         pos_str=' '.join([str(j) for j in pos[i]])
-        if lab[i] not in pos_dict.keys():
+        if lab[i] not in list(pos_dict.keys()):
           
             pos_dict[lab[i]]=[pos_str]
         else:
             pos_dict[lab[i]].append(pos_str)
 
-    for species,positions in pos_dict.iteritems():
+    for species,positions in list(pos_dict.items()):
         exciting_input+='''</species>
         <species speciesfile="%s.xml">'''%species
         for i in range(len(positions)):
@@ -62,7 +62,7 @@ def __qe_to_exiting_scf_input(qe_input):
     ''' % (g_shift[0],g_shift[1],g_shift[2],g_dense[0],g_dense[1],g_dense[2])
 
 
-    print exciting_input
+    print(exciting_input)
 
 import os
 import re
@@ -95,7 +95,7 @@ def _passGlobalVar(varname,value):
 
 def brute_test(calcs,ecutwfc,dual=None,sampling=None,constraint=None,thresh=0.001,initial_variance=0.05,grid_density=10,mult_jobs=False,conv_thresh=0.01,calc_type='relax'):
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         #set sampling and dual list from input if no variance provided
         if sampling==None or dual==None:
             in_dict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -129,7 +129,7 @@ def _set_cutoffs(oneCalc,ID,ecutwfc=[],dual=[],sampling=[]):
     if ID in oneCalc['prev']:
         return oneCalc,ID
     try:
-        int_samp = sorted([map(int,i.split())  for i in sampling])
+        int_samp = sorted([list(map(int,i.split()))  for i in sampling])
         sampling=[' '.join(map(str,i)) for i in int_samp]
     except:
         pass
@@ -163,7 +163,7 @@ def _set_cutoffs(oneCalc,ID,ecutwfc=[],dual=[],sampling=[]):
     except:
         oneCalc['_AFLOWPI_PPTEST_ECUTWFC_']=sorted(ecutwfc)
     try:
-        int_samp = sorted([map(int,i.split())  for i in sampling])
+        int_samp = sorted([list(map(int,i.split()))  for i in sampling])
         sampling=[' '.join(map(str,i)) for i in int_samp]        
         
         oneCalc['_AFLOWPI_PPTEST_SAMPLING_']=sampling
@@ -257,8 +257,8 @@ def _go_plot(oneCalc,ID,plot=False):
 
                 AFLOWpi.pseudo.plot(cutoff_list,xaxis='_AFLOWPI_ECUTWFC_',title=title,file_name=file_name)
 
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
 
         return oneCalc,ID
 
@@ -275,7 +275,7 @@ def _check_test_conv(oneCalc,ID,thresh):
 
     crawl_params=AFLOWpi.pseudo._get_crawl_params(oneCalc,ID)
     try:
-        if '_AFLOWPI_PREV_PARAM_' not in oneCalc.keys():
+        if '_AFLOWPI_PREV_PARAM_' not in list(oneCalc.keys()):
             oneCalc['_AFLOWPI_PREV_PARAM_']={}
 
 
@@ -315,7 +315,7 @@ def _check_test_conv(oneCalc,ID,thresh):
                                oneCalc['_AFLOWPI_PREV_PARAM_'][param]=[crawl_params[param]]
                 else:
                     pass
-            except Exception,e:
+            except Exception as e:
 
                 try:
                     oneCalc['_AFLOWPI_PREV_PARAM_'][param].append(crawl_params[param])
@@ -333,9 +333,9 @@ def _check_test_conv(oneCalc,ID,thresh):
         printout_str='' 
         printout_str+='CONVERGED?: %s'%conv
         try:
-            print AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)))
         except:
-            print printout_str
+            print(printout_str)
 
 
         if conv==True and 0 not in oneCalc['_AFLOWPI_PPTEST_SAMPLING_TRACKER_'] and 0 not in oneCalc['_AFLOWPI_PPTEST_DUAL_TRACKER_']:
@@ -368,10 +368,10 @@ def _check_test_conv(oneCalc,ID,thresh):
             printout_str+='DUAL     : %s\n' % nu_dual
             printout_str+='SAMPLING : %s\n' % nu_sampling
             try:
-                print AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)
+                print((AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)))
             except:
-                print printout_str
-            print 
+                print(printout_str)
+            print() 
             
 
             return oneCalc,ID
@@ -390,7 +390,7 @@ def _check_test_conv(oneCalc,ID,thresh):
                 elif 0 in oneCalc['_AFLOWPI_PPTEST_SAMPLING_TRACKER_']:
                     shift_type='sampling'
                 else:
-                    print 'this should not happen'
+                    print('this should not happen')
             else:
                 shift_type='ecutwfc'
 
@@ -404,17 +404,17 @@ def _check_test_conv(oneCalc,ID,thresh):
                         del oneCalc['__gridMin_iteration__']
                     except:
                         pass
-                except Exception,e:
+                except Exception as e:
                     pass
-            except Exception,e:
+            except Exception as e:
                 pass
             return oneCalc,ID
-    except Exception,e:
+    except Exception as e:
 
         return oneCalc,ID
 
 def _shift_cutoffs(oneCalc,ID,shift_type='wfc'):
-    print 
+    print() 
 
     oneCalc['_AFLOWPI_PREV_SHIFT_TYPE']=shift_type
     
@@ -444,8 +444,8 @@ def _shift_cutoffs(oneCalc,ID,shift_type='wfc'):
             oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&system','ecutrho',new_ecutr)    
             printout_str+='Shifting wavefunction energy cutoff\n'
             
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
             raise SystemExit
     if shift_type=='dual':
         try:
@@ -481,9 +481,9 @@ def _shift_cutoffs(oneCalc,ID,shift_type='wfc'):
 
 
             
-        except Exception,e:
+        except Exception as e:
 
-            print e
+            print(e)
             raise SystemExit
             pass 
     if shift_type=='sampling':
@@ -501,7 +501,7 @@ def _shift_cutoffs(oneCalc,ID,shift_type='wfc'):
                 #    new_sampling=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['K_POINTS']['__content__']
         except:
 
-            print e
+            print(e)
             raise SystemExit
         
 
@@ -540,13 +540,13 @@ def _shift_cutoffs(oneCalc,ID,shift_type='wfc'):
         printout_str+='DUAL     : %s\n' % nu_dual
         printout_str+='SAMPLING : %s\n' % nu_sampling
         try:
-            print AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message(printout_str,level='DEBUG',show_level=False)))
         except:
-            print printout_str
+            print(printout_str)
 
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
     
     return oneCalc,ID
 
@@ -562,7 +562,7 @@ def _getCutOffs(calcs):
      - calcs -- Dictionary of dictionaries of calculations
 
     '''
-    sampleDict = calcs[random.choice(calcs.keys())]
+    sampleDict = calcs[random.choice(list(calcs.keys()))]
     key=[]
     try:
 	    if '_AFLOWPI_KPOINTS_' in sampleDict:
@@ -604,8 +604,8 @@ def _splitCalcs(calcs,splitVars=''):
 	key=[]
 	value=[]
 	calcsCopy = copy.deepcopy(calcs)
-	sampleDict = calcsCopy[random.choice(calcsCopy.keys())]   
-	if sampleDict.has_key('_AFLOWPI_DUAL_'):
+	sampleDict = calcsCopy[random.choice(list(calcsCopy.keys()))]   
+	if '_AFLOWPI_DUAL_' in sampleDict:
 		try:
 			splitVars.remove('_AFLOWPI_ECUTR_')
 			splitVars.append('_AFLOWPI_DUAL_')
@@ -615,7 +615,7 @@ def _splitCalcs(calcs,splitVars=''):
 	for var in splitVars:
 	    if var in sampleDict:
 		inAllCalcs = []
-		for ID,oneCalc in calcsCopy.iteritems(): #cycles through all the calculations
+		for ID,oneCalc in list(calcsCopy.items()): #cycles through all the calculations
 		    inAllCalcs.append(oneCalc[var]) #makes a list of all the values for all your calcs
 		key.append(var)
 
@@ -640,7 +640,7 @@ def _splitCalcs(calcs,splitVars=''):
 	for constraint in constrList:
 	    splitOn =OrderedDict()
 
-	    for ID,oneCalc in calcsCopy.iteritems():
+	    for ID,oneCalc in list(calcsCopy.items()):
 		if len([i for i in constraint if constraint[i]==oneCalc[i]]) == len(constraint): #fancy way of looping 'if' statements
 		    splitOn.update({ID:oneCalc})
 
@@ -669,7 +669,7 @@ def _grabEnergyOut(calcs):
     MASTER_ENERGY = copy.deepcopy(calcs)
     energyRegex = re.compile(r'(?:(?:(?:(?:\!\s+)total)|(?:Final)) en\w+\s*=\s+(.+?)Ry)',re.MULTILINE)
     
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
 
 		if os.path.exists(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID)):
@@ -685,7 +685,7 @@ def _grabEnergyOut(calcs):
 			else: #if the energy can not be found the test entry is deleted from the output dictionary
 			    outCalcPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID)
 			    logging.warning('could not get energy. check output file: %s' % outCalcPath)
-			    print 'could not get energy. check output file: %s' % outCalcPath
+			    print(('could not get energy. check output file: %s' % outCalcPath))
                             MASTER_ENERGY[ID]['Energy']=None
                             calcs[ID]['Energy']=0.0
 			    del MASTER_ENERGY[ID] 
@@ -696,7 +696,7 @@ def _grabEnergyOut(calcs):
 	except:
 		outCalcPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID)
 		logging.warning('could not get energy. check output file: %s' % outCalcPath)
-		print 'could not get energy. check output file: %s' % outCalcPath
+		print(('could not get energy. check output file: %s' % outCalcPath))
     return MASTER_ENERGY
 
 
@@ -706,13 +706,13 @@ def _grabEnergyOut(calcs):
 #########################################################################################################
 try:
 	import scipy
-except Exception,e:
+except Exception as e:
 	try:
 		from scipy.optimize import differential_evolution
-	except Exception,e:
+	except Exception as e:
 		try:
 			from scipy.optimize import *
-		except Exception,e:
+		except Exception as e:
 			pass
 
 from scipy.optimize import minimize
@@ -733,7 +733,7 @@ def _cubicInterpolation(variable_array,solution_array):
 	try:
 		variable_array=variable_array.tolist()
 		solution_array=solution_array.tolist()
-	except Exception,e:
+	except Exception as e:
 		logging.info('could not convert variable_array or solution_array into a list in AFLOWpi.pseudo._cubicInterpolation. Possibly they are already lists?')
 
 	'''make a unique sorted list for our grid from the data points'''
@@ -759,7 +759,7 @@ def _cubicInterpolation(variable_array,solution_array):
 	'''cartesian product to recreate our new M*(M[N]*2-1) long list'''
 	variableListPadded = list(it.product(*insidePad))
 	paddedGrid = list(it.product(*insidePad))
-	mapCoordVars= zip(*paddedGrid)
+	mapCoordVars= list(zip(*paddedGrid))
  	paddedGrid =  numpy.asarray(paddedGrid)
 	variable_array = numpy.asarray(variable_array).T
 	'''mask bad energy values from the calculations'''
@@ -784,7 +784,7 @@ def _cubicInterpolation_onePoint(point,variable_array,solution_array):
 	try:
 		variable_array=variable_array.tolist()
 		solution_array=solution_array.tolist()
-	except Exception,e:
+	except Exception as e:
 		logging.info('could not convert variable_array or solution_array into a list in AFLOWpi.pseudo._cubicInterpolation. Possibly they are already lists?')
 
 	'''make a unique sorted list for our grid from the data points'''
@@ -888,7 +888,7 @@ def _cubicInterpolation_onePoint(point,variable_array,solution_array):
 			except:
 				return sol
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 		raise SystemExit
 
@@ -900,11 +900,11 @@ def _getMatrices(calcs,fitVars=None,options=None,Energy=True):
     energyList = [] # pulls energy values from the dictionary of dictionaries of calculations and creates a list of them
     orderedMaster = OrderedDict(calcs)
     if Energy==True:
-        for ID,oneCalc in orderedMaster.iteritems():
+        for ID,oneCalc in list(orderedMaster.items()):
             energyList.append(oneCalc['Energy'])
     for variables in fitVars:
         varValueList = []
-        for ID,oneCalc in orderedMaster.iteritems():
+        for ID,oneCalc in list(orderedMaster.items()):
             varValueList.append(float(oneCalc[variables]))
 	totalList.append(varValueList)
         
@@ -913,7 +913,7 @@ def _getMatrices(calcs,fitVars=None,options=None,Energy=True):
     energyMatrix = array(energyList)
     
 
-    variableList = array(zip(*totalList))
+    variableList = array(list(zip(*totalList)))
 
 #    print 'exiting __getMatrices'
     logging.debug('exiting __getMatrices')
@@ -978,7 +978,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 		# print iu
 		# print M
 		return array(l(x))
-	    except Exception,e:
+	    except Exception as e:
 		    AFLOWpi.run._fancy_error_log(e)
 		    return 
 
@@ -999,21 +999,21 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
         D[di] = M[di]
         M = M-D + M.T
         l = lambda z:  f0 +dot(z-x0,dot(M,z-x0))
-        return array(map(l,x))
+        return array(list(map(l,x)))
 
 
     logging.debug('entering __getMin')
 
     totalList = []
     energyList = [] # pulls energy values from the dictionary of dictionaries of calculations and creates a list of them
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             oneCalc['Energy']
         except:
             calcs = AFLOWpi.pseudo._grabEnergyOut(calcs)
             break
     orderedMaster = OrderedDict(calcs)
-    for ID,oneCalc in orderedMaster.iteritems():
+    for ID,oneCalc in list(orderedMaster.items()):
         energyList.append(oneCalc[minimize_var])
     
 
@@ -1030,7 +1030,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 
     for variables in fitVars:
         varValueList = []
-        for ID,oneCalc in orderedMaster.iteritems():
+        for ID,oneCalc in list(orderedMaster.items()):
             varValueList.append(float(oneCalc[variables]))
 	totalList.append(varValueList)
     
@@ -1049,7 +1049,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 
 
 
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1078,13 +1078,13 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 	    except:
 		    try:
 			    pop, cov = curve_fit(fitForm,variableList,energyMatrix,guess,maxfev=1000000)
-		    except Exception,e:
+		    except Exception as e:
 			    AFLOWpi.run._fancy_error_log(e)
 
 
     try:
 	    pop=tuple(pop.tolist())
-    except Exception,e: 
+    except Exception as e: 
 	    AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1099,7 +1099,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 #
 
   #      fitMin = minimize(fitFunction,ystart,args=(pop),method='L-BFGS-B',bounds=fitBounds,tol=0.00001,options={'disp':False})
-    except Exception,e: 
+    except Exception as e: 
 #            AFLOWpi.run._fancy_error_log(e)
             logging.info('minimizing using bfgs')
 	    AFLOWpi.run._fancy_error_log(e)
@@ -1109,7 +1109,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
                                                                disp=True,tol=0.00000001,maxiter=100) 	    
                                                                
 
-	    except Exception,e: 
+	    except Exception as e: 
                     AFLOWpi.run._fancy_error_log(e)
 
 		    try:
@@ -1117,7 +1117,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
                                                          args=(variableList,energyMatrix),method='L-BFGS-B',
                                                          bounds=fitBounds,options={'disp':False,
                                                          'gtol':0.0001}) 
-		    except Exception,e:
+		    except Exception as e:
 			    AFLOWpi.run._fancy_error_log(e)
 
 			    try:
@@ -1126,7 +1126,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
                                                                  bounds=fitBounds,options={'disp':False,
                                                                                            'gtol':0.00001,
                                                                                            'eps':0.000000001},) 
-			    except Exception,e:
+			    except Exception as e:
                                 AFLOWpi.run._fancy_error_log(e)
                                 pass
 
@@ -1136,7 +1136,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
 		    with open('../AFLOWpi/bulk_modulus.dat','w') as bulk_mod_file:
 			    bulk_mod_file.write('%s'%repr(pop))
 			    bulk_mod_file.write('\n')
-	    except Exception,e:
+	    except Exception as e:
 		    AFLOWpi.run._fancy_error_log(e)
 		    
 
@@ -1206,9 +1206,9 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
                     constraintString+=')'
 
 
-            except Exception,e:
+            except Exception as e:
 
-                    print 'constraint list not formatted properly. must be in form constraint=(("constraint1","parameter_constrained1"),("constraint2","parameter_constrained2"),) ....exiting'
+                    print('constraint list not formatted properly. must be in form constraint=(("constraint1","parameter_constrained1"),("constraint2","parameter_constrained2"),) ....exiting')
                     logging.warning('constraint list not formatted properly. must be in form constraint=(("constraint1","parameter_constrained1"),("constraint2","parameter_constrained2"),) ....exiting')
                     AFLOWpi.run._fancy_error_log(e)
                     raise SystemExit
@@ -1216,7 +1216,7 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
 	fitVars=None
 #########$$$$$$$$$$$$$$$$$$
         if calc_type.lower() != 'relax' and calc_type.lower() != 'scf':
-            print 'only "scf" and "relax" supported for calc_type'
+            print('only "scf" and "relax" supported for calc_type')
             sys.exit(0)
         AFLOWpi.prep._addToAll(calcs,'PREPROCESSING',"""oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation',"%s")""" %repr(calc_type))
 
@@ -1227,20 +1227,20 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
 
         task_list=[add_vars,add_outfile_task,run_sub]
 
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             refFileDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
             paramList=[]
-            if 'celldm(1)' in refFileDict['&system'].keys():
+            if 'celldm(1)' in list(refFileDict['&system'].keys()):
                     paramList.append('A')
-            if 'celldm(2)' in refFileDict['&system'].keys():
+            if 'celldm(2)' in list(refFileDict['&system'].keys()):
                     paramList.append('B')
-            if 'celldm(3)' in refFileDict['&system'].keys():
+            if 'celldm(3)' in list(refFileDict['&system'].keys()):
                     paramList.append('C')
-            if 'celldm(4)' in refFileDict['&system'].keys():
+            if 'celldm(4)' in list(refFileDict['&system'].keys()):
                     paramList.append('alpha')
-            if 'celldm(5)' in refFileDict['&system'].keys():
+            if 'celldm(5)' in list(refFileDict['&system'].keys()):
                     paramList.append('beta')
-            if 'celldm(6)' in refFileDict['&system'].keys():
+            if 'celldm(6)' in list(refFileDict['&system'].keys()):
                     paramList.append('gamma')
             break
 
@@ -1259,7 +1259,7 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
         if final_minimization!=None:
 #            AFLOWpi.run._skeletonRun(calcs)
             AFLOWpi.prep._addToAll(calcs,'RUN',"oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','%s')" %final_minimization)
-            for ID,oneCalc in calcs.iteritems():
+            for ID,oneCalc in list(calcs.items()):
                 oneCalc['__execCounterBkgrd__']+=1
             AFLOWpi.run.scf(calcs)
 
@@ -1302,8 +1302,8 @@ def _crawlingMinimization(oneCalc,ID,fitVars=None,options=None,faultTolerant=Tru
 				for constraints in constraint:
 					constraint_type_list.append(constraints[0].lower().strip())
 					constraint_var_list.append(constraints[1].lower().strip())
-			except Exception,e:
-			    print e
+			except Exception as e:
+			    print(e)
 			    constraint_type=None
 			    constraint_var =None
 		else:
@@ -1313,22 +1313,22 @@ def _crawlingMinimization(oneCalc,ID,fitVars=None,options=None,faultTolerant=Tru
 
 		centValList=[]
 		paramList=[]
-		if 'celldm(1)' in refFileDict['&system'].keys():
+		if 'celldm(1)' in list(refFileDict['&system'].keys()):
 			paramList.append('A')
 			centValList.append(refFileDict['&system']['celldm(1)'])
-		if 'celldm(2)' in refFileDict['&system'].keys():
+		if 'celldm(2)' in list(refFileDict['&system'].keys()):
 			paramList.append('B')
 			centValList.append(refFileDict['&system']['celldm(2)'])
-		if 'celldm(3)' in refFileDict['&system'].keys():
+		if 'celldm(3)' in list(refFileDict['&system'].keys()):
 			paramList.append('C')
 			centValList.append(refFileDict['&system']['celldm(3)'])
-		if 'celldm(4)' in refFileDict['&system'].keys():
+		if 'celldm(4)' in list(refFileDict['&system'].keys()):
 			paramList.append('alpha')
 			centValList.append(refFileDict['&system']['celldm(4)'])
-		if 'celldm(5)' in refFileDict['&system'].keys():
+		if 'celldm(5)' in list(refFileDict['&system'].keys()):
 			paramList.append('beta')
 			centValList.append(refFileDict['&system']['celldm(5)'])
-		if 'celldm(6)' in refFileDict['&system'].keys():
+		if 'celldm(6)' in list(refFileDict['&system'].keys()):
 			paramList.append('gamma')
 			centValList.append(refFileDict['&system']['celldm(6)'])
 
@@ -1343,26 +1343,26 @@ def _crawlingMinimization(oneCalc,ID,fitVars=None,options=None,faultTolerant=Tru
                 return variedCalcs
 ###########################################################################################################################
 def _crawl_min_vars_to_calc(calc_subset):
-    for ID,oneCalc in calc_subset.iteritems():
+    for ID,oneCalc in list(calc_subset.items()):
         refFileDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         centValList=[]
         paramList=[]
-        if 'celldm(1)' in refFileDict['&system'].keys():
+        if 'celldm(1)' in list(refFileDict['&system'].keys()):
                 paramList.append('A')
                 centValList.append(refFileDict['&system']['celldm(1)'])
-        if 'celldm(2)' in refFileDict['&system'].keys():
+        if 'celldm(2)' in list(refFileDict['&system'].keys()):
                 paramList.append('B')
                 centValList.append(refFileDict['&system']['celldm(2)'])
-        if 'celldm(3)' in refFileDict['&system'].keys():
+        if 'celldm(3)' in list(refFileDict['&system'].keys()):
                 paramList.append('C')
                 centValList.append(refFileDict['&system']['celldm(3)'])
-        if 'celldm(4)' in refFileDict['&system'].keys():
+        if 'celldm(4)' in list(refFileDict['&system'].keys()):
                 paramList.append('alpha')
                 centValList.append(refFileDict['&system']['celldm(4)'])
-        if 'celldm(5)' in refFileDict['&system'].keys():
+        if 'celldm(5)' in list(refFileDict['&system'].keys()):
                 paramList.append('beta')
                 centValList.append(refFileDict['&system']['celldm(5)'])
-        if 'celldm(6)' in refFileDict['&system'].keys():
+        if 'celldm(6)' in list(refFileDict['&system'].keys()):
                 paramList.append('gamma')
                 centValList.append(refFileDict['&system']['celldm(6)'])
 
@@ -1409,24 +1409,24 @@ def _crawl_min_vars_to_calc(calc_subset):
 
 
 def _add_shifter(calc_subset,fitVars=None,options=None,faultTolerant=True,initial_variance=0.15,steps=10,constraint=None,thresh=0.001,mult_jobs=True):
-    for ID_new,oneCalc_new in calc_subset.iteritems(): 
+    for ID_new,oneCalc_new in list(calc_subset.items()): 
     
                 cdmDict = AFLOWpi.retr._splitInput(oneCalc_new['_AFLOWPI_INPUT_'])['&system']
                 refDictDict = AFLOWpi.retr._splitInput(oneCalc_new['__refFile__'])
 
 
                 paramList=[]
-                if 'celldm(1)' in refFileDict['&system'].keys():
+                if 'celldm(1)' in list(refFileDict['&system'].keys()):
                         paramList.append('A')
-                if 'celldm(2)' in refFileDict['&system'].keys():
+                if 'celldm(2)' in list(refFileDict['&system'].keys()):
                         paramList.append('B')
-                if 'celldm(3)' in refFileDict['&system'].keys():
+                if 'celldm(3)' in list(refFileDict['&system'].keys()):
                         paramList.append('C')
-                if 'celldm(4)' in refFileDict['&system'].keys():
+                if 'celldm(4)' in list(refFileDict['&system'].keys()):
                         paramList.append('alpha')
-                if 'celldm(5)' in refFileDict['&system'].keys():
+                if 'celldm(5)' in list(refFileDict['&system'].keys()):
                         paramList.append('beta')
-                if 'celldm(6)' in refFileDict['&system'].keys():
+                if 'celldm(6)' in list(refFileDict['&system'].keys()):
                         paramList.append('gamma')
 
 
@@ -1479,7 +1479,7 @@ def _add_shifter(calc_subset,fitVars=None,options=None,faultTolerant=True,initia
 					constraintString+='("%s","%s"),' % (constraint_type_list[constraints],constraint_var_list[constraints])
 				constraintString+=')'
 
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 			constraintString='None'
 
@@ -1497,11 +1497,11 @@ while True:
         wfcFile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.wfc%d'%(ID,number))     
         os.remove(wfcFile)
         number+=1
-    except Exception,e:
+    except Exception as e:
         break
 try:
     shutil.rmtree(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.save'%ID))
-except Exception,e:
+except Exception as e:
     pass
 """
 		AFLOWpi.prep._addToAll(variedCalcs,'CLEANUP',cleanupString)
@@ -1524,7 +1524,7 @@ def _getCenter(origCalcs,fitVars=None,options=None,return_energy=False):
 			minEnergy = minDict[0]['Energy']
 
 			return returnDict,minEnergy
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 			return returnDict 
 	else:
@@ -1577,7 +1577,7 @@ import __main__
 		
  		# variedCalcs=AFLOWpi.prep.varyCellParams(oneCalc,ID,param=paramList,amount=amountList,steps=stepList)
 		# pass
-#	except Exception,e:
+#	except Exception as e:
 #		AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1634,7 +1634,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 					AFLOWpi.run._submitJob(__main__.ID,__main__.oneCalc,__main__.__submitNodeName__,sajOverride=True)
 					os.remove(os.path.join(os.path.dirname(outFile),'GRID.SEMAPHORE'))		     
 					sys.exit(0)			
-                                        print 'quitting1'
+                                        print('quitting1')
 					logging.debug('quitting1')
 			else:
 
@@ -1657,7 +1657,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 					sys.exit(0)			
 
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1666,7 +1666,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		try:
 			if  type(list([4,5,6])) !=type(fitVars) or  type(tuple([4,5,6])) !=type(fitVars):
 				fitVars=list(fitVars,)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 		calcsEnergy = AFLOWpi.pseudo._grabEnergyOut(calcs)
 
@@ -1684,8 +1684,8 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 						constraint_var_list.append('_AFLOWPI_PARAM_'+constraints[1].upper().strip()+'_')
 					else:
 						logging.warning('constraint: %s not valid. not including in minimization' % constraints)
-			except Exception,e:
-			    print e
+			except Exception as e:
+			    print(e)
 			    constraint_type=None
 			    constraint_var =None
 		else:
@@ -1701,8 +1701,8 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
 		minEVal,minEnergy = AFLOWpi.pseudo._getCenter(calcs,fitVars=fitVars,options=options,return_energy=True)
 
-		for ID,oneCalc in calcs.iteritems():
-			if '__minEnergy__' not in oneCalc.keys():
+		for ID,oneCalc in list(calcs.items()):
+			if '__minEnergy__' not in list(oneCalc.keys()):
 				oneCalc['__minEnergy__']=[minEnergy]
 			else:
 				oneCalc['__minEnergy__'].append(minEnergy)
@@ -1719,9 +1719,9 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		minDict=OrderedDict()
 		maxDict=OrderedDict()
 
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			mainGridDir=os.path.dirname(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_']))
-			if '__gridMin_iteration__' not in oneCalc.keys():
+			if '__gridMin_iteration__' not in list(oneCalc.keys()):
 				calcs[ID]['__gridMin_iteration__']=1
 				iteration=1
 			else:
@@ -1743,7 +1743,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		close2MinList=[]
 		close2MaxList=[]
 
-		for fitVar,value in minEVal.iteritems(): 
+		for fitVar,value in list(minEVal.items()): 
 			'''if we found the min to be within 2.5% an edge we need to reposition'''
 			gFuncMin=numpy.abs(medianDict[fitVar]-minDict[fitVar])
 			gFuncMax=numpy.abs(medianDict[fitVar]-maxDict[fitVar])
@@ -1782,8 +1782,8 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		except:
 			pass
 		
-		for k,v in refFileDict.iteritems():
-			for l,m in v.iteritems():
+		for k,v in list(refFileDict.items()):
+			for l,m in list(v.items()):
 				if m in fitVars:
 					assocInputVars[l]=m
 
@@ -1802,7 +1802,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		if quit_bool==True:
 			try:
 				AFLOWpi.pseudo._getMin(calcs,fitVars=fitVars,bulk_modulus=True)
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
 				
 
@@ -1825,14 +1825,14 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
                         try:
                             myfile.write('{: 19.12f}'.format(float(minEnergy)))
                         except:
-                            print minEnergy
+                            print(minEnergy)
 			myfile.write(' Ry|\n')
 
 
 #			myfile.write('\n')
 
 
-			paramsPrint=[x.split('_')[-2].upper() for x in minEVal.keys()]
+			paramsPrint=[x.split('_')[-2].upper() for x in list(minEVal.keys())]
 			myfile.write('--------')
 			myfile.write('-----------------------\n'*len(paramsPrint))
 			myfile.write('Param  | ')
@@ -1849,15 +1849,15 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 			myfile.write('-----------------------'*len(paramsPrint))
 			myfile.write('\n')
 			myfile.write('Median |  ')
-			for k,v in minEVal.iteritems():
+			for k,v in list(minEVal.items()):
 				myfile.write(' {: 16.11f}   |'.format(numpy.around(medianDict[k],decimals=10)))
 			myfile.write('\n')
 			myfile.write('Min Val|  ')
-			for k,v in minEVal.iteritems():
+			for k,v in list(minEVal.items()):
 				myfile.write(' {: 16.11f}   |'.format(numpy.around(minEVal[k],decimals=10)))
 			myfile.write('\n')
 			myfile.write('Delta  |  ')
-			for k,v in minEVal.iteritems():
+			for k,v in list(minEVal.items()):
 				myfile.write(' {: 16.11f}   |'.format(numpy.around(-1.0*centerShiftDict[k],decimals=10)))
 			myfile.write('\n')
 
@@ -1883,7 +1883,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 				xTitle=fitVars[0].split('_')[-2]
 				AFLOWpi.plot.interpolatePlot1D(calcs,fitVars[0],xaxisTitle=xTitle,fileName=fileNameStr,circle_min=True) 
 
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
                 
 		'''if we find the min in the bounds this is how much we'll shrink the grid by'''
@@ -1896,25 +1896,25 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 					we don't scale down 1000x or something'''
 					shrinkVarDict[item]=0.75
 
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
 				shrinkVarDict[item]=0.49
 
 
                 ibrav=0
                 try:
-                    for ID,oneCalc in shiftedCalcs.iteritems():
+                    for ID,oneCalc in list(shiftedCalcs.items()):
                         inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
                         ibrav=int(inputDict['&system']['ibrav'])
                         break
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 		'''if the old min is close to the new min we won't resubmit and instead   '''
 		'''and instead we will look copy the results back to the parent directory '''
 
 
-		for ID,oneCalc in shiftedCalcs.iteritems():
+		for ID,oneCalc in list(shiftedCalcs.items()):
 			for item in fitVars:
 
 				'''if it's not close to any bounds we want to generate 
@@ -1971,11 +1971,11 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 								param_name = '_AFLOWPI_PARAM_%s_'%param
 								if param_name!=constr_var:
 									volDiv*=oneCalc[param_name] 
-							except Exception,e:
+							except Exception as e:
 								AFLOWpi.run._fancy_error_log(e)
 
 						for param in ['ALPHA','BETA','GAMMA',]:
-							if param in oneCalc.keys():
+							if param in list(oneCalc.keys()):
 								param_name = '_AFLOWPI_PARAM_%s_'%param
 								if param_name!=constr_var:
 									temp_angle_param=[param_name] 
@@ -1992,7 +1992,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
 
 
-		for ID,oneCalc in shiftedCalcs.iteritems():
+		for ID,oneCalc in list(shiftedCalcs.items()):
 
 			
 			inputDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -2000,7 +2000,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 						
 
 			'''convert A,B,C,alpha,beta,gamma to celldm'''
-			for l,m in inputDict['&system'].iteritems():
+			for l,m in list(inputDict['&system'].items()):
 
 					if l=='celldm(1)':
 						inputDict['&system']['celldm(1)']=oneCalc['_AFLOWPI_PARAM_A_']
@@ -2075,7 +2075,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
                                 dest_calc = AFLOWpi.prep._loadOneCalc(outFile_split[0],dest_ID)
 
                                 dest_calc_dict=AFLOWpi.retr._splitInput(dest_calc['_AFLOWPI_INPUT_'])
-                                for k,v in inputDict['&system'].iteritems():
+                                for k,v in list(inputDict['&system'].items()):
                                     dest_calc_dict['&system'][k]=v
 
 				newInputStr = AFLOWpi.retr._joinInput(dest_calc_dict)
@@ -2090,7 +2090,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 				'''remove file semaphore'''
 				try:
 					os.remove(os.path.join(os.path.dirname(outFile),'GRID.SEMAPHORE'))
-				except Exception,e:
+				except Exception as e:
 					AFLOWpi.run._fancy_error_log(e)
 
 				
@@ -2115,7 +2115,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		'''remove file semaphore'''
 		try:
 			os.remove(os.path.join(os.path.dirname(outFile),'GRID.SEMAPHORE'))
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2123,18 +2123,18 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		
 		
 		'''clear out all wfc and .save scratch fromt he dirs'''
-		for ID,oneCalc in reversed(shiftedCalcs.items()):
+		for ID,oneCalc in reversed(list(shiftedCalcs.items())):
 			number=1
 			while True:
 				try:  
 					wfcFile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.wfc%d'%(ID,number))     
 					os.remove(wfcFile)
 					number+=1
-				except Exception,e:
+				except Exception as e:
 					break
 			try:
 				shutil.rmtree(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.save'%ID))
-			except Exception,e:
+			except Exception as e:
 				pass
 
 
@@ -2149,7 +2149,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 		'''submit in reverse order because calcs later in the orderedDict are more likely'''
 		'''to be larger cells than those at the beginning'''
 
-		for ID_new,oneCalc_new in reversed(shiftedCalcs.items()):
+		for ID_new,oneCalc_new in reversed(list(shiftedCalcs.items())):
 			AFLOWpi.run._submitJob(ID_new,oneCalc_new,sub_node_name,forceOneJob=oneJobBool,sajOverride=sajOver)
 			# try:
 			# 	fileList = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'./_*wfc*')
@@ -2160,12 +2160,12 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 			# 			os.system('rm  %s' %fileName )
 
 
-			# 		except Exception,e:
+			# 		except Exception as e:
 			# 			AFLOWpi.run._fancy_error_log(e)
 
 			# 	shutil.rmtree(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.save'%ID))
 
-			# except Exception,e:
+			# except Exception as e:
 			# 	AFLOWpi.run._fancy_error_log(e)
 
 		logging.debug('exiting __shiftGrid')
@@ -2174,12 +2174,12 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
 
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 		try:
 			os.remove(os.path.join(os.path.dirname(outFile),'GRID.SEMAPHORE'))
 			raise SystemExit
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 			raise SystemExit
 
@@ -2209,14 +2209,14 @@ def _getMinimization(origCalcs,fitVars=None,options=None,return_energy=False,min
     '''
     try:
 	    key = AFLOWpi.pseudo._getCutOffs(origCalcs)
-    except Exception,e:
+    except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 	    key=['']
     manyCalcs=AFLOWpi.pseudo._splitCalcs(origCalcs,key)
     
 #    print "Entering getMinimization"
     if fitVars==None:
-        print 'ERROR: You need to specify variables for the fit and minimization'
+        print('ERROR: You need to specify variables for the fit and minimization')
 	logging.warning('ERROR: You need to specify variables for the fit and minimization')
         return
     
@@ -2231,7 +2231,7 @@ def _getMinimization(origCalcs,fitVars=None,options=None,return_energy=False,min
         energyDict = AFLOWpi.pseudo._grabEnergyOut(calcs)
 
 
-	for ID,oneCalc in energyDict.iteritems():
+	for ID,oneCalc in list(energyDict.items()):
 		sampleDict=copy.deepcopy(oneCalc)
 		break
         resultDict= OrderedDict()       
@@ -2242,7 +2242,7 @@ def _getMinimization(origCalcs,fitVars=None,options=None,return_energy=False,min
 
 	for cutoff in key:
 		if cutoff=='_AFLOWPI_ECUTR_':
-			if sampleDict.has_key('_AFLOWPI_DUAL_'):
+			if '_AFLOWPI_DUAL_' in sampleDict:
 				resultDict['_AFLOWPI_DUAL_']=sampleDict['_AFLOWPI_DUAL_']
 		else:
 			resultDict[cutoff]=sampleDict[cutoff]
@@ -2250,12 +2250,12 @@ def _getMinimization(origCalcs,fitVars=None,options=None,return_energy=False,min
 	energyMatrix,varMatrices = AFLOWpi.pseudo._getMatrices(energyDict,fitVars=fitVars,options=options)
 	try:
 		minEnergy,minValue = AFLOWpi.pseudo._getMin(energyDict,fitVars=fitVars,options=options,minimize_var=minimize_var)
-		minValue = OrderedDict(resultDict.items()+ minValue.items())
+		minValue = OrderedDict(list(resultDict.items())+ list(minValue.items()))
 		
 		if return_energy==True:
 			minValue['Energy']=minEnergy
 		resultList.append(minValue) 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 		pass
 
@@ -2295,7 +2295,7 @@ def _plotOne(plots,labs,fig,entry,key,xaxis,pltTitle=None,rename=None,entryNum=0
 #			filename+='_%s' % str(entry[0][key[cutoff]])
 	lineName = ''
 	for cutoff in key:
-		if cutoff in entry[0].keys():
+		if cutoff in list(entry[0].keys()):
 			lineName+=' '+cutoff+' '+str(entry[0][cutoff])
 #	print lineName
 
@@ -2305,22 +2305,22 @@ def _plotOne(plots,labs,fig,entry,key,xaxis,pltTitle=None,rename=None,entryNum=0
 	if rename!=None:
 		for oneCalc in entry:
 			entryCopy=copy.deepcopy(oneCalc)
-			for ID,value in entryCopy.iteritems():
-				if ID in rename.keys():
+			for ID,value in list(entryCopy.items()):
+				if ID in list(rename.keys()):
 					oneCalc[rename[ID]]=value
 					del oneCalc[ID]
 		for ID in range(len(key)):
-			if key[ID] in rename.keys():
+			if key[ID] in list(rename.keys()):
 				
 				key[ID]=rename[key[ID]]
 				
-		if xaxis in rename.keys():
+		if xaxis in list(rename.keys()):
 			xaxis=rename[xaxis]
 				
 		
         for oneSet in entry:
 		fitVarList = []
-		for k,v in oneSet.iteritems():
+		for k,v in list(oneSet.items()):
 			if k not in key:
 				if k != xaxis:
 					fitVarList.append(k)
@@ -2385,7 +2385,7 @@ def _plotOne(plots,labs,fig,entry,key,xaxis,pltTitle=None,rename=None,entryNum=0
 
 	try:
 		key.remove(xaxis)
-	except ValueError,e:
+	except ValueError as e:
 		pass
 
        
@@ -2421,13 +2421,13 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
     '''
 
 
-    print "Entering generatePlot"
+    print("Entering generatePlot")
     resultListDict=OrderedDict()
     [resultListDict.update({str(i):resultList[i]}) for i in range(len(resultList))]
 
     key = AFLOWpi.pseudo._getCutOffs(resultListDict)
     
-    if resultList[0].has_key('_AFLOWPI_DUAL_'):
+    if '_AFLOWPI_DUAL_' in resultList[0]:
 	    key.append('_AFLOWPI_DUAL_')
     
     value=[]
@@ -2443,10 +2443,10 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
     '''
     for entry in splitResults:
 
-        for i in entry.keys():
+        for i in list(entry.keys()):
             entry[i][xaxis]=int(entry[i][xaxis])
 
-        calcsFix.append(entry.values())
+        calcsFix.append(list(entry.values()))
     
     '''
     plots the list of dictionaries that have been split on the cutoffs
@@ -2462,7 +2462,7 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
     lim_dict=OrderedDict()
     for entry in calcsFix:
         for k in entry:
-            for j in k.keys():
+            for j in list(k.keys()):
                 if j!=xaxis and j not in splittingForPlot:
                     try:
                         lim_dict[j].append(float(k[j]))
@@ -2470,7 +2470,7 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
                         lim_dict[j]=[]
     max_list=[]
     min_list=[]
-    for k,v in lim_dict.iteritems():
+    for k,v in list(lim_dict.items()):
         
         max_list.append(max(v))
         min_list.append(min(v))
@@ -2498,5 +2498,5 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
     resDir = './'
     plt.savefig(os.path.join(resDir,'%s.pdf' % filename),bbox_inches='tight')
     
-    print "Exiting generatePlot"
+    print("Exiting generatePlot")
 

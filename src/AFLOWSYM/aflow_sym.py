@@ -16,7 +16,7 @@ class Symmetry:
                 shell=True
             )
         except subprocess.CalledProcessError:
-            print "Error aflow executable not found at: " + self.aflow_executable
+            print(("Error aflow executable not found at: " + self.aflow_executable))
     
     
     def get_symmetry(self, input_file, tol=None):

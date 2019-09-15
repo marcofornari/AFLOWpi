@@ -59,7 +59,7 @@ class tight_binding:
         pwx_exec_loc = os.path.join(pwx_dir,'pw.x')
         if not os.path.exists(pwx_exec_loc):
             logging.error('ERROR: engine executables not found in %s please check your config file. EXITING' % pwx_dir)
-            print 'ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir
+            print(('ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir))
             raise SystemExit
         AFLOWpi.prep.totree(pwx_exec_loc, calcs,rename=None,symlink=symlink)
 
@@ -116,17 +116,17 @@ class tight_binding:
         else:
             self.do_ham=False
 
-	AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs,s_tensor,spin_texture=spin_texture)
+        AFLOWpi.scfuj.paopy_spin_Hall_wrapper(self.calcs,s_tensor,spin_texture=spin_texture)
 
 
         calc_type='Spin Hall Conductivity'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         if spin_texture:
             calc_type='Spin Texture'
-            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
     def ahc(self,a_tensor=None,en_range=[0.05,5.05],de=0.05):
 
@@ -141,13 +141,13 @@ class tight_binding:
             self.do_ham=True
         else:
             self.do_ham=False
-	AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs,a_tensor)
+        AFLOWpi.scfuj.paopy_Berry_wrapper(self.calcs,a_tensor)
 
 
 
         calc_type='Anomalous Hall Conductivity'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
@@ -162,11 +162,11 @@ class tight_binding:
             self.do_ham=True
         else:
             self.do_ham=False
-	AFLOWpi.scfuj.paopy_optical_wrapper(self.calcs,d_tensor)
+        AFLOWpi.scfuj.paopy_optical_wrapper(self.calcs,d_tensor)
 
         calc_type='Optical Properties'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
@@ -192,7 +192,7 @@ class tight_binding:
         Returns:
               None
 
-        '''		
+        '''             
 
         # Boltzmann transport
         if t_tensor==None:
@@ -212,7 +212,7 @@ class tight_binding:
         add_step_str = AFLOWpi.run._colorize_message('ADDING TB STEP:  ',
                                                      level='GREEN',
                                                      show_level=False)
-        print add_step_str + calc_type_color
+        print((add_step_str + calc_type_color))
 
         return None
 
@@ -225,15 +225,15 @@ class tight_binding:
         ne=float(dos_range[1]-dos_range[0])/de
 
         calc_type='Density of States'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         if projected==True:
             AFLOWpi.scfuj.paopy_pdos_wrapper(self.calcs)
             calc_type='Projected Density of States'
 
-            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
             pdos_pp_str="""
 
@@ -254,27 +254,24 @@ except: pass
 
         if fermi_surface==True:
             calc_type='Fermi Surface'
-            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
-        band_topology=False
+    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
-	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol,nk=nk)
+        AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol,nk=nk)
 
         calc_type='Electronic Band Structure'
-        print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+        print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                                            AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
         if band_topology:
-            print "Disabled for this release"
-    
             calc_type='Band Topology'
-            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
         if fermi_surface:
             calc_type='Fermi Surface'
-            print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
-                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+            print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
+                AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 def _form_TB_dir(oneCalc,ID,from_ls=True):
@@ -299,8 +296,8 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
             shutil.copy(data_file_dft,TB_dir)
 
         shutil.copy(atomic_proj_dat,TB_dir)
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
 
 
 def _run_want_bands(__submitNodeName__,oneCalc,ID,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.95,proj_sh=5.5):
@@ -318,7 +315,7 @@ def _run_want_bands(__submitNodeName__,oneCalc,ID,num_points=1000,cond_bands=Tru
 
 
 
-    for want_ID,want_calc in want_dict.iteritems():
+    for want_ID,want_calc in list(want_dict.items()):
         AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x',)
 
     AFLOWpi.prep._clean_want_bands(oneCalc,ID)
@@ -420,7 +417,7 @@ def _rename_projectability(oneCalc,ID):
 #                                 emass = numpy.float64(data_by_line[data_line].strip('\n').split()[-1])
 
 
-#                             except Exception,e:
+#                             except Exception as e:
 #                                 print e
 #                                 continue
 #                             line_write = this_temp + data_by_line[data_line].strip('\n')+'\n'#+' %s\n'%(N_s)
@@ -448,14 +445,14 @@ def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,pro
     want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=proj_sh,cond_bands=cond_bands,fermi_surface=fermi_surface,compute_ham=compute_ham,proj_thr=proj_thr,)
 
 
-    for want_dos_ID,want_dos in want_dos_calc.iteritems():
+    for want_dos_ID,want_dos in list(want_dos_calc.items()):
         AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,engine='espresso',calcType='custom',execPath='./want_dos.x',execPrefix=execPrefix,execPostfix='')
 
         if project==True:
             spin_state = want_dos_ID.split('_')[-1].strip()
 
 
-    if len(want_dos_calc.keys())>1:
+    if len(list(want_dos_calc.keys()))>1:
         AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
 
 
@@ -526,14 +523,14 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                     
                     try:
                         pdos_dict[new_name].append(orig_name)
-                    except Exception,e:
+                    except Exception as e:
                         pdos_dict[new_name]=[orig_name]
 
-        for k,v in pdos_dict.iteritems():
+        for k,v in list(pdos_dict.items()):
 
             old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[0])
             dat = numpy.loadtxt(old_name_path)                    
-            for i in xrange(1,len(v)):
+            for i in range(1,len(v)):
                 old_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],v[i])
                 dat[:,1] += numpy.loadtxt(old_name_path)[:,1]
             new_name_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],k)
@@ -592,25 +589,22 @@ def _combine_pol_pdos(oneCalc,ID):
 
 
 class tb_plotter:
-	'''
-	Class for adding common plotting functions from AFLOWpi.plot module to the high level user 
-	interface. 
+        '''
+        Class for adding common plotting functions from AFLOWpi.plot module to the high level user 
+        interface. 
 
-	'''
-	def __init__(self,calcs):
-		self.calcs=calcs
+        '''
+        def __init__(self,calcs):
+                self.calcs=calcs
 
-	def topology(self):
-            print "Band topology plot disabled for this release"
-            return
-
+        def topology(self):
             AFLOWpi.plot.band_topology(self.calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False)
 
             calc_type='Plot Band Topology'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
 
-	def ahc(self):
+        def ahc(self):
             addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=False,real=False)"
             AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
             addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=False,real=True)"
@@ -619,9 +613,9 @@ class tb_plotter:
             AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
 
             calc_type='Plot Anomalous Hall Conductivity'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
-	def shc(self):
+        def shc(self):
             addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=True,real=False)"
             AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
             addit = "AFLOWpi.plot.__plot_dichroism(oneCalc,ID,spin=True,real=True)"
@@ -630,71 +624,71 @@ class tb_plotter:
             AFLOWpi.prep.addToAll_(self.calcs,"PLOT",addit)
 
             calc_type='Plot Spin Hall Conductivity'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
-	def opdos(self,yLim=[-5,5],runlocal=False,postfix=''):
+        def opdos(self,yLim=[-5,5],runlocal=False,postfix=''):
             AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Orbital Projected DOS of PAO-TB Representation'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
 
-	def apdos(self,yLim=[-5,5],runlocal=False,postfix=''):
+        def apdos(self,yLim=[-5,5],runlocal=False,postfix=''):
             AFLOWpi.plot.apdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Atom Projected DOS of PAO-TB Representation'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
 
-	def transport(self,runlocal=False,postfix='',x_range=None):
-		'''
-		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
+        def transport(self,runlocal=False,postfix='',x_range=None):
+                '''
+                Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
 
-		Arguments:
-		      self: the plotter object
+                Arguments:
+                      self: the plotter object
 
-		Keyword Arguments:
-		      nm (bool): whether to plot in nanometers for spectrum or eV for energy
-		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-	                                or write it to the _ID.py to run during the workflow
-		
-		Returns:
-		      None
+                Keyword Arguments:
+                      nm (bool): whether to plot in nanometers for spectrum or eV for energy
+                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
+                                        or write it to the _ID.py to run during the workflow
+                
+                Returns:
+                      None
 
-		'''
+                '''
 
-		AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
-		
-		calc_type='Plot Boltzmann Transport'
-		print '                 %s'% (calc_type)
-
-
-	def optical(self,runlocal=False,postfix='',x_range=None):
-		'''
-		Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
-
-		Arguments:
-		      self: the plotter object
-
-		Keyword Arguments:
-		      nm (bool): whether to plot in nanometers for spectrum or eV for energy
-		      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-	                                or write it to the _ID.py to run during the workflow
-		
-		Returns:
-		      None
-
-		'''
+                AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
+                
+                calc_type='Plot Boltzmann Transport'
+                print(('                 %s'% (calc_type)))
 
 
-		AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
-		
-		calc_type='Plot Optical Epsilon'
-		print '                 %s'% (calc_type)
+        def optical(self,runlocal=False,postfix='',x_range=None):
+                '''
+                Wrapper method to call AFLOWpi.plot.epsilon in the high level user interface.
+
+                Arguments:
+                      self: the plotter object
+
+                Keyword Arguments:
+                      nm (bool): whether to plot in nanometers for spectrum or eV for energy
+                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
+                                        or write it to the _ID.py to run during the workflow
+                
+                Returns:
+                      None
+
+                '''
+
+
+                AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
+                
+                calc_type='Plot Optical Epsilon'
+                print(('                 %s'% (calc_type)))
 
 
 
-	def bands(self,yLim=[-5,5],DOSPlot='',runlocal=False,postfix=''):
+        def bands(self,yLim=[-5,5],DOSPlot='',runlocal=False,postfix=''):
             AFLOWpi.plot.bands(self.calcs,yLim=yLim,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix,tight_banding=True)
 
             calc_type='Plot Electronic Band Structure of PAO-TB Representation'
@@ -702,64 +696,66 @@ class tb_plotter:
                     calc_type+=' with Density of States'
             if DOSPlot=='APDOS':
                     calc_type+=' with APDOS'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
-	def dos(self,yLim=[-5,5],runlocal=False,postfix=''):
+        def dos(self,yLim=[-5,5],runlocal=False,postfix=''):
             pass
 
 
 def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,cond=1,ovp=False,band_factor=1.25,tetra_nscf=False,wsyminv=False):
-	execPrefix = ''
-	execPostfix = ''
+        execPrefix = ''
+        execPostfix = ''
         oneCalcID = ID
 
 
         def abortIFRuntimeError(subdir, ID):
-            outfile = file(os.path.join(subdir, "%s.out"%ID)).read()
+            with open(os.path.join(subdir, "%s.out"%ID)) as ifo:
+                outfile =  ifo.read()
+ 
             errorList = re.findall(r'from (.*) : error #.*\n',outfile)
             if len(errorList) > 0:        
                 logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
-                print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+                print(("Error in %s.out -- ABORTING ACBN0 LOOP"%ID))                    
                 raise SystemExit
 
 
 
-        if '__runList__' not in oneCalc.keys():
+        if '__runList__' not in list(oneCalc.keys()):
             oneCalc['__runList__']=[]
 
             
-	if config!=None:
-		AFLOWpi.prep._forceGlobalConfigFile(config)
-		logging.debug('forced config %s' % config)
-	else:
-		try:
-			config = AFLOWpi.prep._getConfigFile()
-			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
-			AFLOWpi.run._fancy_error_log(e)
+        if config!=None:
+                AFLOWpi.prep._forceGlobalConfigFile(config)
+                logging.debug('forced config %s' % config)
+        else:
+                try:
+                        config = AFLOWpi.prep._getConfigFile()
+                        AFLOWpi.prep._forceGlobalConfigFile(config)
+                except Exception as e:
+                        AFLOWpi.run._fancy_error_log(e)
 
 
-	if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
             execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
-	else:
+        else:
             execPrefix=''
 
 
-	if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-		execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
-	else:
-		execPostfix=''
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
+                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+        else:
+                execPostfix=''
 
 
-	if AFLOWpi.prep._ConfigSectionMap('run','engine') == '':
-		engine = AFLOWpi.prep._ConfigSectionMap('run','engine')
-	else:
-		engine = 'espresso'
+        if AFLOWpi.prep._ConfigSectionMap('run','engine') == '':
+                engine = AFLOWpi.prep._ConfigSectionMap('run','engine')
+        else:
+                engine = 'espresso'
 
 
         subdir = oneCalc['_AFLOWPI_FOLDER_']
-	oneCalc['_AFLOWPI_CONFIG_']=config
+        oneCalc['_AFLOWPI_CONFIG_']=config
 
         if 'scf' not in oneCalc['__runList__']:
 
@@ -771,7 +767,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
                         execPostfixPrime=re.sub(r'npool[s]*\s*(?:\d*)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -797,12 +793,12 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
                 nscf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],nscf_ID)                
                 '''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-            except Exception,e:
+            except Exception as e:
                 try:
                     nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_factor,
-                                                                      band_factor=band_factor)	
+                                                                      band_factor=band_factor)  
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
         nscf_exec_postfix = execPostfix_LOCAL = AFLOWpi.prep._ConfigSectionMap('TB','exec_postfix_nscf')            
@@ -821,7 +817,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
                         execPostfixPrime=re.sub(r'npool\s*(?:\d+)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
             AFLOWpi.run._oneRun(__submitNodeName__,nscf_calc,nscf_ID,execPrefix=execPrefix,
@@ -831,7 +827,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             abortIFRuntimeError(subdir, nscf_ID)
 
             oneCalc['__runList__'].append('nscf')
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)	
+            AFLOWpi.prep._saveOneCalc(oneCalc,ID)       
 ##################################################################################################################
         pdos_calc,pdos_ID = AFLOWpi.scfuj.projwfc(oneCalc,ID,paw=False,ovp=ovp)
 
@@ -855,11 +851,11 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
 
 
 
-	eFermi=0.0
+        eFermi=0.0
 
 
         AFLOWpi.prep._form_TB_dir(oneCalc,ID)
-	eFermi=10.0
+        eFermi=10.0
 
         splitInput = AFLOWpi.retr._splitInput(nscf_calc['_AFLOWPI_INPUT_'])
         del oneCalc['__runList__']
@@ -921,7 +917,7 @@ def _clean_want_bands(oneCalc,ID):
             include.append(True)
         except:
             pass
-    print include
+    print(include)
     #    print print_out
     output_path_string+='%s %s' %(path_name[-1],0)+'\n' 
     
@@ -963,7 +959,7 @@ def _clean_want_bands(oneCalc,ID):
             
         ret_data.append(final_data)
         want_bands_data_path_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],want_bands_data_path[:-4]+'_cleaned.dat')
-        print want_bands_data_path_new
+        print(want_bands_data_path_new)
 #        want_bands_data_path_new=want_bands_data_path
         with open(want_bands_data_path_new,'w') as in_file_obj:
             in_file_obj.write(final_data)

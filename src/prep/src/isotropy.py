@@ -27,7 +27,7 @@ import AFLOWpi
 import numpy as np
 import os
 import subprocess
-import StringIO
+import io
 import re
 import copy
 import scipy
@@ -164,10 +164,10 @@ K_POINTS {automatic}
         loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
         spec_lab_index =  loop_list.index('_atom_site_type_symbol')
 
-        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
+        positions = [list(map(str.strip,x.split())) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
         mod_pos=[]
-        for i in xrange(len(positions)):
+        for i in range(len(positions)):
             positions[i][spec_lab_index]=self.pos_labels[wyc_first_lab_ind[i]]
             mod_pos.append(' '.join(['%8.8s'%x for x in positions[i]]))
 
@@ -276,7 +276,7 @@ K_POINTS {automatic}
             output = find_sym_process.communicate(input=in_str)[0]
             self.output=output
         except:
-            print find_sym_process.returncode
+            print((find_sym_process.returncode))
 
         return output
 
@@ -301,7 +301,7 @@ K_POINTS {automatic}
             self.sgn = self.__HM2Num(name)
             return self.sgn
 
-        except Exception,e:
+        except Exception as e:
             return 1
 
 
@@ -352,8 +352,8 @@ K_POINTS {automatic}
                     pass
             try:
                 prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 raise SystemExit
 
         self.iso_basis=prim_in
@@ -365,7 +365,7 @@ K_POINTS {automatic}
         a=np.abs((self.iso_conv).dot(self.iso_basis))
 
         prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
-        prim_abc=map(float,prim_abc)
+        prim_abc=list(map(float,prim_abc))
 
         return self.iso_basis
 
@@ -417,7 +417,7 @@ K_POINTS {automatic}
             return 14
 
         else:
-            print 'SG num not found:',self.sgn
+            print(('SG num not found:',self.sgn))
             raise SystemExit
 
 
@@ -434,13 +434,13 @@ K_POINTS {automatic}
             inputString=inputString_new
         
             if self.sgn!=isotropy_chk.sgn:
-                print "warning "*10
-                print "warning "*10
-                print "warning "*10
-                print inputString
-                print "warning "*10
-                print "warning "*10
-                print "warning "*10
+                print(("warning "*10))
+                print(("warning "*10))
+                print(("warning "*10))
+                print(inputString)
+                print(("warning "*10))
+                print(("warning "*10))
+                print(("warning "*10))
             break
 
 
@@ -489,7 +489,7 @@ K_POINTS {automatic}
         except:
             pass
         '''get positions from input'''
-        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
+        positions = [list(map(str.strip,x.split())) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
         pos_array=np.zeros((len(positions),3))
         
@@ -547,7 +547,7 @@ K_POINTS {automatic}
         all_eq_pos=np.zeros((pos_array.shape[0]*operations.shape[0],3))
 
         '''duplicate atoms by symmetry operations'''
-        for i in xrange(operations.shape[0]):
+        for i in range(operations.shape[0]):
 
             temp_pos=np.copy(pos_array)
             temp_pos   = temp_pos.dot(operations[i])
@@ -752,7 +752,7 @@ K_POINTS {automatic}
 
         '''form atomic positions card for QE input'''
         atm_pos_str=""
-        for i in xrange(all_eq_pos.shape[0]):
+        for i in range(all_eq_pos.shape[0]):
             atm_pos_str+= ('%3.3s'% labels_arr[i]) +(' % 9.9f % 9.9f % 9.9f '%tuple(all_eq_pos[i].tolist()))+"\n"
 
 
@@ -1388,7 +1388,7 @@ K_POINTS {automatic}
                 "I41/a-32/d":230,}
         try:
             return HMdict[HM_str.replace(" ","")]
-        except Exception,e: 
+        except Exception as e: 
 #            print e
             raise SystemExit
 #            return 1
@@ -1408,7 +1408,7 @@ def reduce_atoms(all_eq_pos,labels,cell=np.identity(3,dtype=float),thresh=0.1,in
     '''mask for duplicate positions'''
     mask = np.ones(all_eq_pos.shape[0],dtype=bool)
     '''for self mask'''
-    xr = xrange(all_eq_pos.shape[0])
+    xr = list(range(all_eq_pos.shape[0]))
     idx = np.array(xr,dtype=int)
     '''loop over each atomic position'''
     for i in xr:
@@ -1476,8 +1476,8 @@ def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
 
         return np.amin(dist,axis=2)
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
         
 
 

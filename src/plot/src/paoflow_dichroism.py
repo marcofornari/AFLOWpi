@@ -28,8 +28,8 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
     for dat_file in dem_files:
 
         width = 9
-	height = 6
-	plt.figure(figsize=(width, height))#to adjust the figure size
+        height = 6
+        plt.figure(figsize=(width, height))#to adjust the figure size
 
         dat_name = dat_file[:-4]
         dat_split_name = dat_name.split('_')
@@ -95,5 +95,5 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
 
 
 
-	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
         plt.close()

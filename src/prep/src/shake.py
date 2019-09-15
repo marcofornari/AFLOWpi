@@ -38,7 +38,7 @@ def _shake_atoms(oneCalc,ID,dist=0.1,weight_by_mass=False):
     shift[:,0] = dist*np.sin(theta)*np.cos(phi)
     shift[:,1] = dist*np.sin(theta)*np.sin(phi)
     shift[:,2] = dist*np.cos(theta)
-    print cell
+    print(cell)
 
     BohrToAngstrom = 0.529177249
     cart_pos+=shift/BohrToAngstrom

@@ -12,7 +12,7 @@ def _execheck():
 	pwx_exec_loc = os.path.join(pwx_dir,'pw.x')
 	if not os.path.exists(pwx_exec_loc):
 		logging.error('ERROR: engine executables not found in %s please check your config file. EXITING' % pwx_dir)
-		print 'ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir
+		print(('ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir))
 		raise SystemExit
 	return pwx_exec_loc, symlink
 
@@ -50,7 +50,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(execPrefix, execPostfix)
 	AFLOWpi.prep.addToAll_(calcs,'RUN',command) 
 
 	working_directory = os.getcwd() + "/"
-	print "trying to copy environ file...", working_directory
+	print(("trying to copy environ file...", working_directory))
 	environ_copy = """import shutil
 shutil.copy("%s" + "environ.in", os.getcwd() + "/" + "environ.in")"""%(working_directory)
 
@@ -69,9 +69,9 @@ def setup_scf(calcs, config=None, environmode='from_file'):
 	TODO: merge with relax (no reason to have a setup for each)
 	"""
 
-	print "entering SETUP"
+	print("entering SETUP")
 	if config is not None:
-		print "config set to not None"
+		print("config set to not None")
 
 	pwx, symlink = _execheck()
 
@@ -109,7 +109,7 @@ def _run_environ_iterative(__submitNodeName__,oneCalc,ID):
 	execPostfix = ''
 	oneCalcID = ID
 
-	if '__runList__' not in oneCalc.keys():
+	if '__runList__' not in list(oneCalc.keys()):
 		oneCalc['__runList__']=[]
 		config=None
 
@@ -120,7 +120,7 @@ def _run_environ_iterative(__submitNodeName__,oneCalc,ID):
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 	if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
@@ -165,12 +165,12 @@ def _run_environ_iterative(__submitNodeName__,oneCalc,ID):
 			environ_scf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],environ_scf_ID)                
 			'''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
 			environ_scf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-		except Exception,e:
+		except Exception as e:
 			try:
 			    # setup the scf after the relax
 				environ_scf_calc,environ_scf_ID= AFLOWpi.environ._setup_environ_scf(oneCalc,ID)
                                                                 
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
 
 
@@ -195,7 +195,7 @@ def _run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix)
 	engine = ''
 	config = None
 
-	if "__runList__" not in oneCalc.keys():
+	if "__runList__" not in list(oneCalc.keys()):
 		oneCalc["__runList__"] = []
 		config = None
 
@@ -206,7 +206,7 @@ def _run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix)
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception, e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 	if AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix") != "":
@@ -250,7 +250,7 @@ def _run_environ_scf(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix):
 	engine = ''
 	config = None
 
-	if "__runList__" not in oneCalc.keys():
+	if "__runList__" not in list(oneCalc.keys()):
 		oneCalc["__runList__"] = []
 		config = None
 
@@ -261,7 +261,7 @@ def _run_environ_scf(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix):
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception, e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 	if AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix") != "":

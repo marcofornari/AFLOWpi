@@ -56,13 +56,13 @@ def __qe_to_exiting_scf_input(qe_input):
 
     for i in range(len(lab)):
         pos_str=' '.join([str(j) for j in pos[i]])
-        if lab[i] not in pos_dict.keys():
+        if lab[i] not in list(pos_dict.keys()):
           
             pos_dict[lab[i]]=[pos_str]
         else:
             pos_dict[lab[i]].append(pos_str)
 
-    for species,positions in pos_dict.iteritems():
+    for species,positions in list(pos_dict.items()):
         exciting_input+='''</species>
         <species speciesfile="%s.xml">'''%species
         for i in range(len(positions)):
@@ -87,4 +87,4 @@ def __qe_to_exiting_scf_input(qe_input):
     ''' % (g_shift[0],g_shift[1],g_shift[2],g_dense[0],g_dense[1],g_dense[2])
 
 
-    print exciting_input
+    print(exciting_input)

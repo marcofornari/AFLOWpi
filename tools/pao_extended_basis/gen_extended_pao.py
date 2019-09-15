@@ -1,5 +1,5 @@
 #from __future__ import print_function,division
-from __future__ import print_function
+
 __author__ = 'believe'
 
 
@@ -14,7 +14,7 @@ def read_UPF(fullpath):
  import xml.etree.ElementTree as et
  import sys
  import scipy.io as sio
- import cPickle as pickle
+ import pickle as pickle
 
  #reads xml file
  #http://www.quantum-espresso.org/pseudopotentials/unified-pseudopotential-format
@@ -74,7 +74,7 @@ def read_UPF(fullpath):
      if mesh != sizeaux:
         sys.exit('Error: The size of PP_R does not match mesh: %i != %i'%(sizeaux,mesh))
      xxaux = re.split('\n| ',rootaux.text)
-     rmesh  =np.array(map(float,filter(None,xxaux))) #In Bohrs
+     rmesh  =np.array(list(map(float,[_f for _f in xxaux if _f]))) #In Bohrs
      if mesh != len(rmesh):
        sys.exit('Error: wrong mesh size')
  psp["mesh"]=mesh
@@ -87,7 +87,7 @@ def read_UPF(fullpath):
      if mesh != sizeaux:
         sys.exit('Error: The size of PP_RAB does not match mesh: %i != %i'%(sizeaux,mesh))
      xxaux = re.split('\n| ',rootaux.text)
-     rmesh  =np.array(map(float,filter(None,xxaux))) #In Bohrs
+     rmesh  =np.array(list(map(float,[_f for _f in xxaux if _f]))) #In Bohrs
      if mesh != len(rmesh):
        sys.exit('Error: wrong mesh size')
  psp["rab"]=rmesh
@@ -101,7 +101,7 @@ def read_UPF(fullpath):
          kkbeta[ibeta] = int(rootaux.attrib['size'])
          lll[ibeta]    = int(rootaux.attrib['angular_momentum'])
          xxaux         = re.split('\n| ',rootaux.text)
-         rmesh         = np.array(map(float,filter(None,xxaux))) 
+         rmesh         = np.array(list(map(float,[_f for _f in xxaux if _f]))) 
          if kkbeta[ibeta] != len(rmesh):
            sys.exit('Error: wrong mesh size')
      psp["beta_"+str(ibeta+1)]=rmesh
@@ -123,7 +123,7 @@ def read_UPF(fullpath):
    lchi.append(int(node.attrib['l']))
    oc.append(float(node.attrib['occupation']))
    xxaux = re.split('\n| ',node.text)
-   wfc_aux  =np.array([map(float,filter(None,xxaux))])
+   wfc_aux  =np.array([list(map(float,[_f for _f in xxaux if _f]))])
    chi = np.concatenate((chi,wfc_aux))
  if nwfc != chi.shape[0]: 
    sys.error('Error: wrong number of PAOs')
@@ -151,7 +151,7 @@ def read_UPF(fullpath):
             full_aewfc_l.append(int(rootaux.attrib['l']))
             full_aewfc_label.append(rootaux.attrib['label'])
             xxaux         = re.split('\n| ',rootaux.text)
-            rmesh         = np.array([map(float,filter(None,xxaux))]) 
+            rmesh         = np.array([list(map(float,[_f for _f in xxaux if _f]))]) 
             if sizeaux != rmesh.shape[1]: sys.exit('Error: wrong mesh size')
             full_aewfc    = np.concatenate((full_aewfc,rmesh))
     psp["full_aewfc"]       =np.transpose(full_aewfc)
@@ -168,7 +168,7 @@ def read_UPF(fullpath):
             full_pswfc_l.append(int(rootaux.attrib['l']))
             full_pswfc_label.append(rootaux.attrib['label'])
             xxaux         = re.split('\n| ',rootaux.text)
-            rmesh         = np.array([map(float,filter(None,xxaux))]) 
+            rmesh         = np.array([list(map(float,[_f for _f in xxaux if _f]))]) 
             if sizeaux != rmesh.shape[1]: sys.exit('Error: wrong mesh size')
             full_pswfc    = np.concatenate((full_pswfc,rmesh))
     psp["full_pswfc"]       =np.transpose(full_pswfc)
@@ -235,7 +235,7 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e,jj):
                  plt.title('PP_CHI.%s'%(str(ichi+1)))
                  pdf.savefig()
                  plt.close()
-    except Exception,e:
+    except Exception as e:
        print(e)
 
     np.savez(os.path.dirname(wfc_ae_fullpath)+"/AE_and_PS",r=rmesh,AE=wfc_ae,PS=wfc_ps)
@@ -289,12 +289,12 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll,jj=0):
 
     wfc_ae[:,0] = psp['r']
 
-    for wfc_ind in xrange(len(aewfc)):
+    for wfc_ind in range(len(aewfc)):
         flattened_wfc= []
         sl_aewfc = aewfc[wfc_ind].split('\n')
         for line in sl_aewfc:
 
-            flattened_wfc.extend(map(float,line.split()))
+            flattened_wfc.extend(list(map(float,line.split())))
         wfc_ae[:,wfc_ind+1] = np.array(flattened_wfc)
         
 
@@ -302,15 +302,15 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll,jj=0):
         rel_aewfc=re.findall(r'\<PP_AEWFC_REL\.\d+.*\n([\s*\d\.E\+\-]+)',upf_str,re.M)
         rel_wfc_ae=np.zeros((psp['r'].size,len(aewfc)+1))
 
-        for wfc_ind in xrange(len(rel_aewfc)):
+        for wfc_ind in range(len(rel_aewfc)):
             flattened_wfc= []
             sl_aewfc = rel_aewfc[wfc_ind].split('\n')
             for line in sl_aewfc:
-                flattened_wfc.extend(map(float,line.split()))
+                flattened_wfc.extend(list(map(float,line.split())))
             rel_wfc_ae[:,wfc_ind+1] = np.array(flattened_wfc)
 
 #        wfc_ae[:,1:]=rel_wfc_ae[:,1:]
-    except Exception,e:
+    except Exception as e:
         print(e)
         
     ######################################################################################
@@ -469,12 +469,12 @@ def pseudizeWFC(ld1FileString, UPF_file):
         print("Total No. of PAOs found:", nPAO)
 
 
-        rcut = max(map(float,from_upf[:,5].tolist()))
+        rcut = max(list(map(float,from_upf[:,5].tolist())))
         llabels	= from_upf[:,0]
-        ll	= map(int,from_upf[:,2].tolist())
-        pseudo_e= map(float,from_upf[:,-1].tolist())
-        occups  = map(float,from_upf[:,3].tolist())
-        nn  = map(int,from_upf[:,1].tolist())
+        ll	= list(map(int,from_upf[:,2].tolist()))
+        pseudo_e= list(map(float,from_upf[:,-1].tolist()))
+        occups  = list(map(float,from_upf[:,3].tolist()))
+        nn  = list(map(int,from_upf[:,1].tolist()))
         print(ll)
         print(llabels)
         print(pseudo_e)
@@ -486,12 +486,12 @@ def pseudizeWFC(ld1FileString, UPF_file):
         rel_jj=[]
         try:
             try:
-                jj = np.array(map(float,[x[3:-1]  for x in AE_AEWFC_REL[:,-1].tolist()]))
-                for i in xrange(len(jj)):
+                jj = np.array(list(map(float,[x[3:-1]  for x in AE_AEWFC_REL[:,-1].tolist()])))
+                for i in range(len(jj)):
                     rel_jj.append('<PP_RELWFC.%s index="%s" els="%s" nn="%s" lchi="%s" jchi="%1.15E" oc="%1.15E"/>'%(i+1,i+1,llabels[i],nn[i],ll[i],jj[i],occups[i]))
             except:
                 jj=np.array(jj)
-                for i in xrange(len(jj)):
+                for i in range(len(jj)):
                     rel_jj.append('<PP_RELWFC.%s index="%s" els="%s" nn="%s" lchi="%s" jchi="%1.15E" oc="%1.15E"/>'%(i+1,i+1,llabels[i],nn[i],ll[i],jj[i],occups[i]))
 
 
@@ -518,20 +518,20 @@ def build_newPPStr(wfc_combination, occupations, UPF_fullpath):
 
 
 
-        rcut = max(map(float,from_upf[:,5].tolist()))
+        rcut = max(list(map(float,from_upf[:,5].tolist())))
         llabels	= from_upf[:,0]
-        ll	= map(int,from_upf[:,1].tolist())
-        pseudo_e= map(float,from_upf[:,-1].tolist())
-        occups  = map(float,from_upf[:,3].tolist())
+        ll	= list(map(int,from_upf[:,1].tolist()))
+        pseudo_e= list(map(float,from_upf[:,-1].tolist()))
+        occups  = list(map(float,from_upf[:,3].tolist()))
 
         rel_jj=[]
         try:
             AE_AEWFC_REL = np.array([x.split() for x in re.findall(r'<PP_AEWFC_REL\.(.*)\>\n',ppFileLines)])
-            jj = np.array(map(float,[x[3:-1]  for x in AE_AEWFC_REL[:,-1].tolist()]))
-            for i in xrange(len(jj)):
+            jj = np.array(list(map(float,[x[3:-1]  for x in AE_AEWFC_REL[:,-1].tolist()])))
+            for i in range(len(jj)):
                 nn = np.sum(llabels==llabels[i])
                 rel_jj.append('<PP_RELWFC.%s index="%s" els="%s" nn="%s" lchi="%s" jchi="%1.15E" oc="%1.15E"/>'%(i+1,i+1,llabels[i],nn,ll[i]-1,jj[i],occups[i]))
-            for i in xrange(len(jj)):
+            for i in range(len(jj)):
                 rel_jj[i] = rel_jj[i].replace('E+0','E+00')
                 rel_jj[i] = rel_jj[i].replace('E-0','E-00')
         except: pass
@@ -592,11 +592,11 @@ def main():
 
                         from_upf = [x.split()[0] for x in gg.split('\n') if len(x.strip())!=0]
 
-                        wfc_combinations = [list(xrange(1,len(from_upf)+1))]
+                        wfc_combinations = [list(range(1,len(from_upf)+1))]
 
                         print(wfc_combinations)
 
-		except Exception,e:
+		except Exception as e:
                         print(e)
 			print("Error in case specification of ld1.x input file")
 			raise SystemExit

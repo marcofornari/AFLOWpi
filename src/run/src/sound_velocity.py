@@ -66,7 +66,7 @@ def define_vec_direction(E_k,nk_r,nk_phi,nk_theta):
     nbnd=E_k.shape[1]
     ray =np.zeros(( ((nk_phi)*(nk_theta-1)) ,(nk_r+1),nbnd  ),dtype=E_k.dtype)
 
-    for n in xrange(no_xy_zero.shape[0]/nk_r):
+    for n in range(no_xy_zero.shape[0]/nk_r):
         ray[n+1][1:] = no_xy_zero[n*nk_r:(n+1)*nk_r]
         ray[n+1][0]  = origin
         
@@ -243,16 +243,16 @@ def do_sound_velocity(__submitNodeName__,oneCalc,ID,dk_theta=0.1,dk_phi=0.2,dk_r
 
     sol = np.zeros(W_qp_radial.shape[0])
     res=[]
-    print W_qp_radial[:,:,0]
+    print((W_qp_radial[:,:,0]))
 
 
-    for branch in xrange(3):
+    for branch in range(3):
 
 
 
         sol = np.polyfit(rad_points,W_qp_radial[:,:,branch].T,4)
 
-        print sol.shape
+        print((sol.shape))
         res.append(np.mean(sol[3])*conv)
 
 

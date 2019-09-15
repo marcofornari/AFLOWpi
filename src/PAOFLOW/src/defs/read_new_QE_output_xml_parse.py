@@ -9,7 +9,7 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
-from __future__ import print_function
+
 import numpy as np
 import xml.etree.cElementTree as ET
 import sys
@@ -33,7 +33,7 @@ def read_new_QE_output_xml(fpath,verbose,non_ortho):
     # Reading data-file-schema.xml
     iterator_obj = ET.iterparse(data_file,events=('start','end'))
     iterator     = iter(iterator_obj)
-    event,root   = iterator.next()
+    event,root   = next(iterator)
 
     for event,elem in iterator:
         if event == 'end' and elem.tag == "output":
@@ -89,7 +89,7 @@ def read_new_QE_output_xml(fpath,verbose,non_ortho):
             # Atomic Positions                
             natoms=int(float(elem.findall("atomic_structure")[0].attrib['nat']))
             tau = np.zeros((natoms,3),dtype=float)
-            for n in xrange(natoms):
+            for n in range(natoms):
                 aux = elem.findall("atomic_structure/atomic_positions/atom")[n].text.split()
                 tau[n,:]=np.array(aux,dtype="float32")
 
@@ -108,8 +108,8 @@ def read_new_QE_output_xml(fpath,verbose,non_ortho):
     iterator = None
     iterator_obj = None
 
-    if rank == 0 and verbose: print("The lattice parameter is: alat= {0:f} ({1:s})".format(alat,alatunits))
-    if rank == 0 and verbose: print('Monkhorst&Pack grid',nk1,nk2,nk3,k1,k2,k3)
+    if rank == 0 and verbose: print(("The lattice parameter is: alat= {0:f} ({1:s})".format(alat,alatunits)))
+    if rank == 0 and verbose: print(('Monkhorst&Pack grid',nk1,nk2,nk3,k1,k2,k3))
     # Reading atomic_proj.xml
 
     group_nesting = 0
@@ -120,33 +120,33 @@ def read_new_QE_output_xml(fpath,verbose,non_ortho):
     # Reading data-file-schema.xml
     iterator_obj = ET.iterparse(atomic_proj,events=('start','end'))
     iterator     = iter(iterator_obj)
-    event,root   = iterator.next()
+    event,root   = next(iterator)
 
     for event,elem in iterator:
 
         if event == 'end' and  elem.tag == "HEADER":
             nkpnts = int(elem.findall("NUMBER_OF_K-POINTS")[0].text.strip())
-            if rank == 0 and verbose: print('Number of kpoints: {0:d}'.format(nkpnts))
+            if rank == 0 and verbose: print(('Number of kpoints: {0:d}'.format(nkpnts)))
 
             nspin  = int(elem.findall("NUMBER_OF_SPIN_COMPONENTS")[0].text.split()[0])
             dftSO = False
             if nspin == 4:
                 nspin = 1
                 dftSO = True
-            if rank == 0 and verbose: print('Number of spin components: {0:d}'.format(nspin))
+            if rank == 0 and verbose: print(('Number of spin components: {0:d}'.format(nspin)))
             nelec = float(elem.findall("NUMBER_OF_ELECTRONS")[0].text.split()[0])
             nelec = int(nelec)
-            if rank == 0 and verbose: print('Number of electrons: {0:d}'.format(nelec))
+            if rank == 0 and verbose: print(('Number of electrons: {0:d}'.format(nelec)))
 
             kunits = elem.findall("UNITS_FOR_K-POINTS")[0].attrib['UNITS']
 
             nbnds  = int(elem.findall("NUMBER_OF_BANDS")[0].text.split()[0])
-            if rank == 0 and verbose: print('Number of bands: {0:d}'.format(nbnds))
+            if rank == 0 and verbose: print(('Number of bands: {0:d}'.format(nbnds)))
 
             aux    = elem.findall("UNITS_FOR_ENERGY")[0].attrib['UNITS']
 
             nawf   =int(elem.findall("NUMBER_OF_ATOMIC_WFC")[0].text.split()[0])
-            if rank == 0 and verbose: print('Number of atomic wavefunctions: {0:d}'.format(nawf))
+            if rank == 0 and verbose: print(('Number of atomic wavefunctions: {0:d}'.format(nawf)))
 
             elem.clear()
 

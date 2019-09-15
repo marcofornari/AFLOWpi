@@ -29,7 +29,7 @@ import os
 import __main__
 import numpy
 import time
-import ConfigParser
+import configparser
 import glob 
 import sys 
 import re
@@ -47,7 +47,10 @@ def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=
     intoInit={'PROJECT':subset_name,'SET':'','workdir':oneCalc['_AFLOWPI_FOLDER_'],'config':config}
     fake_session_keys = AFLOWpi.prep.init(**intoInit)
 
-    exec('input_strings=%s'%build_command)
+    input_strings=None
+    _locals=locals()
+    exec('input_strings=%s'%build_command,globals(),_locals)
+    input_strings = _locals["input_strings"]
 
     if merge_oneCalc==True:
         varied_calcs = AFLOWpi.prep.calcFromFile(fake_session_keys,input_strings,reffile=oneCalc['_AFLOWPI_INPUT_'],workdir=oneCalc['_AFLOWPI_FOLDER_'],keep_name=keep_name,clean_input=clean_input)
@@ -69,28 +72,28 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
         if check_function!=None:
             check_function=repr(check_function)
 
-	for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
 
-		oneCalc['__splitCounter__']=0
+                oneCalc['__splitCounter__']=0
 
-		execString='''if oneCalc['__execCounter__']<=%s:
+                execString='''if oneCalc['__execCounter__']<=%s:
     ''' % oneCalc['__execCounterBkgrd__']
-		execString+='''
+                execString+='''
      oneCalc,ID = AFLOWpi.prep.construct_and_run(__submitNodeName__,oneCalc,ID,build_command="""%s""",subset_tasks=%s,mult_jobs=%s,subset_name='%s_%s',keep_file_names=%s,clean_input=%s,check_function=%s,fault_tolerant=%s,pass_through=%s)
 
 ''' % (subset_creator,repr(subset_tasks),mult_jobs,ID,substep_name,keep_file_names,clean_input,check_function,fault_tolerant,pass_through)  
 #''' % (subset_creator,exit_command,repr(subset_tasks),mult_jobs)  
                 oneCalc['__execCounterBkgrd__']+=1
-		AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
+                AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
 
-		execString='''if oneCalc['__execCounter__']<=%s:
+                execString='''if oneCalc['__execCounter__']<=%s:
      ''' % oneCalc['__execCounterBkgrd__']
                 execString+='''del oneCalc["__CRAWL_CHECK__"]
      oneCalc["__execCounter__"]+=1
      AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 '''
                 oneCalc['__execCounterBkgrd__']+=1
-		AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
+                AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
 #####################################################################                
 
         
@@ -111,23 +114,23 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
         if not os.path.exists(sub_path):
             os.mkdir(sub_path)
                               
-	'''this is a check to see if we're restarting when mult_jobs==True'''
-	checkBool=False
-	if '__CRAWL_CHECK__' in oneCalc.keys():
+        '''this is a check to see if we're restarting when mult_jobs==True'''
+        checkBool=False
+        if '__CRAWL_CHECK__' in list(oneCalc.keys()):
             if oneCalc['__CRAWL_CHECK__']==ID:
                 checkBool=True
 
 
-	chain_index=1
-	try:
+        chain_index=1
+        try:
 
             chain_index=oneCalc['__chain_index__']
-            #		AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',oneCalc['__TEMP__INDEX__COUNTER__'])
+            #           AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',oneCalc['__TEMP__INDEX__COUNTER__'])
             AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',chain_index)
-	except Exception,e:
-		AFLOWpi.run._fancy_error_log(e)
-	
-	chain_logname='step_%02d'%1
+        except Exception as e:
+                AFLOWpi.run._fancy_error_log(e)
+        
+        chain_logname='step_%02d'%1
         logging.debug(chain_logname)
         logging.debug('CHECKBOOL:%s'%checkBool)
         if checkBool==False:
@@ -145,11 +148,11 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             outFile=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.in')
             command = '''
          completeBool=%s
-	 if completeBool:
-	    workdir = '../../'
-	    mainOneCalc = AFLOWpi.prep._loadOneCalc(workdir,'%s')
+         if completeBool:
+            workdir = '../../'
+            mainOneCalc = AFLOWpi.prep._loadOneCalc(workdir,'%s')
             AFLOWpi.prep._swap_walltime_logs('%s',mainOneCalc,oneCalc,ID)
-	    AFLOWpi.run._submitJob('%s',mainOneCalc,__submitNodeName__,forceOneJob=True)
+            AFLOWpi.run._submitJob('%s',mainOneCalc,__submitNodeName__,forceOneJob=True)
 
 ''' % (complete_function,ID,ID,ID)
 ########y########################################################################################################
@@ -159,7 +162,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                 pass
 
             newConfigPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CONFIG.config')
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
             config.read(oneCalc['_AFLOWPI_CONFIG_'])
             config.set('prep', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
 
@@ -181,7 +184,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                             qsub_post_trans.write(qsub_string)
 
                         config.set('cluster', 'job_template',qsub_temp_ref) 
-                    except Exception,e:
+                    except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
             with open(newConfigPath,'w') as fileWrite:    
@@ -198,9 +201,11 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
 
 
             for task in subset_tasks:                
-                exec(task)
+                _locals=locals()
+                exec(task,globals(),_locals)
 
-            for ID_sub,oneCalc_sub in calc_subset.iteritems():
+
+            for ID_sub,oneCalc_sub in list(calc_subset.items()):
                 set_complete_string='''oneCalc['__status__']['Complete']=False
 AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 AFLOWpi.prep._addToBlock(oneCalc_sub,ID_sub,'LOCK',set_complete_string) 
@@ -210,7 +215,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 AFLOWpi.prep._addToBlock(oneCalc_sub,ID_sub,'SUBMITNEXT',set_complete_string) 
 
             '''submit in reverse order because calcs later in the orderedDict are more likely'''
-            '''to be larger cells than those at the beginning'''		
+            '''to be larger cells than those at the beginning'''                
  #           invert_bool=True
             '''if we're almost at the end of the walltime don't try to submit'''
             walltime,startScript=AFLOWpi.run._grabWalltime(oneCalc,ID)
@@ -218,7 +223,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 bn = os.path.basename(oneCalc['_AFLOWPI_FOLDER_'])
                 subset_logs='../../%s/%s/AFLOWpi/calclogs/%s.log'%(bn,subset_name,chain_logname)
                 AFLOWpi.prep._add_subset_to_daemon_log_list([subset_logs],'../AFLOWpi/submission_daemon/log_list.log')
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
                 
 
@@ -227,29 +232,29 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
         else:
             subset_config = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CONFIG.config')
             calc_subset=AFLOWpi.prep.loadlogs(subset_name,'',chain_logname,config=subset_config)
-            logging.debug(calc_subset.keys())
+            logging.debug(list(calc_subset.keys()))
             try:
                 walltime,startScript=AFLOWpi.run._grabWalltime(oneCalc,ID)
             except:
                 pass
             #exit if all calcs are done (needed for local mode)
             try:
-                for k,v in calc_subset.iteritems():
+                for k,v in list(calc_subset.items()):
                     oneCalc_sub=v
                     ID_sub=k
                     break
                 if AFLOWpi.prep._checkSuccessCompletion(oneCalc_sub,ID_sub,faultTolerant=fault_tolerant):
                     return oneCalc,ID
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 #################################################################################################
-        for ID_new,oneCalc_new in calc_subset.iteritems():
+        for ID_new,oneCalc_new in list(calc_subset.items()):
             try:
                 calc_subset[ID_new]['__walltime_dict__']=oneCalc['__walltime_dict__']
                 AFLOWpi.prep._saveOneCalc(oneCalc_new,ID_new)
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 pass
 #################################################################################################            
         if mult_jobs==True:
@@ -263,7 +268,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
         try:
                 last=len(calc_subset)
-                for ID_new,oneCalc_new in calc_subset.items():
+                for ID_new,oneCalc_new in list(calc_subset.items()):
 
                     last-=1 
                     if last==0:
@@ -274,12 +279,12 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
                         oneJobBool=True
                         sajO=False
-                    raise SystemExit
+
                     AFLOWpi.run._submitJob(ID_new,oneCalc_new,__submitNodeName__,forceOneJob=oneJobBool,sajOverride=sajO)
                 if not pass_through:
                     sys.exit(0)                    
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             sys.exit(0)
             
@@ -301,7 +306,7 @@ def _return_to_main_pipeline(calc_subset,oneCalc,ID):
     else:
         return
 
-    for new_ID,new_oneCalc in calc_subset.iteritems():
+    for new_ID,new_oneCalc in list(calc_subset.items()):
         subset_qsub_file= os.path.join(new_oneCalc['_AFLOWPI_FOLDER_'],'_%s.qsub'%new_ID)
         if os.path.exists(subset_qsub_file):
             with open(subset_qsub_file,'w') as subset_qsub_file_obj:

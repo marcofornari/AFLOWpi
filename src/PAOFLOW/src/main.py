@@ -51,7 +51,7 @@ def main():
     if outDict is not None:
         print('\noutDict keys:')
         for k in list(outDict.keys()):
-            print('\''+k+'\'')
+            print(('\''+k+'\''))
 
 if __name__== "__main__":
     main()

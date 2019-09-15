@@ -444,7 +444,7 @@ def _getHighSymPoints(ibrav,alat,cellOld):
         qe_conv    = np.asarray([[ 1.0, 0.0, 0.0],[ 0.0, 1.0, 0.0],[ 0.0, 0.0, 1.0]])
                                    
 
-    for k,v in special_points.iteritems():
+    for k,v in list(special_points.items()):
         first  = np.array(v).dot(np.linalg.inv(aflow_conv))
         if ibrav==9:
             second = qe_conv.T.dot(first)
@@ -491,9 +491,9 @@ def kpnts_interpolation_mesh(ibrav,alat,cell,b_vectors,nk,inputpath,band_path,hi
     kq=np.copy(points)
     cart = True
     if cart:
-        for gn in xrange(kq.shape[1]):
+        for gn in range(kq.shape[1]):
             kq[:,gn]=np.dot(kq[:,gn],b_vectors)
-    for i in xrange(kq.shape[1]):
+    for i in range(kq.shape[1]):
         path_file+="% 20.16f % 20.16f % 20.16f\n"%(kq[0,i],kq[1,i],kq[2,i])
 
     if rank==0:
@@ -528,7 +528,7 @@ def get_path(ibrav,alat,cell,dk,band_path=None,high_sym_points=None):
     if ibrav==0 and band_path==None:
         sys.exit('IBRAV = 0 not permitted')
     if ibrav<0:
-        print('Lattice type %s is not implemented') % ibrav
+        print((('Lattice type %s is not implemented') % ibrav))
         logging.error('The ibrav value from QE has not yet been implemented')
         raise Exception
 
@@ -537,7 +537,7 @@ def get_path(ibrav,alat,cell,dk,band_path=None,high_sym_points=None):
         special_points, band_path = _getHighSymPoints(ibrav,alat,cell)
     else:
         special_points = {}
-        for i in xrange(high_sym_points.shape[0]):
+        for i in range(high_sym_points.shape[0]):
 
             tmp_coord = tuple(map(float,high_sym_points[i,[1,2,3]].tolist()))
             special_points[high_sym_points[i][0]]=tmp_coord
@@ -558,7 +558,7 @@ def get_path(ibrav,alat,cell,dk,band_path=None,high_sym_points=None):
         point1 = None
         point2 = None
 
-        for index2 in xrange(len(a)-1):
+        for index2 in range(len(a)-1):
             try:
                 point1 = a[index2]
                 point2 = a[index2+1]
@@ -584,7 +584,7 @@ def get_path(ibrav,alat,cell,dk,band_path=None,high_sym_points=None):
                 
 
             except Exception as e:
-                print e
+                print(e)
 
         """ last point """
         point1 = a[-1]

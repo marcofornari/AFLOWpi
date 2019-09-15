@@ -28,7 +28,7 @@ def cell_parameters(string,return_which='content',regex_or_string='string'):
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return
 
 
@@ -81,7 +81,7 @@ def k_points(string,return_which='content',regex_or_string='string'):
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return ''
     return content_return
 
@@ -111,7 +111,7 @@ def atomic_positions(string,return_which='content',regex_or_string='string'):
 
         try:
             modifier = modifier_regex.findall(string)[-1]
-        except Exception,e:
+        except Exception as e:
             return ''
 
 
@@ -120,7 +120,7 @@ def atomic_positions(string,return_which='content',regex_or_string='string'):
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return
     return content_return
 

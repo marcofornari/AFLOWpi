@@ -23,7 +23,7 @@ def __plot_berry_cond(oneCalc,ID,spin=False):
     for dat_file in dem_files:
 
         width = 9
-	height = 6
+        height = 6
         plt.figure(figsize=(width, height))#to adjust the figure size
 
         dat_name = dat_file[:-4]
@@ -70,5 +70,5 @@ def __plot_berry_cond(oneCalc,ID,spin=False):
 
 
 
-	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
         plt.close()

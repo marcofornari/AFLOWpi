@@ -43,7 +43,7 @@ def _get_step(oneCalc,ID,step_type=None,last=True):
 
         occ_list=[]
         current_step_type=workflow[chain_index-1]
-        for i in reversed(range(0,chain_index)):
+        for i in reversed(list(range(0,chain_index))):
 
             if workflow[i]==step_type:
 
@@ -56,8 +56,8 @@ def _get_step(oneCalc,ID,step_type=None,last=True):
             return 0
 
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
         AFLOWpi.run._fancy_error_log(e)
         return 0
         

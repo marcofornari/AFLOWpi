@@ -1,6 +1,6 @@
 import os
 import datetime
-import cPickle
+import pickle
 import logging 
 import re 
 import subprocess
@@ -11,7 +11,7 @@ import copy
 import logging.handlers
 import AFLOWpi
 import time
-import Queue
+import queue
 import socket
 import inspect
 import traceback
@@ -92,10 +92,10 @@ def cleanup(calcs):
           
     """
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.prep._addToBlock(oneCalc,ID,'CLEANUP','\nimport os\nos.system("rm -rf %s/_*")\n' % oneCalc['_AFLOWPI_FOLDER_'])            
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -116,7 +116,7 @@ def addatexit__(command,*args,**kwargs):
           
     """
     
-    if '__atexitList' not in globals().keys():
+    if '__atexitList' not in list(globals().keys()):
         #######################################
         @atexit.register
         def _runatexitList():
@@ -145,7 +145,7 @@ def _colorize_message(string,level='ERROR',show_level=True):
           
     """
 
-    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(8)
+    BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = list(range(8))
 
     RESET_SEQ = "\033[0m"
     COLOR_SEQ = "\033[1;%dm"
@@ -194,16 +194,16 @@ def _fancy_error_log(e):
 
     try:
         if AFLOWpi.prep._ConfigSectionMap('prep','log_level').upper() == 'DEBUG':
-            print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
+            print('%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%')
             try:
-                print e
+                print(e)
                 for errorMSG in errorList:
-                    print errorMSG
+                    print(errorMSG)
 
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
 
-            print '%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%'
+            print('%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%DEBUG%%%')
     except:
         pass
 
@@ -281,7 +281,7 @@ def _getExecutable(engine,calcType):
         execDict={}
     try:
         executable=execDict[calcType]
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         execPath=''
     return executable
@@ -353,7 +353,7 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
-    print 'EMR NOT IMPLEMENTED'
+    print('EMR NOT IMPLEMENTED')
     raise SystemExit
 
 
@@ -366,18 +366,18 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
     gipawExLoc = os.path.join(gipawdir,'gipaw.x')
     if not os.path.exists(gipawExLoc):
         logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
-        print 'ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
         raise SystemExit
     AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -402,7 +402,7 @@ def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,con
           None
           
     """
-    print 'HYPERFINE NOT IMPLEMENTED'
+    print('HYPERFINE NOT IMPLEMENTED')
     raise SystemExit
 
 
@@ -416,19 +416,19 @@ def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,con
     gipawExLoc = os.path.join(gipawdir,'gipaw.x')
     if not os.path.exists(gipawExLoc):
         logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
-        print 'ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
         raise SystemExit
     AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
 
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -455,7 +455,7 @@ def nmr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
-    print 'NMR NOT IMPLEMENTED'
+    print('NMR NOT IMPLEMENTED')
     raise SystemExit
 
     testOne(calcs,calcType='nmr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
@@ -467,20 +467,20 @@ def nmr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
     gipawExLoc = os.path.join(gipawdir,'gipaw.x')
     if not os.path.exists(gipawExLoc):
         logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
-        print 'ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
         raise SystemExit
     AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
 
 
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='nmr')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='nmr')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -508,7 +508,7 @@ def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,conf
           
     """
 
-    print 'GVECTORS NOT IMPLEMENTED'
+    print('GVECTORS NOT IMPLEMENTED')
     raise SystemExit
 
     testOne(calcs,calcType='gvectors',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
@@ -521,19 +521,19 @@ def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,conf
     gipawExLoc = os.path.join(gipawdir,'gipaw.x')
     if not os.path.exists(gipawExLoc):
         logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
-        print 'ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
         raise SystemExit
     AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
 
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='gvectors')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='gvectors')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -585,14 +585,14 @@ def scf(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
     """
 
     testOne(calcs,calcType='scf',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='scf',exit_on_error=exit_on_error)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='scf')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -618,14 +618,14 @@ def dos(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
     """
 
     testOne(calcs,calcType='dos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='dos')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='dos')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 def pdos(calcs,engine='',execPrefix=None,execPostfix='',holdFlag=True,config=None):
@@ -650,14 +650,14 @@ def pdos(calcs,engine='',execPrefix=None,execPostfix='',holdFlag=True,config=Non
     """    
 
     testOne(calcs,calcType='pdos',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='pdos')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='pdos')
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -688,14 +688,14 @@ def bands(calcs,engine='',execPrefix=None,execPostfix=' ',holdFlag=True,config=N
         engine = AFLOWpi.prep._ConfigSectionMap("run",'engine')
     
     testOne(calcs,calcType='bands',engine=engine,execPrefix=execPrefix,execPostfix='',holdFlag=holdFlag,config=config)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
 #        try:
 #            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix=' ',engine='espresso',calcType='bands')
-#        except Exception,e:
+#        except Exception as e:
 #            AFLOWpi.run._fancy_error_log(e)
 #        try:
 #            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='bands')
-#        except Exception,e:
+#        except Exception as e:
 #            AFLOWpi.run._fancy_error_log(e)
 
         bands_pp_run_string = '''if oneCalc['__execCounter__'] <=%s:
@@ -766,28 +766,28 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
 
             try:
                 enginePath =  AFLOWpi.run._getEnginePath(engine,calcType)
-            except Exception,e:
+            except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
             for files in enginePath:
 
                 if os.path.exists(os.path.join(engineDir,files))==False:
-                    print '%s not found. Check your config file to make sure engine_dir path is correct and that %s is in that directory..Exiting' %(files,files)
+                    print(('%s not found. Check your config file to make sure engine_dir path is correct and that %s is in that directory..Exiting' %(files,files)))
                     logging.error('%s not found. Check your config file to make sure engine_dir path is correct and that %s is in that directory..Exiting' %(files,files))
                     raise SystemExit
 
                 if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()!='false':
                     AFLOWpi.prep.totree(os.path.abspath(os.path.join(engineDir,files)),calcs)
                 else:
-                    for ID,oneCalc in calcs.iteritems():
+                    for ID,oneCalc in list(calcs.items()):
                         try:
                             os.symlink(os.path.abspath(os.path.join(engineDir,files)),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],files))
                         except OSError:
                             os.unlink(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],files))
                             os.symlink(os.path.abspath(os.path.join(engineDir,files)),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],files))
 
-            logfile = os.path.abspath(os.path.join((os.path.dirname(calcs[random.choice(calcs.keys())]['_AFLOWPI_FOLDER_'])),'AFLOWpi','LOG.log'))
-        except Exception,e:
+            logfile = os.path.abspath(os.path.join((os.path.dirname(calcs[random.choice(list(calcs.keys()))]['_AFLOWPI_FOLDER_'])),'AFLOWpi','LOG.log'))
+        except Exception as e:
             _fancy_error_log(e)
         
         #############################################################################################################
@@ -795,19 +795,19 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
             calcsCopy=copy.deepcopy(calcs)
             newCalcs = collections.OrderedDict()
 
-            for ID,oneCalc in calcs.iteritems():
+            for ID,oneCalc in list(calcs.items()):
                 CONFIG_FILE='../AFLOWpi/CONFIG.config'
                 calcs[ID]['_AFLOWPI_CONFIG_']=CONFIG_FILE
                 calcs[ID]['calcType']=calcType                
 
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
         #############################################################################################################
         clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type')
         if clusterType=='':
             clusterType=''
         try:
-            if 'firstCalcList' not in globals().keys() or holdFlag==False:
+            if 'firstCalcList' not in list(globals().keys()) or holdFlag==False:
 
                 try:
                     baseID = ID.split('_')[0]
@@ -824,7 +824,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
                     else:
                         prev_ID=ID
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
             elif firstCalcList!=False:
@@ -832,7 +832,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
 
 
             firstCalcList=False
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
 
         logging.debug('exiting testOne')
@@ -854,7 +854,7 @@ def reset_logs(calcs):
           
     """
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         if oneCalc['__chain_index__']!=1:
             log_file=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID)            
             os.remove(log_file)
@@ -902,7 +902,7 @@ def _get_qsub_name(path):
 
     try:
         calcName = '_'.join([j for j in c_name.split('_')[-4:] if j!=''])
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         try:
             calcName = '_'.join([j for j in c_name.split('_')[-3:] if j!=''])
@@ -1015,7 +1015,7 @@ python %s''' % (tmpdir_envar,oneCalc['_AFLOWPI_FOLDER_'],os.path.join(oneCalc['_
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         raise SystemExit
 
@@ -1077,7 +1077,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
                 execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
             else:
                 execPostfix=''
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
     try:
@@ -1086,7 +1086,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
             configFileLocation = AFLOWpi.prep._getConfigFile()
             configFileLocation = os.path.dirname(configFileLocation)
             engineDir =  os.path.join(configFileLocation, engineDir)
-    except Exception,e:
+    except Exception as e:
         pass
 
 
@@ -1128,12 +1128,12 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             clusterType='None'
         elif clusterType==None:
             clusterType='None'
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
     try:
         stepsAsJobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs").lower()
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
     """
@@ -1148,7 +1148,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
     """
 
     if socket.gethostname() == __submitNodeName__ and stepsAsJobs=='false':
-        print 'Submitting steps as one cluster job per calculation chain.'
+        print('Submitting steps as one cluster job per calculation chain.')
         logging.info('Submitting steps as one cluster job per calculation chain.')
 
     if (socket.gethostname() != __submitNodeName__ and stepsAsJobs.lower()!='true') or forceOneJob==True:
@@ -1176,7 +1176,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
                 submit_ID=__main__.ID
         else:
             submit_ID=ID
-    except Exception,e:
+    except Exception as e:
         submit_ID=ID
 
     submit_ID=ID
@@ -1208,7 +1208,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             try:
                 submitCommand = AFLOWpi.run._get_cluster_submit_command()
                 
-            except Exception,e:
+            except Exception as e:
                 _fancy_error_log(e)
             
             qsubFilename = os.path.abspath(os.path.join(folder,'_'+submit_ID+'.qsub'))
@@ -1218,7 +1218,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             queue = ''
             if AFLOWpi.prep._ConfigSectionMap("cluster","queue") !='':
                 queue = '-q %s ' %  AFLOWpi.prep._ConfigSectionMap("cluster","queue")
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
         try:
             
@@ -1227,7 +1227,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
             job.communicate()               
 
             logging.info('submitted %s to the queue' % submit_ID)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             logging.info("Trying to submit job with no -N option")
 
@@ -1236,25 +1236,25 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
                 job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True)
                 job.communicate()               
 
-            except Exception,e:
+            except Exception as e:
                 logging.info("Trying to submit job without ssh and -N option")
                 try:
                     baseID = ID.split('_')[0]
                     baseID = ID
                     qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
                     os.system("ssh -o StrictHostKeyChecking=no %s '%s %s -N %s %s %s' " % (__submitNodeName__,submitCommand,queue,calcName,qsubFilename,additional_flags))
-                except Exception,e:
+                except Exception as e:
                     logging.info("Trying to submit job without ssh and -N option")
                     try:
                         baseID = ID.split('_')[0]
                         baseID = ID
                         qsubFilename = os.path.abspath(os.path.join(folder,'_'+baseID+'.qsub'))
                         os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                    except Exception,e:
+                    except Exception as e:
                         logging.info("Trying to submit job without ssh and -N option")
                         try:
                             os.system("%s %s %s %s" % (submitCommand,queue,qsubFilename,additional_flags))
-                        except Exception,e:
+                        except Exception as e:
                             _fancy_error_log(e)
 
     else:
@@ -1262,13 +1262,13 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
 
             execFileString  = os.path.abspath(os.path.join(folder,'_'+ID+'.py'))
             
-            execfile(execFileString)
+            exec(compile(open(execFileString, "rb").read(), execFileString, 'exec'))
 
         except KeyboardInterrupt:
-            print 'Got Keyboard Exit signal, exiting'
+            print('Got Keyboard Exit signal, exiting')
             logging.debug('Got Keyboard Exit signal, exiting')
             sys.exit(0)
-        except Exception,e:
+        except Exception as e:
             _fancy_error_log(e)
 
     logging.debug('exiting _submitJob')
@@ -1296,7 +1296,7 @@ def submitFirstCalcs__(calcs):
         AFLOWpi.run._generate_submission_daemon_script(calcs)
 
     logging.debug('entering submitFirstCalcs__')
-    if '__submitNodeName__' not in globals().keys():
+    if '__submitNodeName__' not in list(globals().keys()):
         global __submitNodeName__
         __submitNodeName__ = socket.gethostname()
     try:
@@ -1311,9 +1311,9 @@ def submitFirstCalcs__(calcs):
     else:
         submit_message = '\n*** Starting Workflow ***\n'
 
-    print AFLOWpi.run._colorize_message(submit_message,level='ERROR',show_level=False)
+    print((AFLOWpi.run._colorize_message(submit_message,level='ERROR',show_level=False)))
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         AFLOWpi.run._submitJob(ID,oneCalc,__submitNodeName__)
     logging.debug('exiting submitFirstCalcs__')        
 
@@ -1410,7 +1410,7 @@ def _restartPW(oneCalc,ID,a,__submitNodeName__,):
         else:
             logging.debug('Job completed in time. No need for restart. Exiting AFLOWpi.run._restartPW')
 
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
 
@@ -1472,7 +1472,7 @@ def _restartGIPAW(oneCalc,ID,a,__submitNodeName__,):
             AFLOWpi.run._submitJob(resubmitID,oneCalc,__submitNodeName__,sajOverride=True)                 
             '''and exit cleanly.'''
             sys.exit(0)
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
 
@@ -1499,7 +1499,7 @@ def _getWalltime(oneCalc,ID):
     try:
         with open(oneCalc['__qsubFileName__'],"r") as qsubfileObj:
             qsubFileString = qsubfileObj.read()
-    except Exception,e:
+    except Exception as e:
         return 50000000
     try:
         if cluster_type=='PBS':
@@ -1559,7 +1559,7 @@ def _generic_restart_check(oneCalc,ID,__submitNodeName__):
 
     try:
         timediff=time.time()-startTime
-    except Exception,e:
+    except Exception as e:
         timediff=0
 
     runTime = num_secs
@@ -1637,7 +1637,7 @@ def _setupRestartPW(oneCalc,ID,__submitNodeName__):
 
     try:
         timediff=time.time()-startTime
-    except Exception,e:
+    except Exception as e:
         timediff=0
 
     if calc_type in typeList:
@@ -1669,7 +1669,7 @@ def _setupRestartPW(oneCalc,ID,__submitNodeName__):
             oneCalc['_AFLOWPI_INPUT_']=restartInput
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 
-        except Exception,e:
+        except Exception as e:
             logging.debug('if option to restart doesnt exist in the input of %s this will be thrown' % ID)
             _fancy_error_log(e)
 
@@ -1724,7 +1724,7 @@ def _setupRestartGIPAW(oneCalc,ID):
         try:
             timediff=time.time()-globals()['__GLOBAL_CLOCK__']
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             timediff=0
         try:
@@ -1741,7 +1741,7 @@ def _setupRestartGIPAW(oneCalc,ID):
             with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.in" % ID),"w") as inputfile:
                 inputfile.write(restartInput)
             oneCalc['_AFLOWPI_INPUT_']=restartInput
-        except Exception,e:
+        except Exception as e:
             logging.debug('if option to restart doesnt exist in the input of %s this will be thrown' % ID)
             _fancy_error_log(e)
 
@@ -1820,7 +1820,7 @@ def _grabWalltime(oneCalc,ID):
         startTime=output['start']
 
         logging.debug('startTime Test: %s' %startTime)
-    except Exception,e:
+    except Exception as e:
         logging.debug(e)
         raise SystemExit
         return float(40000000),float(0)
@@ -1855,7 +1855,7 @@ def _setStartTime(oneCalc,ID,__CLOCK__):
             oneCalc['__walltime_dict__']={}
             walltime_dict={}
 
-        if  '__GLOBAL_CLOCK__' not in globals().keys():
+        if  '__GLOBAL_CLOCK__' not in list(globals().keys()):
             '''only move from local scratch if this script is starting fresh'''
 
             AFLOWpi.prep._to_local_scratch(oneCalc,ID)
@@ -1864,7 +1864,7 @@ def _setStartTime(oneCalc,ID,__CLOCK__):
             walltime_dict['walltime'] = AFLOWpi.run._getWalltime(oneCalc,ID)         
             walltime_dict['start']=__CLOCK__
             AFLOWpi.run._writeWalltimeLog(oneCalc,ID,walltime_dict)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         try: 
 
@@ -1874,7 +1874,7 @@ def _setStartTime(oneCalc,ID,__CLOCK__):
             walltime_dict['start']=0.0
 
             AFLOWpi.run._writeWalltimeLog(oneCalc,ID,walltime_dict)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
     return oneCalc
@@ -1930,7 +1930,7 @@ def _restartScript(oneCalc,ID,PID):
         try:
             if globals()['__TEMP__INDEX__COUNTER__'] != oneCalc['__chain_index__']:
                 return
-        except Exception,e:
+        except Exception as e:
             logging.debug(e)
         time.sleep(1.0)
 
@@ -1939,10 +1939,10 @@ def _restartScript(oneCalc,ID,PID):
            not then something went wrong in the main script and this should also exit'''
 
             os.kill(PID, 0) 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             logging.info('main script did not exit cleanly. killing __restartScript subprocess')
-            print 'main script did not exit cleanly. killing __restartScript subprocess'
+            print('main script did not exit cleanly. killing __restartScript subprocess')
             sys.exit(0)
 
 
@@ -1953,7 +1953,7 @@ def _restartScript(oneCalc,ID,PID):
         oneCalc['__status__']['Restart']+=1
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
         AFLOWpi.run._submitJob(ID,oneCalc,__submitNodeName__,sajOverride=True)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
     logging.info('Resubmission successful. Waiting 5 seconds then ending main script')
     '''after the job is submitted wait ten seconds to exit the script'''
@@ -1985,11 +1985,11 @@ def _convert_fortran_double(fort_double_string,string_output=False):
     if len(fort_double_list)==1:
         fort_double_list=fort_double_string.split('f')
         if len(fort_double_list)==1:
-            print 'could not convert fortran float string to numpy float'
+            print('could not convert fortran float string to numpy float')
             logging.info('could not convert fortran float string to numpy float')
             return fort_double_string
     if len(fort_double_list)>2:
-        print 'could not convert fortran float string to numpy float'
+        print('could not convert fortran float string to numpy float')
         logging.info('could not convert fortran float string to numpy float')
         return fort_double_string
     try:
@@ -2002,9 +2002,9 @@ def _convert_fortran_double(fort_double_string,string_output=False):
         else:
             return retr_float
 
-    except Exception,e:
-        print e
-        print 'could not convert fortran float string to numpy float'
+    except Exception as e:
+        print(e)
+        print('could not convert fortran float string to numpy float')
         logging.info('could not convert fortran float string to numpy float')
         return fort_double_string
 
@@ -2034,7 +2034,7 @@ def _get_index_from_pp_step(oneCalc,ID):
             return oneCalc['_AFLOWPI_PREFIX_'][1:]
         else:
             return '%s_%02d'%(oneCalc['_AFLOWPI_PREFIX_'][1:],index)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return ID
 
@@ -2067,7 +2067,7 @@ def _PW_bands_fix(oneCalc,ID):
             with open(os.path.join(rd,'%s_band_data.out'%ID),'w') as fileoutput:
                 correctedText = re.sub(r'(\d)([-][\d])',r'\1 \2',input)
                 fileoutput.write(correctedText)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2090,13 +2090,13 @@ def _PW_bands_fix(oneCalc,ID):
                     total+=numpy.linalg.norm(dist)
 
                     k_val=[]
-                except Exception,e:
+                except Exception as e:
                     pass
                 total_path_length=numpy.asarray([float(x) for x in i.split()])
             else:
                 try:
                     k_val.extend(numpy.asarray([float(x) for x in i.split()]))
-                except Exception,e:
+                except Exception as e:
                     pass
 
         path_vals.append(k_val)
@@ -2112,7 +2112,7 @@ def _PW_bands_fix(oneCalc,ID):
         with open(os.path.join(rd,'%s_bands.xmgr'%ID),'w') as bands_out_file:
             bands_out_file.write(output_string)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2187,7 +2187,7 @@ def _io_error_restart(ID,oneCalc,__submitNodeName__):
 
     try:
         oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','restart_mode',"'from_scratch'")
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     error_regex_list=[]
@@ -2279,7 +2279,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     try:
@@ -2287,7 +2287,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
                 with open(os.path.join(rd,"%s_%s.in") % (ID,calcType),'w+') as PPInput:
                     PPInput.write(AFLOWpi.run._makeInput(oneCalc,engine,calcType,ID=ID))
 
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 
 
@@ -2333,10 +2333,10 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
 
     try:
         '''save the status of the calcs'''
-        if '__status__' not in oneCalc.keys():
+        if '__status__' not in list(oneCalc.keys()):
             oneCalc['__status__']=collections.OrderedDict()
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
     # '''set the completed status to false in the case of a looping set of calcs'''
     home = os.path.abspath(os.curdir)
@@ -2378,13 +2378,13 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
         else:
             command='%s %s%s %s < %s  >  %s' % (execPrefix,execPath,executable,execPostfix,ri,ro)
 
-    except Exception,e:
+    except Exception as e:
         _fancy_error_log(e)
 ###############################################################################################################      
     try:	
         logging.info("starting %s in %s" % (command, home))
-        print 'in %s:\n'%home
-        print "starting %s\n"%command
+        print(('in %s:\n'%home))
+        print(("starting %s\n"%command))
 
         if clusterType.upper() in ['PBS','SLURM','UGE']:
             job =  subprocess.Popen(command,stderr = subprocess.PIPE,shell=True,cwd=rd)
@@ -2408,7 +2408,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                         pass
                     elif calcType in ['emr','nmr','hyperfine','gvectors']:
                         __restartGIPAW(oneCalc,ID,a,__submitNodeName__)
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
             if job.returncode==1 or job.returncode==255:
@@ -2467,7 +2467,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
 #################################################################################################################     
 #################################################################################################################      
         logging.info("finished %s in %s" % (command, rd))
-        print "finished %s\n" % (command)
+        print(("finished %s\n" % (command)))
 
         if AFLOWpi.prep._ConfigSectionMap('prep','save_dir') != '':
             try:
@@ -2478,7 +2478,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                 for log in logs:
                     AFLOWpi.retr._moveToSavedir(log)
                 pdf = glob.glob('%s/*%s*.pdf' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
-            except Exception,e:
+            except Exception as e:
                 _fancy_error_log(e)
 
         logging.debug('STARTING DATA')
@@ -2488,22 +2488,22 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
 
                 AFLOWpi.retr.getCellOutput(oneCalc,ID)
 
-            except Exception,e:
+            except Exception as e:
                 pass
 ###############################################################################################################
     except KeyboardInterrupt:
-        print 'Got Keyboard Exit signal, exiting'
+        print('Got Keyboard Exit signal, exiting')
         logging.debug('Got Keyboard Exit signal, exiting')
         sys.exit(0)
     except OSError as e:
-            print "ERROR! "+str(e)
+            print(("ERROR! "+str(e)))
             logging.error("ERROR! "+str(e))
     except ValueError as e:
-            print "ERROR! "+str(e)
+            print(("ERROR! "+str(e)))
             logging.error("ERROR! "+str(e))
-    except subprocess.CalledProcessError,e:
+    except subprocess.CalledProcessError as e:
             if e.returncode==1:
-                print "exit code==1"
+                print("exit code==1")
 
 #################################################################################################################     
 #################################################################################################################     
@@ -2591,8 +2591,8 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
         AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN',"'%s'" % ID)
 
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2669,7 +2669,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
             nbnd='None'
         try:
             nbnd = re.findall(r'nbnd\s*=\s*([0-9]+)',bandsInput)[-1]
-        except Exception,e:
+        except Exception as e:
             nbnd='30'
 
         stringDict={'dos':
@@ -2801,7 +2801,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 
 #             print 'resubmission of %s successful' % calcName
 
-#         except Exception,e:
+#         except Exception as e:
 #             AFLOWpi.run._fancy_error_log(e)
 #             __resubmit(IDsplit,oneCalc,__submitNodeName__,queue,calcName)
 
@@ -2902,7 +2902,7 @@ def _copy_qe_out_file(oneCalc,ID):
 
     try:
         shutil.copy(orig_path,new_path)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 def _grab_el_plot_data(file_path):
@@ -2915,7 +2915,7 @@ def _grab_el_plot_data(file_path):
     for order,fit_data in per_fit_order:
         fit_array=[]
         for i in fit_data.split('\n'):
-            to_float = map(float,i.split())
+            to_float = list(map(float,i.split()))
             if len(to_float)!=0:
                 fit_array.append(to_float)
 
@@ -2962,7 +2962,7 @@ def _find_flat_region(data):
             else:
                 break
 
-    print 'plateau ends at index:',plateau_index
+    print(('plateau ends at index:',plateau_index))
 
     return eta[plateau_index]
 
@@ -3011,7 +3011,7 @@ def _pp_elastic(oneCalc,ID,order=2,use_stress=True):
             files_sep_dist[distortion_ID]=[data_file]
     
     
-    for distortion_ID,fit_files in files_sep_dist.iteritems():
+    for distortion_ID,fit_files in list(files_sep_dist.items()):
         order_list=[]
         m_eta_list=[]
         for data_file in fit_files:
@@ -3027,7 +3027,7 @@ def _pp_elastic(oneCalc,ID,order=2,use_stress=True):
             else:
                 fit_index=2
             #iterate through all orders of poly fit data
-            for poly_order,data in fit_data.iteritems():
+            for poly_order,data in list(fit_data.items()):
                 #find max eta for one order of poly fit
                 max_eta = AFLOWpi.run._find_flat_region(data)
                 #check if the max eta is greater or equal to the current global
@@ -3084,7 +3084,7 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
         num=[0,2,4,6,1,3,5]
@@ -3134,7 +3134,7 @@ def _pull_polarization(oneCalc,ID):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return
     e_pol_split = [float(x.split()[-1]) for x in ele_block.split('\n') if len(x.strip())!=0]
@@ -3181,7 +3181,7 @@ def _pull_eps_out(oneCalc,ID):
         eps_string=eps_regex.findall(out_string)[-1]
         
         
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return eps_string
@@ -3217,7 +3217,7 @@ def _pull_born_out(oneCalc,ID):
             born_string+='         %s\n'%num_index
             born_string+=born_charges[i]
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return born_string
@@ -3315,25 +3315,25 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
     """
 
     input_string=orig_oneCalc['_AFLOWPI_INPUT_']
-    subset_keys = calc_subset.keys()
+    subset_keys = list(calc_subset.keys())
 
     in_dict=AFLOWpi.retr._splitInput(input_string)
 
     #if possibly a metal don't do LOTO
 
-    if 'degauss' not in  in_dict['&system'].keys():
+    if 'degauss' not in  list(in_dict['&system'].keys()):
         pass
     else:
         bandgap_type = AFLOWpi.retr.gap_type(orig_oneCalc,orig_ID)
         if bandgap_type not in ['p-type','n-type','insulator']:
             return
         else:
-            if 'degauss' in in_dict['&system'].keys():
+            if 'degauss' in list(in_dict['&system'].keys()):
                 del in_dict['&system']['degauss']
             else:
                 pass
 
-            if "occupations" in in_dict['&system'].keys():
+            if "occupations" in list(in_dict['&system'].keys()):
                 val=eval(in_dict['&system']['occupations'].lower())
                 if val=="smearing":
                     del in_dict['&system']['occupations']
@@ -3350,7 +3350,7 @@ def _setup_raman(calc_subset,orig_oneCalc,orig_ID,field_strength=0.001,field_cyc
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
         num=[0,2,4,6,1,3,5]
@@ -3505,7 +3505,7 @@ def _gen_smear_conv_calcs(oneCalc,ID,num_points=4,smear_type='mp',smear_variance
         initial_degauss = '0.01'
 
         input_dict['&system']['occupations']='"smearing"'
-        if 'smearing' not in input_dict['&system'].keys():
+        if 'smearing' not in list(input_dict['&system'].keys()):
             input_dict['&system']['smearing']='"%s"'%smear_type
 
     input_dict['&system']['degauss']=initial_degauss
@@ -3547,7 +3547,7 @@ def _extrapolate_smearing(oneCalc,ID):
     smear_vals=[]
 
     calcs = AFLOWpi.retr.grabEnergyOut(calcs)
-    for k,v in calcs.iteritems():
+    for k,v in list(calcs.items()):
 
         oc_in_dict = AFLOWpi.retr._splitInput(v['_AFLOWPI_INPUT_'])
         smear_type = oc_in_dict['&system']['smearing']
@@ -3596,7 +3596,7 @@ def _extrapolate_smearing(oneCalc,ID):
     en_deriv=numpy.polyder(fit)
 #    en_deriv=fit
 
-    print en_deriv
+    print(en_deriv)
 #    en_deriv=fit.deriv()
 #    fir1d= numpy.polyfit(params[0],params[1],1)
     interp_en =numpy.polyval(en_deriv,extrap_smear)
@@ -3604,8 +3604,8 @@ def _extrapolate_smearing(oneCalc,ID):
 #    interp_en = en_deriv(extrap_smear)
 #    at_zero = en_deriv[0]
     at_zero=en_deriv[0]/en_deriv[1]
-    print at_zero
-    print de_set
+    print(at_zero)
+    print(de_set)
 #    print en_data_diff
     inputDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 
@@ -3682,7 +3682,7 @@ def _get_cluster_submit_command():
                     
 def _check_and_submit(submit_file,sub_command):
     if os.path.exists(submit_file):
-        qf=re.sub(u'.submit',u'.qsub',submit_file)
+        qf=re.sub('.submit','.qsub',submit_file)
         os.system('%s %s'%(sub_command,qf))
         directory=os.path.dirname(submit_file)
         ID=os.path.basename(submit_file)[1:-7]
@@ -3698,7 +3698,7 @@ def _check_and_submit(submit_file,sub_command):
 
 def _generate_submission_daemon_script(calcs):
     workdir=AFLOWpi.prep._ConfigSectionMap('prep','work_dir')
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         project=oneCalc['PROJECT']
         calc_set=oneCalc['SET']
         break
@@ -3724,7 +3724,7 @@ AFLOWpi.prep._forceGlobalConfigFile(configFile)
 AFLOWpi.run._run_submission_check()
 AFLOWpi.run._restart_submission_daemon('submit_daemon.py')'''
 
-    print 'generating daemon script in %s'%daemon_file_name
+    print(('generating daemon script in %s'%daemon_file_name))
     with open(daemon_file_name,'w') as daemon_file_object:
         daemon_file_object.write(daemon_file_string)
 
@@ -3732,13 +3732,13 @@ AFLOWpi.run._restart_submission_daemon('submit_daemon.py')'''
     AFLOWpi.run._start_submission_daemon(daemon_file_name)
 
 def _start_submission_daemon(daemon_file_name):
-    print 'starting daemon script: %s'%daemon_file_name    
+    print(('starting daemon script: %s'%daemon_file_name))    
     cur_dir=os.curdir
     os.chdir(os.path.dirname(daemon_file_name))
 
     subprocess.Popen('nohup python ./submit_daemon.py  &',shell=True)
     os.chdir(cur_dir)
-    print 'daemon script started'
+    print('daemon script started')
 
 def _restart_submission_daemon(file_name):
 
@@ -3815,10 +3815,10 @@ def _check_statuses(calc_list):
     submission_check_list=[]
     calc_list_by_chain = AFLOWpi.run._sort_by_chain(calc_list)
 
-    for prefix in calc_list_by_chain.keys():
+    for prefix in list(calc_list_by_chain.keys()):
         chain = calc_list_by_chain[prefix]
 
-        for ID in chain.keys():
+        for ID in list(chain.keys()):
             try:
                 completed=chain[ID]['__status__']['Complete']
                 error=chain[ID]['__status__']['Error']
@@ -3844,7 +3844,7 @@ def _check_statuses(calc_list):
 
     if keep_alive==False:
         logging.info('All calculations in set are finished. Stopping daemon')
-        print 'All calculations in set are finished. Stopping daemon'
+        print('All calculations in set are finished. Stopping daemon')
         sys.exit(0)
     else:
         return submission_check_list
@@ -3854,7 +3854,7 @@ def _sort_by_chain(calc_list):
     by_chain={}
 
     for calc_set in calc_list:
-        for ID,oneCalc in calc_set.iteritems():        
+        for ID,oneCalc in list(calc_set.items()):        
             try:
                 prefix=oneCalc['_AFLOWPI_PREFIX_']
             except:
@@ -3944,7 +3944,7 @@ def _pull_forces(oneCalc,ID):
     force_regex=re.compile(r'Forces acting on atoms.*\n\n((?:.*force\s*=\s*[-0-9.]+\s*[-0-9.]+\s*[-0-9.]+\s*)+\n)',re.M)
     try:
         force_block=force_regex.findall(out_string)[-1]
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return
     force_split = [x.split()[6:] for x in force_block.split('\n') if len(x.strip())!=0]
@@ -4015,7 +4015,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
                 AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix='',execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
 
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)            
 
 #######################################################################
@@ -4033,7 +4033,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 
             header_string=re.sub("F\n",LOTO_REPLACE,header_string)
 ########################################################################
-      except Exception,e:
+      except Exception as e:
           AFLOWpi.run._fancy_error_log(e)
 
     else:
@@ -4061,7 +4061,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
             AFLOWpi.run._project_phDOS(oneCalc,ID) 
             appdos_fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.eig.ap"%ID)
             AFLOWpi.run._sum_aproj_phDOS(appdos_fn,de=2.0)
-        except Exception,e:
+        except Exception as e:
     	    AFLOWpi.run._fancy_error_log(e)
     #remove the fd.x output files in case we do another phonon calc
     try:
@@ -4069,7 +4069,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 	    phil = glob.glob(globpath+'/displaced*.in')
 	    for i in phil:
 		    os.remove(i)
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 
 
@@ -4425,7 +4425,7 @@ def reduce_kpoints(inputfile,factor):
 
                     return inputfile
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -4444,7 +4444,7 @@ def _project_phDOS(oneCalc,ID):
     by_eig=[]
     for i in qs:
         eig=[j for j in i[1].split('\n') if len(j.strip())!=0]
-        qs=[map(float,k.split()[1:-1]) for k in eig]
+        qs=[list(map(float,k.split()[1:-1])) for k in eig]
         eig_val=[float(i[0])]
         for l in qs:
     #        x=numpy.complex(l[0],l[1])
@@ -4532,7 +4532,7 @@ def _get_ph_weights(appdos_fn):
     data=data.split('\n')
     at_labels = data[0].split()[4:]
 
-    data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
+    data = numpy.asarray([list(map(float,x.split())) for x in data[1:] if len(x.strip())!=0])
     
     kpts=data[:3]
     data=data[:,3:]

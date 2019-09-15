@@ -124,7 +124,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         nthread = multiprocessing.cpu_count()
         #ne.set_num_threads(nthread)
     except Exception as e:
-        print('Rank %d: Exception in Initialization'%rank)
+        print(('Rank %d: Exception in Initialization'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -166,8 +166,8 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
         comm.Barrier()
     except Exception as e:
-        print('Rank %d: Exception in FFT Library or Dimension Check'%rank)
-        print(traceback.print_exc())
+        print(('Rank %d: Exception in FFT Library or Dimension Check'%rank))
+        print((traceback.print_exc()))
         comm.Abort()
         raise Exception
     
@@ -259,7 +259,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                 nfft3 = 2*((nfft3+1)//2)
             if print_warn:
                 print('Warning: nfft grid has been modified to support double_grid,')
-                print('modified nfft grid:{} {} {}\n'.format(nfft1,nfft2,nfft3))
+                print(('modified nfft grid:{} {} {}\n'.format(nfft1,nfft2,nfft3)))
 
 
         #set npool to minimum needed if npool isnt high enough
@@ -267,12 +267,12 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         temp_pool = int(np.ceil((float(nawf**2*nfft1*nfft2*nfft3*3*nspin)/float(int_max))))
         if temp_pool>npool:
             if rank==0:
-                print("Warning: %s too low. Setting npool to %s"%(npool,temp_pool))
+                print(("Warning: %s too low. Setting npool to %s"%(npool,temp_pool)))
             npool = temp_pool
 
         if size >  1:
-            if rank == 0 and npool == 1: print('parallel execution on {} processors, {} threads and {} pool'.format(size,nthread,npool))
-            if rank == 0 and npool > 1: print('parallel execution on {} processors, {} threads and {} pools'.format(size,nthread,npool))
+            if rank == 0 and npool == 1: print(('parallel execution on {} processors, {} threads and {} pool'.format(size,nthread,npool)))
+            if rank == 0 and npool > 1: print(('parallel execution on {} processors, {} threads and {} pools'.format(size,nthread,npool)))
         else:
             if rank == 0: print('serial execution')
 
@@ -282,15 +282,15 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
         if rank == 0:
             gbyte = nawf**2*nfft1*nfft2*nfft3*3*2*16./1.E9
-            print('estimated maximum array size: %5.2f GBytes' %(gbyte))
+            print(('estimated maximum array size: %5.2f GBytes' %(gbyte)))
             print('   ')
 
         comm.Barrier()
         if rank == 0:
-            print('reading in                       %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+            print(('reading in                       %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10)))
             reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in Reading DFT Data'%rank)
+        print(('Rank %d: Exception in Reading DFT Data'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -304,7 +304,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         if rank == 0:
             Pn = build_Pn(nawf,nbnds,nkpnts,nspin,U)
     
-            if verbose: print('Projectability vector ',Pn)
+            if verbose: print(('Projectability vector ',Pn))
     
             # Check projectability and decide bnd
     
@@ -313,13 +313,13 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                 if Pn[n] > pthr:
                     bnd += 1
             Pn = None
-            if verbose: print('# of bands with good projectability > {} = {}'.format(pthr,bnd))
+            if verbose: print(('# of bands with good projectability > {} = {}'.format(pthr,bnd)))
             if verbose and bnd < nbnds:
-                print('Range of suggested shift ',np.amin(my_eigsmat[bnd,:,:]),' , ', \
-                      np.amax(my_eigsmat[bnd,:,:]))
+                print(('Range of suggested shift ',np.amin(my_eigsmat[bnd,:,:]),' , ', \
+                      np.amax(my_eigsmat[bnd,:,:])))
             elif verbose and bnd == nbnds:
-                print('Range of suggested shift ',np.amin(my_eigsmat[bnd-1,:,:]),' , ', \
-                      np.amax(my_eigsmat[bnd-1,:,:]))
+                print(('Range of suggested shift ',np.amin(my_eigsmat[bnd-1,:,:]),' , ', \
+                      np.amax(my_eigsmat[bnd-1,:,:])))
 
             if shift == 'auto': 
                 try:
@@ -336,7 +336,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
 
     except Exception as e:
-        print('Rank %d: Exception in Building Projectability'%rank)
+        print(('Rank %d: Exception in Building Projectability'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -359,11 +359,11 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
         comm.Barrier()
         if rank == 0:
-            print('building Hks in                  %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+            print(('building Hks in                  %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
             reset=time.time()
             nawf = Hks.shape[0]
     except Exception as e:
-        print('Rank %d: Exception in Building PAO Hamiltonian'%rank)
+        print(('Rank %d: Exception in Building PAO Hamiltonian'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -380,7 +380,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         if rank == 0 and non_ortho:
             Hks = do_non_ortho(Hks,Sks)
     except Exception as e:
-        print('Rank %d: Exception in Orthogonality'%rank)
+        print(('Rank %d: Exception in Orthogonality'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -438,7 +438,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             print('H(k),S(k),k,wk written to file')
         if write2file: quit()
     except Exception as e:
-        print('Rank %d: Exception in Write to File'%rank)
+        print(('Rank %d: Exception in Write to File'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -451,7 +451,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             plot_compare_PAO_DFT_eigs(Hks,Sks,my_eigsmat,non_ortho)
             quit()
     except Exception as e:
-        print('Rank %d: Exception in Do Comparison'%rank)
+        print(('Rank %d: Exception in Do Comparison'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -506,10 +506,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
         comm.Barrier()
         if rank == 0:
-            print('k -> R in                        %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+            print(('k -> R in                        %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
             reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in k->R'%rank)
+        print(('Rank %d: Exception in k->R'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -529,7 +529,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
             HRs = add_ext_field(HRs,tau_wf,R,alat,Efield,Bfield,HubbardU)
     except Exception as e:
-        print('Rank %d: Exception in Adding External Fields'%rank)
+        print(('Rank %d: Exception in Adding External Fields'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -547,7 +547,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             HRs = do_spin_orbit_calc(HRs,natoms,theta,phi,socStrengh)
             nawf=2*nawf
     except Exception as e:
-        print('Rank %d: Exception in Do Spin Orbit'%rank)
+        print(('Rank %d: Exception in Do Spin Orbit'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -556,7 +556,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         if rank == 0 and writez2pack:
             do_z2pack_hamiltonian(nawf,nk1,nk2,nk3,a_vectors,HRs)
     except Exception as e:
-        print('Rank %d: Exception in Do Z2pack'%rank)
+        print(('Rank %d: Exception in Do Z2pack'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -625,7 +625,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             E_kp,v_kp = do_bands_calc(HRs,SRs,kq,R_wght,R,idx,non_ortho,inputpath,npool)
 
             if rank == 0:
-                print('bands in                         %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('bands in                         %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     
 
@@ -637,7 +637,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
                 comm.Barrier()
                 if rank == 0:
-                    print('band topology in                 %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                    print(('band topology in                 %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                     reset=time.time()
     
             alat *= ANGSTROM_AU
@@ -651,7 +651,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
             comm.Barrier()
             if rank ==0:
-                print('bands in                          %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('bands in                          %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
 
     E_kp = v_kp = None
@@ -667,12 +667,12 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                 datadump = np.load(fpath+'PAOdump_%s.npz'%rank)
                 checkpoint = datadump['checkpoint']
                 if rank == 0:
-                    print('reading data from dump at checkpoint ',checkpoint)
+                    print(('reading data from dump at checkpoint ',checkpoint))
             except:
                 pass
         checkpoint = comm.bcast(checkpoint,root=0)
     except Exception as e:
-        print('Rank %d: Exception in Checkpoint Initialization'%rank)
+        print(('Rank %d: Exception in Checkpoint Initialization'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -728,10 +728,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             Hksp,nk1,nk2,nk3 = do_double_grid(nfft1,nfft2,nfft3,HRs,nthread,npool)
             # Naming convention (from here): 
             # Hksp = k-space Hamiltonian on interpolated grid
-            if rank == 0 and verbose: print('Grid of k vectors for zero padding Fourier interpolation ',nk1,nk2,nk3),
+            if rank == 0 and verbose: print('Grid of k vectors for zero padding Fourier interpolation %d %d %d'%(nk1,nk2,nk3))
             kq,kq_wght,_,idk = get_K_grid_fft(nk1,nk2,nk3,b_vectors)
             if rank ==0:
-                print('R -> k zero padding in           %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('R -> k zero padding in           %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()    
         else:
             kq,kq_wght,_,idk = get_K_grid_fft(nk1,nk2,nk3,b_vectors)
@@ -772,7 +772,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         checkpoint = comm.bcast(checkpoint,root=0)
 
     except Exception as e:
-        print('Rank %d: Exception in Do Double Grid'%rank)
+        print(('Rank %d: Exception in Do Double Grid'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -805,7 +805,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
             comm.Barrier()
             if rank ==0:
-                print('eigenvalues in                   %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('eigenvalues in                   %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     
         #----------------------
@@ -845,7 +845,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         nk2 = comm.bcast(nk2,root=0)
         nk3 = comm.bcast(nk3,root=0)
     except Exception as e:
-        print('Rank %d: Exception in Eigenvalues'%rank)
+        print(('Rank %d: Exception in Eigenvalues'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -895,10 +895,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
             comm.Barrier()
             if rank ==0:
-                print('dos in                           %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('dos in                           %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in DOS Calculation'%rank)
+        print(('Rank %d: Exception in DOS Calculation'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -920,10 +920,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
 
             if rank ==0:
-                print('FermiSurf in                     %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('FermiSurf in                     %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in Fermi Surface'%rank)
+        print(('Rank %d: Exception in Fermi Surface'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -994,7 +994,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
 
                 if rank == 0:
-                    print('gradient in                      %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                    print(('gradient in                      %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                     reset=time.time()
         
         #----------------------
@@ -1053,7 +1053,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
 
             if rank == 0:
-                print('momenta in                       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('momenta in                       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     
         #----------------------
@@ -1104,7 +1104,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         kq_wght /= float(nktot)
 
     except Exception as e:
-        print('Rank %d: Exception in Gradient or Momenta'%rank)
+        print(('Rank %d: Exception in Gradient or Momenta'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1130,10 +1130,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
 
         if rank == 0 and smearing != None:
-            print('adaptive smearing in             %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+            print(('adaptive smearing in             %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
             reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in Adaptive Smearing'%rank)
+        print(('Rank %d: Exception in Adaptive Smearing'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1281,10 +1281,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
      
             comm.Barrier()
             if rank ==0:
-                print('dos (adaptive smearing) in       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('dos (adaptive smearing) in       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in DOS (Adaptive Smearing)'%rank)
+        print(('Rank %d: Exception in DOS (Adaptive Smearing)'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1314,7 +1314,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
 
     except Exception as e:
-        print('Rank %d: Exception in Memory Reduction'%rank)
+        print(('Rank %d: Exception in Memory Reduction'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1340,7 +1340,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                         spindump = np.load(fpath+'PAOspin'+str(spol)+'_%s.npz'%rank)
                         jksp = spindump['jksp']
                         spincheck += 1
-                        print('reading spin current for polarization ',spol)
+                        print(('reading spin current for polarization ',spol))
                     except:
                         pass
                 spincheck=comm.bcast(spincheck,root=0)
@@ -1427,12 +1427,12 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
             comm.Barrier()
             if rank == 0:
-                print('spin Hall module in              %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('spin Hall module in              %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     
 
     except Exception as e:
-        print('Rank %d: Exception in Spin Hall Module'%rank)
+        print(('Rank %d: Exception in Spin Hall Module'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1506,10 +1506,10 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
             comm.Barrier()
             if rank == 0:
-                print('Berry module in                  %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('Berry module in                  %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
                 reset=time.time()
     except Exception as e:
-        print('Rank %d: Exception in Berry Module'%rank)
+        print(('Rank %d: Exception in Berry Module'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1767,7 +1767,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
         comm.Barrier()
         if rank ==0:
-            print('transport in                     %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+            print(('transport in                     %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
 
             reset=time.time()
 
@@ -1807,9 +1807,9 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
     
             comm.Barrier()
             if rank ==0:
-                print('epsilon in                       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10))
+                print(('epsilon in                       %5s sec ' %str('%.3f' %(time.time()-reset)).rjust(10)))
     except Exception as e:
-        print('Rank %d: Exception in Epsilon'%rank)
+        print(('Rank %d: Exception in Epsilon'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1818,9 +1818,9 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         # Timing
         if rank ==0:
             print('   ')
-            print('Total CPU time =                 %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10))
+            print(('Total CPU time =                 %5s sec ' %str('%.3f' %(time.time()-start)).rjust(10)))
     except Exception as e:
-        print('Rank %d: Exception in Total Time'%rank)
+        print(('Rank %d: Exception in Total Time'%rank))
         traceback.print_exc()
         comm.Abort()
         raise Exception
@@ -1830,7 +1830,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
         mem = np.asarray(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
         if rank==0:
-            print("Max total memory usage rank 0  :  %6.4f GB"%(mem/1024.0**2))
+            print(("Max total memory usage rank 0  :  %6.4f GB"%(mem/1024.0**2)))
 
 
 

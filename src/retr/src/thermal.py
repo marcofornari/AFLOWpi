@@ -129,7 +129,7 @@ def _get_gruneisen_ap(oneCalc,ID):
 
     unique_labels = np.unique(labels[1:])
 
-    for lab in xrange(1,unique_labels.shape[0]+1):
+    for lab in range(1,unique_labels.shape[0]+1):
         lab_val = np.unique(labels)[lab-1]
         lab_ind = np.where(labels==lab_val)[0]
         ap_grun[:,lab+1] = np.sum(norm_freq[:,lab_ind],axis=1)*ap_grun[:,1]
@@ -176,7 +176,7 @@ def _get_gruneisen(oneCalc,ID,band=True):
     bohr2meter=5.29177e-11
  
     if band==True:
-       print band
+       print(band)
        raise SystemExit
        extension='phBAND.gp'
     else:
@@ -247,7 +247,7 @@ def _get_ph_dos_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
     for line in fs:
         if len(line.strip())!=0:
             try:
-                data.append(map(float,line.split()[1:]))
+                data.append(list(map(float,line.split()[1:])))
             except: pass
     data = np.asarray(data)
 
@@ -272,7 +272,7 @@ def _get_ph_dos_data_ap(oneCalc,ID,postfix=''):
     fs=fs[1:]
     for line in fs:
         if len(line.strip())!=0:
-            dat_temp = map(float,line.split())
+            dat_temp = list(map(float,line.split()))
             temp_one = [dat_temp[3]]
             temp_one.extend(dat_temp[4:])
             data.append(temp_one)
@@ -302,7 +302,7 @@ def _get_ph_band_data(oneCalc,ID,extension='phBAND.gp',postfix=''):
     fs=fs[1:]
     for line in fs:
         if len(line.strip())!=0:
-            data.append(map(float,line.split()))
+            data.append(list(map(float,line.split())))
     data = np.asarray(data)
 
     return data[:,1:],data[:,0]
@@ -408,8 +408,8 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
                            v_i[0],v_i[1],v_i[2],(v_i[0]+v_i[1]+v_i[2])/3,
                            theta_i[0],theta_i[1],theta_i[2],(theta_i[0]+theta_i[1]+theta_i[2])/3,
                            TA_cont,TA_prime_cont,LA_cont,total))
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
     with open(therm_stat_file,"w") as ofo:
         ofo.write("--------------------------------------------------------------\n")
         ofo.write("%s\n"%comp_name)

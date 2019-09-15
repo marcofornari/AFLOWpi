@@ -4,11 +4,11 @@ import numpy as np
 
 E_k = np.load('32.npy')
 
-print E_k.shape
+print((E_k.shape))
 
 
 
-print 'init done'
+print('init done')
 
 
 dos = np.zeros((1801,2))
@@ -35,7 +35,7 @@ tetra = np.zeros((nbnd,nk1*nk2*nk3,nspin,6,4),order="C")
 for ispin in range(0,nspin):
     for n in range(0,bnd):
         tetra[n,:,ispin] = tet.setup_lin_tet_opt(n,ispin)
-        print tetra.shape
+        print((tetra.shape))
 raise SystemExit
 all_weights = []
 all_inds    = []

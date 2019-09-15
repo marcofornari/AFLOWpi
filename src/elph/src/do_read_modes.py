@@ -28,14 +28,14 @@ def read_modes( fn, natoms ):
           freqs = np.zeros((3*natoms), dtype=float)
 
           # Read the 3N Modes
-          for i in xrange(3*natoms):
+          for i in range(3*natoms):
             ls = f.readline().split()
 
             freqs[i] = np.round(float(ls[-2]),4)
             eigs = np.zeros((natoms,3), dtype=complex)
 
             # Parse Complex Displacement for Each Atom
-            for j in xrange(natoms):
+            for j in range(natoms):
               ls = f.readline().split()
               eigs[j,0] = complex(ls[1])+complex(ls[2]+'j')
               eigs[j,1] = complex(ls[3])+complex(ls[4]+'j')
@@ -50,7 +50,7 @@ def read_modes( fn, natoms ):
           if fkey not in f_cnt:
             f_cnt[fkey] = [1, q_indx]
             # Save Eigenvalues for his q Point
-            for j in xrange(len(qk_tmp)):
+            for j in range(len(qk_tmp)):
               q_pnts[qk_tmp[j]] = qp_tmp[j]
               q_eigs[qk_tmp[j]] = qe_tmp[j]
           else:
@@ -74,7 +74,7 @@ def displace_atomic_position( scdm, line, disp, q, ephase, d_frac=0.013 ):
 
   ls = line.split()
 
-  new_pos = map(complex, ls[1:])
+  new_pos = list(map(complex, ls[1:]))
 
   phase = np.dot(q, new_pos)
   eiqr = complex(np.cos(phase), np.sin(phase))
@@ -123,7 +123,7 @@ def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ,dfrac = 0.
 
 
   # Write New scf Files
-  for key in modes[0].keys():
+  for key in list(modes[0].keys()):
 
     ephase = []
     qp = np.asarray(modes[0][key])
@@ -166,9 +166,9 @@ def write_scf_files( odir, fscf, natoms, nr1, nr2, nr3, modes , cell ,dfrac = 0.
 
   # Write a Legend with KeyValue Pairs - { FilePrefix : qArray }
   with open(odir+'q_legend.txt', 'w') as f:
-    f.writelines(['%s : %s\n'%(k,v) for k,v in modes[0].iteritems()])
+    f.writelines(['%s : %s\n'%(k,v) for k,v in list(modes[0].items())])
 
   # Write a Legend with KeyValue Pairs - { Frequencies : [Degeneracy, qIndex] }
   with open(odir+'degeneracy_legend.txt', 'w') as f:
-    f.writelines(['%s %s\n'%(v[1], v[0]) for k,v in modes[2].iteritems()])
+    f.writelines(['%s %s\n'%(v[1], v[0]) for k,v in list(modes[2].items())])
 

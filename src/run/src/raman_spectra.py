@@ -19,7 +19,7 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
 
 
     instr = re.split("Raman alpha tensor",instr)[1]
-    print instr
+    print(instr)
     instr=re.sub("-"," -",instr)
     alpha_str = atpolre.findall(instr)
 
@@ -35,7 +35,7 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
 
     #         alpha_str[i][j]=re.sub("-"," -",alpha_str[i][j])
     #         print alpha_str[i][j]
-    alpha =  np.array([map(float,i) for i in alpha_str]).reshape((len(alpha_str),3,3))
+    alpha =  np.array([list(map(float,i)) for i in alpha_str]).reshape((len(alpha_str),3,3))
 
 
 
@@ -50,14 +50,14 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
 
 
     
-    q_list = np.array([map(float,k.strip().split()) for k in re.findall("q\s*=(.*)\n",fs)])
+    q_list = np.array([list(map(float,k.strip().split())) for k in re.findall("q\s*=(.*)\n",fs)])
     num_q  = len(q_list)
 
 
     by_eig=[]
     for i in qs:
         eig=[j for j in i[1].split('\n') if len(j.strip())!=0]
-        qs=[map(float,k.split()[1:-1]) for k in eig]
+        qs=[list(map(float,k.split()[1:-1])) for k in eig]
         eig_val=[float(i[0])]
 
         by_eig.append(eig_val)
@@ -102,10 +102,10 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
     temp *= 8.621738e-5
     eps=1.e-12
 
-    for ang in xrange(angles.shape[0]):
-        for n in xrange(3,alpha.shape[0]):
+    for ang in range(angles.shape[0]):
+        for n in range(3,alpha.shape[0]):
             edotAdote = (np.tensordot(e_i[ang][:,None],np.tensordot(alpha[n],e_r[ang],axes=([0],[0]))[:,None],axes=([1],[1])))**2
-            for w in xrange(w_sample.shape[0]):                
+            for w in range(w_sample.shape[0]):                
                 res[w,ang] += edotAdote*np.nan_to_num(((1.0/(np.exp((np.abs(gamma_w[n]-w_sample[w])*1.2398e-4)/temp)-1.0))+1.0)/(gamma_w[n]*1.2398e-4)) 
 
     rs1=res.shape[0]
@@ -146,23 +146,23 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
 ]
 
 
-    colors=map(matplotlib.colors.to_rgb,colors)
+    colors=list(map(matplotlib.colors.to_rgb,colors))
 
 #    delta=0.1
 #    for w in xrange(w_sample.shape[0]):                
 #        (np.exp(-((ene-eig)/delta)**2)/delta)/np.sqrt(np.pi)
     directions = ["x","y","z"]
-    for l in xrange(3):
-        for m in xrange(3):
+    for l in range(3):
+        for m in range(3):
             if data:
                 fn = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"RAMAN_%s%s_%s.dat"%(directions[l],directions[m],ID))
                 np.savetxt(fn,np.concatenate((w_sample[:,None],res[:,:,l,m]),axis=1),fmt="% 12.6f")
             if plot:
                 plt.figure(figsize=(9,12))
                 if freq_lines:
-                    for f in xrange(3,gamma_w.shape[0]):
+                    for f in range(3,gamma_w.shape[0]):
                         plt.axvline(gamma_w[f],color="k",linestyle="--")
-                for ang in xrange(angles.shape[0]):
+                for ang in range(angles.shape[0]):
                     plt.plot(w_sample,res[:,ang,l,m]+ang,color=colors[int(float(ang)%float(len(colors)))])
                     plt.text(w_sample[-1]-0.1*(w_sample[-1]-w_sample[0]), ang+0.1, r'%5s$^{\circ}$'%angles[ang], fontdict=font)
                 plt.ylim(-0.5,angles.shape[0]+0.5)

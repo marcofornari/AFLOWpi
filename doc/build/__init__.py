@@ -1,9 +1,9 @@
 #__all__ = ['scfuj','prep','run','plot','retr','pseudo','db',]
-import AFLOWpi.prep
-import AFLOWpi.run
-import AFLOWpi.plot
-import AFLOWpi.retr
-import AFLOWpi.pseudo
-import AFLOWpi.db
-import AFLOWpi.scfuj
-import AFLOWpi.aflowlib
+from . import AFLOWpi.prep
+from . import AFLOWpi.run
+from . import AFLOWpi.plot
+from . import AFLOWpi.retr
+from . import AFLOWpi.pseudo
+from . import AFLOWpi.db
+from . import AFLOWpi.scfuj
+from . import AFLOWpi.aflowlib

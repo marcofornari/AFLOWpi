@@ -10,7 +10,7 @@ def _prep_berry(oneCalc,ID,gdir,kp_mult):
     inputDict["&control"]["calculation"] = "'nscf'"
 
 
-    grid = map(int,inputDict["K_POINTS"]["__content__"].split())
+    grid = list(map(int,inputDict["K_POINTS"]["__content__"].split()))
 
     grid[gdir-1] = int(kp_mult*grid[gdir-1])
     try:

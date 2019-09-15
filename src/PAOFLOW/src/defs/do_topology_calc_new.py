@@ -355,8 +355,8 @@ def do_topology_calc(HRs,SRs,non_ortho,kq,E_k,v_kp,R,Rfft,R_wght,idx,alat,b_vect
 
                 for n in range(mkm1.shape[1]):
                     if ik==0:
-                        print mkm1[ik,n,:,:,0]
-                        print
+                        print((mkm1[ik,n,:,:,0]))
+                        print()
                     # if ik==0 and n==0:
                     #     for a in degen[ispin][ik]:
                     #         try:
@@ -519,7 +519,7 @@ def get_R_grid_fft_test(nk1,nk2,nk3,a_vectors):
 
 #    Rfft = FFT.ifftshift(Rfft,axes=(1,2,3))
     R = np.ascontiguousarray(np.swapaxes(np.reshape(Rfft,(3,nrtot),order="C"),0,1))
-    print Rfft
+    print(Rfft)
     raise SystemExit
 #    for ik in range(nrtot):
 #        print R[ik]

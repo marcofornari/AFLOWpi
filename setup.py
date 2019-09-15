@@ -72,9 +72,9 @@ def __init__gen(src_folder):
                for j in classes:
                   new_file+='from  .%s import %s\n'%(file_name,j)
 
-       except Exception,e:
-           print 'CRITICAL ERROR DURING GENERATION OF __init__.py' 
-           print e
+       except Exception as e:
+           print('CRITICAL ERROR DURING GENERATION OF __init__.py') 
+           print(e)
            raise SystemExit
 
    with open('./__init__.py','w') as initFile:
@@ -92,11 +92,11 @@ for j in modules:
 
 for j in modules:
    try:
-      print 'generating ./src/%s/src/__init__.py'%j
+      print(('generating ./src/%s/src/__init__.py'%j))
       __init__gen('./src/%s/src/'%j)
 
-   except Exception,e:
-      print e
+   except Exception as e:
+      print(e)
 
 
 for j in modules:
@@ -108,9 +108,9 @@ for j in modules:
 for j in modules:
    try:
 
-      print 'generating ./src/%s/tests/__init__.py'%j
+      print(('generating ./src/%s/tests/__init__.py'%j))
       __init__gen('./src/%s/tests/'%j)      
-   except Exception,e:
+   except Exception as e:
       pass
 
 
@@ -175,9 +175,9 @@ try:
 
 
 
-except Exception,e:
-   print e
-   print 'Something went wrong...exiting'
+except Exception as e:
+   print(e)
+   print('Something went wrong...exiting')
    exit
 
 
@@ -188,8 +188,8 @@ try:
    if not os.access(AFLOW_EXEC,3):
       os.chmod(AFLOW_EXEC,733)      
 
-except Exception,e:
-    print 'Could not install ISOTROPY package:',e
+except Exception as e:
+    print(('Could not install ISOTROPY package:',e))
    
 
 

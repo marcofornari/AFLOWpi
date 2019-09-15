@@ -8,10 +8,10 @@ import numpy as np
 def _standardize_alat(in_str):
 
     si = AFLOWpi.retr._splitInput(in_str)
-    if "celldm(1)" in [x.lower() for x in si["&system"].keys()]:
+    if "celldm(1)" in [x.lower() for x in list(si["&system"].keys())]:
         alat=float(si["&system"]["celldm(1)"])*0.529177
         return alat
-    elif "a" in [x.lower() for x in si["&system"].keys()]:
+    elif "a" in [x.lower() for x in list(si["&system"].keys())]:
         alat=float(si["&system"]["a"])
         return alat
     try:
@@ -34,7 +34,7 @@ def _standardize_alat(in_str):
                 alat=cell[2][0]
 
 
-    except Exception,e:
+    except Exception as e:
 #        print e
         cell_vec = AFLOWpi.retr.getCellMatrixFromInput(in_str).getA()
 

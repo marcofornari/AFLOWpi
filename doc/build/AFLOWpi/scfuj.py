@@ -16,19 +16,19 @@ def tb_prep(oneCalc,ID):
 	pdosExec = 'projwfc.x'
 	pdosExec = os.path.join(espressodir,pdosExec)
         if os.path.exists(pdosExec)==False:
-            print 'ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting'
+            print('ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting')
             logging.error('ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting')
             raise SystemExit
 	dosExec = 'dos.x'
 	dosExec = os.path.join(espressodir,dosExec)
         if os.path.exists(dosExec)==False:
-            print 'DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting'
+            print('DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting')
             logging.error('DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting')
             raise SystemExit
 	scfExec = 'pw.x'
 	scfExec = os.path.join(espressodir,scfExec)
         if os.path.exists(scfExec)==False:
-            print 'SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting'
+            print('SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting')
             logging.error('SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting')
             raise SystemExit
 
@@ -68,7 +68,7 @@ def want_bands_prep(oneCalc,ID):
 	try:
             wantBandsExec = os.path.join(wantdir,'bands.x')
 	    if os.path.exists(wantBandsExec)==False:
-		    print 'WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting'
+		    print('WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting')
 		    logging.error('WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting')
 		    raise SystemExit
 
@@ -78,7 +78,7 @@ def want_bands_prep(oneCalc,ID):
             else:
                 AFLOWpi.prep.totree(wantBandsExec,{ID:oneCalc},rename='want_bands.x',symlink=True)
 
-	except Exception,e:
+	except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -103,7 +103,7 @@ def want_dos_prep(oneCalc,ID):
             else:
                 AFLOWpi.prep.totree(wantDOSExec,{ID:oneCalc},rename='want_dos.x',symlink=True)
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 
 
@@ -126,7 +126,7 @@ def want_epsilon_prep(oneCalc,ID,en_range=[0.5,10.0],ne=95):
             else:
                 AFLOWpi.prep.totree(wantEpsilonExec,{ID:oneCalc},rename='want_epsilon.x',symlink=True)
 
-	except Exception,e:
+	except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -148,7 +148,7 @@ def want_eff_mass_prep(oneCalc,ID):
             else:
                 AFLOWpi.prep.totree(want_eff_mass_exec,{ID:oneCalc},rename='effmass.x',symlink=True)
 
-	except Exception,e:
+	except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -571,7 +571,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
             errorList = re.findall(r'from (.*) : error #.*\n',outfile)
             if len(errorList) > 0 and 'zmat_hdiag' not in errorList:        
                 logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
-                print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+                print(("Error in %s.out -- ABORTING ACBN0 LOOP"%ID))                    
                 raise SystemExit
 
 
@@ -579,7 +579,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 
 
 
-        if '__runList__' not in oneCalc.keys():
+        if '__runList__' not in list(oneCalc.keys()):
             oneCalc['__runList__']=[]
 #            if run_scf==False:
 #                oneCalc['__runList__']=['scf']
@@ -598,7 +598,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -634,7 +634,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
                         execPostfixPrime=re.sub(r'npool[s]*\s*(?:\d*)','npool %s'%npool,execPostfix)
               #          logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -654,11 +654,11 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
                 nscf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],nscf_ID)                
                 '''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-            except Exception,e:
+            except Exception as e:
                 try:
                     nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,1.5,unoccupied_states=True)	
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 
@@ -673,7 +673,7 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
                         execPostfixPrime=re.sub(r'npool\s*(?:\d+)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -711,14 +711,14 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
             want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID)
 
 
-            for want_ID,want_calc in want_dict.iteritems():
+            for want_ID,want_calc in list(want_dict.items()):
                 AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
 
             
 
 	    AFLOWpi.prep._clean_want_bands(oneCalc,ID)
 
-            for want_ID,want_calc in want_dict.iteritems():
+            for want_ID,want_calc in list(want_dict.items()):
                 abortIFRuntimeError(subdir, want_ID)
 
 
@@ -734,10 +734,10 @@ def run_transport(__submitNodeName__,oneCalc,ID,run_scf=True,run_transport_prep=
         if 'want_dos' not in oneCalc['__runList__']:
             want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,temperature=temperature,num_e=ne,energy_range=en_range,compute_ham=compute_ham,proj_thr=proj_thr,cond_bands=proj_nbnd)
 
-            for want_dos_ID,want_dos in want_dos_calc.iteritems():
+            for want_dos_ID,want_dos in list(want_dos_calc.items()):
                 AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_dos.x' )
 
-            for want_dos_ID,want_dos in want_dos_calc.iteritems():
+            for want_dos_ID,want_dos in list(want_dos_calc.items()):
                 abortIFRuntimeError(subdir, want_dos_ID)
 
 
@@ -766,7 +766,7 @@ def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,com
 		    errorList = re.findall(r'from (.*) : error #.*\n',outfile)
 		    if len(errorList) > 0 and 'zmat_hdiag' not in errorList:        
 			    logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
-			    print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+			    print(("Error in %s.out -- ABORTING ACBN0 LOOP"%ID))                    
 			    raise SystemExit
 
 
@@ -784,10 +784,10 @@ def _run_want_epsilon(__submitNodeName__,oneCalc,ID,en_range=[0.1,8.0],ne=79,com
 	    else:
 		    execPostfix=''
 
-            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
+            for want_epsilon_ID,want_epsilon in list(want_epsilon_calc.items()):
                 AFLOWpi.run._oneRun(__submitNodeName__,want_epsilon,want_epsilon_ID,execPrefix=execPrefix,execPostfix=execPostfix,engine='espresso',calcType='custom',execPath='./want_epsilon.x' )
 
-            for want_epsilon_ID,want_epsilon in want_epsilon_calc.iteritems():
+            for want_epsilon_ID,want_epsilon in list(want_epsilon_calc.items()):
                 abortIFRuntimeError(oneCalc["_AFLOWPI_FOLDER_"], want_epsilon_ID)
 
 	    return oneCalc,ID
@@ -913,7 +913,7 @@ def _getPAOfilename(atom,PAOdir=None):
 #def scfprep(allAFLOWpiVars,refFile,pseudodir=None,paodir=None,build_type='product'):
 def scfprep(calcs,paodir=None):
     output_calcs=copy.deepcopy(calcs)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         AFLOWpi.prep._addToBlock(oneCalc,ID,'PREPROCESSING','oneCalc,ID = AFLOWpi.scfuj._oneScfprep(oneCalc,ID)') 
     return output_calcs
 
@@ -932,7 +932,7 @@ def _oneScfprep(oneCalc,ID,paodir=None):
 	
 	"""
 
-        if 'SCFUJ Iteration' in  oneCalc['__status__'].keys():
+        if 'SCFUJ Iteration' in  list(oneCalc['__status__'].keys()):
             return oneCalc,ID
 
         configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -969,11 +969,11 @@ def _oneScfprep(oneCalc,ID,paodir=None):
 
         Uvals = {}
         uppered_system={}
-        for k,v in splitInput['&system'].iteritems():
+        for k,v in list(splitInput['&system'].items()):
             uppered_system[k.upper()]=v
 
         for isp in range(len(species)):
-            if 'HUBBARD_U(%s)' % (isp+1) in uppered_system.keys():
+            if 'HUBBARD_U(%s)' % (isp+1) in list(uppered_system.keys()):
                 startingUval = float(uppered_system['HUBBARD_U(%s)' % (isp+1)])
 
                 Uvals[species[isp]] = startingUval
@@ -1034,7 +1034,7 @@ def updateUvals(oneCalc, Uvals,ID=None):
          	#Update inputfile
                 oneCalc['_AFLOWPI_INPUT_']=AFLOWpi.retr._joinInput(inputDict)
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1080,7 +1080,7 @@ def maketree(oneCalc,ID, paodir=None):
 
 	wantBandsExec = os.path.join(wantdir,'bands.x')
         if os.path.exists(wantBandsExec)==False:
-            print 'WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting'
+            print('WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting')
             logging.error('WanT bands executable not found. Check your config file to make sure want_dir path is correct and that bands.x is in that directory..Exiting')
             raise SystemExit
 
@@ -1100,19 +1100,19 @@ def maketree(oneCalc,ID, paodir=None):
 	pdosExec = 'projwfc.x'
 	pdosExec = os.path.join(espressodir,pdosExec)
         if os.path.exists(pdosExec)==False:
-            print 'ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting'
+            print('ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting')
             logging.error('ProjectWFC executable not found. Check your config file to make sure engine_dir path is correct and that projwfc.x is in that directory..Exiting')
             raise SystemExit
 	dosExec = 'dos.x'
 	dosExec = os.path.join(espressodir,dosExec)
         if os.path.exists(dosExec)==False:
-            print 'DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting'
+            print('DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting')
             logging.error('DOS executable not found. Check your config file to make sure engine_dir path is correct and that dos.x is in that directory..Exiting')
             raise SystemExit
 	scfExec = 'pw.x'
 	scfExec = os.path.join(espressodir,scfExec)
         if os.path.exists(scfExec)==False:
-            print 'SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting'
+            print('SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting')
             logging.error('SCF executable not found. Check your config file to make sure engine_dir path is correct and that pw.x is in that directory..Exiting')
             raise SystemExit
             
@@ -1129,7 +1129,7 @@ def maketree(oneCalc,ID, paodir=None):
 			AFLOWpi.prep.totree(pdosExec,{ID:oneCalc},symlink=True)
 			AFLOWpi.prep.totree(dosExec,{ID:oneCalc},symlink=True)
 			AFLOWpi.prep.totree(scfExec,{ID:oneCalc},symlink=True)
-	except Exception,e:
+	except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 ##############################################################################################################
 	#move acbn0.py to dir tree
@@ -1183,9 +1183,9 @@ def maketree(oneCalc,ID, paodir=None):
 #                    print 'Can not find PAO file. Exiting'
 #                    logging.error('Can not find PAO file. Exiting')
 #                    raise SystemExit
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
-            print 'Can not find PAO file. Exiting'
+            print('Can not find PAO file. Exiting')
             logging.error('Can not find PAO file. Exiting')
             raise SystemExit
 
@@ -1196,7 +1196,7 @@ def maketree(oneCalc,ID, paodir=None):
 
         try:
             work_dir = oneCalc['_AFLOWPI_FOLDER_'] 
-            for key in oneCalc.keys():
+            for key in list(oneCalc.keys()):
                     v = oneCalc[key]
                     if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
                             vp = AFLOWpi.scfuj._getPAOfilename(v.strip('0123456789'),paodir)		
@@ -1208,11 +1208,11 @@ def maketree(oneCalc,ID, paodir=None):
                                 if v=='!':
                                     continue
                                 logging.debug('Cannot find correct PAO files in %s ...Exiting' % paodir)
-                                print 'cannot find correct PAO files in %s ...Exiting' % paodir
+                                print(('cannot find correct PAO files in %s ...Exiting' % paodir))
                                 raise SystemExit
 
                             newPAOFileNm = os.path.join(work_dir,v.strip('0123456789')+"_basis.py")
-                            print 'Copying '+a+' to '+ newPAOFileNm+'\n'
+                            print(('Copying '+a+' to '+ newPAOFileNm+'\n'))
                             logging.info('Copying '+a+' to '+ newPAOFileNm)
                             if AFLOWpi.prep._ConfigSectionMap('prep','copy_pseudos').lower() == 'false':
                                     try:
@@ -1240,7 +1240,7 @@ def maketree(oneCalc,ID, paodir=None):
                                     else:
                                         pass
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1284,7 +1284,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                             nbnd = int(1.00*nbnd)
                             splitInput['&system']['nbnd']= nbnd                       
                             
-                        print 'Number of bands to be Calculated %s: '% nbnd
+                        print(('Number of bands to be Calculated %s: '% nbnd))
                         logging.info('Number of bands to be Calculated %s: '% nbnd)
 
 
@@ -1308,13 +1308,13 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                             '''writes an input for band_plot.x to process the correct number of bands calculated'''
                         
                             
-                        except Exception,e:
+                        except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
-                                print e
+                                print(e)
 
-                except Exception,e:
+                except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
-                        print 'SCF outputfile not found: nbnd is default'
+                        print('SCF outputfile not found: nbnd is default')
                         logging.info('SCF outputfile not found: nbnd is default')
                         pass
                 '''checks to see if "crystal_b" has already been substituted for "automatic"'''
@@ -1351,7 +1351,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False):
                         splitInput['K_POINTS']['__modifier__']='{automatic}'
                         inputfile = AFLOWpi.retr._joinInput(splitInput)
 
-                except Exception,e:
+                except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1398,7 +1398,7 @@ def projwfc(oneCalc,ID=None,paw=False):
                     prefix = AFLOWpi.retr._prefixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
 
-                except Exception,e:
+                except Exception as e:
 
                     prefix = oneCalc['_AFLOWPI_PREFIX_']
                 
@@ -1611,7 +1611,7 @@ def chkSpinCalc(oneCalc,ID=None):
         try:
             nspin = int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['nspin'])
             return nspin
-        except Exception,e:
+        except Exception as e:
             return 1
 
         oneCalcID = ID#oneCalc['_AFLOWPI_PREFIX_'][1:]
@@ -1632,7 +1632,7 @@ def chkSpinCalc(oneCalc,ID=None):
                 else:
                     return 1
 
-            except Exception,e:
+            except Exception as e:
                 pass
 
 
@@ -1640,7 +1640,7 @@ def chkSpinCalc(oneCalc,ID=None):
 
 def evCurveMinimize(calcs,config=None,pThresh=10.0,final_minimization = 'vc-relax'):
 
-	for ID,oneCalc in calcs.iteritems():
+	for ID,oneCalc in list(calcs.items()):
 		execString = '''
 newOneCalc = AFLOWpi.scfuj. _oneMinimizeCalcs(oneCalc, ID, pThresh=%f)
 AFLOWpi.prep._saveOneCalc(oneCalc,ID)
@@ -1672,7 +1672,7 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1728,15 +1728,15 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
 					energy  = float(finalEnergy[-1]); engList.append(energy)
 					stress = float(finalStress[0]);	stressList.append(stress)
 					logging.info("E-V curve point: %f a.u. %f Ry" %(i, energy))
-					print "E-V curve point: %f a.u. %f Ry" %(i, energy)	
+					print(("E-V curve point: %f a.u. %f Ry" %(i, energy)))	
 				else:
 					logging.error("ERROR: E-V curve at celldm(1) = %f FAILED"%i)
 					raise SystemExit
 
-			except Exception, e:
+			except Exception as e:
 	                        AFLOWpi.run._fancy_error_log(e)
 
-		return zip(stressList, engList, alatList)
+		return list(zip(stressList, engList, alatList))
 
 	def turningPts(tmplst):
                 lstarr = np.array(tmplst)
@@ -1814,11 +1814,11 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
 			evfitPath=os.path.join(engineDir,'ev.x')
 			evfitString = "cat<<! | %s \nau\nsc\n4\n%s\n%s\n!\n"%(evfitPath,evinFile,evoutFile)
 			logging.info("Starting fitting E-V curve with Murnaghan's EOS")
-			print "Starting Fitting E-V curve with Murnaghan's EOS"
+			print("Starting Fitting E-V curve with Murnaghan's EOS")
 			os.system(evfitString)
 			evoutFileString = file(evoutFile,'r').read()
 			logging.info("Finished fitting E-V curve with Murnaghan's EOS")
-			print "Finished Fitting E-V curve with Murnaghan's EOS"
+			print("Finished Fitting E-V curve with Murnaghan's EOS")
 			
 			a0regex = re.compile('a0.*?=.*?([0-9]*\.?[0-9]+)\s*a\.u\.')
 			a0 = float(a0regex.findall(evoutFileString)[0])
@@ -1836,12 +1836,12 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
 			new_inputfile.close()
 
 
-		except Exception, e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 		return newCalc
 	else:
-		print "Minimization for ibrav = %d not implemented" %ibrav
+		print(("Minimization for ibrav = %d not implemented" %ibrav))
 		logging.error("Minimization for ibrav = %d not implemented"%ibrav)
 		raise SystemExit
 def acbn0(oneCalc,projCalcID,byAtom=False):
@@ -1890,8 +1890,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
                             else:
                                 cellParaMatrix=1.0*cell
-                        except Exception,e:
-                            print e
+                        except Exception as e:
+                            print(e)
                         l=cellParaMatrix.tolist()
 			cellParaStr = ""
                         """THINK OF A BETTER WAY TO CHECK THIS"""
@@ -1925,7 +1925,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 			atmPos = atmPosRegex1.findall(lines1)
 
-                        print oneCalc["_AFLOWPI_INPUT_"]
+                        print((oneCalc["_AFLOWPI_INPUT_"]))
                         try:
                             positions=np.asarray([[float(i.split()[1]),float(i.split()[2]),float(i.split()[3])] for i in positions.split("\n") if len(i.strip())!=0])
                         except:
@@ -1938,10 +1938,10 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                         
 			atmPosList = []
 
-			for i in atmPos:atmPosList.append(map(float,i.split()))
+			for i in atmPos:atmPosList.append(list(map(float,i.split())))
 			atmPosStr = ""
 
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
                         raise SystemExit
 
@@ -1953,7 +1953,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 				atmPosStr += str(list(np.array(atmPosList[i]))).strip('[]')
 				if i != len(atmPosList)-1:
 					atmPosStr += ' ,'
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)       
 			try:
 				#Get the list of atom labels arranged as a single string
@@ -1981,7 +1981,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 
 				inFileList = []
 
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2007,7 +2007,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                     eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s.*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
 #                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s.*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
                                     
-                                    eqOrbList = map(int, map(float, eqOrbRegex.findall(proj_lines)))
+                                    eqOrbList = list(map(int, list(map(float, eqOrbRegex.findall(proj_lines)))))
                                     red_basis = [x - 1 for x in eqOrbList]
 
 				#Get ones relevant for hubbard center
@@ -2023,14 +2023,14 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 #                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*%s.*l=%d.*\n"%(speciesFromNum.strip('0123456789'),ql),re.MULTILINE)          
 
 
-                                    eqOrbList = map(int, map(float,eqOrbRegex.findall(proj_lines)))
+                                    eqOrbList = list(map(int, list(map(float,eqOrbRegex.findall(proj_lines)))))
                                     red_basis = [x - 1 for x in eqOrbList]
 
 				#Get ones relevant for hubbard center
                                     eqOrbRegex = re.compile(r"state #\s*(\d*): atom\s*%s.*\s*\(\s*l=%d.*\n"%(atmSp,ql),re.MULTILINE)          
                               
 
-				eqOrbList = map(int, map(float,eqOrbRegex.findall(proj_lines)))#;print eqOrbList
+				eqOrbList = list(map(int, list(map(float,eqOrbRegex.findall(proj_lines)))))#;print eqOrbList
 
 				red_basis_for2e = [x - 1 for x in eqOrbList]
 				#Get list of orbitals of type l for one atom of the species
@@ -2063,7 +2063,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 				#Add filename to acbn0 run list
 				inFileList.append(infnm)
 
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
 
 		return inFileList
@@ -2074,14 +2074,14 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 		for infnm in inputFiles:
 			
 			cmd="python %s/acbn0.py %s > /dev/null"%(subdir,os.path.join(subdir,infnm))	
-			print "Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm))
+			print(("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
 			logging.info("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
 			try:
 				os.system(cmd)
 		
-			except Exception,e:
+			except Exception as e:
 				AFLOWpi.run._fancy_error_log(e)
-			print "Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm))
+			print(("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
 			logging.info("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
 	acbn0_inFileList = gen_input(oneCalcID,subdir,nspin)	
 	run_acbn0(acbn0_inFileList)
@@ -2115,13 +2115,13 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 					acbn0_Uval = re.findall("U_eff\s*=\s*([-]*\d+.\d+)",lines)[0]
 
 					Uvals[isp] = float(acbn0_Uval)
-				except Exception,e:
+				except Exception as e:
 					AFLOWpi.run._fancy_error_log(e)
-					print e
+					print(e)
 			else:
 				Uvals[isp] = 0.001
 
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 	try:
@@ -2131,7 +2131,7 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 		else:
 			with open(os.path.join(subdir,'%s%s' % (ID,uvalLogName)),'w') as uValLog:
 				uValLog.write('%s\n' % Uvals)
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 
 	return Uvals
@@ -2140,9 +2140,9 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False):
 def run(calcs,uThresh=0.001,nIters=20,mixing=0.70,kp_mult=1.5):
 
     temp_calcs=copy.deepcopy(calcs)
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
 	    uThreshDict={}
-	    for key in oneCalc.keys():
+	    for key in list(oneCalc.keys()):
 
                 if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
                     
@@ -2167,8 +2167,8 @@ def run(calcs,uThresh=0.001,nIters=20,mixing=0.70,kp_mult=1.5):
                         uThreshDict[isolated_spec[i]] = float(initial_U)
                     except:
                         pass
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
 
 	    loopblock = '''
 
@@ -2197,7 +2197,7 @@ for key in uValue.keys():
            sys.exit(0)
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 logging.info('Completed scfuj convergence for final U values = {0}'.format(newUvals))
 print 'Completed scfuj convergence for final U values = ',str(newUvals).strip('{}')
@@ -2306,12 +2306,12 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             errorList = re.findall(r'from (.*) : error #.*\n',outfile)
             if len(errorList) > 0:        
                 logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
-                print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+                print(("Error in %s.out -- ABORTING ACBN0 LOOP"%ID))                    
                 raise SystemExit
 
 
 
-        if '__runList__' not in oneCalc.keys():
+        if '__runList__' not in list(oneCalc.keys()):
             oneCalc['__runList__']=[]
 
             
@@ -2322,7 +2322,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2358,7 +2358,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
                         execPostfixPrime=re.sub(r'npool[s]*\s*(?:\d*)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2383,11 +2383,11 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 
                 '''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-            except Exception,e:
+            except Exception as e:
                 try:
                     nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=kp_mult)	
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2403,7 +2403,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
                         execPostfixPrime=re.sub(r'npool\s*(?:\d+)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2444,7 +2444,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         if 'bands' not in oneCalc['__runList__']:
             want_dict = AFLOWpi.scfuj.WanT_bands(oneCalc,ID,compute_ham=True,cond_bands=False)
 
-            for want_ID,want_calc in want_dict.iteritems():
+            for want_ID,want_calc in list(want_dict.items()):
 #                AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
                 AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix="",execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x' )
 
@@ -2454,7 +2454,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             '''in case we're working in local scratch'''            
 #           AFLOWpi.prep._from_local_scratch(oneCalc,ID,ext_list=['ham','wan','space'])
 
-            for want_ID,want_calc in want_dict.iteritems():
+            for want_ID,want_calc in list(want_dict.items()):
                 abortIFRuntimeError(subdir, want_ID)
 
             '''
@@ -2474,7 +2474,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
         #Get new U values from acbn0.py 
         try:
             acbn0(oneCalc, pdos_ID)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             raise SystemExit
 
@@ -2489,7 +2489,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             old_U = newUvals
 
 #        mixing=0.70
-        for spec,val in old_U.iteritems():
+        for spec,val in list(old_U.items()):
             newUvals[spec]=mixing*old_U[spec]+(1.0-mixing)*newUvals[spec]
 
 
@@ -2535,7 +2535,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
 #                new_oneCalc['__status__']['Error']='U Value Oscillation'
 #                AFLOWpi.prep._saveOneCalc(new_OneCalc,ID)
 #                raise SystemExit
-#        except Exception,e:
+#        except Exception as e:
 #            AFLOWpi.run._fancy_error_log(e)
             
 
@@ -2555,7 +2555,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.70,kp_mult=1.5):
             pass
 #            oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,override_lock=True)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2612,7 +2612,7 @@ def checkOscillation(ID,oneCalc,uThresh=0.001):
             iterationDictList.append(ast.literal_eval(fileString))
     if len(iterationDictList) < 3:
         return False
-    species = iterationDictList[0].keys()
+    species = list(iterationDictList[0].keys())
     bySpecies=collections.OrderedDict()
     for i in range(len(iterationDictList)):
         for U in range(len(species)):
@@ -2624,13 +2624,13 @@ def checkOscillation(ID,oneCalc,uThresh=0.001):
 #    if bySpecies
 
     bySpeciesDiff=collections.OrderedDict()            
-    for species,uVals in bySpecies.iteritems():
+    for species,uVals in list(bySpecies.items()):
         try:
             bySpeciesDiff[species] = [j-i for i, j in zip(uVals[:-1], uVals[1:])]
         except:
             bySpeciesDiff[species]=[0]
 
-    for species,diff in bySpeciesDiff.iteritems():
+    for species,diff in list(bySpeciesDiff.items()):
         if diff!=reversed(sorted(diff)):
             return True
     return False

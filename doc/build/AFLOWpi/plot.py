@@ -6,7 +6,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 import copy
@@ -61,7 +61,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(float(oneCalc[variable1]))
         Y.append(float(oneCalc[variable2]))
         Z.append(float(oneCalc[zaxis]))
@@ -129,7 +129,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
                                 ax.add_patch(circ)
 
 
-        except Exception,e:
+        except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)    
     
 
@@ -148,7 +148,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    pass
 
 
@@ -187,7 +187,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(oneCalc[variable1])
         Y.append(oneCalc[yaxis])
 	
@@ -222,7 +222,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
 
 	    pyplot.legend(['data','interpolated','min'], loc='best')	    
 
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)    
     
     
@@ -236,20 +236,20 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 
 
 import os
 import datetime
-import cPickle
+import pickle
 import logging 
 import matplotlib
 import glob
 matplotlib.use('PDF')
 from matplotlib import pylab
 import numpy 
-import StringIO
+import io
 import copy 
 import re 
 import AFLOWpi.prep
@@ -274,10 +274,10 @@ def transport_plots(calcs,runlocal=False,postfix='',x_range=None):
 
 
 	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
                     AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,x_range=x_range)
 	else:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',x_range=%s)" %(postfix,x_range))
 
 
@@ -285,10 +285,10 @@ def optical_plots(calcs,runlocal=False,postfix='',x_range=None):
 
 
 	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
                     AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,epsilon=True,x_range=x_range)
 	else:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',epsilon=True,x_range=%s)" %(postfix,x_range))
 
 
@@ -490,7 +490,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 
 			ax2.tick_params(axis='both', which='major', labelsize=21)
 
-                        sorted_all =  sorted([[float(x[0]),x[1]] for x in data_by_temp.items()])
+                        sorted_all =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp.items())])
 
                         for temp_index in range(len(sorted_all)):              
 		            if epsilon==True:
@@ -554,8 +554,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                     ax1=pylab.subplot(211)
 
 
-                    sorted_dn =  sorted([[float(x[0]),x[1]] for x in data_by_temp_dn.items()])
-                    sorted_up =  sorted([[float(x[0]),x[1]] for x in data_by_temp_up.items()])
+                    sorted_dn =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp_dn.items())])
+                    sorted_up =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp_up.items())])
 
                     for temp_index in range(len(sorted_dn)):                    
 		            if epsilon==True:
@@ -729,7 +729,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                     pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':30})
                     pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
                 ax2.set_ylim([min_val*mult_min,max_val*mult_max])
@@ -758,7 +758,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 		try:
 			ax2.yaxis.set_label(trans_plot_dict[Type]['yl'])
 			ax2.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
-		except Exception,e: 
+		except Exception as e: 
 			AFLOWpi.run._fancy_error_log(e)
 
 			pass
@@ -766,7 +766,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
 			ax1.yaxis.set_label(trans_plot_dict[Type]['yl'])
 			ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spni
 
-		except Exception,e:
+		except Exception as e:
 			pass
 
                 pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spin
@@ -782,7 +782,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None):
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
 
-            except Exception,e:
+            except Exception as e:
 		    AFLOWpi.run._fancy_error_log(e)
 		    raise SystemExit
 
@@ -840,7 +840,7 @@ from matplotlib import pyplot
 from matplotlib import pylab
 import numpy
 import matplotlib
-import StringIO
+import io
 import logging 
 
 
@@ -938,7 +938,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
                         
                         x.append(x_val)
                         y.append(y_val)
-                    except Exception,e:
+                    except Exception as e:
                         continue
 
                 k_y = numpy.asarray(y).T.tolist()
@@ -947,10 +947,10 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
                     k_x.append(x)
 
 
- 	except Exception,e:
+ 	except Exception as e:
  		AFLOWpi.run._fancy_error_log(e)        
  		logging.warning("output from bands calculation not found. Are you sure you ran ppBands and it completed properly?")
- 		print "Are you sure you ran ppBands and it completed properly?"
+ 		print("Are you sure you ran ppBands and it completed properly?")
  		return
 	'''
         Eliminating the gaps between the paths in band structure plots by looking 
@@ -1032,7 +1032,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 
 	pylab.xlim(min(k_x[1]),max(k_x[1])) 
         
-	print min_val,max_val
+	print((min_val,max_val))
         pylab.ylim(min_val,max_val) 
 
 	'''
@@ -1050,7 +1050,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 
  	HSPList = []
  	HSPSymList = []
- 	buf = StringIO.StringIO(bandSym)
+ 	buf = io.StringIO(bandSym)
 
 	for line in buf:
 		splitLine = line.split()
@@ -1090,8 +1090,8 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 
 				else:
 					counter+=1
-			except Exception,e:
-				print e
+			except Exception as e:
+				print(e)
 				counter=1
 				HSPSymList.append(splitLine[4])
 
@@ -1138,7 +1138,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 	for sym in symIndex:
 		try:
 			pylab.axvline(a[sym], color = 'k')
-		except Exception,e:
+		except Exception as e:
 
                     pass
      #Print path labels to band structure x-axis
@@ -1151,9 +1151,9 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
                     labs.append(0)
 
             pylab.xticks(labs,SymPrint)
-	except Exception,e:
+	except Exception as e:
 #            print 'asdfasdfasdfasdf'
-            print e
+            print(e)
             pass
     #        return
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Femi level line
@@ -1162,7 +1162,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
 ##########################################################################################################
 
 
-        print 'Plotting q resolved Gruneisen Parameter of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+        print(('Plotting q resolved Gruneisen Parameter of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
         logging.info('Plotting q resolved Gruneisen Parameter of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 #        ax2=pylab.subplot(122)
@@ -1171,7 +1171,7 @@ def __plot_gruneisen(oneCalc,ID,optical=False):
                 data = open(filedos,'r').readlines()
         except Exception:
                 logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-                print "Are you sure you ran ppDOS and it completed properly?"
+                print("Are you sure you ran ppDOS and it completed properly?")
                 return
         
 
@@ -1237,7 +1237,7 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
         data = fo.read()
 
     data=data.split('\n')
-    therm_data = numpy.asarray([map(float,x.split()) for x in data if len(x.strip())!=0])
+    therm_data = numpy.asarray([list(map(float,x.split())) for x in data if len(x.strip())!=0])
     
     therm_data=numpy.asarray(therm_data)
     therm_data[:,0]=numpy.around(therm_data[:,0],decimals=0)
@@ -1258,7 +1258,7 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
 #    therm_data = numpy.ma.masked_equal(therm_data,0.0)
     therm_data[:,1] = numpy.ma.masked_greater(therm_data[:,1],100.0)
 #    therm_data[:,0] = numpy.ma.masked_less_equal(therm_data[:,0],1.0)
-    print therm_data.shape
+    print((therm_data.shape))
     width = 10.0
     height = 8.0
     pylab.figure(figsize=(width, height))#to adjust the figure size
@@ -1326,7 +1326,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 
@@ -1334,7 +1334,7 @@ import re
 
 def phonon(calcs,runlocal=False,postfix='',THz=True,color_accoustic=False,color_optical=False):
 	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=postfix,THz=THz,color_accoustic=color_accoustic,color_optical=color_optical)
 	else:
 		AFLOWpi.prep._addToAll(calcs,'PLOT',"AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=%s,THz=%s,color_accoustic=%s,color_optical=%s)"%(repr(postfix),THz,color_accoustic,color_optical))
@@ -1424,7 +1424,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
                         
                         x.append(x_val)
                         y.append(y_val)
-                    except Exception,e:
+                    except Exception as e:
                         pass
 
                 k_y = numpy.asarray(y).T.tolist()
@@ -1433,10 +1433,10 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
                     k_x.append(x)
 
 
- 	except Exception,e:
+ 	except Exception as e:
  		AFLOWpi.run._fancy_error_log(e)        
  		logging.warning("output from bands calculation not found. Are you sure you ran ppBands and it completed properly?")
- 		print "Are you sure you ran ppBands and it completed properly?"
+ 		print("Are you sure you ran ppBands and it completed properly?")
  		return
 	'''
         Eliminating the gaps between the paths in band structure plots by looking 
@@ -1560,7 +1560,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
  	HSPList = []
  	HSPSymList = []
- 	buf = StringIO.StringIO(bandSym)
+ 	buf = io.StringIO(bandSym)
 
 	for line in buf:
 		splitLine = line.split()
@@ -1600,8 +1600,8 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 				else:
 					counter+=1
-			except Exception,e:
-				print e
+			except Exception as e:
+				print(e)
 				counter=1
 				HSPSymList.append(splitLine[4])
 
@@ -1647,12 +1647,12 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 	for sym in symIndex:
 		try:
 			pylab.axvline(a[sym], color = 'k')
-		except Exception,e:
+		except Exception as e:
 			pass
      #Print path labels to band structure x-axis
 	try:
 		pylab.xticks([a[index] for index in symIndex],SymPrint)
-	except Exception,e:
+	except Exception as e:
 		pass
 		return
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Femi level line
@@ -1664,7 +1664,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 	ax2=pylab.subplot(122)
 
 	if DOSPlot!='APDOS':
-		print 'Plotting Phonons and phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+		print(('Plotting Phonons and phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
 		logging.info('Plotting Phonons and phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 		ax2=pylab.subplot(122)
@@ -1675,7 +1675,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 			data = open(filedos,'r').readlines()
 		except Exception:
 			logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-			print "Are you sure you ran ppDOS and it completed properly?"
+			print("Are you sure you ran ppDOS and it completed properly?")
 			return
 
 		freq_dos=[]
@@ -1699,7 +1699,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 ##########################################################################################################
 
 	if DOSPlot=='APDOS':
-		print 'Plotting Phonons and atom projected phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+		print(('Plotting Phonons and atom projected phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
 		logging.info('Plotting Phonons and atom projected phDOS of  %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 
@@ -1714,7 +1714,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 		except Exception:
 			logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-			print "Are you sure you ran ppDOS and it completed properly?"
+			print("Are you sure you ran ppDOS and it completed properly?")
 			return
 
 		freq_dos=[]
@@ -1781,7 +1781,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 
@@ -1794,7 +1794,7 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
         try:
             calcs = AFLOWpi.retr.grabEnergyOut(calcs)
             zaxis='aux_energy'            
-            for ID,oneCalc in calcs.iteritems():
+            for ID,oneCalc in list(calcs.items()):
                 calcs[ID][zaxis]=calcs[ID]['Energy']
         except:
             pass
@@ -1815,7 +1815,7 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
 
         
     else:
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             calcs_aux[ID][zaxis]=0.0
 
         AFLOWpi.plot.__distortionEnergy(calcs_aux,xaxis,yaxis,zaxis=zaxis,calcs=[calcs],colorbarUnits=colorbarUnits,titleArray=[zaxis_title],plotTitle=plotTitle,xAxisStr=xAxisStr,yAxisStr=yAxisStr,fileName=fileName,percentage=False)
@@ -1876,7 +1876,7 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
     '''
 
     if len(calcs)>3:
-	    print 'List of distortion calculations must not exceed 3'
+	    print('List of distortion calculations must not exceed 3')
 	    return
 
     if xAxisStr==None:
@@ -1890,7 +1890,7 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
 	    X=set()
 	    Y=set()
 	    Z=[]
-	    for key,oneCalc, in calcs1.iteritems():
+	    for key,oneCalc, in list(calcs1.items()):
 		    X.add(oneCalc[xaxis])
 		    Y.add(oneCalc[yaxis])
                     val = oneCalc[zaxis]
@@ -1906,7 +1906,7 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
 	    xVals=[]
 	    yVals=[]
 	    counter=0
-	    for ID,oneCalc in calcs.iteritems():
+	    for ID,oneCalc in list(calcs.items()):
 		    if oneCalc[xLabel] not in xVals:
 			    xVals.append(oneCalc[xLabel])
 		    if oneCalc[yLabel] not in yVals:
@@ -1932,8 +1932,8 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
                 for k in j:
                     if k > 0.1:
                         neg_flag=False
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
 
         energyArrayList.append(diff)
 
@@ -2002,10 +2002,10 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
-import cPickle
+import pickle
 import matplotlib.lines as mlines
 
 
@@ -2030,7 +2030,7 @@ def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding
 
 	'''
 
-	for oneCalc in calcs.items():
+	for oneCalc in list(calcs.items()):
 		if runlocal:
 			__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding)
 		else:
@@ -2105,16 +2105,16 @@ def __getPath_WanT(oneCalc,ID):
             plot_bool.append(False)
 
     gg = re.findall("\s*Number of kpts in each segment\n((?:.*:\W+(?:\d*)\n)*)",in_string)
-    print gg
+    print(gg)
 
     num = [int(x) for x in re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)]
-    print re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)
+    print((re.findall('line\s*\d+:\s*(\d+)\s*\n',in_string)))
 
     total = 0
     include=[]
 
     output_path_string = ''
-    print plot_bool
+    print(plot_bool)
     for i in range(len(num)):
 
         total+=num[i]+1
@@ -2134,8 +2134,8 @@ def __getPath_WanT(oneCalc,ID):
 #			include.append(False)
 		include.append(True)
 		
-	except Exception,e:
-		print e
+	except Exception as e:
+		print(e)
 
     output_path_string+='%s %s %s %s ! %s' %(0.0,0.0,0.0,0,path_name[-1])+'\n' 
 
@@ -2171,7 +2171,7 @@ def _clean_bands_data_qe(filebands,Efermi_shift):
 					y_val = float(line.split()[1])-Efermi_shift
 					x.append(x_val)
 					y.append(y_val)
-				except Exception,e:
+				except Exception as e:
 					pass
 			if not line.split():
 
@@ -2181,10 +2181,10 @@ def _clean_bands_data_qe(filebands,Efermi_shift):
 				y=[]
 
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 		logging.warning("output from bands calculation not found. Are you sure you ran ppBands and it completed properly?")
-		print "Are you sure you ran ppBands and it completed properly?"
+		print("Are you sure you ran ppBands and it completed properly?")
 		return
 	'''
         Eliminating the gaps between the paths in band structure plots by looking 
@@ -2249,7 +2249,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
         
 	if DOSPlot != '' and DOSPlot != 'APDOS' and DOSPlot != 'DOS':
-		print "Not a valid choice for DOSPlot. Valid options are:'APDOS','DOS'"
+		print("Not a valid choice for DOSPlot. Valid options are:'APDOS','DOS'")
 		return
 
 	if postfix!='':
@@ -2265,7 +2265,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		bandSym = AFLOWpi.retr._getPathFromFile(calcCopy)
 	
 	if bandSym==None:
-		print 'ERRORRRR!'
+		print('ERRORRRR!')
 		return
 	try:
                 if tight_banding:
@@ -2274,13 +2274,13 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			
                 else:
 			Efermi=AFLOWpi.retr._getEfermi(oneCalc,calcID)
-			print 'EFERMI BANDS NO TB',Efermi
+			print(('EFERMI BANDS NO TB',Efermi))
 
 		if type(Efermi)!=type(0.5):
 			Efermi=Efermi[0]
 
-	except Exception,e:
-            print e
+	except Exception as e:
+            print(e)
             Efermi=0.0
 
 	subdir=oneCalc['_AFLOWPI_FOLDER_']
@@ -2346,7 +2346,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	if DOSPlot == '':
 		ax1=pylab.subplot(111)	
-		print 'Plotting electronic band structure of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+		print(('Plotting electronic band structure of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
 		logging.info('Plotting electronic band structure of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 	'''
@@ -2358,16 +2358,16 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			try:
 				
 				if tight_banding==True:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\\uparrow$",linewidth=2)
 					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 				else:
-					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\uparrow$",linewidth=2)
+					pylab.plot((k_x_up[i]),(k_y_up[i]),'r',alpha=0.5,marker=".",linestyle=" ",label="$\\uparrow$",linewidth=2)
 					pylab.plot((k_x_dn[i]),(k_y_dn[i]),'k',alpha=0.5,marker=".",linestyle=" ",label="$\downarrow$",linewidth=2)
 			except:
 				pass
 		handles, labels = ax1.get_legend_handles_labels()
 #		ax1.legend(handles[-2:], labels[-2:],numpoints=1)
-		up_legend_lab = mlines.Line2D([], [], color='red',label='$\uparrow$')
+		up_legend_lab = mlines.Line2D([], [], color='red',label='$\\uparrow$')
 		dn_legend_lab = mlines.Line2D([], [], color='black',label='$\downarrow$')
 		ax1.legend(handles=[up_legend_lab,dn_legend_lab])
 	else:
@@ -2396,7 +2396,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 	bandSymSplit =  bandSym.split()
 	HSPList = []
 	HSPSymList = []
-	buf = StringIO.StringIO(bandSym)
+	buf = io.StringIO(bandSym)
 
 
 
@@ -2438,8 +2438,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 				else:
 					counter+=1
-			except Exception,e:
-				print e
+			except Exception as e:
+				print(e)
 				counter=1
 				HSPSymList.append(splitLine[4])
 
@@ -2487,9 +2487,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	for sym in symIndex:
             try:
-                print a[sym]
+                print((a[sym]))
                 pylab.axvline(a[sym], color = 'k',linewidth=2)
-            except Exception,e:
+            except Exception as e:
 
                 pylab.axvline(a[-1], color = 'k',linewidth=2)
 		
@@ -2503,8 +2503,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			except:
 				bars.append(a[-1] )
 		pylab.xticks(bars,SymPrint, fontsize = 20)
-	except Exception,e:
-                print e
+	except Exception as e:
+                print(e)
 		pylab.xticks([a[-1] for index in symIndex],SymPrint)
 
 	pylab.axhline(0.0, color = 'k', linestyle='dashed', linewidth = 1.3) #Femi level line
@@ -2514,7 +2514,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 
 	if DOSPlot == 'APDOS':
-		print 'Plotting electronic band structure and projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+		print(('Plotting electronic band structure and projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
 		logging.info('Plotting electronic band structure and projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 
 		fileplot = os.path.join(subdir,'BANDPDOS_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),calcID,postfix))	
@@ -2523,10 +2523,10 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 		def getPlotData(sumpdosFile):
 			try:
 				with open(sumpdosFile,'rb') as dataFile:
-					data = cPickle.load(dataFile)
+					data = pickle.load(dataFile)
 
-			except Exception,e:
-				print e
+			except Exception as e:
+				print(e)
 				with open(sumpdosFile,'r') as dataFile:
 					data = dataFile.read()
 					data = data.split('\n')
@@ -2546,12 +2546,12 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 					pdos.append(float(data[i][2]))
 					ldosDOWN.append(-1*float(data[i][2]))
 					
-				except Exception, e:
+				except Exception as e:
 					pass
 
-			endos=map(float,en)  #to convert the list x from float to numbers
-			floatdos=map(float,ldos)
-			floatdosDOWN=map(float,ldosDOWN)
+			endos=list(map(float,en))  #to convert the list x from float to numbers
+			floatdos=list(map(float,ldos))
+			floatdosDOWN=list(map(float,ldosDOWN))
 			enshift = numpy.array(endos) #to treat the list b as an array?
 
 			return enshift,floatdos,floatdosDOWN
@@ -2653,7 +2653,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 ##########################################################################################################
 	     #to plot the DOS
 	if DOSPlot == 'DOS':
-		print 'Plotting electronic band structure and DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))
+		print(('Plotting electronic band structure and DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
 		logging.info('Plotting electronic band structure and DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
 		fileplot = os.path.join(subdir,'BANDDOS_%s%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),oneCalc['_AFLOWPI_PREFIX_'],postfix))
 		ax2=pylab.subplot(122)
@@ -2662,7 +2662,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 			data = open(filedos,'r').readlines()
 		except Exception:
 			logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-			print "Are you sure you ran ppDOS and it completed properly?"
+			print("Are you sure you ran ppDOS and it completed properly?")
 			return
 
 		en = []
@@ -2676,12 +2676,12 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 				dos.append(float(data[i].split()[1]))
 				dosdw.append(-1*float(data[i].split()[2]))
 
-			except Exception, e:
+			except Exception as e:
 				pass
 
-		endos=map(float,en)  #to convert the list x from float to numbers
-		floatdos=map(float,dos)
-		floatdosDOWN=map(float,dosdw)
+		endos=list(map(float,en))  #to convert the list x from float to numbers
+		floatdos=list(map(float,dos))
+		floatdosDOWN=list(map(float,dosdw))
 		enshift = numpy.array(endos) #to treat the list b as an array?
 
 #		floatdos=AFLOWpi.plot.__smoothGauss(floatdos)
@@ -2759,7 +2759,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 	try:
 		AFLOWpi.retr._moveToSavedir(fileplot)
-	except Exception,e:
+	except Exception as e:
 		pass
 
         pyplot.cla()
@@ -2769,14 +2769,14 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False):
 
 import os
 import datetime
-import cPickle
+import pickle
 import logging 
 import matplotlib
 import glob
 matplotlib.use('PDF')
 from matplotlib import pylab
 import numpy 
-import StringIO
+import io
 import copy 
 import re 
 import AFLOWpi.prep
@@ -2797,7 +2797,7 @@ def radialPDF(calcs,atomNum,filterElement=None,runlocal=False,inpt=False,outp=Tr
 	'''
         AFLOWpi.retr.atomicDistances(calcs,runlocal=runlocal,inpt=inpt,outp=outp)
 	returnDict = {}
-	for ID,oneCalc in calcs.iteritems():
+	for ID,oneCalc in list(calcs.items()):
 		if runlocal:
                     if outp==True:
 			figObj = AFLOWpi.plot.__radialPDF(oneCalc,ID,atomNum,filterElement=filterElement,outp=True,title=title,**kwargs)
@@ -2805,8 +2805,8 @@ def radialPDF(calcs,atomNum,filterElement=None,runlocal=False,inpt=False,outp=Tr
 
 			oneCalc.update({'radialPDF_atom%s' % atomNum:figObj})
 		else:
-			kwargsStringList = ['%s = %s' % (key,value) for key,value in kwargs.iteritems() if key != 'runlocal' and type(value) != type('string')]
-			kwargsStringList.extend(["%s = '%s'" % (key,value) for key,value in kwargs.iteritems() if key != 'runlocal' and type(value) == type('string')])
+			kwargsStringList = ['%s = %s' % (key,value) for key,value in list(kwargs.items()) if key != 'runlocal' and type(value) != type('string')]
+			kwargsStringList.extend(["%s = '%s'" % (key,value) for key,value in list(kwargs.items()) if key != 'runlocal' and type(value) == type('string')])
 
 			kwargsString = ','.join(kwargsStringList)
 			kwargsString+=',title="%s",' % title
@@ -2834,12 +2834,12 @@ def __radialPDF(oneCalc,ID,atomNum,filterElement=None,title='',file_prefix='',fi
             with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_input_dist.out' % ID),'r') as inFile:
                 inFileString = inFile.read()
 
-    except Exception,e:
-        print e
-        print e
-        print e
+    except Exception as e:
+        print(e)
+        print(e)
+        print(e)
         logging.error('Could not find %s_dist.out in %s. Are you sure you ran AFLOWpi.retr.atomicDistances?' % (ID,oneCalc['_AFLOWPI_FOLDER_']))
-        print 'Could not find %s_dist.out in %s. Are you sure you  ran AFLOWpi.retr.atomicDistances?' % (ID,oneCalc['_AFLOWPI_FOLDER_'])
+        print(('Could not find %s_dist.out in %s. Are you sure you  ran AFLOWpi.retr.atomicDistances?' % (ID,oneCalc['_AFLOWPI_FOLDER_'])))
 	return
     fig = pyplot.figure()
     ax1 = pyplot.subplot(111)
@@ -2877,13 +2877,13 @@ def __radialPDF(oneCalc,ID,atomNum,filterElement=None,title='',file_prefix='',fi
         try:
             axes = pyplot.gca()
             axes.set_ylim([y_range[0],y_range[1]])
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
     newbin = []
     for entry in range(len(bins)):
 	    try:
 		    newbin.append((bins[entry+1]+bins[entry])/2)
-	    except Exception,e:
+	    except Exception as e:
 		    pass
 
     if file_prefix!='':
@@ -2912,7 +2912,7 @@ def __radialPDF(oneCalc,ID,atomNum,filterElement=None,title='',file_prefix='',fi
    
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    pass
 
     AFLOWpi.retr._moveToSavedir(fileName)
@@ -2933,10 +2933,10 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
-import cPickle
+import pickle
 import collections
 import math
 
@@ -2992,7 +2992,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 	
 
 	'''extracts HOMO from nscf calculation output file as input to the plotting'''
-	print 'Plotting DOS'
+	print('Plotting DOS')
 	try:
 		Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
 		if type(Efermi)!=type(0.5):
@@ -3028,7 +3028,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 		data = open(filedos,'r').readlines()
 	except Exception:
 		logging.warning("output from dos calculation not found. Are you sure you ran ppDOS and it completed properly?")
-		print 'Are you sure that you ran ppDos and that it completed properly?'
+		print('Are you sure that you ran ppDos and that it completed properly?')
 		return
 		
 	en = []
@@ -3048,21 +3048,21 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 			dos.append(float(data[i].split()[1]))
 			dosdw.append(-1*float(data[i].split()[2]))
 		
-		except Exception, e:
+		except Exception as e:
 			pass
 	if LSDA==True:
-		enup  = map(float,enup)
-		endown= map(float,endown)
+		enup  = list(map(float,enup))
+		endown= list(map(float,endown))
 	else:
-		endos=map(float,en)  #to convert the list x from float to numbers
-	floatdos=map(float,dos)
-	floatdosDOWN=map(float,dosdw)
+		endos=list(map(float,en))  #to convert the list x from float to numbers
+	floatdos=list(map(float,dos))
+	floatdosDOWN=list(map(float,dosdw))
 	enshift = numpy.array(endos) #to treat the list b as an array?
   
 
 	ax2=pylab.subplot(111)
 	inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
-	if "degauss" in inDict["&system"].keys():
+	if "degauss" in list(inDict["&system"].keys()):
 		floatdos,floatdosDOWN,enshift=floatdos,floatdosDOWN,enshift
 	else:
 		floatdos,floatdosDOWN,enshift=__smoothGauss(floatdos),__smoothGauss(floatdosDOWN),__smoothGauss(enshift)
@@ -3078,7 +3078,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 		dosMIN = 1.0*min([floatdosDOWN[k] for k in range(len(floatdosDOWN)) if en[k] < yLim[1] and en[k] > yLim[0]])
 		enshiftup  = numpy.array(enup)
 		enshiftdown= numpy.array(endown)
-		floatdosup=map(float,dos)
+		floatdosup=list(map(float,dos))
 		pylab.plot(enshiftdown,floatdosDOWN,'k-')
 		pylab.plot(enshiftup,floatdosUP,'k-')
 
@@ -3115,7 +3115,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 	try:
 			AFLOWpi.retr._moveToSavedir(fileplot)
-	except Exception,e:
+	except Exception as e:
 		pass
 
 	AFLOWpi.retr._moveToSavedir(fileplot)
@@ -3156,10 +3156,10 @@ def __combinePDOS(dosfiles):
 					for j in range(len(mati)): # if it is not the first file, sum values
 						try:
 							mat[j]=[mat[j][0],mat[j][1]+mati[j][1],mat[j][2]+mati[j][2]]  
-						except Exception,e:
+						except Exception as e:
                                                     try:
                                                         mat[j]=[mat[j][0],mat[j][1]+mati[j][1]]
-                                                    except Exception,e:
+                                                    except Exception as e:
                                                         AFLOWpi.run._fancy_error_log(e)
 							
 
@@ -3167,7 +3167,7 @@ def __combinePDOS(dosfiles):
 
 		if kresolved:
 			logging.warning('k resolved not supported')
-			print 'k resolved not supported'
+			print('k resolved not supported')
 			raise SystemExit
 			with open(dosfiles[i],'r') as pDOSFile:
 				pDOSString = pDOSFile.readlines()
@@ -3234,7 +3234,7 @@ def __sumpdos(oneCalc,ID,TB=False):
 	'''get a list of all the pdos files to be combined then plotted'''
 	atomList = []
 	pDOSDict = {}
-	for k,v in oneCalc.iteritems():
+	for k,v in list(oneCalc.items()):
 		if re.match(r'_AFLOWPI_[A-Z][0-9]*_',k):
 			atomList.append(v)
 
@@ -3273,12 +3273,12 @@ def __sumpdos(oneCalc,ID,TB=False):
 				byAtom.append({'%s' % orbital:pDOSFiles})
 		byAtomDict[atom] = byAtom
 
-	for atom,orbital in byAtomDict.iteritems():			
+	for atom,orbital in list(byAtomDict.items()):			
 			for orbitalDict in range(len(orbital)):
-				for orbitalName,fileList in orbital[orbitalDict].iteritems():
+				for orbitalName,fileList in list(orbital[orbitalDict].items()):
 					data = __combinePDOS(fileList)
 					with open(os.path.join(subdir,'%s_%s.sumpdos' % (atom,orbitalName)),'wb') as outputFile:
-						cPickle.dump(data,outputFile)
+						pickle.dump(data,outputFile)
 
 
 	byAtom={}
@@ -3291,10 +3291,10 @@ def __sumpdos(oneCalc,ID,TB=False):
 	'''Cycle through all of the atoms in a single calculation and sum over the pdos files
 	in the calculation directory and saves  '''
 
-	for atom,files in pDOSDict.iteritems():		
+	for atom,files in list(pDOSDict.items()):		
 		data = __combinePDOS(files)
 		with open(os.path.join(subdir,'%s.sumpdos' % (atom)),'wb') as outputFile:
-					cPickle.dump(data,outputFile)
+					pickle.dump(data,outputFile)
 
 ###################################################################################################################
 
@@ -3324,7 +3324,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	try:
             if TB==True:
 		    fermi_ID = '%s_WanT_dos'%calcID
-		    print fermi_ID
+		    print(fermi_ID)
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
 
             else:
@@ -3332,7 +3332,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 		    if type(Efermi)!=type(0.5):
 			    Efermi=Efermi[0]
 
-	except Exception,e:
+	except Exception as e:
 
 		Efermi=0.0
         try:
@@ -3366,7 +3366,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 	def getPlotData(sumpdosFile):
 		with open(sumpdosFile,'rb') as dataFile:
-			data = cPickle.load(dataFile)
+			data = pickle.load(dataFile)
 
 		en = []
 		pdos = []
@@ -3381,17 +3381,17 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
                                     ldos.append(float(data[i][1]))
                                     pdos.append(float(data[i][2]))
                                     ldosDOWN.append(-1*float(data[i][2]))
-			except Exception, e:
+			except Exception as e:
 				pass
 
 
-		endos=map(float,en)  #to convert the list x from float to numbers
-		floatdos=map(float,ldos)
-		floatdosDOWN=map(float,ldosDOWN)
+		endos=list(map(float,en))  #to convert the list x from float to numbers
+		floatdos=list(map(float,ldos))
+		floatdosDOWN=list(map(float,ldosDOWN))
 		enshift = numpy.array(endos) #to treat the list b as an array?
 		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
 
-		if "degauss" in inDict["&system"].keys():
+		if "degauss" in list(inDict["&system"].keys()):
 			return enshift,floatdos,floatdosDOWN
 		else:
 			return __smoothGauss(enshift),__smoothGauss(floatdos),__smoothGauss(floatdosDOWN)
@@ -3538,10 +3538,10 @@ def dos(calcs,yLim=[-10,10],runlocal=False,postfix=''):
 	'''
 
 	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			__dosPlot(oneCalc,ID,yLim,postfix=postfix)
 	else:
-		for ID,oneCalc in calcs.iteritems():
+		for ID,oneCalc in list(calcs.items()):
 			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__dosPlot(oneCalc,ID,[%s,%s],postfix='%s')" % (yLim[0],yLim[1],postfix))
 
 
@@ -3568,7 +3568,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	try:
             if TB==True:
 		    fermi_ID = '%s_WanT_dos'%calcID
-		    print fermi_ID
+		    print(fermi_ID)
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,fermi_ID,directID=True)
             else:
 		    Efermi=AFLOWpi.retr._getEfermi(oneCalc,ID)
@@ -3577,7 +3577,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 	except:
 		Efermi=0.0
 
-	print 'Efermi/HOMO-LUMO = %s' % Efermi
+	print(('Efermi/HOMO-LUMO = %s' % Efermi))
 
         try:
             ax2=ax[speciesNum]
@@ -3610,7 +3610,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
 	def getPlotData(sumpdosFile):
 		with open(sumpdosFile,'rb') as dataFile:
-			data = cPickle.load(dataFile)
+			data = pickle.load(dataFile)
 
 		en = []
 		pdos = []
@@ -3625,18 +3625,18 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
                                     ldos.append(float(data[i][1]))
                                     pdos.append(float(data[i][2]))
                                     ldosDOWN.append(-1*float(data[i][2]))
-			except Exception, e:
+			except Exception as e:
 				pass
 
 
-		endos=map(float,en)  #to convert the list x from float to numbers
-		floatdos=map(float,ldos)
-		floatdosDOWN=map(float,ldosDOWN)
+		endos=list(map(float,en))  #to convert the list x from float to numbers
+		floatdos=list(map(float,ldos))
+		floatdosDOWN=list(map(float,ldosDOWN))
 		enshift = numpy.array(endos) #to treat the list b as an array?
 
 
 		inDict=AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
-		if "degauss" in inDict["&system"].keys() or TB==True:
+		if "degauss" in list(inDict["&system"].keys()) or TB==True:
 
 			return enshift,floatdos,floatdosDOWN
 		else:
@@ -3779,7 +3779,7 @@ def opdos(calcs,yLim=[-10,10],runlocal=False,postfix='',scale=False,tight_bindin
 
 	'''
 
-	for ID,oneCalc in calcs.iteritems():	
+	for ID,oneCalc in list(calcs.items()):	
 		if runlocal:
 			AFLOWpi.plot.__opdos(oneCalc,ID,yLim,postfix=postfix,scale=scale,tight_binding=tight_binding)
 		else:
@@ -3808,7 +3808,7 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
         atomList=[]
 	atomPlotArray = collections.OrderedDict()
 	perSpecies = collections.OrderedDict()
-        for k,v in oneCalc.iteritems():
+        for k,v in list(oneCalc.items()):
                 if re.match(r'_AFLOWPI_[A-Z][0-9]*_',k):
                         atomList.append(v)
 
@@ -3868,7 +3868,7 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False):
 
 		atomAxisArray.update({species:ax})
 
-        for species,ax in atomAxisArray.iteritems():
+        for species,ax in list(atomAxisArray.items()):
             for ax in fig.get_axes():
 
                 ax.axes.set_ylim([1.05*old_low,1.05*old_high])

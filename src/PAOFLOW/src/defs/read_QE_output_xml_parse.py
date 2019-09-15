@@ -43,7 +43,7 @@ def read_QE_output_xml(fpath,verbose,non_ortho):
             if elem.tag == "CELL":
                 alatunits  = elem.findall("LATTICE_PARAMETER")[0].attrib['UNITS']
                 alat   = float(elem.findall("LATTICE_PARAMETER")[0].text.split()[0])
-                if rank == 0 and verbose: print("The lattice parameter is: alat= {0:f} ({1:s})".format(alat,alatunits))
+                if rank == 0 and verbose: print(("The lattice parameter is: alat= {0:f} ({1:s})".format(alat,alatunits)))
 
                 aux=elem.findall("DIRECT_LATTICE_VECTORS/a1")[0].text.split()
                 a1=np.array(aux,dtype="float32")
@@ -76,7 +76,7 @@ def read_QE_output_xml(fpath,verbose,non_ortho):
                 k1=int(elem.findall("MONKHORST_PACK_OFFSET")[0].attrib['k1'])
                 k2=int(elem.findall("MONKHORST_PACK_OFFSET")[0].attrib['k2'])
                 k3=int(elem.findall("MONKHORST_PACK_OFFSET")[0].attrib['k3'])
-                if rank == 0 and verbose: print('Monkhorst&Pack grid',nk1,nk2,nk3,k1,k2,k3)
+                if rank == 0 and verbose: print(('Monkhorst&Pack grid',nk1,nk2,nk3,k1,k2,k3))
                 elem.clear()
 
             # number of atoms
@@ -97,30 +97,30 @@ def read_QE_output_xml(fpath,verbose,non_ortho):
 
         if event == 'end' and  elem.tag == "HEADER":
             nkpnts = int(elem.findall("NUMBER_OF_K-POINTS")[0].text.strip())
-            if rank == 0 and verbose: print('Number of kpoints: {0:d}'.format(nkpnts))
+            if rank == 0 and verbose: print(('Number of kpoints: {0:d}'.format(nkpnts)))
 
             nspin  = int(elem.findall("NUMBER_OF_SPIN_COMPONENTS")[0].text.split()[0])
             dftSO = False
             if nspin == 4:
                 nspin = 1
                 dftSO = True
-            if rank == 0 and verbose: print('Number of spin components: {0:d}'.format(nspin))
+            if rank == 0 and verbose: print(('Number of spin components: {0:d}'.format(nspin)))
             nelec = float(elem.findall("NUMBER_OF_ELECTRONS")[0].text.split()[0])
             nelec = int(nelec)
-            if rank == 0 and verbose: print('Number of electrons: {0:d}'.format(nelec))
+            if rank == 0 and verbose: print(('Number of electrons: {0:d}'.format(nelec)))
 
             kunits = elem.findall("UNITS_FOR_K-POINTS")[0].attrib['UNITS']
 
             nbnds  = int(elem.findall("NUMBER_OF_BANDS")[0].text.split()[0])
-            if rank == 0 and verbose: print('Number of bands: {0:d}'.format(nbnds))
+            if rank == 0 and verbose: print(('Number of bands: {0:d}'.format(nbnds)))
 
             aux    = elem.findall("UNITS_FOR_ENERGY")[0].attrib['UNITS']
 
             Efermi = float(elem.findall("FERMI_ENERGY")[0].text.split()[0])*Ry2eV
-            if rank == 0 and verbose: print('Fermi energy: {0:f} eV '.format(Efermi))
+            if rank == 0 and verbose: print(('Fermi energy: {0:f} eV '.format(Efermi)))
 
             nawf   =int(elem.findall("NUMBER_OF_ATOMIC_WFC")[0].text.split()[0])
-            if rank == 0 and verbose: print('Number of atomic wavefunctions: {0:d}'.format(nawf))
+            if rank == 0 and verbose: print(('Number of atomic wavefunctions: {0:d}'.format(nawf)))
 
 
             elem.clear()

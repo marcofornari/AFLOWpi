@@ -47,10 +47,10 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     paopy_input = 'inputfile.xml'
     try:
         command = '%s python %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
-        print command
+        print(command)
         os.system(command)
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
 
 
 def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000):
@@ -194,9 +194,9 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0
         HSP,band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID)
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_path','character',band_path)
         temp_HSP_list=[]
-        for k,v in HSP.iteritems():
+        for k,v in list(HSP.items()):
             tmp = [k]
-            tmp.extend(map(str,v))
+            tmp.extend(list(map(str,v)))
             temp_HSP_list.append(tmp)
 
         HSP_ARRAY= np.asarray(temp_HSP_list)
@@ -266,7 +266,7 @@ def _rename_boltz_files(oneCalc,ID):
         test_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Seebeck_0.dat')
         test_dat  = np.loadtxt(test_file)
         temp = np.unique(test_dat[:,0])
-    except Exception,e: 
+    except Exception as e: 
         return
  
     for T in range(temp.shape[0]):
@@ -290,7 +290,7 @@ def _rename_boltz_files(oneCalc,ID):
             conv_dict['epsr_0.dat']     = '%s_PAOFLOW_epsilon_real.dat'%ID                        
             conv_dict['epsi_0.dat']     = '%s_PAOFLOW_epsilon_imag.dat'%ID                        
 
-        for old,new in conv_dict.iteritems():
+        for old,new in list(conv_dict.items()):
             old_split = old.split('_')
             try:
                 xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
@@ -307,7 +307,7 @@ def _rename_boltz_files(oneCalc,ID):
 
                 np.savetxt(new_path,comb_arr)
 
-            except Exception,e: 
+            except Exception as e: 
                 try:
                     dat = np.loadtxt(old)
                     temp_dat = dat[np.where(dat[:,0]==temp[T])]
@@ -332,8 +332,8 @@ def _get_spin_ordering(oneCalc,ID):
     grouped_l = [list(g) for k, g in itertools.groupby(l_list)] 
     sh = []
     nl = []
-    print grouped_l
-    for i in xrange(len(grouped_l)):
+    print(grouped_l)
+    for i in range(len(grouped_l)):
         sh.append(grouped_l[i][0][1])
         if grouped_l[i][0][1]==0:
             nl.append(len(grouped_l[i])/2)

@@ -54,7 +54,7 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
         num=[0,2,4,6,1,3,5]
@@ -69,7 +69,7 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
             with open(force_file_path,'r') as force_file:
                 force_str=force_file.read()
                 force_out_str+=force_str
-        except Exception,e: print e
+        except Exception as e: print(e)
             
     
     return force_out_str
@@ -104,7 +104,7 @@ def _pull_polarization(oneCalc,ID):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return
     e_pol_split = [float(x.split()[-1]) for x in ele_block.split('\n') if len(x.strip())!=0]
@@ -151,7 +151,7 @@ def _pull_eps_out(oneCalc,ID):
         eps_string=eps_regex.findall(out_string)[-1]
         
         
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return eps_string
@@ -187,7 +187,7 @@ def _pull_born_out(oneCalc,ID):
             born_string+='         %s\n'%num_index
             born_string+=born_charges[i]
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return born_string
@@ -294,19 +294,19 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     #if possibly a metal don't do LOTO
 
-    if 'degauss' not in  in_dict['&system'].keys():
+    if 'degauss' not in  list(in_dict['&system'].keys()):
         pass
     else:
         bandgap_type = AFLOWpi.retr.gap_type(orig_oneCalc,orig_ID)
         if bandgap_type not in ['p-type','n-type','insulator']:
             return
         else:
-            if 'degauss' in in_dict['&system'].keys():
+            if 'degauss' in list(in_dict['&system'].keys()):
                 del in_dict['&system']['degauss']
             else:
                 pass
 
-            if "occupations" in in_dict['&system'].keys():
+            if "occupations" in list(in_dict['&system'].keys()):
                 val=eval(in_dict['&system']['occupations'].lower())
                 if val=="smearing":
                     del in_dict['&system']['occupations']
@@ -320,7 +320,7 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
         num=[0,2,4,6,1,3,5]
@@ -470,7 +470,7 @@ def _fd_field_copy_wfc(oneCalc,ID,root_prefix):
             ext  = one_dirn.split(".")[-1]
             dest = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],oneCalc["_AFLOWPI_PREFIX_"]+"."+ext)
             shutil.copy(one_dirn,dest)
-        except Exception,e:
+        except Exception as e:
             return oneCalc,ID
 
 
@@ -486,7 +486,7 @@ def _fd_field_copy_wfc(oneCalc,ID,root_prefix):
 
         #     if not os.path.exists(dest):
         #         shutil.copytree(dirn,dest)
-        # except Exception,e:
+        # except Exception as e:
         #     print e        
 
     return AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&electrons','startingwfc','"file"')

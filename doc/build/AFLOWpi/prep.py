@@ -1,5 +1,6 @@
 import AFLOWpi
 import numpy
+from functools import reduce
 
 
 def _gen_nosym_kgrid(nk1,nk2,nk3,sk1=0,sk2=0,sk3=0,as_string=False):
@@ -61,7 +62,7 @@ def _get_step(oneCalc,ID,step_type=None,last=True):
 
         occ_list=[]
         current_step_type=workflow[chain_index-1]
-        for i in reversed(range(0,chain_index)):
+        for i in reversed(list(range(0,chain_index))):
 
             if workflow[i]==step_type:
 
@@ -74,8 +75,8 @@ def _get_step(oneCalc,ID,step_type=None,last=True):
             return 0
 
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
         AFLOWpi.run._fancy_error_log(e)
         return 0
         
@@ -130,7 +131,7 @@ import os
 import __main__
 import numpy
 import time
-import ConfigParser
+import configparser
 import glob 
 import sys 
 import re
@@ -170,7 +171,7 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
         if check_function!=None:
             check_function=repr(check_function)
 
-	for ID,oneCalc in calcs.iteritems():
+	for ID,oneCalc in list(calcs.items()):
 
 		oneCalc['__splitCounter__']=0
 
@@ -205,7 +206,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                               
 	'''this is a check to see if we're restarting when mult_jobs==True'''
 	checkBool=False
-	if '__CRAWL_CHECK__' in oneCalc.keys():
+	if '__CRAWL_CHECK__' in list(oneCalc.keys()):
             if oneCalc['__CRAWL_CHECK__']==ID:
                 checkBool=True
 
@@ -216,7 +217,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             chain_index=oneCalc['__chain_index__']
             #		AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',oneCalc['__TEMP__INDEX__COUNTER__'])
             AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',chain_index)
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 	
 	chain_logname='step_%02d'%1
@@ -251,7 +252,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                 pass
 
             newConfigPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CONFIG.config')
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
             config.read(oneCalc['_AFLOWPI_CONFIG_'])
             config.set('prep', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
 
@@ -273,7 +274,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                             qsub_post_trans.write(qsub_string)
 
                         config.set('cluster', 'job_template',qsub_temp_ref) 
-                    except Exception,e:
+                    except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
             with open(newConfigPath,'w') as fileWrite:    
@@ -292,7 +293,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             for task in subset_tasks:                
                 exec(task)
 
-            for ID_sub,oneCalc_sub in calc_subset.iteritems():
+            for ID_sub,oneCalc_sub in list(calc_subset.items()):
                 set_complete_string='''oneCalc['__status__']['Complete']=False
 AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 AFLOWpi.prep._addToBlock(oneCalc_sub,ID_sub,'LOCK',set_complete_string) 
@@ -310,7 +311,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 bn = os.path.basename(oneCalc['_AFLOWPI_FOLDER_'])
                 subset_logs='../../%s/%s/AFLOWpi/calclogs/%s.log'%(bn,subset_name,chain_logname)
                 AFLOWpi.prep._add_subset_to_daemon_log_list([subset_logs],'../AFLOWpi/submission_daemon/log_list.log')
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
                 
 
@@ -319,29 +320,29 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
         else:
             subset_config = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CONFIG.config')
             calc_subset=AFLOWpi.prep.loadlogs(subset_name,'',chain_logname,config=subset_config)
-            logging.debug(calc_subset.keys())
+            logging.debug(list(calc_subset.keys()))
             try:
                 walltime,startScript=AFLOWpi.run._grabWalltime(oneCalc,ID)
             except:
                 pass
             #exit if all calcs are done (needed for local mode)
             try:
-                for k,v in calc_subset.iteritems():
+                for k,v in list(calc_subset.items()):
                     oneCalc_sub=v
                     ID_sub=k
                     break
                 if AFLOWpi.prep._checkSuccessCompletion(oneCalc_sub,ID_sub,faultTolerant=fault_tolerant):
                     return oneCalc,ID
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 #################################################################################################
-        for ID_new,oneCalc_new in calc_subset.iteritems():
+        for ID_new,oneCalc_new in list(calc_subset.items()):
             try:
                 calc_subset[ID_new]['__walltime_dict__']=oneCalc['__walltime_dict__']
                 AFLOWpi.prep._saveOneCalc(oneCalc_new,ID_new)
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 pass
 #################################################################################################            
         if mult_jobs==True:
@@ -355,7 +356,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
         try:
                 last=len(calc_subset)
-                for ID_new,oneCalc_new in calc_subset.items():
+                for ID_new,oneCalc_new in list(calc_subset.items()):
 
                     last-=1 
                     if last==0:
@@ -371,7 +372,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
 
                 sys.exit(0)                    
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             sys.exit(0)
             
@@ -393,7 +394,7 @@ def _return_to_main_pipeline(calc_subset,oneCalc,ID):
     else:
         return
 
-    for new_ID,new_oneCalc in calc_subset.iteritems():
+    for new_ID,new_oneCalc in list(calc_subset.items()):
         subset_qsub_file= os.path.join(new_oneCalc['_AFLOWPI_FOLDER_'],'_%s.qsub'%new_ID)
         if os.path.exists(subset_qsub_file):
             with open(subset_qsub_file,'w') as subset_qsub_file_obj:
@@ -420,7 +421,7 @@ import AFLOWpi
 import numpy
 import os
 import subprocess
-import StringIO
+import io
 import re
 import copy
 
@@ -470,7 +471,7 @@ class isotropy():
             
 
             self.qe   = self.convert()
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             pass
 #        self.a
@@ -557,7 +558,7 @@ class isotropy():
         ISODATA = os.path.join(AFLOWpi.__path__[0],'ISOTROPY')
         os.putenv('ISODATA',ISODATA+'/') 
 
-        for centering,in_str in in_dict.iteritems():
+        for centering,in_str in list(in_dict.items()):
 
 
             findsym_path = os.path.join(ISODATA,'findsym')
@@ -571,7 +572,7 @@ class isotropy():
 
 
             except:
-                print find_sym_process.returncode
+                print((find_sym_process.returncode))
 
             return output
 
@@ -627,8 +628,8 @@ class isotropy():
                 prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
             try:
                 prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 raise SystemExit
 
         
@@ -654,7 +655,7 @@ class isotropy():
 #        print self.iso_basis.dot(self.iso_conv)
         
         prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
-        prim_abc=map(float,prim_abc)
+        prim_abc=list(map(float,prim_abc))
 #        print prim_abc
 
 #        self.iso_conv[0]*=prim_abc[0]
@@ -893,7 +894,7 @@ class isotropy():
 
 
         else:
-            print 'SG num not found:',self.sgn
+            print(('SG num not found:',self.sgn))
             raise SystemExit
 
 
@@ -986,7 +987,7 @@ class isotropy():
         z_loc =  loop_list.index('_atom_site_fract_z')
 
 
-        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if len(x.strip())!=0]
+        positions = [list(map(str.strip,x.split())) for x in  atom_pos[1].split('\n') if len(x.strip())!=0]
 
         pos_array=numpy.zeros((len(positions),3))
 
@@ -1003,7 +1004,7 @@ class isotropy():
         labels = labels*len(operations)
         all_eq_pos=numpy.zeros((pos_array.shape[0]*operations.shape[0],3))
 
-        for i in xrange(operations.shape[0]):
+        for i in range(operations.shape[0]):
             pos_copy=numpy.copy(pos_array)
             temp_pos   = pos_copy.dot(operations[i])
 
@@ -1033,7 +1034,7 @@ class isotropy():
 
 
         atm_pos_str=""
-        for i in xrange(all_eq_pos.shape[0]):
+        for i in range(all_eq_pos.shape[0]):
             atm_pos_str+= ('%3.3s'% labels_arr[i]) +(' % 9.9f % 9.9f % 9.9f '%tuple(all_eq_pos[i].tolist()))+"\n"
 
 
@@ -1149,7 +1150,7 @@ class tight_binding:
         self.step_counter+=1
 
         calc_type='Calculate optical with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        print(('                 %s'% (calc_type)))
 
 
 
@@ -1194,7 +1195,7 @@ class tight_binding:
 
 			calc_type='Transport Properties at %sK' % temperature[temp_index]
 #			print '\nADDING TB STEP : %s'% (calc_type)
-			print AFLOWpi.run._colorize_message('\nADDING TB STEP: ',level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+			print((AFLOWpi.run._colorize_message('\nADDING TB STEP: ',level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 			## no temperature parameter for WanT bands so only run 
 			## it once if run_bands=True in the input the method.
 
@@ -1222,13 +1223,13 @@ class tight_binding:
         self.step_counter+=1
 
         calc_type='Calculate DOS with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        print(('                 %s'% (calc_type)))
         if projected==True:
             calc_type='Calculate PDOS with PAO-TB Hamiltonian'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
         if fermi_surface==True:
             calc_type='Generate Fermi Surface data with PAO-TB Hamiltonian'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
     def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True):
 
@@ -1247,19 +1248,19 @@ class tight_binding:
         self.step_counter+=1
 
         calc_type='Calculate bands with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        print(('                 %s'% (calc_type)))
 
 
     def effmass(self,temperature=[300.0,300.0],step=1):
 
         if self.cond_bands!=True:
-            print 'CANNOT DO EFFECTIVE MASS WITHOUT CONDUCTION BANDS. SKIPPING EFFECTIVE MASS CALC'
+            print('CANNOT DO EFFECTIVE MASS WITHOUT CONDUCTION BANDS. SKIPPING EFFECTIVE MASS CALC')
             return
 
 	AFLOWpi.prep.addToAll_(self.calcs,'PREPROCESSING','AFLOWpi.scfuj.want_eff_mass_prep(oneCalc,ID)')
 
         calc_type='Calculate Effective Mass with PAO-TB Hamiltonian'
-        print '                 %s'% (calc_type)
+        print(('                 %s'% (calc_type)))
 
 
 #if oneCalc["__execCounter__"]<%s
@@ -1295,8 +1296,8 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
         atomic_proj_dat = os.path.join(save_dir,'atomic_proj.dat')
         shutil.copy(data_file_dft,TB_dir)
         shutil.copy(atomic_proj_dat,TB_dir)
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
 
 
 def _run_want_bands(__submitNodeName__,oneCalc,ID,num_points=1000,cond_bands=True,compute_ham=False,proj_thr=0.95,proj_sh=5.5):
@@ -1314,7 +1315,7 @@ def _run_want_bands(__submitNodeName__,oneCalc,ID,num_points=1000,cond_bands=Tru
 
 
 
-    for want_ID,want_calc in want_dict.iteritems():
+    for want_ID,want_calc in list(want_dict.items()):
         AFLOWpi.run._oneRun(__submitNodeName__,want_calc,want_ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./want_bands.x',)
 
     AFLOWpi.prep._clean_want_bands(oneCalc,ID)
@@ -1353,7 +1354,7 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
 
 
 
-    if '__effmass_counter__' not in oneCalc.keys():
+    if '__effmass_counter__' not in list(oneCalc.keys()):
         #if an old effective mass data file exists delete it before we start
         effmass_datafile_by_temp = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_WanT_effmass.dat'%ID)
         if os.path.exists(effmass_datafile_by_temp):
@@ -1390,7 +1391,7 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
 
         want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,k_grid=k_grid,pdos=False,boltzmann=False,eShift=eShift,cond_bands=True,temperature=temps[temp_step])
         this_temp = '%8.4f ' % float(temps[temp_step])
-        for want_dos_ID,want_dos in want_dos_calc.iteritems():
+        for want_dos_ID,want_dos in list(want_dos_calc.items()):
             AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,engine='espresso',calcType='custom',execPath='./effmass.x',execPrefix=execPrefix,execPostfix='')
 
             effmass_datafile = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.dat'%want_dos_ID)
@@ -1416,8 +1417,8 @@ def _run_want_eff_mass(__submitNodeName__,oneCalc,ID,temperature=[0,800],step=10
                                 emass = numpy.float64(data_by_line[data_line].strip('\n').split()[-1])
 
 
-                            except Exception,e:
-                                print e
+                            except Exception as e:
+                                print(e)
                                 continue
                             line_write = this_temp + data_by_line[data_line].strip('\n')+'\n'#+' %s\n'%(N_s)
                             emdfo.write(line_write)
@@ -1444,7 +1445,7 @@ def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,pro
     want_dos_calc = AFLOWpi.scfuj.WanT_dos(oneCalc,ID,energy_range=dos_range,k_grid=k_grid,pdos=project,boltzmann=False,num_e=num_e,eShift=proj_sh,cond_bands=cond_bands,fermi_surface=fermi_surface,compute_ham=compute_ham,proj_thr=proj_thr,)
 
 
-    for want_dos_ID,want_dos in want_dos_calc.iteritems():
+    for want_dos_ID,want_dos in list(want_dos_calc.items()):
         AFLOWpi.run._oneRun(__submitNodeName__,want_dos,want_dos_ID,engine='espresso',calcType='custom',execPath='./want_dos.x',execPrefix=execPrefix,execPostfix='')
 
         if project==True:
@@ -1456,7 +1457,7 @@ def _run_want_dos(__submitNodeName__,oneCalc,ID,dos_range=[-6,6],k_grid=None,pro
             else:
                 AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
 
-    if len(want_dos_calc.keys())>1:
+    if len(list(want_dos_calc.keys()))>1:
         AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
 
 
@@ -1508,7 +1509,7 @@ def _convert_tb_pdos(oneCalc,ID,spin=0):
                     rename_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],rename)
                     #finally we rename it
                     os.rename(orig_path, rename_path)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1573,7 +1574,7 @@ class tb_plotter:
             AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Orbital Projected DOS of PAO-TB Representation'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
 
 	def transport(self,runlocal=False,postfix='',x_range=None):
@@ -1596,7 +1597,7 @@ class tb_plotter:
 		AFLOWpi.plot.transport_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
 		
 		calc_type='Plot Optical and Transport properties'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 
 	def optical(self,runlocal=False,postfix='',x_range=None):
@@ -1620,7 +1621,7 @@ class tb_plotter:
 		AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=x_range)
 		
 		calc_type='Plot Optical  properties'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 
 
@@ -1632,7 +1633,7 @@ class tb_plotter:
                     calc_type+=' with Density of States'
             if DOSPlot=='APDOS':
                     calc_type+=' with APDOS'
-            print '                 %s'% (calc_type)
+            print(('                 %s'% (calc_type)))
 
 	def dos(self,yLim=[-5,5],runlocal=False,postfix=''):
             pass
@@ -1649,12 +1650,12 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
             errorList = re.findall(r'from (.*) : error #.*\n',outfile)
             if len(errorList) > 0:        
                 logging.error("Error in %s.out -- ABORTING ACBN0 LOOP"%ID)
-                print "Error in %s.out -- ABORTING ACBN0 LOOP"%ID                    
+                print(("Error in %s.out -- ABORTING ACBN0 LOOP"%ID))                    
                 raise SystemExit
 
 
 
-        if '__runList__' not in oneCalc.keys():
+        if '__runList__' not in list(oneCalc.keys()):
             oneCalc['__runList__']=[]
 
             
@@ -1665,7 +1666,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
 		try:
 			config = AFLOWpi.prep._getConfigFile()
 			AFLOWpi.prep._forceGlobalConfigFile(config)
-		except Exception,e:
+		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1701,7 +1702,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
                         execPostfixPrime=re.sub(r'npool[s]*\s*(?:\d*)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1725,11 +1726,11 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
                 nscf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],nscf_ID)                
                 '''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
                 nscf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
-            except Exception,e:
+            except Exception as e:
                 try:
                     nscf_calc,nscf_ID= AFLOWpi.scfuj.nscf_nosym_noinv(oneCalc,ID,kpFactor=1.50,unoccupied_states=unoccupied_bands)	
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1746,7 +1747,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,unoccupied_bands=True,config=
                         execPostfixPrime=re.sub(r'npool\s*(?:\d+)','npool %s'%npool,execPostfix)
                         logging.debug(execPostfixPrime)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
@@ -1875,7 +1876,7 @@ def _clean_want_bands(oneCalc,ID):
             include.append(True)
         except:
             pass
-    print include
+    print(include)
     #    print print_out
     output_path_string+='%s %s' %(path_name[-1],0)+'\n' 
     
@@ -1917,7 +1918,7 @@ def _clean_want_bands(oneCalc,ID):
             
         ret_data.append(final_data)
         want_bands_data_path_new = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],want_bands_data_path[:-4]+'_cleaned.dat')
-        print want_bands_data_path_new
+        print(want_bands_data_path_new)
 #        want_bands_data_path_new=want_bands_data_path
         with open(want_bands_data_path_new,'w') as in_file_obj:
             in_file_obj.write(final_data)
@@ -1927,7 +1928,7 @@ def _clean_want_bands(oneCalc,ID):
 import shelve
 import os
 import datetime
-import cPickle
+import pickle
 import logging 
 import collections
 import AFLOWpi
@@ -1935,10 +1936,10 @@ import re
 import subprocess
 import string
 import decimal
-import StringIO
+import io
 import random
 import shutil
-import ConfigParser
+import configparser
 import sys
 import AFLOWpi.qe
 import __main__
@@ -1946,7 +1947,7 @@ import numpy
 import glob
 import time
 import multiprocessing
-import Queue
+import queue
 import copy
 import AFLOWpi.plot
 import functools
@@ -1979,13 +1980,13 @@ def _check_lock(func,oneCalc,ID,*args,**kwargs):
 
 	'''
 
-	if 'override_lock' in kwargs.keys():
+	if 'override_lock' in list(kwargs.keys()):
 		
 		return oneCalc,ID
         try:
             if ID in oneCalc['prev']:
                 return False,False
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         new_ID=ID
@@ -1996,7 +1997,7 @@ def _check_lock(func,oneCalc,ID,*args,**kwargs):
             f=ID
             new_calcs={}
             output_calcs = {}
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2072,7 +2073,7 @@ def _lock_transform(oneCalc,ID):
         try:
             if ID in oneCalc['prev']:
                 return oneCalc,ID
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         subdir=oneCalc['_AFLOWPI_FOLDER_']
@@ -2131,7 +2132,7 @@ def _resolveEqualities(inputString):
 
 
     #search for the pattern
-    equalities = re.findall(ur'===[^,\n]*===',inputString)
+    equalities = re.findall(r'===[^,\n]*===',inputString)
     allvars={}
     #get a all the variables and their values into a dictionary
 
@@ -2144,13 +2145,13 @@ def _resolveEqualities(inputString):
             evalResult=eval(replacement[3:-3])
             replacementEval = str(evalResult)
             equalDict[replacement]=replacementEval
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
-    for orig,replacement in equalDict.iteritems():
+    for orig,replacement in list(equalDict.items()):
         try:
             inputString = re.sub(re.escape(orig),replacement,inputString)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2254,7 +2255,7 @@ def _cleanInputStringSCF(inputString,convert=True):
                     if speciesSplit not in speciesSortList:
                         speciesSortList.append(speciesSplit)
         
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         
@@ -2266,13 +2267,13 @@ def _cleanInputStringSCF(inputString,convert=True):
         try:
             cleanedInputString = atomicSpecRegex.sub(r'%s\n' % testDictString,inputString)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
         try:
            cleanedInputString = re.sub(r'ntyp\s*=\s*\d+','ntyp = %s' % len(speciesSortList),cleanedInputString)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         atomicPosRegex =  AFLOWpi.qe.regex.atomic_positions(cleanedInputString,'content','regex')
@@ -2284,7 +2285,7 @@ def _cleanInputStringSCF(inputString,convert=True):
             posList=posList.split('\n')
 
             
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         try:
@@ -2303,8 +2304,8 @@ def _cleanInputStringSCF(inputString,convert=True):
         for entry in range(len(posList)):
             try:
                 posList[entry]=' '.join([x.rstrip() for x in  posList[entry].split()])
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
 
         posListNew = []
         
@@ -2393,7 +2394,7 @@ def _parseRef(refFile,dictFlag=False):
                     refFileSplit['ATOMIC_SPECIES']['__content__'] = speciesSplit
         
                
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 	######################
@@ -2425,7 +2426,7 @@ def _parseRef(refFile,dictFlag=False):
 	###################
 
         refFileSplit = AFLOWpi.retr._splitInput(refFile)
-        for item in refFileSplit['&system'].keys():
+        for item in list(refFileSplit['&system'].keys()):
             if len(re.findall('celldm',item))!=0:
                 celldm = refFileSplit['&system'][item]
                 refFileSplit['&system'][item] = '%14.12f' % numpy.around(numpy.float(celldm),decimals=5)
@@ -2459,7 +2460,7 @@ def _parseRef(refFile,dictFlag=False):
 
         '''sorting each of the namelists'''
         refFileSplit = AFLOWpi.retr._splitInput(refFile)
-        for namelist,items in refFileSplit.iteritems():
+        for namelist,items in list(refFileSplit.items()):
             
             if '&' in namelist:
                 refFileSplit[namelist]=collections.OrderedDict(sorted(items.items()))
@@ -2539,7 +2540,7 @@ def _parseRef(refFile,dictFlag=False):
 			inputStr+=formattedCONST
 			testDictString+=formattedCONST
 		inDict['_AFLOWPI_CONSTRAINTS_']=testDictString
-	except Exception,e:
+	except Exception as e:
 		pass
 
 	###################
@@ -2610,7 +2611,7 @@ def _transformParamsInput(inputString):
 
     CELL_PARAM_FLAG=False
 
-    if 'CELL_PARAMETERS' in inputDict.keys():
+    if 'CELL_PARAMETERS' in list(inputDict.keys()):
         cellParamMatrix = AFLOWpi.retr._cellStringToMatrix(inputDict['CELL_PARAMETERS']['__content__'])
         cellParamRegex = AFLOWpi.qe.regex.cell_parameters('','content','regex')
 
@@ -2623,11 +2624,11 @@ def _transformParamsInput(inputString):
                 cellParamMatrix*=1/0.529177249
 
             else:
-                if 'a' in inputDict['&system'].keys():
+                if 'a' in list(inputDict['&system'].keys()):
                     mult = float(inputDict['&system']['a'])
                 elif paramUnits=='angstrom':
                     mult=1/0.529177249
-                elif 'celldm(1)' in inputDict['&system'].keys():
+                elif 'celldm(1)' in list(inputDict['&system'].keys()):
                     mult = float(inputDict['&system']['celldm(1)'])
                 else: 
                     mult=1.0
@@ -2666,10 +2667,10 @@ def _transformParamsInput(inputString):
             ibravDict = AFLOWpi.retr._free2celldm(cellParamMatrix)
 	    
 	    
-            for param,value in ibravDict.iteritems():
+            for param,value in list(ibravDict.items()):
                 if param.strip()=='celldm(1)':
                     scaled = str(float(value)/BohrToAngstrom)
-                    if 'a' in inputDict['&system'].keys():
+                    if 'a' in list(inputDict['&system'].keys()):
                         value = str(float(value)/BohrToAngstrom)
                     inputDict['&system'][param]=str(float(value))
                 else:
@@ -2677,28 +2678,28 @@ def _transformParamsInput(inputString):
 
             try:
                 del inputDict['CELL_PARAMETERS']
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
 
             inputString = AFLOWpi.retr._joinInput(inputDict)
 
             return inputString    
 
 
-    elif 'A' in [x.upper() for x in inputDict['&system'].keys()]:
+    elif 'A' in [x.upper() for x in list(inputDict['&system'].keys())]:
         paramDict={}
         A=float(inputDict['&system']['a'])
         paramDict['ibrav']=int(inputDict['&system']['ibrav'])
         inputDictCopy = copy.deepcopy(inputDict)
 
         for param in ['A','B','C','cosAB','cosAC','cosBC']:
-                if param.lower() in inputDict['&system'].keys():
+                if param.lower() in list(inputDict['&system'].keys()):
                     del inputDictCopy['&system'][param.lower()]
                     
         tempDict=collections.OrderedDict()
         for param in ['A','B','C','COSAB','COSAC','COSBC']:
 
-                if param.lower() in inputDict['&system'].keys():
+                if param.lower() in list(inputDict['&system'].keys()):
                     paramFloat = float(inputDict['&system'][param.lower()])
 
 		    param=param.upper()
@@ -2720,7 +2721,7 @@ def _transformParamsInput(inputString):
                     
                     tempDict.update({paramName:paramFloat})
 
-        for k,v in tempDict.iteritems():
+        for k,v in list(tempDict.items()):
             inputDictCopy['&system'][k]=v
 
 
@@ -2730,7 +2731,7 @@ def _transformParamsInput(inputString):
         return inputString    
 
 
-    elif 'celldm(1)' in inputDict['&system'].keys():
+    elif 'celldm(1)' in list(inputDict['&system'].keys()):
         inputDict = AFLOWpi.retr._splitInput(inputString)        
         return AFLOWpi.retr._joinInput(inputDict)
 
@@ -2790,7 +2791,7 @@ def _transformPositionsInput(inputString):
         splitInput['ATOMIC_POSITIONS' ]['__content__'] = outputString
         splitInput['ATOMIC_POSITIONS' ]['__modifier__'] = '{crystal}'
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e) 
 
         return inputString
@@ -2815,7 +2816,7 @@ def _transformInput(inputString):
     '''
     #convert to QE convention
     input_dict = AFLOWpi.retr._splitInput(inputString)
-    if 'CELL_PARAMETERS' in input_dict.keys():
+    if 'CELL_PARAMETERS' in list(input_dict.keys()):
 	    isotropy_obj = AFLOWpi.prep.isotropy(inputString)
 	    inputString = isotropy_obj.convert(ibrav=True)
 	    
@@ -2824,8 +2825,8 @@ def _transformInput(inputString):
 	    positionMatrix = AFLOWpi.retr._getPositions(inputString)
 	    labels = AFLOWpi.retr._getPosLabels(inputString)
 	    pos,flag = AFLOWpi.retr.detachPosFlags(AFLOWpi.qe.regex.atomic_positions(inputString))
-    except Exception,e:
-	    print e
+    except Exception as e:
+	    print(e)
     
 
     
@@ -2962,7 +2963,7 @@ def _getAMass(atom):
             atomMass = mass[atom][0]
 
             return atomMass
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             return 0
 
@@ -3057,7 +3058,7 @@ def writeToScript(executable,calcs,from_step=0):
 
     extension=''
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         new_oneCalc,new_ID = AFLOWpi.prep._writeToScript(executable,oneCalc,ID,from_step=from_step)
     
         new_oneCalc['__status__']=collections.OrderedDict({"Start":False,'Complete':False,"Restart":0,"Error":'None'})    
@@ -3143,7 +3144,7 @@ def _fillTemplate(oneCalc,ID):
             AFLOWpi.prep._addToBlock(oneCalc,ID,'CONFIGFILE',"AFLOWpi.prep._forceGlobalConfigFile(configFile)")
 
         try:
-            if '__submitNodeName__' not in globals().keys():
+            if '__submitNodeName__' not in list(globals().keys()):
                 global __submitNodeName__
                 __submitNodeName__ = socket.gethostname()
 
@@ -3166,9 +3167,9 @@ def _fillTemplate(oneCalc,ID):
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'POSTPROCESSING',"""AFLOWpi.prep._updatelogs(ID,oneCalc,'%s')""" % fileName)
 
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     
@@ -3282,7 +3283,7 @@ def _writeTemplate(finp):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
            
 ####################################################################################################################
@@ -3345,7 +3346,7 @@ def _temp_executable(oneCalc,ID,from_step=0):
 	    
 	    AFLOWpi.prep._writeTemplate(finp)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     logging.debug("EXITING _temp_executable")
@@ -3447,7 +3448,7 @@ def _addToAll(calcs,block=None,addition=None):
 
     if block==None or addition==None:
         return
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         AFLOWpi.prep._addToBlock(oneCalc,ID,block,addition)    
 
 
@@ -3483,14 +3484,14 @@ def _addToBlock(oneCalc,ID,block,addition):
                 newText = r'%s\n#END_%s_BLOCK' % (insert,block)
                 newinputfile  =  re.sub('#END_'+block+'_BLOCK',newText, inputFileText,re.MULTILINE)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         try:
             with open(os.path.join(subdir,'_'+ID+'.py'),'w') as outfileObj:
                 outfileObj.write(newinputfile)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
     logging.debug('exiting _addToBlock')    
@@ -3553,7 +3554,7 @@ def _writeToScript(executable,oneCalc,ID,from_step=0):
         try:
             nextIDName,nextCalcName = AFLOWpi.prep._getNextOneCalcVarName(oneCalc,ID)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         try:
@@ -3615,7 +3616,7 @@ oneCalc['__chain_index__']=%d
             AFLOWpi.prep._addToBlock(new_oneCalc,new_ID,'LOADCALC',tryLoadStr)
             AFLOWpi.prep._addToBlock(oneCalc,new_ID,'IMPORT','globals()["__TEMP__INDEX__COUNTER__"]=%s'%from_step)
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             
 
@@ -3698,7 +3699,7 @@ def _checkSuccessCompletion(oneCalc,ID,faultTolerant=True):
 
 
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         logging.debug('status of %s: %s is: %s' % (oneCalc['_AFLOWPI_INDEX_'],ID,oneCalc['__status__']['Complete']))
         if oneCalc['__status__']['Complete']==False:
             if faultTolerant==True:
@@ -3746,7 +3747,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 %s
          try:
             calcs = AFLOWpi.prep._loadCalcsFromOneCalc(oneCalc,ID)
-         except Exception,e:
+         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -3801,33 +3802,34 @@ def _crc64digest(aString):
     CRCTableh = [0] * 256
     CRCTablel = [0] * 256
     def _inittables(CRCTableh, CRCTablel, POLY64REVh, BIT_TOGGLE):
-            for i in xrange(256):
+            for i in range(256):
                     partl = i
-                    parth = 0L
-                    for j in xrange(8):
-                            rflag = partl & 1L
-                            partl >>= 1L
+                    parth = 0
+                    for j in range(8):
+                            rflag = partl & 1
+                            partl >>= 1
                             if parth & 1:
                                     partl ^= BIT_TOGLE
-                            parth >>= 1L
+                            parth >>= 1
                             if rflag:
                                     parth ^= POLY64REVh
                     CRCTableh[i] = parth
                     CRCTablel[i] = partl
     # first 32 bits of generator polynomial for CRC64 (the 32 lower bits are
     # assumed to be zero) and bit-toggle mask used in _inittables
-    POLY64REVh = 0xd8000000L
-    BIT_TOGGLE = 1L << 31L
+    POLY64REVh = 0xd8000000
+    BIT_TOGGLE = 1 << 31
     # run the function to prepare the tables
     _inittables(CRCTableh, CRCTablel, POLY64REVh, BIT_TOGGLE)
     # remove all names we don't need any more, including the function
     del _inittables, POLY64REVh, BIT_TOGGLE
     # this module exposes the following two functions: crc64, crc64digest
-    def crc64(bytes, (crch, crcl)=(0,0)):
+    def crc64(bytes, xxx_todo_changeme=(0,0)):
+            (crch, crcl) = xxx_todo_changeme
             for byte in range(len(bytes)):
                     shr = (crch & 0xFF) << 24
-                    temp1h = crch >> 8L
-                    temp1l = (crcl >> 8L) | shr
+                    temp1h = crch >> 8
+                    temp1l = (crcl >> 8) | shr
                     tableindex = (crcl ^ ord(bytes[byte])) & 0xFF 
                     crch = temp1h ^ CRCTableh[tableindex]
                     crcl = temp1l ^ CRCTablel[tableindex]
@@ -3855,12 +3857,12 @@ def cleanCalcs(calcs,runlocal=False):
     '''
 
     try:
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             if runlocal:
                 AFLOWpi.retr._cleanCalcs(ID,oneCalc)
             else:
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'CLEANUP','AFLOWpi.prep._cleanCalcs(ID,oneCalc)')
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 def _cleanCalcs(ID,oneCalc):
@@ -3950,7 +3952,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                     raise SystemExit
 
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -3972,8 +3974,8 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
                     prevID_str=prev_calc
                     break
-                except Exception,e:
-			print e
+                except Exception as e:
+			print(e)
 			pass
 
             bandsKRegex = AFLOWpi.qe.regex.k_points('','content','regex')
@@ -4003,7 +4005,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 					total+=1
 #				splitPath.append([coords,num,letter])
 			
-#			except Exception,e:
+#			except Exception as e:
 #				print e
 #				pass
 #			[x.split()[0],int(x.split()[1])] for x in  
@@ -4019,7 +4021,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                 scaleFactor = float(nk)/total
 
 		path = AFLOWpi.retr._getPath(dk/scaleFactor,oneCalc,ID=prevID_str)
-		print path
+		print(path)
 		
 
             inputSplit=AFLOWpi.retr._splitInput(inputfile)
@@ -4052,7 +4054,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 	    oneCalc['_AFLOWPI_INPUT_'] = inputfile
 
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             logging.error("%s not in %s" % (ID,oneCalc['_AFLOWPI_FOLDER_']))
             
@@ -4190,7 +4192,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
         logging.debug('Entering makeAFLOWpitree')
         megahashStr=''
-        for ID in calcs.keys():
+        for ID in list(calcs.keys()):
             megahashStr+=ID
             __MASTER__KEY__ = AFLOWpi.prep._crc64digest(megahashStr)
 
@@ -4211,21 +4213,21 @@ def maketree(calcs, pseudodir=None,workdir=None):
             configFileName = AFLOWpi.prep._getConfigFile()
 
             topdir=''
-            for ID,oneCalc in calcs.iteritems():
+            for ID,oneCalc in list(calcs.items()):
                 topdir = os.path.abspath(os.path.join(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_'])))
                 break
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         printFlag=1
         if len(calcs)>10:
                 printFlag=0
-                print "Writing input files to directory tree"
+                print("Writing input files to directory tree")
 
 
 
         counter=0
-        for k,v in calcs.iteritems():
+        for k,v in list(calcs.items()):
             try:
                     # create the subdir under topdir
                     counter += 1
@@ -4239,7 +4241,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
 
                     """Get name of logfile for this calc"""
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e) 
 
 #        if build==False:
@@ -4248,7 +4250,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
             
         else:
 
-            for k,v in calcs.iteritems():
+            for k,v in list(calcs.items()):
                 try:
 
                         ddir=v["_AFLOWPI_FOLDER_"]
@@ -4267,13 +4269,13 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                         calcs[k]['_AFLOWPI_FOLDER_']=ddir
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e) 
 
                 try:
                     finp = os.path.join(ddir,'_'+k)+'.py'
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e) 
 
                 try:
@@ -4288,20 +4290,20 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                     configFile= AFLOWpi.prep._getConfigFile()
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e) 
 
                 try:
                     clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').upper()
                     if clusterType in ['PBS','UGE']:
                         AFLOWpi.run._qsubGen(v,k)
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 
                 # copy the pseudo file
                 if pseudodir != None:
-                        for l,m in v.iteritems():
+                        for l,m in list(v.items()):
                                 if re.search(r'_AFLOWPI_[A-Z]\d*PSEUDO_',l):
                                     try:
                                                 a = os.path.join(pseudodir,m)
@@ -4316,14 +4318,14 @@ def maketree(calcs, pseudodir=None,workdir=None):
                                                     if os.path.exists(os.path.join(pseudodir,m)):
                                                         try:
                                                             os.symlink(os.path.join(pseudodir,m),os.path.join(v['_AFLOWPI_FOLDER_'],m))
-                                                        except OSError,e:
+                                                        except OSError as e:
                                                             try:
                                                                 os.unlink(os.path.join(v['_AFLOWPI_FOLDER_'],m))
                                                                 os.symlink(os.path.join(pseudodir,m),os.path.join(v['_AFLOWPI_FOLDER_'],m))
                                                             except:
-                                                                print m
-                                                        except Exception,e:
-                                                            print e
+                                                                print(m)
+                                                        except Exception as e:
+                                                            print(e)
                                                     else:
                                                         logging.error('Count not find %s check if your pseudodir in config is properly set' % os.path.join(pseudodir,m))
                                                     
@@ -4334,15 +4336,15 @@ def maketree(calcs, pseudodir=None,workdir=None):
                                                     if not os.path.exists(os.path.join(ddir,m)):
                                                         shutil.copy(a, ddir) 
                                     except IOError as e:
-                                        print e
+                                        print(e)
                                         logging.critical(e)
                                     except AttributeError as e:
-                                        print e
+                                        print(e)
                                         logging.critical(e)	
 
                                     
         '''saving the first set of calcs so they can be loaded by the script when the first calcs start'''
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
 #            oneCalc_file_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc'%ID)
 #            if not os.path.exists(oneCalc_file_name):
 #		    AFLOWpi.prep._saveOneCalc(oneCalc,ID)
@@ -4380,9 +4382,9 @@ def totree(tobecopied, calcs,rename=None,symlink=False):
 	logging.debug("Entering totree")
 
         try:
-            topdir = os.path.abspath(os.path.dirname(calcs[random.choice(calcs.keys())]['_AFLOWPI_FOLDER_']))
+            topdir = os.path.abspath(os.path.dirname(calcs[random.choice(list(calcs.keys()))]['_AFLOWPI_FOLDER_']))
             
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             
 	printBool=1
@@ -4393,7 +4395,7 @@ def totree(tobecopied, calcs,rename=None,symlink=False):
             actualFile = os.path.split(tobecopied)[-1]
         except:
             pass
-	for l,v in calcs.iteritems():
+	for l,v in list(calcs.items()):
 
 		a = v.get('_AFLOWPI_FOLDER_')
                 if rename != None:
@@ -4403,7 +4405,7 @@ def totree(tobecopied, calcs,rename=None,symlink=False):
                 if symlink==True:
                     try:
                         os.symlink(tobecopied,a)
-                    except OSError,e:
+                    except OSError as e:
                         pass
                 else:
                     if printBool:
@@ -4428,15 +4430,15 @@ def totree(tobecopied, calcs,rename=None,symlink=False):
 						shutil.copy(tobecopied, a) 
 					except:
 						pass
-                            except Exception,e:
+                            except Exception as e:
 
 				    AFLOWpi.run._fancy_error_log(e)
 
                     except IOError as e:
-                            print tobecopied+" does not exist in AFLOWpi Directory"
+                            print((tobecopied+" does not exist in AFLOWpi Directory"))
                             logging.error(tobecopied+" does not exist in AFLOWpi Directory")
                             logging.error(e)
-                    except Exception,e:
+                    except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -4455,13 +4457,13 @@ def updatelogs(calcs,logname,runlocal=False):
 
     if logname=='LOG' or logname=='AFLOWKEYS' or logname=='summary':
         logging.warning('calc log name cannot be the same as master log file i.e. LOG,AFLOWKEYS, or summary')
-        print 'calc log name cannot be the same as master log file i.e LOG,AFLOWKEYS, or summary'
+        print('calc log name cannot be the same as master log file i.e LOG,AFLOWKEYS, or summary')
         return
 
 
 
     '''find calclogdir and if it doesn't exist create it (it should exist)'''
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         baseDir=os.path.abspath(os.path.join((os.path.dirname(oneCalc['_AFLOWPI_FOLDER_'])),'AFLOWpi'))
 
         calcLogDir=os.path.join(baseDir,'calclogs')
@@ -4473,7 +4475,7 @@ def updatelogs(calcs,logname,runlocal=False):
     '''write the location of each of the _ID.oneCalc files for all the calcs'''
     log_file_name=os.path.join(calcLogDir,logname+'.log')
     with open(log_file_name,'w') as testLogFile:
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             dname="%s_%s_%04d"%(oneCalc["PROJECT"],oneCalc["SET"],oneCalc["_AFLOWPI_INDEX_"])
             testLogFile.write(os.path.join("../../",dname,'_%s.oneCalc' % ID)+'\n')
 
@@ -4486,7 +4488,7 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
          configFile=config
          if os.path.exists(config)==False:
              logging.info('configuration file: %s does not exist.' % config)
-             print 'configuration file: %s does not exist.' % config
+             print(('configuration file: %s does not exist.' % config))
              raise SystemExit
 
 
@@ -4528,7 +4530,7 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
              if os.path.exists(os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname+'.dat'))==False:
                  if os.path.exists(os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname+'.log'))==False:
                      logging.info('saved calc log: %s does not exist. Check the workdir parameter in your config file as well as project and set of these calcs.' % filename)
-                     print 'saved calc log: %s does not exist. Check the workdir parameter in your config file  as well as project and set of these calcs.' % filename
+                     print(('saved calc log: %s does not exist. Check the workdir parameter in your config file  as well as project and set of these calcs.' % filename))
                      raise SystemExit
              else:
                  filename = os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname)
@@ -4562,10 +4564,10 @@ def _load_log_from_filename(filename):
              '''
              try:
 		     with open(log,'rb') as oneCalcPickleFile:
-			     oneCalc = cPickle.load(oneCalcPickleFile)    
+			     oneCalc = pickle.load(oneCalcPickleFile)    
 
 		     returnCalcs[ID]=oneCalc
-             except Exception,e:
+             except Exception as e:
                  pass
 
          try:
@@ -4581,7 +4583,7 @@ def _load_log_from_filename(filename):
              correctly for the restart in the case of stepsasjobs='false' in the config
              '''
 
-             returnCalcs = collections.OrderedDict(sorted(returnCalcs.iteritems(), key=lambda x: x[1]['_AFLOWPI_INDEX_']))
+             returnCalcs = collections.OrderedDict(sorted(iter(list(returnCalcs.items())), key=lambda x: x[1]['_AFLOWPI_INDEX_']))
              return returnCalcs
          except:
              return returnCalcs
@@ -4604,8 +4606,8 @@ def _updatecalclogs(calcs,inc=True):
             inc=False
 
 
-	baseDir = os.path.dirname(calcs[random.choice(calcs.keys())]['_AFLOWPI_FOLDER_'])
- 	AFLOWpidir = os.path.abspath(os.path.join(os.path.dirname(calcs[random.choice(calcs.keys())]['_AFLOWPI_FOLDER_']),'AFLOWpi'))
+	baseDir = os.path.dirname(calcs[random.choice(list(calcs.keys()))]['_AFLOWPI_FOLDER_'])
+ 	AFLOWpidir = os.path.abspath(os.path.join(os.path.dirname(calcs[random.choice(list(calcs.keys()))]['_AFLOWPI_FOLDER_']),'AFLOWpi'))
 	
 	fc = 'CALCSMASTER.log'
 	
@@ -4629,11 +4631,11 @@ def _updatecalclogs(calcs,inc=True):
 		B = os.path.join(AFLOWpidir, fou)
 		os.rename(A,B)
 		output = open(A,'w')
-		cPickle.dump(calcs,output)
+		pickle.dump(calcs,output)
 		output.close()
 	else:
 		output = open(os.path.join(AFLOWpidir,fc),'w')
-		cPickle.dump(calcs,output)
+		pickle.dump(calcs,output)
 		output.close()
 
 
@@ -4649,12 +4651,12 @@ import socket
 def _saveOneCalc(oneCalc,ID):
 
 		with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID),'wb') as oneCalcPickleFile:
-			oldOneCalc = cPickle.dump(oneCalc,oneCalcPickleFile)    
+			oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile)    
 
 def _loadOneCalc(folder,ID):
 
 	with open(os.path.join(folder,'_%s.oneCalc' % ID),'rb') as oneCalcPickleFile:
-		oldOneCalc = cPickle.load(oneCalcPickleFile)    
+		oldOneCalc = pickle.load(oneCalcPickleFile)    
         try:
             with open(os.path.join(folder,'%s.in' % ID),'r') as inputFileObj:
                 inputFileString = inputFileObj.read()
@@ -4662,7 +4664,7 @@ def _loadOneCalc(folder,ID):
 	    oldOneCalc['_AFLOWPI_FOLDER_']=os.path.abspath(folder)
             oldOneCalc['_AFLOWPI_INPUT_']=inputFileString
             AFLOWpi.prep._saveOneCalc(oldOneCalc,ID)
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 	return oldOneCalc
@@ -4715,7 +4717,7 @@ def _scp_wrapper(from_path,to_path,node=''):
 		 command="ssh -o StrictHostKeyChecking=no %s 'cp -r %s %s/ > /dev/null' > /dev/null"%(node,from_path,to_path) 
 		 os.system(command)
 
-    except Exception,e:
+    except Exception as e:
 	    pass
 
     diff=end-start
@@ -4758,7 +4760,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.paw','.save','.wfc','.hub','.mix'
 
             ext_list=['%s%s' % (prefix,x) for x in ext_list]
 
-        except Exception,e:
+        except Exception as e:
             logging.debug(e)
 
         try:
@@ -4782,7 +4784,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.paw','.save','.wfc','.hub','.mix'
 
 				else:
 					file_name=os.path.join(temp_dir,'%s%s'%(ext_list[ext],proc+1))
-                        except Exception,e:
+                        except Exception as e:
                             continue
 
                         #add this transfer proc to the pool
@@ -4799,7 +4801,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.paw','.save','.wfc','.hub','.mix'
 			if orig_list[ext] in ['.save','.occup','.update','.bgfs',] or first_node_only==True:
 				break
 
-                    except Exception,e:
+                    except Exception as e:
                         logging.debug(e)
                         pass
 
@@ -4807,7 +4809,7 @@ def _from_local_scratch(oneCalc,ID,ext_list=['.paw','.save','.wfc','.hub','.mix'
                 proc_pool.close()
                 proc_pool.join()
 
-        except Exception,e:
+        except Exception as e:
             logging.debug(e)
             pass
 
@@ -4835,7 +4837,7 @@ def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup'
             ext_list=['%s%s' % (prefix,x) for x in ext_list]
 
             logging.info
-        except Exception,e:
+        except Exception as e:
                   logging.debug(e)
 
         try:
@@ -4857,7 +4859,7 @@ def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup'
 						    file_name=os.path.join(work_dir,'%s%s'%(ext_list[ext],proc+1))
 				    else:
 					    file_name=os.path.join(work_dir,'%s%s'%(ext_list[ext],proc+1))
-			    except Exception,e:
+			    except Exception as e:
 				    continue
 
                             #add transfer to pool
@@ -4872,7 +4874,7 @@ def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup'
 			    res = proc_pool.apply_async(AFLOWpi.prep._scp_wrapper, (file_name,temp_dir,proc_by_node[proc])) 
 			    if orig_list[ext] in ['.save','.occup','.update','.bgfs',] or first_node_only==True:
 				    break
-		    except Exception,e:
+		    except Exception as e:
 			    logging.debug(e)
 			    pass
 
@@ -4880,7 +4882,7 @@ def _to_local_scratch(oneCalc,ID,ext_list=['.save','.wfc','.hub','.mix','.occup'
                 proc_pool.close()
                 proc_pool.join()
 
-        except Exception,e:
+        except Exception as e:
             logging.debug(e)
 
 
@@ -4891,7 +4893,7 @@ def _get_tempdir():
         try:
             temp_dir= os.environ['TMPDIR']
             temp_dir= os.environ['TMPDIR']
-        except Exception,e:
+        except Exception as e:
             logging.debug(e)
             temp_dir="./"
         if len(temp_dir.strip())==0:
@@ -4951,11 +4953,11 @@ def build_calcs(PARAM_VARS,build_type='product'):
 
                  logging.info('Creating calculations by zip mode')
 		 outp = "\n*** Creating calculations by zip mode ***\n"
-		 print AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)
+		 print((AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)))
                  CALCS_ITER = it.izip(*PARAM_VARS)
 
              else:
-                     print "ERROR: Parameter lists are of different lengths."
+                     print("ERROR: Parameter lists are of different lengths.")
                      logging.error("ERROR: Parameter lists are of different lengths on zip build mode. Exiting")
                      raise SystemExit
 
@@ -4964,13 +4966,13 @@ def build_calcs(PARAM_VARS,build_type='product'):
 
              logging.info('Creating calculations in product mode')
 	     outp = "\n*** Creating calculations in product mode ***\n"	     
-             print AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)	     
+             print((AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)))	     
 
 
         else:
             
              logging.info('ERROR: Unidentified build mode')
-             print "ERROR: Unidentified build mode"
+             print("ERROR: Unidentified build mode")
              raise SystemExit
 	
 
@@ -5052,7 +5054,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 	PARAM_LABELS = []
 	DICT = collections.OrderedDict()
 
-	for k,v in allAFLOWpiVars.items():
+	for k,v in list(allAFLOWpiVars.items()):
 		if v != None:
 			PARAM_VARS.append(v)
 			PARAM_LABELS.append(k)
@@ -5061,7 +5063,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 	#converts the values in allvars input from floats or ints to strings for processing with re module
         for entry in range(len(PARAM_VARS)): 
 		if len(re.findall(PARAM_LABELS[entry],inputfile))==0:
-			print 'INVALID REF INPUT FILE: KEYWORD %s NOT FOUND. EXITING.' % PARAM_LABELS[entry]
+			print(('INVALID REF INPUT FILE: KEYWORD %s NOT FOUND. EXITING.' % PARAM_LABELS[entry]))
 			raise SystemExit
 		if type(PARAM_VARS[entry][0]) != type(''):
 
@@ -5070,7 +5072,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 			#if the input can't be converted into a string something in the input for that variable 
                         #is wrong and the framework force exits
 			except Exception: 
-				print "ERROR: Type of input for variable %s is invalid. Please check your input." % PARAM_LABELS[entry]
+				print(("ERROR: Type of input for variable %s is invalid. Please check your input." % PARAM_LABELS[entry]))
 				raise SystemExit
         try:
 	    CALCS_ITER = build_calcs(PARAM_VARS,build_type)
@@ -5092,7 +5094,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
             calcs = collections.OrderedDict()
             configFileName = AFLOWpi.prep._getConfigFile()
 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -5108,14 +5110,14 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 				D[key] = v
 				inputfile2 = re.sub(key,v,inputfile2)
 
-                            except Exception,e:
+                            except Exception as e:
                                 AFLOWpi.run._fancy_error_log(e)
 #################################################################################################################### 
                             if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
                                 
                                 #make sure user isn't trying to use an equation for atomic species.
-                                if len(re.findall(ur'===[^,\n]*===',v))!=0:
-                                    print """%s is not an acceptable format for species name. Examples of acceptable format are: 'Ga',"O","Sn",'K'..etc""" % v
+                                if len(re.findall(r'===[^,\n]*===',v))!=0:
+                                    print(("""%s is not an acceptable format for species name. Examples of acceptable format are: 'Ga',"O","Sn",'K'..etc""" % v))
                                     logging.error("""%s is not an acceptable format for species name. Examples of acceptable format are: 'Ga',"O","Sn",'K'..etc""" % v)
 
 
@@ -5124,8 +5126,8 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                                         speciesRe = ''.join([i for i in v if not i.isdigit()])
                                         vp = AFLOWpi.prep._getPseudofilename(speciesRe,pseudodir)
                                         
-                                except Exception,e:
-                                        print 'Could not get Pseudopotential filename for %s from the directory %s' % (v,pseudodir)
+                                except Exception as e:
+                                        print(('Could not get Pseudopotential filename for %s from the directory %s' % (v,pseudodir)))
                                         logging.error('Could not get Pseudopotential filename for %s from the directory %s' % (v,pseudodir))
                                 
                                 try:
@@ -5139,7 +5141,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 
                                     D.update({am:vm,ap:vp})
                                     D.update({'_AFLOWPI_CONFIG_':configFileName})
-                                except Exception,e:
+                                except Exception as e:
                                     AFLOWpi.run._fancy_error_log(e)
 #####################################################################################################################
                         try:
@@ -5166,24 +5168,24 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                             D.update({'_AFLOWPI_INPUT_':inputfile2})
 			    D['__chain_index__']=1
                                 
-                            if calc_label not in calcs.keys():
+                            if calc_label not in list(calcs.keys()):
                                 calcs[calc_label] = copy.deepcopy(D)
 
                             D.clear()
 
-                        except Exception,e:
+                        except Exception as e:
                             AFLOWpi.run._fancy_error_log(e)
 
 	else:
             try:
-		print 'Single calculation: do you need AFLOWpi?'
+		print('Single calculation: do you need AFLOWpi?')
 		logging.info('Single calculation: do you need AFLOWpi?')
 
                 inputfile = AFLOWpi.prep._resolveEqualities(inputfile)
 
                 try:
                     inputfile = AFLOWpi.prep._cleanInputStringSCF(inputfile,convert=convert)
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
 
 		calc_label = AFLOWpi.prep._hash64String(inputfile)
@@ -5208,30 +5210,30 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 
 		DICT.update({'_AFLOWPI_INPUT_':inputfile}) 
 
-                if calc_label not in calcs.keys():
+                if calc_label not in list(calcs.keys()):
                     calcs[calc_label] = copy.deepcopy(DICT)
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
 
-        for k,v in calcs.iteritems():
+        for k,v in list(calcs.items()):
             calcs[k]['prev']= []
             calcs[k]['__calcVarName__']= 'oneCalc'
             calcs[k]['__IDVarName__']= 'ID'
 
         '''delete the "!" for the vacancies'''
         calcsCopy=copy.deepcopy(calcs)
-        for k,v in calcsCopy.iteritems():
+        for k,v in list(calcsCopy.items()):
             oneCalcCopy=copy.deepcopy(v)
-            for l,m in oneCalcCopy.iteritems():
+            for l,m in list(oneCalcCopy.items()):
                 if re.search(r'_AFLOWPI_[A-Z]\d*_',l):
                     if m.strip()=='!':
                         del calcs[k][l]
 
 
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             in_dict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 	    in_dict['&control']['outdir']="'./'"
 	    in_dict['&control']['wfcdir']="'./'"
@@ -5354,8 +5356,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
 					refFileStr = AFLOWpi.prep._removeComments(refFileStr)
 					'''get a dict of the tokenized ref file to fill in the parts missing from the files in filelist'''
-			except Exception,e:
-				print e
+			except Exception as e:
+				print(e)
 				'''if it doesn't work just return a blank dict for the ref file'''
 				refDict=collections.OrderedDict() 
 		try:
@@ -5407,13 +5409,13 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
 	    num_map={}
 	    map_counter=1
-	    for species,num in numOfEachStripped.iteritems():
+	    for species,num in list(numOfEachStripped.items()):
 		    num_map[species]=map_counter
 		    map_counter+=1
 	    
             atomicSpeciesList=[]
 	    element_list=list(string.ascii_uppercase)
-            for species,num in numOfEach.iteritems():
+            for species,num in list(numOfEach.items()):
                 try:
                     strippedSpecies = species.strip("0123456789")
                     numSpecies = species.strip(string.ascii_uppercase+string.ascii_lowercase)
@@ -5433,8 +5435,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                     DICT.update({am:vm,ap:vp,aSpec:species})
                     counter+=1
 
-                except Exception,e:
-			print e
+                except Exception as e:
+			print(e)
 			raise SystemExit
 
 
@@ -5449,12 +5451,12 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                     
 	    do_not_replace_list=['CELLDM(1)','CELLDM(2)','CELLDM(3)','CELLDM(4)','CELLDM(5)','CELLDM(6)','A','B','COSAB','COSAC','COSBC','IBRAV','CALCULATION']
 
-            for namelist,entries in refDict.iteritems():
+            for namelist,entries in list(refDict.items()):
                 try:
-                    if namelist not in inputCalc.keys():
+                    if namelist not in list(inputCalc.keys()):
                         '''if an input namelist from the ref isn't in the input file add it '''
                         inputCalc[namelist]=collections.OrderedDict()
-                    for variable,value in entries.iteritems():
+                    for variable,value in list(entries.items()):
                         #replace entries in input from ref input when both in ref and input
                         #only if we have the ref_override flag set to True.
                         if ref_override == True:
@@ -5462,31 +5464,31 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 					'''if a variable from the namelist in the ref isn't in the input file add it'''
 					inputCalc[namelist][variable]=value
 			else:
-                                if variable not in inputCalc[namelist].keys():
+                                if variable not in list(inputCalc[namelist].keys()):
 					'''don't replace the celldm and A,B,C in the input files with ones from ref'''
 					if variable.upper() not in do_not_replace_list:
 					     inputCalc[namelist][variable]=value
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
 
-            if 'ATOMIC_SPECIES' not in inputCalc.keys() or '__content__' not in inputCalc['ATOMIC_SPECIES'].keys() or inputCalc['ATOMIC_SPECIES']['__content__'].strip()=='':
+            if 'ATOMIC_SPECIES' not in list(inputCalc.keys()) or '__content__' not in list(inputCalc['ATOMIC_SPECIES'].keys()) or inputCalc['ATOMIC_SPECIES']['__content__'].strip()=='':
                 inputCalc['ATOMIC_SPECIES']=collections.OrderedDict()
                 inputCalc['ATOMIC_SPECIES']['__modifier__']=''
 
                 inputCalc['ATOMIC_SPECIES']['__content__']=atomicSpecString
 
-	    if '&system' not in inputCalc.keys():
+	    if '&system' not in list(inputCalc.keys()):
 		    inputCalc['&system']={}
-	    if 'nat' not in inputCalc['&system'].keys():
+	    if 'nat' not in list(inputCalc['&system'].keys()):
 		    nat  = sum(numOfEach.values())
 		    inputCalc['&system']['nat']=nat
-	    if 'ntyp' not in inputCalc['&system'].keys():
-		    ntyp = len(numOfEach.keys())
+	    if 'ntyp' not in list(inputCalc['&system'].keys()):
+		    ntyp = len(list(numOfEach.keys()))
 		    inputCalc['&system']['ntyp']=ntyp
 
-            if '&control' not in inputCalc.keys():
+            if '&control' not in list(inputCalc.keys()):
                 inputCalc['&control']=collections.OrderedDict()
 
             inputCalc['&control']['PSEUDO_DIR']="'./'"
@@ -5495,7 +5497,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             inputCalc['&control']['restart_mode']="'from_scratch'"
 	    
-            if '&electrons' not in inputCalc.keys():
+            if '&electrons' not in list(inputCalc.keys()):
                 inputCalc['&electrons']=collections.OrderedDict()
                 inputCalc['&electrons']['diagonalization']='"david"'
                 inputCalc['&electrons']['mixing_mode']='"plain"'
@@ -5504,9 +5506,9 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 		
 
 		try:
-			if '&system' not in [x.lower() for x in inputCalc.keys()]:				
+			if '&system' not in [x.lower() for x in list(inputCalc.keys())]:				
 				inputCalc['&system']={}
-			if 'ecutwfc' not in inputCalc['&system'].keys():
+			if 'ecutwfc' not in list(inputCalc['&system'].keys()):
 				ecutwfc = inputCalc['&system']['ecutwfc']
 				ecutrho=str(int(float(ecutwfc)*4))
 				inputCalc['&system']['ecutrho']=ecutrho
@@ -5537,7 +5539,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
 
             try:
-                if '__content__' not in inputCalc['K_POINTS'].keys() or inputCalc['K_POINTS']['__content__'].strip()=='':
+                if '__content__' not in list(inputCalc['K_POINTS'].keys()) or inputCalc['K_POINTS']['__content__'].strip()=='':
                         '''if we don't have a kpoints card make a generic one based on lattice vecs and MP Grid'''
 
                         cellParamMatrix = AFLOWpi.retr.getCellMatrixFromInput(inputfile)
@@ -5556,8 +5558,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
                         inputfile = AFLOWpi.retr._joinInput(inputCalc)
 
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 AFLOWpi.run._fancy_error_log(e)
                 
 
@@ -5571,8 +5573,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 		chain_ind=1
 		ext ='_%02d'%chain_ind
 
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
                 ext=''
             
 
@@ -5632,7 +5634,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 #        else:
 #            pass
 
-        for ID,oneCalc in returnDict.iteritems():
+        for ID,oneCalc in list(returnDict.items()):
             AFLOWpi.prep._saveOneCalc(oneCalc,ID)
         return returnDict
 
@@ -5664,7 +5666,7 @@ def getMPGrid(primLatVec,offset=True,string=True):
             return ' '.join([str(x) for x in kpointList])
         else:
             return kpointList
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return '2 2 2 1 1 1'
         
@@ -5685,7 +5687,7 @@ def _forceGlobalConfigFile(configFile):
 
 
 def _config_dict(configFile):
-    Config = ConfigParser.ConfigParser()
+    Config = configparser.ConfigParser()
     Config.read(configFile)        
     sections = Config.sections()
     config_dict = collections.OrderedDict()
@@ -5701,7 +5703,7 @@ def _config_dict(configFile):
 def _ConfigSectionMap(section,option,configFile=None):
     index=1
 
-    Config = ConfigParser.ConfigParser()
+    Config = configparser.ConfigParser()
     config = AFLOWpi.prep._getConfigFile()
     if configFile == None:
         Config.read(config)
@@ -5712,7 +5714,7 @@ def _ConfigSectionMap(section,option,configFile=None):
 
     try:
         options = Config.options(section)
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         logging.info('No section in %s called: %s' % (config,section))
         return ''
 
@@ -5731,7 +5733,7 @@ def _ConfigSectionMap(section,option,configFile=None):
     try:
         section='step_%02d'%int(index)
         returned_option = Config.get(section, option)
-    except Exception,e:
+    except Exception as e:
         pass
 
     return returned_option
@@ -5759,14 +5761,14 @@ class init:
 		self.sponsor=SPONSOR
 		self.workdir=workdir
 
-		print self.__gen_logo()
+		print((self.__gen_logo()))
 
 		try:
 			if not os.path.exists(os.path.abspath(config)):
-				print 'CONFIG FILE %s DOES NOT EXIST. CHECK YOUR AFLOWPI SCRIPT...EXITING.'
+				print('CONFIG FILE %s DOES NOT EXIST. CHECK YOUR AFLOWPI SCRIPT...EXITING.')
 				raise SystemExit
 		except:
-			print 'CONFIG FILE %s DOES NOT EXIST. CHECK YOUR AFLOWPI SCRIPT...EXITING.'
+			print('CONFIG FILE %s DOES NOT EXIST. CHECK YOUR AFLOWPI SCRIPT...EXITING.')
 			raise SystemExit
 
 		globals()['__global__config__flag__']=True
@@ -5774,16 +5776,16 @@ class init:
 		self.keys = AFLOWpi.prep.init__(PROJECT, SET=SET, AUTHOR=AUTHOR, CORRESPONDING=CORRESPONDING, SPONSOR=SPONSOR,config=config,workdir=workdir,make_symlink=make_symlink)
 
         def items(self):
-                return self.keys.items()
+                return list(self.keys.items())
 
         def iteritems(self):
-                return ((i,j) for i,j in self.keys.iteritems())
+                return ((i,j) for i,j in list(self.keys.items()))
 
         def keys(self):
-                return self.keys.keys()
+                return list(self.keys.keys())
 
         def values(self):
-                return self.keys.values()
+                return list(self.keys.values())
 
         def __getitem__(self,index):
                 return self.keys[index]
@@ -5929,7 +5931,7 @@ class init:
 
 		"""
 		init_str = '\n*** Loading Calculation Set From Step #%02d ***'%step
-		print AFLOWpi.run._colorize_message(init_str,level='ERROR',show_level=False)
+		print((AFLOWpi.run._colorize_message(init_str,level='ERROR',show_level=False)))
 
 	
 		#get name of log and load it from the specified step
@@ -5943,7 +5945,7 @@ class init:
 		loaded_calcs.step_index=step
 		#get the previously done workflow
 		try:
-			for ID,oneCalc in loaded_calcs.iteritems():
+			for ID,oneCalc in list(loaded_calcs.items()):
 				workflow = oneCalc['_AFLOWPI_WORKFLOW_']
 				break
 		except:
@@ -6048,34 +6050,34 @@ def init__(PROJECT, SET='', AUTHOR='', CORRESPONDING='', SPONSOR='',config='',wo
 
 	if os.path.exists(configFile)==False:
 		logging.info('configuration file: %s does not exist.' % config)
-		print 'configuration file: %s does not exist.' % config
+		print(('configuration file: %s does not exist.' % config))
 		raise SystemExit
 
-	print AFLOWpi.run._colorize_message(init_str,level='ERROR',show_level=False)
+	print((AFLOWpi.run._colorize_message(init_str,level='ERROR',show_level=False)))
 	
 
 	init_str='''
 CONFIG   : %s
 PROJECT  : %s%s
 EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
-	print init_str
+	print(init_str)
 
 	config_dict = AFLOWpi.prep._config_dict(configFile)
 
 	config_announce =  'AFLOWpi Configuration parameters from %s:'%os.path.basename(config)
-	print AFLOWpi.run._colorize_message(config_announce,level='ERROR',show_level=False)
-	for sec,entries in config_dict.iteritems():
+	print((AFLOWpi.run._colorize_message(config_announce,level='ERROR',show_level=False)))
+	for sec,entries in list(config_dict.items()):
 		sec_header = '[%s]'%sec
-		print AFLOWpi.run._colorize_message(sec_header,level='DEBUG',show_level=False)
-		for param,value in entries.iteritems():
-			print '%-15s = %s'%(param,value)
-	print 
+		print((AFLOWpi.run._colorize_message(sec_header,level='DEBUG',show_level=False)))
+		for param,value in list(entries.items()):
+			print(('%-15s = %s'%(param,value)))
+	print() 
 
 #        print '\nReading from Config: %s' % configFile
 
         try:
             globals()['__INITIAL_EXECPATH__']=os.path.realpath(__file__)
-        except NameError,e:
+        except NameError as e:
             globals()['__INITIAL__EXECPATH__']=os.path.dirname(sys.argv[0])
 
 	AFLOWpi.prep._forceGlobalConfigFile(configFile)
@@ -6089,7 +6091,7 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 
 
         if not os.path.exists(workdir):
-		print "work_dir %s does not exist. exiting"%workdir
+		print(("work_dir %s does not exist. exiting"%workdir))
 		raise SystemExit
 
 	if make_symlink==True:
@@ -6101,7 +6103,7 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 			path = os.path.join(workdir,PROJECT)
 			try:
 				if os.path.islink("./%s.symlink"%PROJECT) and os.readlink("./%s.symlink"%PROJECT) == path:
-					print "./%s.symlink to %s is broken. Replacing it with new symlink."%(PROJECT,path)
+					print(("./%s.symlink to %s is broken. Replacing it with new symlink."%(PROJECT,path)))
 					os.unlink("./%s.symlink"%PROJECT)
 			except:
 				pass
@@ -6180,10 +6182,10 @@ def _copyConfig(config,dest):
             config  =  os.path.normpath(os.path.join(execDirName,config))
 
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
 
-    configParse  = ConfigParser.ConfigParser()
+    configParse  = configparser.ConfigParser()
     configParse.read(config)
     sectionList = configParse.sections()
 
@@ -6202,12 +6204,12 @@ def _copyConfig(config,dest):
                 else:
                     try:
                         possiblePath =  os.path.normpath(os.path.join(configFileDir,possiblePath))            
-                    except Exception,e:
-                        print e
+                    except Exception as e:
+                        print(e)
                 if os.path.isfile(possiblePath) or os.path.isdir(possiblePath):
                     pass
                 else:
-                    print 'entry in %s in section %s does not exist. check your config file. If you do not need/have this directory then either comment out or delete this entry in your config and run your script again.' % (option,section)
+                    print(('entry in %s in section %s does not exist. check your config file. If you do not need/have this directory then either comment out or delete this entry in your config and run your script again.' % (option,section)))
                     logging.error('entry in %s in section %s does not exist. check your config file. If you do not need/have this directory then either comment out or delete this entry in your config and run your script again.' % (option,section))
                     raise SystemExit
                 configParse.set(section, option, possiblePath)                
@@ -6259,32 +6261,32 @@ EXITING.
 		try:
 			title_string = AFLOWpi.prep.ConfigSectionMap('provenance','title')		
 			if len(title_string.strip())==0:
-				print 
-				print 'Improperly formatted or absent title parameter in the "provenance" section in config file. '
-				print ''
+				print() 
+				print('Improperly formatted or absent title parameter in the "provenance" section in config file. ')
+				print('')
 				raise SystemExit
 
 			author_string = AFLOWpi.prep.ConfigSectionMap('provenance','author')		
 			if len(author_string.strip())==0:
-				print 
-				print 'Improperly formatted or absent author parameter in the "provenance" section in config file. '
-				print prov_error
+				print() 
+				print('Improperly formatted or absent author parameter in the "provenance" section in config file. ')
+				print(prov_error)
 				raise SystemExit
 
 			author_list = [i.strip() for i in author_string.split(';')]
 
 			affil_string = AFLOWpi.prep.ConfigSectionMap('provenance','affiliation')		
 			if len(affil_string.strip())==0:
-				print 
-				print 'Improperly formatted or absent affiliation parameter in the "provenance" section in config file. '
-				print prov_error
+				print() 
+				print('Improperly formatted or absent affiliation parameter in the "provenance" section in config file. ')
+				print(prov_error)
 				raise SystemExit
 
 			affil_list = [i.strip() for i in affil_string.split(';')]
 			if len(affil_list)!=len(author_list):
-				print 
-				print 'length of semi-colon delimited lists in provenance section of your config file are not the same length.'
-				print prov_error
+				print() 
+				print('length of semi-colon delimited lists in provenance section of your config file are not the same length.')
+				print(prov_error)
 				raise SystemExit
 
 			provenance_dict={}
@@ -6296,12 +6298,12 @@ EXITING.
 			for i in range(len(author_list)):
 				provenance_dict[i]={'affiliation':affil_list[i]}
 
-			for ID,oneCalc in self.int_dict.iteritems():
-				if 'provenance' not in self.int_dict[ID].keys():
+			for ID,oneCalc in list(self.int_dict.items()):
+				if 'provenance' not in list(self.int_dict[ID].keys()):
 					self.int_dict[ID]['provenance']=provenance_dict
 
-		except Exception,e:
-			print e
+		except Exception as e:
+			print(e)
 			raise SystemExit
 
 
@@ -6309,21 +6311,21 @@ EXITING.
 		@functools.wraps(func)
 		def wrapper(*args,**kwargs):
 			self.step_index+=1
-			print self.step_index
+			print((self.step_index))
 			return func(*args, **kwargs)
 
 
         def items(self):
-                return self.int_dict.items()
+                return list(self.int_dict.items())
 
         def iteritems(self):
-                return ((i,j) for i,j in self.int_dict.iteritems())
+                return ((i,j) for i,j in list(self.int_dict.items()))
 
         def keys(self):
-                return self.int_dict.keys()
+                return list(self.int_dict.keys())
 
         def values(self):
-                return self.int_dict.values()
+                return list(self.int_dict.values())
 
         def __getitem__(self,index):
                 return self.int_dict[index]
@@ -6342,14 +6344,14 @@ EXITING.
 
 	def __getInitInputs(self):
 		inputDict=collections.OrderedDict()
-		for ID,oneCalc in self.int_dict.iteritems():
+		for ID,oneCalc in list(self.int_dict.items()):
 			inputDict[ID.split('_')[0]]=oneCalc['_AFLOWPI_INPUT_']
 
 		return inputDict
 
 	
 	def conventional_cell_input(self):
-		for ID,oneCalc in self.int_dict.iteritems():
+		for ID,oneCalc in list(self.int_dict.items()):
 			conv_input = AFLOWpi.retr.transform_input_conv(oneCalc,ID)
 			self.int_dict[ID]['_AFLOWPI_INPUT_']=conv_input
 			oneCalc['_AFLOWPI_INPUT_']=conv_input
@@ -6361,14 +6363,14 @@ EXITING.
 	def get_initial_inputs(self):
 		temp_dict=collections.OrderedDict()
 		temp_dict=copy.deepcopy(self.int_dict)
-		for ID,oneCalc in self.int_dict.iteritems():
+		for ID,oneCalc in list(self.int_dict.items()):
 			temp_dict[ID]['_AFLOWPI_INPUT_']=self.initial_inputs[ID.split('_')[0]]
 		self.int_dict=copy.deepcopy(temp_dict)
 		return self
 
 	def _saveOneCalc(self,oneCalc,ID):
 		with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID),'wb') as oneCalcPickleFile:
-			oldOneCalc = cPickle.dump(oneCalc,oneCalcPickleFile)    
+			oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile)    
 
 
 	def resubmit(self,reset=True):
@@ -6385,7 +6387,7 @@ EXITING.
 		self.initial_calcs.append(self.int_dict)
 		self.change_input('&control','calculation','"scf"')#,change_initial=False)
 		calc_type='scf'
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 		AFLOWpi.run.scf(self.int_dict)	
 
 
@@ -6399,7 +6401,7 @@ EXITING.
 		self.change_input('&control','calculation','"relax"')#,change_initial=False)
 
 		calc_type='Ionic Relaxation'
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 		AFLOWpi.run.scf(self.int_dict)	
@@ -6415,21 +6417,21 @@ EXITING.
 		self.change_input('&control','calculation','"vc-relax"')#,change_initial=False)
 
 		calc_type='Variable Cell Relaxation'
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 		AFLOWpi.run.scf(self.int_dict)	
 		
 	def addToAll(self,block=None,addition=None):
 		if block==None or addition==None:
 			return
-		for ID,oneCalc in self.int_dict.iteritems():
+		for ID,oneCalc in list(self.int_dict.items()):
 			AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 				
 	
         def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
 		if self.step_index==0:
 			outp = "\n*** Generating Execution Pipeline from Workflow Script ***"
-			print AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)
+			print((AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)))
 
 		self.step_index+=1
 
@@ -6462,7 +6464,7 @@ EXITING.
 
 		self.int_dict=updateStructs(self.int_dict,update_positions=update_positions,update_structure=update_structure)
 		#add workflow to each step
-		for k,v in self.int_dict.iteritems():
+		for k,v in list(self.int_dict.items()):
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
 			self.int_dict[k]["__chain_index__"] = self.step_index
 		workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
@@ -6488,9 +6490,9 @@ EXITING.
 
 		rel_low = relax.lower()
 		if rel_low not in ['vc-relax','relax','scf']:
-			print "Invalid option for relax parameter in converge_smearing!"
-			print "Must be either 'vc-relax','relax', or 'scf'"
-			print "EXITING"
+			print("Invalid option for relax parameter in converge_smearing!")
+			print("Must be either 'vc-relax','relax', or 'scf'")
+			print("EXITING")
 			raise SystemExit
 
 		self.type='converge_smearing'
@@ -6516,7 +6518,7 @@ EXITING.
 		calc_type='Smearing Convergence'
 
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 		
 
 
@@ -6536,8 +6538,8 @@ EXITING.
 		else:
 			calc_type+=' with only occupied states'
 			
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
-level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
+level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 		return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,cond_bands_proj=cond_bands_proj)
 
 	def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
@@ -6574,7 +6576,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		calc_type='Elastic Constants'
 
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 	def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,disp_sym=False,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=True,hydrostatic_expansion=True):
@@ -6594,16 +6596,16 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		if do_first_phon==True:
 			self.phonon(nrx1=nrx1,nrx2=nrx2,nrx3=nrx3,innx=innx,de=de,mult_jobs=mult_jobs,disp_sym=disp_sym,atom_sym=atom_sym,field_strength=field_strength,field_cycles=field_cycles,LOTO=LOTO)
-			print '''                 NOTE: Phonon calculation at initial volume not completed or
+			print('''                 NOTE: Phonon calculation at initial volume not completed or
                  structure will change between Initial and volume expanded phonon 
-                 calculation. Initial phonon at regular volume will be calculated.'''
+                 calculation. Initial phonon at regular volume will be calculated.''')
 
 		#do relaxation with expanded volume
 		self.type='thermal'
 		self.new_step(update_positions=True,update_structure=True)
 
 		calc_type='Atomic position relaxation calculation at expanded volume.'
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 		#hydrostatic_expansion: True  - keep lattice vector ratio and angles
 		#                                between them fixed between V and V'
@@ -6641,7 +6643,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.workflow[-1]='thermal'
 		
 		#fixing the workflow written in _<ID>.py 
-		for k,v in self.int_dict.iteritems():
+		for k,v in list(self.int_dict.items()):
 			self.int_dict[k]["_AFLOWPI_WORKFLOW_"] = self.workflow
 		workflow_add_command='''oneCalc['_AFLOWPI_WORKFLOW_']=%s'''%self.workflow
 		self.addToAll(block='PREPROCESSING',addition=workflow_add_command)		
@@ -6651,7 +6653,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		self.addToAll(block='POSTPROCESSING',addition=workflow_add_command)	
 
 		calc_type='Expanded Volume Phonon for Thermal Conductivity and Gruneisen Parameter'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 
 
@@ -6707,7 +6709,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		if raman==True:
 			calc_type+=' with Raman scattering'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
@@ -6735,9 +6737,9 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		'''		
 		rel_low = relax.lower()
 		if rel_low not in ['vc-relax','relax','scf']:
-			print "Invalid option for relax parameter in acbn0!"
-			print "Must be either 'vc-relax','relax', or 'scf'"
-			print "EXITING"
+			print("Invalid option for relax parameter in acbn0!")
+			print("Must be either 'vc-relax','relax', or 'scf'")
+			print("EXITING")
 			raise SystemExit
 
 		self.scf_complete=True
@@ -6755,7 +6757,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		calc_type='ACBN0 Self-Consistent Hubbard U'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 	def crawl_min(self,mult_jobs=False,grid_density=10,initial_variance=0.02,thresh=0.01,constraint=None,final_minimization='relax'):
 		'''
@@ -6800,7 +6802,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		calc_type='Crawling brute force cell optimization'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def evCurve_min(self,pThresh=25,final_minimization='relax'):
 		self.scf_complete=True
@@ -6846,7 +6848,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		if project==True:
 			calc_type+=' with atomic projection'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def bands(self,dk=None,nk=100,n_conduction=None):
 		'''
@@ -6884,7 +6886,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 		calc_type='Electronic Band Structure'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 	def pseudo_test_brute(self,ecutwfc,dual=[],sampling=[],conv_thresh=0.01,constraint=None,initial_relax=None,
 			      min_thresh=0.01,initial_variance=0.05,grid_density=7,mult_jobs=False,options=None):
@@ -6898,13 +6900,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 		AFLOWpi.pseudo.brute_test(self.int_dict,ecutwfc,dual=dual,sampling=sampling,constraint=None,thresh=conv_thresh,initial_variance=initial_variance,grid_density=grid_density,mult_jobs=mult_jobs,)
 		calc_type='Brute Force Pseudotesting'
 #		print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-		print AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
+		print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 	
 
 	def _addToInit(self,block=None,addition=None):
 		if block==None or addition==None:
 			return
-		for ID,oneCalc in self.initial_calcs[0].iteritems():
+		for ID,oneCalc in list(self.initial_calcs[0].items()):
 			AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 
 	def submit(self):
@@ -6913,7 +6915,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 				init_calcs=initial_calcs=self.initial_calcs[0]				
 
 			except:
-				print 'Must add at least one step to workflow. Exiting'
+				print('Must add at least one step to workflow. Exiting')
 				raise SystemExit
 
 			AFLOWpi.run.addatexit__(AFLOWpi.run.submitFirstCalcs__,init_calcs,)
@@ -6974,7 +6976,7 @@ class plotter:
 		AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
 
 		calc_type='Plot Orbital Projected DOS'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 
 	def phonon(self,runlocal=False,postfix='',THz=True):
@@ -6982,7 +6984,7 @@ class plotter:
 
 		calc_type='Plot Phonon Bands and DOS'
 
-		print '                 %s'% (calc_type)		
+		print(('                 %s'% (calc_type)))		
 
 	def bands(self,yLim=[-10,10],DOSPlot='',runlocal=False,postfix=''):
 		'''
@@ -7025,7 +7027,7 @@ class plotter:
 			calc_type+=' with Density of States'
 		if DOSPlot=='APDOS':
 			calc_type+=' with Atom Projected Density of States'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 	def dos(self,yLim=[-10,10],runlocal=False,postfix=''):
 		'''
@@ -7052,7 +7054,7 @@ class plotter:
 		AFLOWpi.plot.dos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
 
 		calc_type ='Plot Density of States'
-		print '                 %s'% (calc_type)
+		print(('                 %s'% (calc_type)))
 
 
 
@@ -7090,7 +7092,7 @@ def _num_bands(oneCalc,mult=True):
 				match1 = float(re.findall(r'number of electrons\s*=\s*([.0-9]*)',outfile)[-1])
 				break
 
-	except Exception,e:
+	except Exception as e:
 		AFLOWpi.run._fancy_error_log(e)
 		continue
 
@@ -7099,7 +7101,7 @@ def _num_bands(oneCalc,mult=True):
     else:
 	    nbnd = int(1.0*match1/2.0)
 
-    print 'Number of bands to be Calculated: %s\n'% nbnd
+    print(('Number of bands to be Calculated: %s\n'% nbnd))
     logging.info('Number of bands to be Calculated %s: '% nbnd)
 
     return nbnd
@@ -7157,7 +7159,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
         inputfile = d['_AFLOWPI_INPUT_']
         
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -7173,7 +7175,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
 	    '''adds nbnd to input file'''
 	    inputDict['&system']['nbnd']=str(nbnd)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     try:
@@ -7198,7 +7200,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
 
         inputfile = AFLOWpi.retr._joinInput(inputDict)
 
-    except Exception,e:                    
+    except Exception as e:                    
         AFLOWpi.run._fancy_error_log(e)
 
     try:
@@ -7215,7 +7217,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
             output_calcs['prev'].append(f)
         except:
             output_calcs['prev']=[f]
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -7265,7 +7267,7 @@ def _modifyInputPrefixPW(oneCalc,ID):
 	    AFLOWpi.prep._saveOneCalc(oneCalc,ID)
 	    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
 		    newIn.write(inputString)
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 
 
@@ -7312,7 +7314,7 @@ def modifyNamelistPW(calcs,namelist,parameter,value,runlocal=False):
 
 
     if runlocal==True:
-	    for ID,oneCalc in calcs.iteritems():
+	    for ID,oneCalc in list(calcs.items()):
 		    temp,temp_ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,namelist,parameter,value,del_value=del_value)
 		    calcs[ID]=temp
 
@@ -7359,7 +7361,7 @@ def _modifyNamelistPW(oneCalc,ID,namelist,parameter,value,del_value=False):
         AFLOWpi.prep._saveOneCalc(oneCalc,ID)
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
             newIn.write(inputString)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         logging.warning('namelist %s and/or parameter %s do not exist in input file.' % (namelist,parameter))
 
@@ -7379,7 +7381,7 @@ def lockAtomMovement(calcs):
 
     '''
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         AFLOWpi.prep._addToBlock(oneCalc,ID,'PREPROCESSING','''oneCalc = AFLOWpi.prep._freezeAtoms(oneCalc,ID) ''')
 
 def unlockAtomMovement(calcs):
@@ -7394,7 +7396,7 @@ def unlockAtomMovement(calcs):
 
     '''
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         AFLOWpi.prep._addToBlock(oneCalc,ID,'PREPROCESSING','''oneCalc = AFLOWpi.prep._unfreezeAtoms(oneCalc,ID)''')
             
             
@@ -7596,7 +7598,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
                         if len(item)!=0:
                             temp.append([float(x) for x in item.split(' ') if len(x)!=0])
 
-		    if 'CELL_PARAMETERS' in splitInput.keys():
+		    if 'CELL_PARAMETERS' in list(splitInput.keys()):
 			    if splitInput['CELL_PARAMETERS']['__modifier__']=='':
 				    alat=1.0
 
@@ -7610,7 +7612,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
                 else:
                     pass
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
         for prevOut in reversed(oneCalc['prev']):
@@ -7624,17 +7626,17 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
                 if len(atmPos.strip())!=0:
                     break
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
 
         splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])   
         try:
             if update_structure==True:
-		    if 'CELL_PARAMETERS' in splitInput.keys():
+		    if 'CELL_PARAMETERS' in list(splitInput.keys()):
 			    splitInput['CELL_PARAMETERS']['__content__']=AFLOWpi.retr._cellMatrixToString(cellParaMatrix)
 		    else:
-			    for item in ibravDict.items():	
+			    for item in list(ibravDict.items()):	
 				    splitInput['&system'].update({item[0]:item[1]})
         except:
             pass
@@ -7647,19 +7649,19 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
                     atmPos=AFLOWpi.retr.attachPosFlags(atmPos,flags)
                     splitInput['ATOMIC_POSITIONS']['__content__']=atmPos        
                     splitInput['ATOMIC_POSITIONS']['__modifier__']='{crystal}'
-        except Exception,e:
+        except Exception as e:
             pass
 
         inputfile = AFLOWpi.retr._joinInput(splitInput)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     try:
         '''Update CELL_PARAMETERS and ATOMIC_POSITIONS from vc-relax or relax output'''
         output_calcs = copy.deepcopy(d)
         output_calcs['_AFLOWPI_INPUT_'] = inputfile
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -7669,7 +7671,7 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 	    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
 		    newIn.write(output_calcs['_AFLOWPI_INPUT_'])
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return output_calcs,ID
@@ -7728,13 +7730,13 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
             logging.debug('TEMP FILE DOES NOT EXIST FOR _oneChangeCalcs...EXITING')
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     try:
 
 	logging.info("Updating %s of %s to %s"%(keyword,prefix,value))
-	print "Updating %s of %s to %s"%(keyword,prefix,value)
+	print(("Updating %s of %s to %s"%(keyword,prefix,value)))
 
 	if keyword == 'calculation':
 	        '''we need to change calculation to vc-relax'''
@@ -7780,7 +7782,7 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
 	                                    shutil.copy(a, b)
                                 except AttributeError:
                                         logging.debug('Cannot find pseudopotential files in %s ...Exiting' % new_pseudodir)
-                                        print 'cannot find correct PAO files in %s ...Exiting' % new_pseudodir
+                                        print(('cannot find correct PAO files in %s ...Exiting' % new_pseudodir))
                                         raise SystemExit
                           
                                 #Replace PP name in inputfile                 
@@ -7797,8 +7799,8 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
                 #Change value of keyword
                 inputfile = replaceRegEx.sub("%s = %s,\n"%value,inputfile)
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
 	AFLOWpi.run._fancy_error_log(e)
 
     try:
@@ -7814,7 +7816,7 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
         output_calcs['_AFLOWPI_INPUT_'] = inputfile
         '''set prev to current ID so that we can check if we have already transformed'''
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     logging.debug('exiting _oneChangeCalcs')
@@ -7872,8 +7874,8 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                 constraint_type_list.append(constraints[0].lower().strip())
                 constraint_var_list.append(constraints[1].lower().strip())
                 
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
             constraint_type=None
             constraint_var =None
     else:
@@ -7887,8 +7889,8 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
     paramDict={}
     param=[x.lower() for x in param]
 
-    for namelist,paramlist in inputDict.iteritems():
-        for k,v in inputDict[namelist].iteritems():
+    for namelist,paramlist in list(inputDict.items()):
+        for k,v in list(inputDict[namelist].items()):
             if re.match(r'celldm.*',k.lower()):
                 paramDict[k.replace(')','').replace('(','')]=float(v)
             if re.match(r'ibrav.*',k.lower()):
@@ -7939,7 +7941,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
 	if ibrav in [2,10]:
 		vol*=4
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     productList=[]
@@ -7982,7 +7984,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
                 if param[some_param] in constraint_var_list:
                     if constraint_type_list[item]=='volume':
                         volDiv=1
-                        for parameter,value in tempDict.items()[1:]:
+                        for parameter,value in list(tempDict.items())[1:]:
                             if parameter not in constraint_var_list:
                                 if parameter in ['alpha','beta','gamma']:
                                     volDiv*=numpy.sin(value*(numpy.pi/180.0))
@@ -8003,8 +8005,8 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
             tempCelldmDict['celldm(%s)'%(int(item)+1)]=tempCelldmTuple[item]
 
 
-        for k,v in inputDict['&system'].iteritems():
-            if k in tempCelldmDict.keys():
+        for k,v in list(inputDict['&system'].items()):
+            if k in list(tempCelldmDict.keys()):
                 inputDict['&system'][k]=tempCelldmDict[k]
         inputList.append(AFLOWpi.retr._joinInput(inputDict))
 
@@ -8047,7 +8049,7 @@ def _incrementFileValue(oneCalc,ID,varName='uValue'):
             newinputfile = URegex2.sub('uValue = ' + uValueString,inputFileText)
         
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         
 
@@ -8056,7 +8058,7 @@ def _incrementFileValue(oneCalc,ID,varName='uValue'):
             outfileObj.write(newinputfile)
         
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -8101,7 +8103,7 @@ def _modifyVarVal(oneCalc,ID,varName='uValue',value=None):
         URegex2 = re.compile(r'%s\s*=\s*.+' % varName)
         newinputfile = URegex2.sub('%s = %s' % (varName,uValueString),inputFileText)
         
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         
 
@@ -8109,7 +8111,7 @@ def _modifyVarVal(oneCalc,ID,varName='uValue',value=None):
         with open(os.path.join(subdir,'_'+ID+'.py'),'w') as outfileObj:
             outfileObj.write(newinputfile)
         
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
     logging.debug('exiting _modifyVarVal')
 
@@ -8168,13 +8170,13 @@ def askAFLOWpiVars(refAFLOWpiVars):
 
 	"""
 
-	for k in refAFLOWpiVars.items():
+	for k in list(refAFLOWpiVars.items()):
 		if k[1] == None:
 			try:
-				a = input('define '+k[0]+': ')
+				a = eval(input('define '+k[0]+': '))
 				refAFLOWpiVars.update({k[0]:a})	
 				if type(k[0]) != tuple: 
-					raise ValueError, "Must be a tuple"
+					raise ValueError("Must be a tuple")
 			except:
 				pass
 
@@ -8232,9 +8234,9 @@ def _announcePrint(string):
           None
     '''
 
-    print '#####################################################################################'
-    print string
-    print '#####################################################################################'
+    print('#####################################################################################')
+    print(string)
+    print('#####################################################################################')
 
 
 
@@ -8258,7 +8260,7 @@ def generateAnotherCalc(old,new,calcs):
     new_calcs = copy.deepcopy(calcs)
     output_calcs = {}
 
-    for f,d in new_calcs.iteritems():
+    for f,d in list(new_calcs.items()):
 	try:
 		subdir = new_calcs[f]['_AFLOWPI_FOLDER_']
 		a = f+'.in'
@@ -8298,7 +8300,7 @@ def modifyCalcs(old,new,calcs):
 	new_calcs = copy.deepcopy(calcs)
 	output_calcs = collections.OrderedDict()
 	
-	for f,d in new_calcs.iteritems():
+	for f,d in list(new_calcs.items()):
 		try:
 			subdir = new_calcs[f]['_AFLOWPI_FOLDER_']
 			a = f+'.in'
@@ -8343,7 +8345,7 @@ def line_prepender(filename,new_text):
             content = f.read()
             f.seek(0,0)
             f.write(new_text.rstrip('\r\n') + '\n' + content)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 ############################################################################################################
 
@@ -8384,7 +8386,7 @@ def _findInBlock(oneCalc,ID,block=None,string=''):
 
         return len(re.findall(string,isolatedString))!=0    
     
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return False
 
@@ -8408,7 +8410,7 @@ def _calcsFromCalcList(calcList):
     largeSet=collections.OrderedDict()
     for calcs in calcList:
         calcCopy=copy.deepcopy(calcs)
-        largeSet = dict(largeSet.items() + calcs.items())
+        largeSet = dict(list(largeSet.items()) + list(calcs.items()))
     return largeSet
 
 
@@ -8426,8 +8428,8 @@ def _calcsFromCalcList(calcList):
 #         try:
 #             if inspect.ismodule(eval('__main__.%s'%var)):
 #                 if var not in badList:
-#                     sm.append('try:\n\timport %s\nexcept Exception,e:\n\tAFLOWpi.run._fancy_error_log(e)'%var)
-#         except Exception,e:
+#                     sm.append('try:\n\timport %s\nexcept Exception as e:\n\tAFLOWpi.run._fancy_error_log(e)'%var)
+#         except Exception as e:
 #             AFLOWpi.run._fancy_error_log(e)
 
 #     loadModString= '\n'.join(['%s'%x for x in sm])
@@ -8437,7 +8439,7 @@ def _calcsFromCalcList(calcList):
 #     print inspect.getargspec(func)
 #     funcStr='try:\n'
 #     funcStr+=''.join(funcLines)
-#     funcStr+='\nexcept Exception,e:\n\tAFLOWpi.run._fancy_error_log(e)'
+#     funcStr+='\nexcept Exception as e:\n\tAFLOWpi.run._fancy_error_log(e)'
 
 # #    print funcStr
 #     callStr='try:\n\t'
@@ -8448,7 +8450,7 @@ def _calcsFromCalcList(calcList):
 #     kwargStr=','.join(['%s=%s'%(x[0],repr(x[1])) for x in kwargs.items()])
 #     callStr+=argStr
 #     callStr+=kwargStr
-#     callStr+=')\nexcept Exception,e:\n\tAFLOWpi.run._fancy_error_log(e)'
+#     callStr+=')\nexcept Exception as e:\n\tAFLOWpi.run._fancy_error_log(e)'
 # #    print callStr
 #     print args
 
@@ -8541,7 +8543,7 @@ def _calcsFromCalcList(calcList):
 #             calcSave = copy.deepcopy(oneCalc)
 #             output[ID]=calcSave
 #             break 
-#         except Exception,e:
+#         except Exception as e:
 #             AFLOWpi.run._fancy_error_log(e)
 #             time.sleep(1)
 #             pass

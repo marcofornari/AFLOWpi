@@ -28,7 +28,7 @@ def get_dos_mu(mu,edge_en):
 
           try:
                weights[case1] += 3.0*(mu-ee_c1[0])**2/((ee_c1[1]-ee_c1[0])*(ee_c1[2]-ee_c1[0])*(ee_c1[3]-ee_c1[0]))
-          except Exception,e: pass
+          except Exception as e: pass
 
           try:
                E21 = ee_c2[1]-ee_c2[0]
@@ -40,11 +40,11 @@ def get_dos_mu(mu,edge_en):
                EMN = mu-ee_c2[1]
 
                weights[case2] += (3.0*E21 + 6.0*EMN - 3.0*(E31+E42)*EMN**2/(E32*E42))/(E31*E41)
-          except Exception,e: pass
+          except Exception as e: pass
 
           try:
                weights[case3] += 3.0*(mu-ee_c3[3])**2/((ee_c3[3]-ee_c3[0])*(ee_c3[3]-ee_c3[1])*(ee_c3[3]-ee_c3[2]))
-          except Exception,e: pass
+          except Exception as e: pass
 
      inds = np.where(weights!=0.0)[0]
 
@@ -436,7 +436,7 @@ def get_weights_mu(mu,edge_en):
               # weights_aux[2,case1] = dC*E1/E31 + C/E31
               # weights_aux[3,case1] = dC*E1/E41 + C/E41
 
-          except Exception,e: print e
+          except Exception as e: print(e)
 
           try:
               E1  =  mu - ee_c2[0]
@@ -472,7 +472,7 @@ def get_weights_mu(mu,edge_en):
 
 
 
-          except Exception,e: print e
+          except Exception as e: print(e)
 
           try:
               E4  = mu - ee_c3[3]
@@ -493,7 +493,7 @@ def get_weights_mu(mu,edge_en):
 
 
 
-          except Exception,e: print e
+          except Exception as e: print(e)
 
           # try:
               

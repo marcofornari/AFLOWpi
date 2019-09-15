@@ -125,7 +125,7 @@ def _getHighSymPoints(oneCalc,ID=None):
         elif  (1.0/a**2 < 1.0/b**2+1.0/c**2): ibrav_var =  'ORCF2'
 
     elif(int(ibrav)==14):
-        print alpha,beta,gamma
+        print((alpha,beta,gamma))
         minAngle = np.amin([alpha,beta,gamma])
         maxAngle = np.amax([alpha,beta,gamma])
         if alpha==90.0 or beta==90.0 or gamma==90.0:
@@ -428,7 +428,7 @@ def _getHighSymPoints(oneCalc,ID=None):
 
                                    
 
-    for k,v in special_points.iteritems():
+    for k,v in list(special_points.items()):
         first  = np.array(v).dot(np.linalg.inv(aflow_conv))
         if ibrav == 9:
             second = qe_conv.T.dot(first)
