@@ -66,7 +66,7 @@ def define_vec_direction(E_k,nk_r,nk_phi,nk_theta):
     nbnd=E_k.shape[1]
     ray =np.zeros(( ((nk_phi)*(nk_theta-1)) ,(nk_r+1),nbnd  ),dtype=E_k.dtype)
 
-    for n in range(no_xy_zero.shape[0]/nk_r):
+    for n in range(int(no_xy_zero.shape[0]/nk_r)):
         ray[n+1][1:] = no_xy_zero[n*nk_r:(n+1)*nk_r]
         ray[n+1][0]  = origin
         

@@ -187,13 +187,9 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
             epol_string=AFLOWpi.run._pull_eps_out(oneCalc,ID)
             born_charge_string=AFLOWpi.run._pull_born_out(oneCalc,ID)
 
-            LOTO_REPLACE='''
-T
-
+            LOTO_REPLACE='''T
     %s
-%s
-
-    ''' % (epol_string,born_charge_string)
+%s''' % (epol_string,born_charge_string)
 
 
             header_string=re.sub("F\n",LOTO_REPLACE,header_string)
@@ -659,7 +655,7 @@ def _project_phDOS(oneCalc,ID):
 
 
         for i in range(len(by_atom)):
-            ip='%32s'%q_list[i/eig_per_q]
+            ip='%32s'%q_list[int(i/eig_per_q)]
 
             entries = ['%16.10f'%x for x in map(float,by_atom[i])]
             for j in entries:
