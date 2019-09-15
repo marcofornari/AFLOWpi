@@ -257,7 +257,8 @@ except: pass
             print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False,ipol=0,jpol=1,spol=2):
+    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
+        band_topology=False
 
 	AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol,nk=nk)
 
@@ -265,6 +266,8 @@ except: pass
         print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                                             AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
         if band_topology:
+            print "Disabled for this release"
+    
             calc_type='Band Topology'
             print AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)
@@ -598,6 +601,9 @@ class tb_plotter:
 		self.calcs=calcs
 
 	def topology(self):
+            print "Band topology plot disabled for this release"
+            return
+
             AFLOWpi.plot.band_topology(self.calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False)
 
             calc_type='Plot Band Topology'

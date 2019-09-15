@@ -86,13 +86,6 @@ def _check_lock(func,oneCalc,ID,*args,**kwargs):
                 return False,False
         except Exception,e:
             AFLOWpi.run._fancy_error_log(e)
-        # try:
-        #     d=oneCalc
-
-
-
-        # except Exception,e:
-        #     AFLOWpi.run._fancy_error_log(e)
 
         return oneCalc,ID
 

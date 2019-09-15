@@ -2829,6 +2829,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      lsigma(1)=.true.
      lsigma(2)=.true.
      lsigma(3)=.true.
+     lsym=.false.
      filband='./%s_band_data.out'
  /
  """ %  (prefix,temp_dir,ID),
