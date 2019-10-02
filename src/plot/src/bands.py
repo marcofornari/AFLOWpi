@@ -944,7 +944,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                 def getPlotData(sumpdosFile):
                         try:
                                 with open(sumpdosFile,'rb') as dataFile:
-                                        data = pickle.load(dataFile)
+                                        data = pickle.load(dataFile,protocol=0)
 
                         except Exception as e:
                         

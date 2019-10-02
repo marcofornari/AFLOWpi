@@ -27,7 +27,6 @@ import AFLOWpi.run
 import AFLOWpi.prep
 import os
 import datetime
-import pickle
 import logging 
 import re
 import numpy

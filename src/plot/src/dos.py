@@ -375,7 +375,7 @@ def __sumpdos(oneCalc,ID,TB=False):
                                 for orbitalName,fileList in list(orbital[orbitalDict].items()):
                                         data = __combinePDOS(fileList)
                                         with open(os.path.join(subdir,'%s_%s.sumpdos' % (atom,orbitalName)),'wb') as outputFile:
-                                                pickle.dump(data,outputFile)
+                                                pickle.dump(data,outputFile,protocol=0)
 #                                       numpy.savetxt(os.path.join(subdir,'%s_%s.sumpdos.txt' % (atom,orbitalName)),data)
 
         byAtom={}
@@ -391,7 +391,7 @@ def __sumpdos(oneCalc,ID,TB=False):
         for atom,files in list(pDOSDict.items()):               
                 data = __combinePDOS(files)
                 with open(os.path.join(subdir,'%s.sumpdos' % (atom)),'wb') as outputFile:
-                                        pickle.dump(data,outputFile)
+                                        pickle.dump(data,outputFile,protocol=0)
 #               numpy.savetxt(os.path.join(subdir,'%s.sumpdos.txt' % (atom)),data)
 
                         
@@ -466,7 +466,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
         def getPlotData(sumpdosFile):
                 with open(sumpdosFile,'rb') as dataFile:
-                        data = pickle.load(dataFile)
+                        data = pickle.load(dataFile,protocol=0)
 
                 en = []
                 pdos = []
@@ -711,7 +711,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
         def getPlotData(sumpdosFile):
                 with open(sumpdosFile,'rb') as dataFile:
-                        data = pickle.load(dataFile)
+                        data = pickle.load(dataFile,protocol=0)
 
                 en = []
                 pdos = []
@@ -928,7 +928,7 @@ def __apdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         def getPlotData(sumpdosFile):
                 try:
                         with open(sumpdosFile,'rb') as dataFile:
-                                data = pickle.load(dataFile)
+                                data = pickle.load(dataFile,protocol=0)
 
                 except Exception as e:
 

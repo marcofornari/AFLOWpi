@@ -25,7 +25,6 @@
 
 import os
 import datetime
-import pickle
 import logging 
 import matplotlib
 import glob

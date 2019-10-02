@@ -2677,7 +2677,7 @@ def _load_log_from_filename(filename):
              '''
              try:
                      with open(log,'rb') as oneCalcPickleFile:
-                             oneCalc = pickle.load(oneCalcPickleFile)    
+                             oneCalc = pickle.load(oneCalcPickleFile,protocol=0)    
 
                      returnCalcs[ID]=oneCalc
              except Exception as e:
@@ -2744,11 +2744,11 @@ def _updatecalclogs(calcs,inc=True):
                 B = os.path.join(AFLOWpidir, fou)
                 os.rename(A,B)
                 output = open(A,'w')
-                pickle.dump(calcs,output)
+                pickle.dump(calcs,output,protocol=0)
                 output.close()
         else:
                 output = open(os.path.join(AFLOWpidir,fc),'w')
-                pickle.dump(calcs,output)
+                pickle.dump(calcs,output,protocol=0)
                 output.close()
 
 
@@ -2758,12 +2758,12 @@ import socket
 def _saveOneCalc(oneCalc,ID):
 
                 with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID),'wb') as oneCalcPickleFile:
-                        oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile)    
+                        oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile,protocol=0)    
 
 def _loadOneCalc(folder,ID):
 
         with open(os.path.join(folder,'_%s.oneCalc' % ID),'rb') as oneCalcPickleFile:
-                oldOneCalc = pickle.load(oneCalcPickleFile)    
+                oldOneCalc = pickle.load(oneCalcPickleFile,protocol=0)    
         try:
             with open(os.path.join(folder,'%s.in' % ID),'r') as inputFileObj:
                 inputFileString = inputFileObj.read()
@@ -4536,7 +4536,7 @@ EXITING.
 
         def _saveOneCalc(self,oneCalc,ID):
                 with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID),'wb') as oneCalcPickleFile:
-                        oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile)    
+                        oldOneCalc = pickle.dump(oneCalc,oneCalcPickleFile,protocol=0)    
 
 
         def resubmit(self,reset=True):

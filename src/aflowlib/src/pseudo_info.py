@@ -28,7 +28,6 @@ import re
 import os
 import logging
 import shutil
-import pickle
 import glob
 import fnmatch
 import copy 
