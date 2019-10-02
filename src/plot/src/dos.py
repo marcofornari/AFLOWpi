@@ -466,7 +466,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
         def getPlotData(sumpdosFile):
                 with open(sumpdosFile,'rb') as dataFile:
-                        data = pickle.load(dataFile,protocol=0)
+                        data = pickle.load(dataFile)
 
                 en = []
                 pdos = []
@@ -711,7 +711,7 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
 
         def getPlotData(sumpdosFile):
                 with open(sumpdosFile,'rb') as dataFile:
-                        data = pickle.load(dataFile,protocol=0)
+                        data = pickle.load(dataFile)
 
                 en = []
                 pdos = []
@@ -928,7 +928,7 @@ def __apdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         def getPlotData(sumpdosFile):
                 try:
                         with open(sumpdosFile,'rb') as dataFile:
-                                data = pickle.load(dataFile,protocol=0)
+                                data = pickle.load(dataFile)
 
                 except Exception as e:
 

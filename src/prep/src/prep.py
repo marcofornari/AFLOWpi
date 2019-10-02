@@ -2677,7 +2677,7 @@ def _load_log_from_filename(filename):
              '''
              try:
                      with open(log,'rb') as oneCalcPickleFile:
-                             oneCalc = pickle.load(oneCalcPickleFile,protocol=0)    
+                             oneCalc = pickle.load(oneCalcPickleFile)    
 
                      returnCalcs[ID]=oneCalc
              except Exception as e:
@@ -2763,7 +2763,7 @@ def _saveOneCalc(oneCalc,ID):
 def _loadOneCalc(folder,ID):
 
         with open(os.path.join(folder,'_%s.oneCalc' % ID),'rb') as oneCalcPickleFile:
-                oldOneCalc = pickle.load(oneCalcPickleFile,protocol=0)    
+                oldOneCalc = pickle.load(oneCalcPickleFile)    
         try:
             with open(os.path.join(folder,'%s.in' % ID),'r') as inputFileObj:
                 inputFileString = inputFileObj.read()
