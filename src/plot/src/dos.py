@@ -333,7 +333,8 @@ def __sumpdos(oneCalc,ID,TB=False):
         atomList = []
         pDOSDict = {}
         atomList=list(AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=False).keys())
-        
+
+
         '''
         just the possible names of orbitals that projwfc.x will output
         skips over orbitals for atomic species that are not there

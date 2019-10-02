@@ -1037,7 +1037,7 @@ def _getStoicName(oneCalc,strip=False,latex=False,order=False,gcd=True):
     and update the dictionary with {species:number of them in the cell}'''
 
     for species,num in list(numOfEach.items()):
-            numOfEachCopy[species] = numOfEach[species] / stoicGCD
+            numOfEachCopy[species] = int(numOfEach[species] / stoicGCD)
 
     '''builds name for printing in order of elements are listed in the 
     ATOMIC POSTIONS from top of that list is first atom down to bottom 

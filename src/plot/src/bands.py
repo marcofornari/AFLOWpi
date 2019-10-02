@@ -78,7 +78,7 @@ def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding
                         AFLOWpi.prep._addToBlock(oneCalc[1],oneCalc[0],'PLOT',"AFLOWpi.plot.__bands(oneCalc,ID,yLim=[%s,%s],DOSPlot='%s',postfix='%s',tight_banding=%s)" % (yLim[0],yLim[1],DOSPlot,postfix,tight_banding))     
 
 
-def __bands(oneCalc,ID,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,SBC=False,label_map={}):
+def __bands(oneCalc,ID,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,SBC=False,label_map={},font_mult=1.0,title=True,dos_per_atom=False):
         '''
         Wrapper function for AFLOWpi.plot.__bandPlot 
         OBSOLETE. NEEDS REMOVAL
@@ -916,7 +916,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
                 matplotlib.rcParams['xtick.major.pad'] = 8
 
-                pylab.xticks(bars,SymPrint, fontsize = 24)
+                pylab.xticks(bars,SymPrint, fontsize = 24*font_mult)
         except Exception as e:
               
                 pylab.xticks([a[-1] for index in symIndex],SymPrint)
@@ -925,8 +925,6 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         locs, labels = pylab.xticks()
 
 ##########################################################################################################
-#       if DOSPlot == '':
-#               ax1.set_title(figtitle,fontsize=24)
 
 
 
@@ -938,7 +936,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                 ax3=pylab.subplot(122)
                 ax3.xaxis.set_ticks([])
                 ax3.yaxis.set_ticks([])
-                pylab.xlabel('arbitrary units',fontsize = 20)
+                pylab.xlabel('arbitrary units',fontsize = 20*font_mult)
                 ax3.set_position([0.75,0.1,0.20,0.8]) 
                 ax3.axes.xaxis.set_label_position('bottom')
                 ax2=pylab.subplot(122)
@@ -1056,13 +1054,13 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                 handles, labels = ax2.get_legend_handles_labels()
 
                 if LSDA:
-                        ax2.legend(handles[::2], labels[::2],fontsize=14,loc=1)
+                        ax2.legend(handles[::2], labels[::2],fontsize=14*font_mult,loc=1)
                         dosRange=max([numpy.abs(minDOS),numpy.abs(maxDOS)])
                         pylab.xlim(1.1*minDOS,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range 
                         pylab.axvline(0.0, color = 'k', linewidth = 2.0) #line separating up and down spin
                 else:
 #                       ax2.legend(handles[::-1], labels[::-1],fontsize=14,loc=1)
-                        ax2.legend(handles, labels,fontsize=14,loc=1)
+                        ax2.legend(handles, labels,fontsize=14*font_mult,loc=1)
                         pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 #               pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
@@ -1078,7 +1076,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 
                 ax2.yaxis.set_ticks_position('left')
-                pylab.xlabel('Density of States (States/eV)',fontsize=20)
+                pylab.xlabel('Density of States (States/eV)',fontsize=20*font_mult)
                 ax2.axes.xaxis.set_label_position('top')
                 locs, labels = pylab.xticks()
                 
@@ -1156,7 +1154,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                         else:
                                 labels[item]=''
                 
-                ax2.set_xticklabels(labels,fontsize = 14)
+                ax2.set_xticklabels(labels,fontsize = 14*font_mult)
                 ax1.set_position([0.07,0.1,0.67,0.8]) #[left,bottom,width,height]
                 ax2.set_position([0.75,0.1,0.20,0.8])
 
@@ -1193,7 +1191,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         figtitle = ''
         compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
         figtitle = '%s: %s' % (description,compoundNameLatex) 
-        ax1.set_title(figtitle,fontsize=24)
+        if font_title:
+                ax1.set_title(figtitle,fontsize=24*font_mult)
 #       ax1.axes.xaxis.set_label_position('top')
 #       t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
 
@@ -1211,7 +1210,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                 if BC: description='Electronic Band Structure and Berry Curvature'
                         
                 figtitle = '%s: %s' % (description,compoundNameLatex) 
-                ax1.set_title(figtitle,fontsize=24)
+                ax1.set_title(figtitle,fontsize=24*font_mult)
 
 
                 neg_cax = fig.add_axes([0.98,0.2875,0.02,0.25])
