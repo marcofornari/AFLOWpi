@@ -257,7 +257,8 @@ def _clean_bands_data_qe(filebands,Efermi_shift):
 
 
         except Exception as e:
-                AFLOWpi.run._fancy_error_log(e)
+                pass
+#                AFLOWpi.run._fancy_error_log(e)
 #               logging.warning("output from bands calculation not found. Are you sure you ran ppBands and it completed properly?")
 #               print "Are you sure you ran ppBands and it completed properly?"
                 return

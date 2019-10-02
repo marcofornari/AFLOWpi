@@ -2128,7 +2128,8 @@ def _PW_bands_fix(oneCalc,ID,exten="band_data.out"):
                 correctedText = re.sub(r'(\d)([-][\d])',r'\1 \2',input)
                 fileoutput.write(correctedText)
     except Exception as e:
-        AFLOWpi.run._fancy_error_log(e)
+        return
+
 
 
     try:
