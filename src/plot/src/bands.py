@@ -310,6 +310,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         '''
         
 
+        font_mult=1.0
+        fig_title=True
         matplotlib.rcParams['figure.dpi'] = 600
         matplotlib.rcParams['savefig.dpi'] = 600
         calcCopy = oneCalc
@@ -1191,7 +1193,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         figtitle = ''
         compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
         figtitle = '%s: %s' % (description,compoundNameLatex) 
-        if font_title:
+        if fig_title:
                 ax1.set_title(figtitle,fontsize=24*font_mult)
 #       ax1.axes.xaxis.set_label_position('top')
 #       t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
