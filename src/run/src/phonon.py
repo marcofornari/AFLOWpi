@@ -126,7 +126,7 @@ def _pull_forces(oneCalc,ID):
         forces *= 2.0
 
         ffname = os.path.join(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_']),'force.%s'%force_postfix)
-        if not np.all(forces==0.0):
+        if not numpy.all(forces==0.0):
             numpy.savetxt(ffname,forces)
 
     except Exception as e: print(e)
