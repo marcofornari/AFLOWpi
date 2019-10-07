@@ -81,19 +81,13 @@ def _check_lock(func,oneCalc,ID,*args,**kwargs):
         '''
 
         if 'override_lock' in list(kwargs.keys()):
-                return oneCalc,ID
+                if kwargs["override_lock"]:
+                        return oneCalc,ID
         try:
             if ID in oneCalc['prev']:
                 return False,False
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
-        # try:
-        #     d=oneCalc
-
-
-
-        # except Exception as e:
-        #     AFLOWpi.run._fancy_error_log(e)
 
         return oneCalc,ID
 
@@ -126,15 +120,15 @@ def newstepWrapper(pre):
         def call(*args, **kwargs):
                 args=list(args)
                 try:
-
                         new_oneCalc,new_ID = pre(func, *args, **kwargs)
-
                         if False==new_oneCalc and False==new_ID:
+                                
                                 return args[0],args[1]
                         else:
 
                                 args[0]=new_oneCalc
-                except:
+                except Exception as e:
+                        print(e)
                         pass
 
                 args[0],args[1] = func(*args, **kwargs)
