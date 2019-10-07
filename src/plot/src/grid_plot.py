@@ -54,7 +54,7 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
             zaxis_title='Energy (Ry)'
 
     if len(calcs)>1 and type(calcs)==type([1,2,3]):
-        if zaxis_title!=None:
+        if zaxis_title is not None:
             if type(zaxis_title)==type([1,2,3]):
                 pass
             else:

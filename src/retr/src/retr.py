@@ -1292,7 +1292,7 @@ def _writeInputFromOutput(oneCalc,ID,replace=False):
 
     outFileName = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_new.in')
     newInput = AFLOWpi.retr._writeInputFromOutputString(oneCalc,ID)
-    if newInput!=None:
+    if newInput is not None:
         with open(outFileName,'w') as outFile:
             outFile.write(newInput)
 

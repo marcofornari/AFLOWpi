@@ -480,11 +480,11 @@ def _grab__plot_dos(oneCalc,ID):
 
 def _grab__plot_bands(oneCalc,ID): 
         bands_pdos = AFLOWpi.aflowlib._grab_file_from_prefix(oneCalc,ID,'BANDPDOS')
-        if bands_pdos!=None:
+        if bands_pdos is not None:
                 return bands_pdos
         else:
                 bands_dos = AFLOWpi.aflowlib._grab_file_from_prefix(oneCalc,ID,'BANDDOS')
-                if bands_dos!=None:
+                if bands_dos is not None:
                         return bands_dos
                 else:
                         bands_only = AFLOWpi.aflowlib._grab_file_from_prefix(oneCalc,ID,'BAND')

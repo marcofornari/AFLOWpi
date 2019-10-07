@@ -729,7 +729,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)
         '''%(pThresh)
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN', execString)
         AFLOWpi.run._skeletonRun(calcs)
-        #if final_minimization != None:
+        #if final_minimization is not None:
 #               calcs = AFLOWpi.prep.changeCalcs(calcs, 'calculation', final_minimization)
 #               AFLOWpi.run.scf(calcs)
 #               calcs = AFLOWpi.prep.changeCalcs(calcs, 'calculation', 'scf')
@@ -747,7 +747,7 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
         __submitNodeName__ =  __main__. __submitNodeName__
         execPrefix = ''
         execPostfix = ''
-        if config!=None:
+        if config is not None:
                 AFLOWpi.prep._forceGlobalConfigFile(config)
                 logging.debug('forced config %s' % config)
         else:
@@ -1433,7 +1433,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
             oneCalc['__runList__']=[]
 
             
-        if config!=None:
+        if config is not None:
                 AFLOWpi.prep._forceGlobalConfigFile(config)
                 logging.debug('forced config %s' % config)
         else:

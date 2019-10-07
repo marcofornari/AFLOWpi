@@ -69,7 +69,7 @@ def prep_split_step(calcs,subset_creator,subset_tasks=[],mult_jobs=False,substep
         
 #####################################################################
         AFLOWpi.run._skeletonRun(calcs) 
-        if check_function!=None:
+        if check_function is not None:
             check_function=repr(check_function)
 
         for ID,oneCalc in list(calcs.items()):

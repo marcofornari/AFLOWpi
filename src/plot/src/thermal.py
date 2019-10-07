@@ -264,7 +264,7 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
             pylab.ylabel('Frequency (cm$^{-1}$)')
         pylab.xlim(np.amin(k_x),np.amax(k_x)) 
         
-        if w_range!=None:
+        if w_range is not None:
                 min_val=w_range[0]/1.1
                 max_val=w_range[1]/1.1
 
@@ -392,7 +392,7 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 ##########################################################################################################
 
 
-        if w_range!=None:
+        if w_range is not None:
                 min_val=w_range[0]/1.1
                 max_val=w_range[1]/1.1
 

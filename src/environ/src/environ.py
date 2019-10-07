@@ -113,7 +113,7 @@ def _run_environ_iterative(__submitNodeName__,oneCalc,ID):
 		oneCalc['__runList__']=[]
 		config=None
 
-	if config!=None:
+	if config is not None:
 		AFLOWpi.prep._forceGlobalConfigFile(config)
 		logging.debug('forced config %s' % config)
 	else:
@@ -199,7 +199,7 @@ def _run_environ_relax(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix)
 		oneCalc["__runList__"] = []
 		config = None
 
-	if config != None:
+	if config is not None:
 		AFLOWpi.prep._forceGlobalConfigFile(config)
 		logging.debug("forced config %s" % config)
 	else:
@@ -254,7 +254,7 @@ def _run_environ_scf(__submitNodeName__, oneCalc, ID, execPrefix, execPostfix):
 		oneCalc["__runList__"] = []
 		config = None
 
-	if config != None:
+	if config is not None:
 		AFLOWpi.prep._forceGlobalConfigFile(config)
 		logging.debug("forced config %s" % config)
 	else:

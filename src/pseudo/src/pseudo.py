@@ -1100,7 +1100,7 @@ def _getMin(calcs,fitVars=None,options=None,bulk_modulus=False,minimize_var="Ene
                     
 
 #    print fitMin1
-#    if options!=None:
+#    if options is not None:
 #               fitMin = minimize(fitFunction,ystart,args=(pop),method='L-BFGS-B',bounds=fitBounds,options=options,disp=True)
  #   else:
 
@@ -1215,7 +1215,7 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
                 final_minimization='scf'
 
 
-        if final_minimization!=None:
+        if final_minimization is not None:
 #            AFLOWpi.run._skeletonRun(calcs)
             AFLOWpi.prep._addToAll(calcs,'RUN',"oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','%s')" %final_minimization)
             for ID,oneCalc in list(calcs.items()):
@@ -1250,7 +1250,7 @@ def _crawlingMinimization(oneCalc,ID,fitVars=None,options=None,faultTolerant=Tru
 
                 constraint_type_list=[]
                 constraint_var_list=[]
-                if constraint!=None:
+                if constraint is not None:
                         try:
                                 '''if the length of the first entry in constraints isn't a   '''
                                 '''[constraint,parameter] combination then put it in an array'''
@@ -1665,7 +1665,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
                 constraint_type_list=[]
                 constraint_var_list=[]
-                if constraint!=None:
+                if constraint is not None:
                         try:
                                 '''if the length of the first entry in constraints isn't a   '''
                                 '''[constraint,parameter] combination then put it in an array'''
@@ -1949,7 +1949,7 @@ def _shiftGrid(calcs,outFile,fitVars=None,options=None,constraint=None,thresh=0.
 
                                                 
 
-                        if constraint!=None:
+                        if constraint is not None:
                                 for constr in range(len(constraint_type_list)):
                                         if constraint_type_list[constr]=='volume':
                                                 """NEED TO BE GENERALIZED NEED TO BE GENERALIZED NEED TO BE GENERALIZED"""
@@ -2307,7 +2307,7 @@ def _plotOne(plots,labs,fig,entry,key,xaxis,pltTitle=None,rename=None,entryNum=0
         if pltTitle is None:
                 pltTitle=filename
         
-        if rename!=None:
+        if rename is not None:
                 for oneCalc in entry:
                         entryCopy=copy.deepcopy(oneCalc)
                         for ID,value in list(entryCopy.items()):

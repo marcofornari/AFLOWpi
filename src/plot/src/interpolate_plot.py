@@ -166,13 +166,13 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
 
     cbar = pylab.colorbar()
 
-    if zaxisTitle!=None:
+    if zaxisTitle is not None:
 	    cbar.set_label(zaxisTitle,size=18)
     
     ax.set_xlabel(xaxisTitle)
     ax.set_ylabel(yaxisTitle)
 
-    if title!=None:
+    if title is not None:
 	    pyplot.title(title)
 
     pyplot.savefig(fileName,bbox_inches='tight')
@@ -259,7 +259,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     ax.set_xlabel(xaxisTitle)
     ax.set_ylabel(yaxisTitle)
 
-    if title!=None:
+    if title is not None:
 	    pyplot.title(title)
 
 	    

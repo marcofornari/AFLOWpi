@@ -587,7 +587,7 @@ def _skeletonRun(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,
 
     testOne(calcs,calcType=calcType,engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
 
-    if calcType != None:
+    if calcType is not None:
         for ID,oneCalc in list(calcs.items()):
             try:
 #                AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix="  ",engine='espresso',calcType=calcType)
@@ -2143,7 +2143,7 @@ def _PW_bands_fix(oneCalc,ID,exten="band_data.out"):
         k_val=[]
         total_list=[]
         for i in bands_out_lines:
-            if indent_re.match(i)!=None:
+            if indent_re.match(i) is not None:
                 try:
                     dist=numpy.asarray([float(x) for x in i.split()])-total_path_length
                     path_vals.append(k_val)

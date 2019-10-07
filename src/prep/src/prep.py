@@ -2129,7 +2129,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
 
 
-            if nk!=None:
+            if nk is not None:
                     path = AFLOWpi.retr._getPath_nk(nk,oneCalc,ID)
             else:
                     path = AFLOWpi.retr._getPath(dk,oneCalc,ID=prevID_str)
@@ -2415,7 +2415,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
 
                 # copy the pseudo file
-                if pseudodir != None:
+                if pseudodir is not None:
                         for l,m in list(v.items()):
                                 if re.search(r'_AFLOWPI_[A-Z]\d*PSEUDO_',l):
                                     try:
@@ -2511,7 +2511,7 @@ def totree(tobecopied, calcs,rename=None,symlink=False):
         for l,v in list(calcs.items()):
 
                 a = v.get('_AFLOWPI_FOLDER_')
-                if rename != None:
+                if rename is not None:
                     a = os.path.join(a,rename)
                 else:
                     a = os.path.join(a,actualFile)
@@ -3462,7 +3462,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                     inputFile=inputFile
 
             '''try to open the reffile '''
-            if reffile!=None:
+            if reffile is not None:
                 if not os.path.exists(reffile):
                         refFileStr=reffile
                 else:
@@ -4684,7 +4684,7 @@ EXITING.
 
 
         def change_input(self,namelist=None,parameter=None,value=None):
-            if value!=None:
+            if value is not None:
                     del_value=True
                     if "'" in value:
                             try:
@@ -5916,7 +5916,7 @@ def modifyNamelistPW(calcs,namelist,parameter,value,runlocal=False):
 
     '''
 
-    if value!=None:
+    if value is not None:
             del_value=True
             if "'" in value:
                     try:
@@ -6525,7 +6525,7 @@ def varyCellParams(oneCalc,ID,param=(),amount=0.15,steps=8,constraint=None):
 
     constraint_type_list=[]
     constraint_var_list=[]
-    if constraint!=None:
+    if constraint is not None:
         try:
             '''if the length of the first entry in constraints isn't a   '''
             '''[constraint,parameter] combination then put it in an array'''            

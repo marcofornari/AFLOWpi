@@ -1120,7 +1120,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
         deltakp = None
         deltakp2 = None
 
-        if smearing != None:
+        if smearing is not None:
             deltakp,deltakp2 = do_adaptive_smearing(pksp,nawf,nspin,
                                                     alat,a_vectors,nk1,nk2,nk3,smearing)
 
@@ -1305,7 +1305,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
 
 #        E_k = np.ascontiguousarray(E_k[:,:bnd])
 
-#        if smearing != None:
+#        if smearing is not None:
 #            deltakp = np.ascontiguousarray(deltakp[:,:bnd])
 #            deltakp2 = np.ascontiguousarray(deltakp2[:,:bnd,:bnd])
 
@@ -1593,7 +1593,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
             comm.Barrier()
 
 
-            # if smearing != None:
+            # if smearing is not None:
             #     ene,L0 = do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltakp,smearing,t_tensor,eminBT,emaxBT,ne)
 
             #     #----------------------
@@ -1737,7 +1737,7 @@ def paoflow(inputpath='./',inputfile='inputfile.xml'):
                             %(temps[t],ene[n],pcp,pcpm)
 
         if rank==0:
-            # if smearing!=None:
+            # if smearing is not None:
             #     f=open(os.path.join(inputpath,'sigmadk_'+str(ispin)+'.dat'),'w')
             #     f.write(sigmadk_str)
             #     f.close()

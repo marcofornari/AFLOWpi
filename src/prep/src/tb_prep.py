@@ -724,7 +724,7 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
             oneCalc['__runList__']=[]
 
             
-        if config!=None:
+        if config is not None:
                 AFLOWpi.prep._forceGlobalConfigFile(config)
                 logging.debug('forced config %s' % config)
         else:

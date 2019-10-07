@@ -107,7 +107,7 @@ def __radialPDF(oneCalc,ID,atomNum,filterElement=None,title='',file_prefix='',fi
     for line in splitLines:
         try:
             if int(line[0]) == atomNum:
-                    if filterElement!=None:
+                    if filterElement is not None:
                             if filterElement==line[2].split('-')[1]:
                                     lineList.append(float(line[3]))
                     else:
@@ -128,7 +128,7 @@ def __radialPDF(oneCalc,ID,atomNum,filterElement=None,title='',file_prefix='',fi
     
     n, bins, patches = pyplot.hist(lineList,bins=bins,**kwargs)
 
-    if y_range!=None:
+    if y_range is not None:
         try:
             axes = pyplot.gca()
             axes.set_ylim([y_range[0],y_range[1]])

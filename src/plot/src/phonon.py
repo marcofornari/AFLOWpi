@@ -245,7 +245,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
             pylab.ylabel('Frequency (cm$^{-1}$)')
         pylab.xlim(min(k_x[1]),max(k_x[1])) 
         
-        if w_range!=None:
+        if w_range is not None:
                 min_val=w_range[0]/1.1
                 max_val=w_range[1]/1.1
 
@@ -465,7 +465,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 #               handles, labels = ax2.get_legend_handles_labels()
 ##########################################################################################################
-        if w_range!=None:
+        if w_range is not None:
                 min_val=w_range[0]/1.1
                 max_val=w_range[1]/1.1
 
