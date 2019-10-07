@@ -621,7 +621,7 @@ def _symmetrtize_forces(nrx1,nrx2,nrx3,ss_input_file,force_dir,fd_output_file,fo
 #########################################################################################
 
 
-def fd_sym(oneCalc,ID):
+def _fd_sym(oneCalc,ID,nrx1,nrx2,nrx3):
 
     force_dir=os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"%s_FD_PHONON"%ID)
     ss_input_file=os.path.join(force_dir,"%s__0001/displaced.0.0.0_01.in"%ID)

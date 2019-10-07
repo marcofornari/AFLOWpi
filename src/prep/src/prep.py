@@ -4975,7 +4975,19 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
                 
-                #flag to determine if we need to recalculate the TB hamiltonian if 
+
+                if atom_sym and innx==1:
+                        warning='''
+WARNING! forward difference derivative 
+(innx=1) and atom_sym=True are only
+compatable assuming d2E/dx2 is constant.
+If it is not constant then your results 
+MAY be incorrect. It is advised that you 
+use innx=2 when using atom_sym=True.'''
+                        warning = AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='CRITICAL',show_level=False)
+                        print(warning)
+                        
+
                 #the user has chosen to calculate it on a later step in the workflow
                 self.tight_banding=False
                 #the type of calculation is added to the workflow list and is used 
@@ -5056,6 +5068,12 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                                                            subset_tasks=task_list,
                                                            substep_name='FD_PHONON',keep_file_names=True,
                                                            clean_input=False)
+
+
+                if atom_sym:
+                        loadModString = '''AFLOWpi.run._fd_sym(oneCalc,ID,%s,%s,%s)'''%(nrx1,nrx2,nrx3)
+                        self._addToAll(block='POSTPROCESSING',addition=loadModString)           
+
                 #after all the calculations in the subset have finshed we do some kind of postprocessing 
                 #routine(s) to extract/process data
                 loadModString = '''AFLOWpi.run._pp_phonon(__submitNodeName__,oneCalc,ID,de=%s,raman=%s,LOTO=%s,field_strength=%s,project_phDOS=%s)'''%(de,raman,LOTO,field_strength,proj_phDOS)

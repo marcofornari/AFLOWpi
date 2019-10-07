@@ -344,6 +344,12 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 
 
 
+
+    if atom_sym:
+        # if atom_sym=True let the AFLOWpi script
+        # take care of the symmetry of the forces
+        noatsym=True
+        nodispsym=True
     fd_ifc_template='''&input
       prefix='%s'
 !      outdir='./'
