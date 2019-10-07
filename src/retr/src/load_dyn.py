@@ -46,13 +46,13 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
     cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
     cent_diff=True
-    if cont_ID == None:
+    if cont_ID is None:
         cont_ID = norm_ID
         cent_diff=False
 
     expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
     cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
-    if cont_vol_ID == None:
+    if cont_vol_ID is None:
         cont_vol_ID = norm_ID
     
     norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)

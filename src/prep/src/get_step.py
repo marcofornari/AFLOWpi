@@ -27,7 +27,7 @@ import AFLOWpi
 
 def _get_step(oneCalc,ID,step_type=None,last=True):
 
-    if step_type==None:
+    if step_type is None:
         return 0
     try:
         workflow = oneCalc['_AFLOWPI_WORKFLOW_']

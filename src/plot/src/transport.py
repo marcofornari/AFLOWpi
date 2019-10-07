@@ -310,7 +310,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                             elif Type=='seebeck':
                                     y_vals=numpy.asarray(y_vals)*1.e6
 
-                            if x_range==None:
+                            if x_range is None:
                                     max_x=numpy.amax(x_vals)
                                     min_x=numpy.amin(x_vals)
                             else:
@@ -375,7 +375,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
 
 
-                            if x_range==None:
+                            if x_range is None:
                                     max_x=numpy.amax(x_vals)
                                     min_x=numpy.amin(x_vals)
                             else:
@@ -431,7 +431,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                             y_vals=sorted_up[temp_index][1][1]
 
 
-                            if x_range==None:
+                            if x_range is None:
                                     max_x=numpy.amax(x_vals)
                                     min_x=numpy.amin(x_vals)                    
                             else:

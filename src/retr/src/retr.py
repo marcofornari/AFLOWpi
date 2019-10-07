@@ -1822,7 +1822,7 @@ def pw2cif(calcs,inpt=True,outp=True,runlocal=False,outputFolder=None,filePrefix
                     continue
             else:
                 inOrOut=inpt_or_outp
-                if outputFolder==None:
+                if outputFolder is None:
 
                     AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=%s,outputFolder=None,filePrefix="%s")\n' % (inOrOut,filePrefix))
                 else:
@@ -1850,7 +1850,7 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
     '''        
 
 
-    if outputFolder == None:
+    if outputFolder is None:
         outputFolder = oneCalc['_AFLOWPI_FOLDER_']
 
 

@@ -69,7 +69,7 @@ def _get_raman_spectrum(oneCalc,ID,e1=None,e2=None,axis="z",p=0.0,temp=300,w_ran
     max_w = np.amax(gamma_w[3:])
 
     nsample=2000
-    if w_range==None:
+    if w_range is None:
         w_sample = np.linspace(min_w*0.98+1,max_w*1.02,nsample,endpoint=True)
     else:
         w_sample = np.linspace(w_range[0],w_range[1],nsample,endpoint=True)

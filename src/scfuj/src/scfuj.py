@@ -119,7 +119,7 @@ def _getPAOfilename(atom,PAOdir=None):
         Keyword Arguments:
          - pseudodir -- the path of the directory containing pseudofiles
         """
-        if PAOdir==None:
+        if PAOdir is None:
             PAOdir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')        
             if os.path.isabs(PAOdir) == False:
                 configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -186,7 +186,7 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
 #            break
         
         output_oneCalc = copy.deepcopy(oneCalc)
-        if paodir==None:
+        if paodir is None:
                 paodir = AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')
                 if os.path.isabs(paodir) == False:
                     configFileLocation = os.path.dirname(configFileLocation)
@@ -395,7 +395,7 @@ def maketree(oneCalc,ID, paodir=None):
 ############################################################################################################
         #Get paodir from config file
         try:
-            if paodir==None:
+            if paodir is None:
                 paodir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')
                 if os.path.isabs(paodir) == False:
                     configFileLocation = AFLOWpi.prep._getConfigFile()

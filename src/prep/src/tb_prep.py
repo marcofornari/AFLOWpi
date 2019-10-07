@@ -102,7 +102,7 @@ class tight_binding:
 
     def shc(self,s_tensor=None,en_range=[0.05,5.05],de=0.05,spin_texture=False):
 
-        if s_tensor==None:
+        if s_tensor is None:
             s_tensor = [[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0],[1,2,0],[2,0,0],[2,1,0],[2,2,0], \
                             [0,0,1],[0,1,1],[0,2,1],[1,0,1],[1,1,1],[1,2,1],[2,0,1],[2,1,1],[2,2,1], \
                             [0,0,2],[0,1,2],[0,2,2],[1,0,2],[1,1,2],[1,2,2],[2,0,2],[2,1,2],[2,2,2]]
@@ -131,7 +131,7 @@ class tight_binding:
     def ahc(self,a_tensor=None,en_range=[0.05,5.05],de=0.05):
 
         # Berry curvature
-        if a_tensor==None:
+        if a_tensor is None:
             a_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
             a_tensor = [[0,1],]
 
@@ -153,7 +153,7 @@ class tight_binding:
 
     def optical(self,d_tensor=None,en_range=[0.05,5.05],de=0.05):
 
-        if d_tensor==None:
+        if d_tensor is None:
             d_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
 
         ne=float(en_range[1]-en_range[0])/de
@@ -195,7 +195,7 @@ class tight_binding:
         '''             
 
         # Boltzmann transport
-        if t_tensor==None:
+        if t_tensor is None:
             t_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
 
 

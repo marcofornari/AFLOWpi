@@ -50,7 +50,7 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
             pass
 
 
-        if zaxis_title==None:
+        if zaxis_title is None:
             zaxis_title='Energy (Ry)'
 
     if len(calcs)>1 and type(calcs)==type([1,2,3]):
@@ -129,9 +129,9 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
             print('List of distortion calculations must not exceed 3')
             return
 
-    if xAxisStr==None:
+    if xAxisStr is None:
             xAxisStr=xaxis
-    if yAxisStr==None:
+    if yAxisStr is None:
             yAxisStr=yaxis
 
     

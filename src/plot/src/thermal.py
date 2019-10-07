@@ -627,9 +627,9 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
                     
                     
 
-    if w_range==None:
+    if w_range is None:
             w_range=[0.0,np.amax(therm_data[:,0])]
-    if grun_range==None:
+    if grun_range is None:
             if np.amin(therm_data[:,1])<0.0:
 #                   grun_range=[np.amin(therm_data[:,1])*1.05,np.amax(therm_data[:,1])*1.05]
                     grun_range=[0.0,np.amax(therm_data[:,2:])*1.05]

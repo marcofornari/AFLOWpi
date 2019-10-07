@@ -41,7 +41,7 @@ def _add_subset_to_daemon_log_list(addition_list,log_name):
 
 
 def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=True,keep_name=False,config=None,clean_input=True):
-    if config==None:
+    if config is None:
         config=oneCalc['_AFLOWPI_CONFIG_']
 
     intoInit={'PROJECT':subset_name,'SET':'','workdir':oneCalc['_AFLOWPI_FOLDER_'],'config':config}
@@ -137,7 +137,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
 
             AFLOWpi.prep._from_local_scratch(oneCalc,ID)
 
-            if check_function==None:
+            if check_function is None:
                 complete_function='True'
             else:
                 complete_function=check_function

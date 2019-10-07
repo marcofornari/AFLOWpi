@@ -444,7 +444,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
 
 
-                if w_range==None:
+                if w_range is None:
                         w_range=[numpy.amin(freq_dos[:,0]),numpy.amax(freq_dos[:,0])]
                 freq_dos = freq_dos[numpy.where(numpy.logical_and(freq_dos[:,0]>=w_range[0]*1.1,freq_dos[:,0]<=w_range[1]*1.1))]
 

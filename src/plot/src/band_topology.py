@@ -337,7 +337,7 @@ def __band_topology_Plot(oneCalc,ipol,jpol,spol=2,yLim=[-10,10],DOSPlot='',postf
         else:
                 bandSym = AFLOWpi.retr._getPathFromFile(calcCopy)
         
-        if bandSym==None:
+        if bandSym is None:
                 print('ERRORRRR!')
                 return
         try:

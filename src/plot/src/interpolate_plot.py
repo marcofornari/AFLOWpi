@@ -73,9 +73,9 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
 
     '''
 
-    if xaxisTitle==None:
+    if xaxisTitle is None:
 	    xaxisTitle=variable1
-    if yaxisTitle==None:
+    if yaxisTitle is None:
 	    yaxisTitle=variable2
     X=[]
     Y=[]
@@ -205,9 +205,9 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
 
     '''
 
-    if xaxisTitle==None:
+    if xaxisTitle is None:
 	    xaxisTitle=variable1
-    if yaxisTitle==None:
+    if yaxisTitle is None:
 	    yaxisTitle=yaxis
     X=[]
     Y=[]

@@ -774,14 +774,14 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
         try:
             logging.debug('entering testOne')
                 
-            if execPrefix == None:
+            if execPrefix is None:
                 if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
                     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
                 else:
                     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
                     
 
-            if execPostfix == None:
+            if execPostfix is None:
                 if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
                     execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
                 else:
@@ -1112,7 +1112,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
           
     """
 
-    if execPrefix == None:
+    if execPrefix is None:
         if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
             execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
@@ -1120,7 +1120,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
 #        else:
 #            execPrefix=''
 
-    if execPostfix == None:
+    if execPostfix is None:
         if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
             execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
 #        else:
@@ -1134,13 +1134,13 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
 
         AFLOWpi.prep._forceGlobalConfigFile(configFile)
 
-        if execPrefix == None:
+        if execPrefix is None:
             if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
                 execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 #            else:
 #                execPrefix=''
 
-        if execPostfix == None:
+        if execPostfix is None:
             if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
                 execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
 #            else:
@@ -1194,7 +1194,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
 
         if len(clusterType)==0:
             clusterType='None'
-        elif clusterType==None:
+        elif clusterType is None:
             clusterType='None'
     except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
@@ -2434,7 +2434,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
             ri = ID+'.in'
             ro = ID+'.out'
 
-        if execPath==None:
+        if execPath is None:
             execPath=''
             executable = AFLOWpi.run._getExecutable(engine,calcType)
             executable = os.path.join('./',executable)
@@ -2630,11 +2630,11 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
 
     logging.debug('entering _onePrep')
 
-    if execPrefix == None or execPrefix ==  '':
+    if execPrefix is None or execPrefix is  '':
         execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 #    else:
 #        execPrefix=''
-    if execPostfix == None or execPostfix ==  '':
+    if execPostfix is None or execPostfix is  '':
 
         execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
 #    else:
@@ -2656,7 +2656,7 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
 
 
     try:
-        if alt_ID==None:
+        if alt_ID is None:
             write_ID='ID'
         else:
             write_ID="'%s'"%alt_ID

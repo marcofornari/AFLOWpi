@@ -345,7 +345,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         else:
                 bandSym = AFLOWpi.retr._getPathFromFile(calcCopy)
         
-        if bandSym==None:
+        if bandSym is None:
                 print('ERRORRRR!')
                 return
         try:

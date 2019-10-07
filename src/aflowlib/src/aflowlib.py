@@ -575,7 +575,7 @@ def _write_property_list(property_dict,property_list_type):
                                 continue
                 except:
                         pass
-                if v==None or v=='None':
+                if v is None or v=='None':
                         continue
                 #add property to output string
                 output_str+='%s=%s %s\n'%(k,v,unit)

@@ -61,11 +61,11 @@ def _get_gruneisen_ap(oneCalc,ID):
     cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 
-    if cont_ID == None:
+    if cont_ID is None:
         cont_ID = norm_ID
 
     cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
-    if cont_vol_ID == None:
+    if cont_vol_ID is None:
         cont_vol_ID = norm_ID
     
     expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
@@ -157,12 +157,12 @@ def _get_gruneisen(oneCalc,ID,band=True):
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
 
     cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
-    if cont_ID == None:
+    if cont_ID is None:
         cont_ID = norm_ID
 
     expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
     cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
-    if cont_vol_ID == None:
+    if cont_vol_ID is None:
         cont_vol_ID = norm_ID
     
 

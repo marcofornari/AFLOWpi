@@ -56,10 +56,10 @@ def brute_test(calcs,ecutwfc,dual=None,sampling=None,constraint=None,thresh=0.00
 
     for ID,oneCalc in list(calcs.items()):
         #set sampling and dual list from input if no variance provided
-        if sampling==None or dual==None:
+        if sampling is None or dual is None:
             in_dict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
             sampling = [in_dict['K_POINTS']['__content__'], ]
-        if dual==None:
+        if dual is None:
             dual_from_input=4
             wfc_cut = float(in_dict['&system']['ecutwfc']) 
             try:
@@ -1152,7 +1152,7 @@ def  crawlingMinimization(calcs,options=None,faultTolerant=True,constraint=None,
 
 
         constraintString='None'
-        if constraint==None:
+        if constraint is None:
             constraintString='None'
         else:
             try:
@@ -1464,7 +1464,7 @@ def _add_shifter(calc_subset,fitVars=None,options=None,faultTolerant=True,initia
 
                 AFLOWpi.prep.updatelogs(variedCalcs,logname=chain_logname)
                 try:
-                        if constraint==None:
+                        if constraint is None:
                                 constraintString='None'
                         else:
                                 constraintString='('
@@ -2220,7 +2220,7 @@ def _getMinimization(origCalcs,fitVars=None,options=None,return_energy=False,min
     manyCalcs=AFLOWpi.pseudo._splitCalcs(origCalcs,key)
     
 #    print "Entering getMinimization"
-    if fitVars==None:
+    if fitVars is None:
         print('ERROR: You need to specify variables for the fit and minimization')
         logging.warning('ERROR: You need to specify variables for the fit and minimization')
         return
@@ -2304,7 +2304,7 @@ def _plotOne(plots,labs,fig,entry,key,xaxis,pltTitle=None,rename=None,entryNum=0
                         lineName+=' '+cutoff+' '+str(entry[0][cutoff])
 #       print lineName
 
-        if pltTitle==None:
+        if pltTitle is None:
                 pltTitle=filename
         
         if rename!=None:
@@ -2485,7 +2485,7 @@ def plot(resultList,xaxis='',xtitle=None,ytitle=None,title=None,rename=None,file
         entrySorted = sorted(entry, key=lambda x: [x[cutoff] for cutoff in key])
 
 
-#        if title==None:
+#        if title is None:
 
         labs,plots = AFLOWpi.pseudo._plotOne(plots,labs,fig,entrySorted,splittingForPlot,xaxis,pltTitle=title,rename=rename,entryNum=entryNum,maxs=max_list,mins=min_list)
 

@@ -1126,7 +1126,7 @@ def _getPseudofilename(atom,pseudodir=os.path.join(os.curdir,'PSEUDOs')):
         """
 
         logging.debug('Entering getPseudofilename')
-        if pseudodir == None:
+        if pseudodir is None:
                 pseudodir= AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
                 
                 if os.path.isabs(pseudodir) == False:
@@ -1585,7 +1585,7 @@ def _addToAll(calcs,block=None,addition=None):
 
     '''
 
-    if block==None or addition==None:
+    if block is None or addition is None:
         return
     for ID,oneCalc in list(calcs.items()):
         AFLOWpi.prep._addToBlock(oneCalc,ID,block,addition)    
@@ -2105,7 +2105,7 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                     match1 = float(re.findall(r'number of electrons\s*=\s*([.0-9]*)',outfile)[-1])/2.0
                     nbnd = AFLOWpi.prep._num_bands(oneCalc)
 
-                    if n_conduction==None:
+                    if n_conduction is None:
                             nbnd = AFLOWpi.prep._num_bands(oneCalc)
                     else:
                             nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
@@ -2119,10 +2119,10 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
             bandsKRegex = AFLOWpi.qe.regex.k_points('','content','regex')
             '''sets dk to generic value if no option for dk or nk is used'''
-            if nk==None and dk==None:
+            if nk is None and dk is None:
                 dk=0.1
                 '''if dk isn't set but nk is..set dk small and average out later with nk'''
-            elif dk==None and nk!=None:
+            elif dk is None and nk!=None:
                 dk=0.001
 
 
@@ -2312,7 +2312,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
         
         try:
-            if pseudodir==None:
+            if pseudodir is None:
                 pseudodir = AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
                 if os.path.isabs(pseudodir) == False:
                     configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -3145,7 +3145,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
         PROJDIR=aflowkeys['project']
         PROJECT=PROJDIR
         SET=aflowkeys['set']
-        if pseudodir==None:
+        if pseudodir is None:
             pseudodir= AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
             if os.path.isabs(pseudodir) == False:
                 configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -3493,7 +3493,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
         
             inputFile = AFLOWpi.prep._removeComments(inputFile)
 
-            if workdir==None:            
+            if workdir is None:            
                 workdir = AFLOWpi.prep._ConfigSectionMap('prep','work_dir')
 
             if os.path.isabs(workdir) == False:
@@ -3505,7 +3505,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
             PROJDIR=aflowkeys['project']
             PROJECT=PROJDIR
             SET=aflowkeys['set']
-            if pseudodir==None:
+            if pseudodir is None:
                 pseudodir= AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
                 if os.path.isabs(pseudodir) == False:
                     configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -3801,7 +3801,7 @@ def getMPGrid(primLatVec,offset=True,string=True,oldk=None,oldLat=None):
         
         kpointList=[]
         a,b,c,alpha,beta,gamma =  AFLOWpi.retr.free2abc(primLatVec,cosine=False,bohr=False,string=False)
-        if oldk==None or oldLat==None:
+        if oldk is None or oldLat is None:
                 kpointList.append(int(np.floor(200.0/(a*2*np.pi))))
                 kpointList.append(int(np.floor(200.0/(b*2*np.pi))))
                 kpointList.append(int(np.floor(200.0/(c*2*np.pi))))
@@ -3870,7 +3870,7 @@ def _ConfigSectionMap(section,option,configFile=None):
 
     Config = configparser.ConfigParser()
     config = AFLOWpi.prep._getConfigFile()
-    if configFile == None:
+    if configFile is None:
         Config.read(config)
     else:
         Config.read(configFile)        
@@ -4247,7 +4247,7 @@ EXEC DIR : %s\n'''%(config,PROJECT,set_str,'./')
 
         AFLOWpi.prep._forceGlobalConfigFile(configFile)
 
-        if workdir==None:
+        if workdir is None:
             workdir = AFLOWpi.prep._ConfigSectionMap('prep','work_dir')
         if os.path.isabs(workdir) == False:
                     configFileLocation = AFLOWpi.prep._getConfigFile()
@@ -4593,7 +4593,7 @@ EXITING.
                 
 
         def addToAll(self,block=None,addition=None):
-                if block==None or addition==None:
+                if block is None or addition is None:
                         return
 
                 AFTER  = ["RUN","POSTPROCESSING","PLOT","CALCTRANSFORM","SUBMITNEXT","BATCH","CLEANUP",]
@@ -4605,7 +4605,7 @@ EXITING.
 
 
         def _addToAll(self,block=None,addition=None):
-                if block==None or addition==None:
+                if block is None or addition is None:
                         return
 
                 for ID,oneCalc in list(self.int_dict.items()):
@@ -5484,7 +5484,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
         def _addToInit(self,block=None,addition=None):
-                if block==None or addition==None:
+                if block is None or addition is None:
                         return
                 for ID,oneCalc in list(self.initial_calcs[0].items()):
                         AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
@@ -5777,7 +5777,7 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
     inputDict=AFLOWpi.retr._splitInput(inputfile)
     inputDict['&control']['calculation']="'nscf'"
     
-    if n_conduction==None:
+    if n_conduction is None:
             nbnd = AFLOWpi.prep._num_bands(oneCalc)
     else:
             nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
@@ -6780,7 +6780,7 @@ def _modifyVarVal(oneCalc,ID,varName='uValue',value=None):
     '''    
 
     logging.debug('entering _modifyVarVal')
-    if value==None:
+    if value is None:
         return
     subdir = oneCalc['_AFLOWPI_FOLDER_']    
     fileName = '_'+ID+'.py'
@@ -6868,7 +6868,7 @@ def askAFLOWpiVars(refAFLOWpiVars):
         """
 
         for k in list(refAFLOWpiVars.items()):
-                if k[1] == None:
+                if k[1] is None:
                         try:
                                 a = eval(input('define '+k[0]+': '))
                                 refAFLOWpiVars.update({k[0]:a}) 
