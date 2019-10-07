@@ -212,7 +212,7 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
 #        species = temp_species.keys()
         species = re.findall("(.*).*UPF",inputfile)
         species = [x.split()[0] for x in species]
-        print(species)
+
         splitInput = AFLOWpi.retr._splitInput(inputfile)
 
 
@@ -306,7 +306,7 @@ def updateUvals(oneCalc, Uvals,Jvals,ID=None,U_eff=True):
 
                 #Update inputfile
                 oneCalc['_AFLOWPI_INPUT_']=AFLOWpi.retr._joinInput(inputDict)
-                print((AFLOWpi.retr._joinInput(inputDict)))
+
         except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
