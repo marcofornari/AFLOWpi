@@ -16,10 +16,11 @@ def _standardize_alat(in_str):
         return alat
     try:
         a
+        in_str_byte=in_str.encode()
         AFLOWSYM_LOC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM')
         AFLOW_EXE    = os.path.join(AFLOWSYM_LOC,'aflow')
         find_sym_process = subprocess.Popen('%s --edata=1.e-1 --no_scan'%AFLOW_EXE,stdin=subprocess.PIPE,stdout=subprocess.PIPE,shell=True)
-        output = find_sym_process.communicate(input=in_str)[0]
+        output = find_sym_process.communicate(input=in_str)[0].decode()
 
         standard_input = re.findall('SCONV.*\n((?:.*\n)+)',output)[0]
 

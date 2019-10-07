@@ -31,7 +31,7 @@ from distutils.util import change_root, convert_path
 from distutils.command.install import install
 import shutil
 sys.path.append(os.path.curdir)
-
+import site
 
 #os.environ["CC"] = "gcc"
 #os.environ["CXX"] = "g++"
@@ -182,9 +182,33 @@ except Exception as e:
 
 
 
-try:
+def binaries_directory():
+      """Return the installation directory, or None"""
+      # taken from stackoverflow
+      if '--user' in sys.argv:
+         paths = (site.getusersitepackages(),)
+      else:
+         py_version = '%s.%s' % (sys.version_info[0], sys.version_info[1])
+         paths = (s % (py_version) for s in (
+            sys.prefix + '/lib/python%s/dist-packages/',
+            sys.prefix + '/lib/python%s/site-packages/',
+            sys.prefix + '/local/lib/python%s/dist-packages/',
+            sys.prefix + '/local/lib/python%s/site-packages/',
+            '/Library/Python/%s/site-packages/',
+         ))
+         
 
-   AFLOW_EXEC = os.path.join(os.getenv('HOME'),'.local/lib/python2.7/site-packages/AFLOWpi','AFLOWSYM','aflow')
+      for path in paths:
+         if os.path.exists(path):
+            return path
+      print('no installation path found', file=sys.stderr)
+      return None
+
+try:
+   inst_dir=binaries_directory()
+
+
+   AFLOW_EXEC = os.path.join(inst_dir,'AFLOWpi','AFLOWSYM','aflow')
    if not os.access(AFLOW_EXEC,3):
       os.chmod(AFLOW_EXEC,733)      
 

@@ -2196,7 +2196,7 @@ def bandsAflow(dk, LAT):
         #logging.info('Running aqe')
         COMMAND = ['./aqe', '--bzd', str(LAT)]
         proc = subprocess.Popen(COMMAND, stdout=subprocess.PIPE)
-        fromaqe = proc.communicate()[0] 
+        fromaqe = proc.communicate()[0].decode()
 
 # we use aqe --qe --bzd LAT
 # e.g. ./aqe --bzd RHL1

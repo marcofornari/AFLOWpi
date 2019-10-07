@@ -496,18 +496,17 @@ def _path_by_lattice_variation(ibrav_var):
 def _getHighSymPoints_aflow(oneCalc,ID=None):
 
     in_str = oneCalc['_AFLOWPI_INPUT_']
+    in_str = in_str.encode('utf-8')
 
     AFLOWSYM_LOC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM')
     AFLOW_EXE    = os.path.join(AFLOWSYM_LOC,'aflow')
 
     find_sym_process = subprocess.Popen('%s --kpath --grid=1'%AFLOW_EXE,stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,shell=True)
-    output = find_sym_process.communicate(input=in_str)[0]
+
+    output = find_sym_process.communicate(input=in_str)[0].decode()
 
     ibrav_var = re.findall('K_POINTS\s*crystal\s*!\s*(\S*)\s*',output)[0]
-
-
-    
 
     band_path = _path_by_lattice_variation(ibrav_var)
 
