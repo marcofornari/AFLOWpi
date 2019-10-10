@@ -4826,7 +4826,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
-        def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,LOTO=False,hydrostatic_expansion=True,central_diff=False):
+        def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,LOTO=False,hydrostatic_expansion=True,central_diff=False):
                 workf = self.workflow
 #               print 'thermal DISABLED. Coming soon.'
 #               raise SystemExit
@@ -4973,20 +4973,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=1,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=False,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
-                
-
-                if atom_sym and innx==1:
-                        warning='''
-WARNING! forward difference derivative 
-(innx=1) and atom_sym=True are only
-compatable assuming d2E/dx2 is constant.
-If it is not constant then your results 
-MAY be incorrect. It is advised that you 
-use innx=2 when using atom_sym=True.'''
-                        warning = AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='CRITICAL',show_level=False)
-                        print(warning)
-                        
+        def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
+                                        
 
                 #the user has chosen to calculate it on a later step in the workflow
                 self.tight_banding=False
@@ -5085,6 +5073,21 @@ use innx=2 when using atom_sym=True.'''
                         calc_type+=' with Raman scattering'
 #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
+
+                if atom_sym and innx==1:
+                        warning='''                 ***************************************
+                   WARNING! WARNING! WARNING! WARNING! 
+                 ***************************************
+                 forward difference derivative (innx=1) 
+                 and atom_sym=True are only compatable 
+                 assuming d2E/dx2 is constant. If it is 
+                 not constant then your results MAY be 
+                 incorrect. It is advised that you use 
+                 innx=2 when using atom_sym=True.
+                 ***************************************'''
+                        warning = AFLOWpi.run._colorize_message(warning,level='CRITICAL',show_level=False)
+                        print(warning)
 
 
         def elph(self,mult_jobs=True,dx=0.1,tb_kp_mult=4.0,qp_mult=1.0):

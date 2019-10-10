@@ -218,7 +218,7 @@ def _load_forces(force_dir,natoms,nrx1,nrx2,nrx3):
     # load the force data
 
 
-    natoms_red=natoms/(nrx1*nrx2*nrx3)
+    natoms_red=int(natoms/(nrx1*nrx2*nrx3))
     # load forces and arrange in array
     force_files = sorted(glob.glob('%s/force.*'%force_dir))
     # index 1: +/- direction of displacement
@@ -471,13 +471,6 @@ def _get_symop_ss_map_acenter(pos,shift_crys,rot_crys,ai,symop):
     # maps the atomic positions to their equivilent positions 
     # after a rotation around a given atom
 
-
-    # shift atoms to center of first unit cell
-    offset=np.array([0.5/nrx1,0.5/nrx2,0.5/nrx3])
-
-    # scales the translational shift symmetry to supercell
-    shift_scale = np.array([1.0/nrx1,1.0/nrx2,1.0/nrx3])
-
     # rotate around atom ai
     new_pos   = ((pos-pos[ai]).dot(rot_crys[symop])) + pos[ai]
 
@@ -624,7 +617,7 @@ def _symmetrtize_forces(nrx1,nrx2,nrx3,ss_input_file,force_dir,fd_output_file,fo
 def _fd_sym(oneCalc,ID,nrx1,nrx2,nrx3):
 
     force_dir=os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"%s_FD_PHONON"%ID)
-    ss_input_file=os.path.join(force_dir,"%s__0001/displaced.0.0.0_01.in"%ID)
+    ss_input_file=os.path.join(force_dir,"%s_FD_PHONON__0001/displaced.0.0.0_01.in"%ID)
     fd_output_file=os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"%s_fd.out"%ID)
     force_output_dir=force_dir
 
