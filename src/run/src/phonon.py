@@ -55,8 +55,8 @@ def _phonon_band_path(oneCalc,ID,nk=400):
           
     """
 
-    dk=0.0001
-    nk=2000
+    dk=0.001
+    nk=5000
     path = AFLOWpi.retr._getPath(dk,oneCalc,ID=ID)
 
     '''scale the k points in the path list so they're as close to nk as possible'''

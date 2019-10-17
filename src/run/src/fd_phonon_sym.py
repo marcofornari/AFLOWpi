@@ -239,8 +239,9 @@ def _load_forces(force_dir,natoms,nrx1,nrx2,nrx3):
         else:
             # shift index from fortran to python style
             fi-=1
-            force_arr[fi[0],fi[2],:,fi[1]]=np.loadtxt(f)
-
+            try:
+                force_arr[fi[0],fi[2],:,fi[1]]=np.loadtxt(f)
+            except: pass
 
     return f0,force_arr
 
@@ -527,7 +528,7 @@ def _save_forces(f0,force_arr,save_dir):
 
     # save zero displacement forces
     fn = os.path.join(save_dir,"force.0.0.0")
-    np.savetxt(fn,f0,fmt="% 12.8f")            
+    np.savetxt(fn,f0,fmt="% 20.16e")            
 
     # loop over p/m
     for p in range(force_arr.shape[0]):
@@ -537,7 +538,7 @@ def _save_forces(f0,force_arr,save_dir):
             for a in range(force_arr.shape[1]):
                 fn = os.path.join(save_dir,"force.%s.%s.%s"%(p+1,d+1,a+1))
                 if not np.isclose(np.sum(np.abs(force_arr[p,a,:,d])),0.0):
-                    np.savetxt(fn,force_arr[p,a,:,d],fmt="% 12.8f")
+                    np.savetxt(fn,force_arr[p,a,:,d],fmt="% 20.16e")
 
 
 #########################################################################################
