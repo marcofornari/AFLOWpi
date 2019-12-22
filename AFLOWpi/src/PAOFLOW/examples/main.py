@@ -53,7 +53,11 @@ def main():
 
   paoflow.projectability()
 
-  paoflow.pao_hamiltonian(non_ortho=attr['non_ortho'])
+  paoflow.pao_hamiltonian(non_ortho=attr['non_ortho'],expand_wedge=attr['expand_wedge'],thresh=attr['symm_thresh'],
+                          symmetrize=attr['symmetrize'],max_iter=attr['symm_max_iter'])
+
+  if attr['write2file']:
+    paoflow.write2file()
 
   paoflow.add_external_fields()
 

@@ -1,6 +1,0 @@
-## uncomment to reserve entire node 
-## use only if necessary
-#PBS -l nodes=1:ppn=16,feature=intel16
-#PBS -l walltime=00:59:00
-#PBS -l mem=16gb
-

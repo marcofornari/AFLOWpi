@@ -713,6 +713,10 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         execPostfix = ''
         oneCalcID = ID
 
+        try:
+            pw_path = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'pw.x')
+            shutil.copy(pw_path,oneCalc['_AFLOWPI_FOLDER_'])
+        except: pass
 
         def abortIFRuntimeError(subdir, ID):
             with open(os.path.join(subdir, "%s.out"%ID)) as ifo:
@@ -846,6 +850,10 @@ def _run_tb_ham_prep(__submitNodeName__,oneCalc,ID,config=None,kp_factor=2.0,con
         
         if 'pdos' not in oneCalc['__runList__']:
             pdosPath = os.path.join(AFLOWpi.prep._ConfigSectionMap('prep','engine_dir'),'projwfc.x')
+
+            shutil.copy(pdosPath,oneCalc['_AFLOWPI_FOLDER_'])
+
+            pdosPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'projwfc.x')
 
             AFLOWpi.run._oneRun(__submitNodeName__,pdos_calc,pdos_ID,execPrefix=execPrefix,
                                 execPostfix=execPostfix,engine='espresso',calcType='custom',

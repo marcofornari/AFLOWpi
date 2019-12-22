@@ -167,6 +167,7 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
 
 
     if acbn0==True:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'expand_wedge','logical','F')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write2file','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write_binary','logical','T')
     if ovp==True:
