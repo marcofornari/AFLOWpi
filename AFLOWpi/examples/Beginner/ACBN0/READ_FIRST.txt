@@ -1,0 +1,3 @@
+Quantum Espresso must be modified before using ACBNO so that QE knows which orbital to apply the Hubbard U to for each species. 
+
+Modified versions of set_hubbard_l.f90 and tabd.f90 are included in engine_mods/scf_uj/

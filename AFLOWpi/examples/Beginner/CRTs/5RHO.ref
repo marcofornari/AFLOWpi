@@ -1,0 +1,46 @@
+RHO perovskite template for AFLOWPIrame
+!
+ &control
+    calculation = 'vc-relax',
+    restart_mode = 'from_scratch',
+    prefix = '_AFLOWPI_PREFIX_',
+    PSEUDO_DIR ='./'
+    outdir ='./',
+    verbosity='high'
+    nstep=200
+ /
+ &system
+    ibrav=5, 
+    celldm(1) = 8.00,
+    celldm(4) = 0.03, 
+    nat=5, 
+    ntyp=3,
+    ecutwfc = 50.,
+    occupations = 'smearing',
+    smearing = 'cold',
+    degauss = 0.001
+ /
+ &electrons
+    mixing_mode = 'plain'
+    mixing_beta = 0.7
+    conv_thr =  1.0d-8
+    electron_maxstep=200
+ /
+ &ions
+    ion_dynamics = 'bfgs',
+ /
+ &cell
+ cell_factor=2.0
+ /
+ATOMIC_SPECIES
+_AFLOWPI_A_  _AFLOWPI_AMASS_ _AFLOWPI_APSEUDO_ 
+_AFLOWPI_B_  _AFLOWPI_BMASS_ _AFLOWPI_BPSEUDO_ 
+_AFLOWPI_C_  _AFLOWPI_CMASS_ _AFLOWPI_CPSEUDO_ 
+ATOMIC_POSITIONS crystal
+_AFLOWPI_A_ 0.0 0.0 0.0 
+_AFLOWPI_B_ 0.51 0.51 0.51 
+_AFLOWPI_C_ 0.5 0.5 0.0 
+_AFLOWPI_C_ 0.0 0.5 0.5 
+_AFLOWPI_C_ 0.5 0.0 0.5 
+K_POINTS automatic
+_AFLOWPI_KK_  _AFLOWPI_KS_ 

@@ -1,0 +1,67 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! NOTA BENE NOTA BENE NOTA BENE NOTA BENE NOTA BENE NOTA BENE !!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+I have only tested these changed to work with acbn0 loop,
+dos,pdos,bands, and MTFrame opdos and bands/apdos plots.
+
+I MAKE NO GUARANTEES THAT THIS WONT BREAK OTHER THINGS IN ESPRESSO
+
+In fact I'm fairly sure it will.
+
+I suggest copying your espresso 5.3.0 dir and working on the copy.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!! NOTA BENE NOTA BENE NOTA BENE NOTA BENE NOTA BENE NOTA BENE !!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+#####set __LAB1__ to max length of label             #####
+#####set __LAB2__ to __LAB1__+1                      #####
+#####set __NUM_SPEC__ to max num of species of labels#####
+
+Modules/parameters.f90:
+15: ntypx  = __NUM_SPEC__
+
+
+Modules/input_parameters.f90:
+1327: CHARACTER(len=__LAB1__)  :: atom_label(nsx) = 'XX'  
+
+
+Modules/read_cards.f90:
+269:      CHARACTER(len=__LAB2__)   :: lb_pos
+352:      CHARACTER(len=__LAB2__)   :: lb_pos
+
+
+Modules/ions_base.f90:
+47:      CHARACTER(LEN=__LAB1__)      :: atm( ntypx ) 
+48:      CHARACTER(LEN=__LAB1__), ALLOCATABLE :: label_srt( : ) 
+
+
+
+PW/src/output_tau.f90 
+96:         WRITE( stdout,'(A__LAB1__,3X,3F14.9,1X,3i4)') &
+99:         WRITE( stdout,'(A__LAB1__,3X,3F14.9)') &
+
+
+Modules/qexml.f90
+2447:       CHARACTER(__LAB1__),   ALLOCATABLE :: atm_(:)
+
+
+Modules/qexml_xsd.f90
+2689:      CHARACTER(__LAB1__),   ALLOCATABLE :: atm_(:)
+
+
+PP/src/projwfc.x
+1227: 1000    FORMAT (5x,"state #",i3,": atom ",i3," (",a__LAB1__,"), wfc ",i2, &
+1236: 1000    FORMAT (5x,"state #",i3,": atom ",i3," (",a__LAB1__,"), wfc ",i2, &
+705:  1000 FORMAT (5x,"state #",i4,": atom ",i3," (",a__LAB1__,"), wfc ",i2, &
+647:               WRITE(iunproj,'(2i5,a__LAB1__,3i5)') &
+2156:              WRITE(iunproj,'(2i5,a__LAB1__,3i5)') &
+
+
+PP/src/partialdos.x
+156:         WRITE (filextension(c_tab:c_tab+__LAB1__),'(a1,a)') &
+410:         WRITE (filextension(c_tab:c_tab+__LAB1__),'(a1,a)') &
+
+

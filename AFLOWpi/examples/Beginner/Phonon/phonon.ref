@@ -1,0 +1,33 @@
+                                                                                                      
+&control                                                                                                              
+    calculation = 'vc-relax',                                                                                         
+    PSEUDO_DIR ='./', outdir ='./',                                                                                   
+
+    nstep=200                                                                                                         
+/                                                                                                                     
+&system                                                                                                              
+    ibrav=2,A = 5.66
+    nat=4,ntyp=2,                                                                                                     
+    ecutwfc = 50.,                                                                                                    
+!    ecutrho = 400.,                                                                                                   
+/                                                                                                                     
+&electrons                                                                                                            
+    diagonalization = 'david',                                                                                        
+    mixing_mode = 'plain',                                                                                            
+    mixing_beta = 0.7,                                                                                                
+    conv_thr =  1.0d-10,                                                                                              
+    electron_maxstep=200                                                                                              
+/                                                                                                                     
+&ions                                                                                                                 
+/                                                                                                                     
+&cell                                                                                                                 
+ cell_factor=2.0                                                                                                      
+/                                                                                                                     
+ATOMIC_SPECIES                                                                                                         
+_AFLOWPI_A_ _AFLOWPI_AMASS_ _AFLOWPI_APSEUDO_
+_AFLOWPI_B_ _AFLOWPI_BMASS_ _AFLOWPI_BPSEUDO_
+ATOMIC_POSITIONS {crystal}                                                                                            
+_AFLOWPI_A_     0.00000000000000   0.00000000000000   0.00000000000000  ! // Si                       
+_AFLOWPI_B_      0.75000000000000   0.75000000000000   0.75000000000000  ! // Si                                      
+K_POINTS {automatic}                                                                                                 
+8 8 8 1 1 1

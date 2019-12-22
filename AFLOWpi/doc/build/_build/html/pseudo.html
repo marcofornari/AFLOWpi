@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pseudo module &mdash; AFLOWpi  documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="AFLOWpi  documentation" href="index.html"/>
+        <link rel="next" title="retr module" href="retr.html"/>
+        <link rel="prev" title="prep module" href="prep.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> AFLOWpi
+          
+
+          
+          </a>
+
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="plot.html">plot module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="prep.html">prep module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">pseudo module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="retr.html">retr module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="run.html">run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scfuj.html">scfuj module</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">AFLOWpi</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>pseudo module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pseudo.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-pseudo">
+<span id="pseudo-module"></span><h1>pseudo module<a class="headerlink" href="#module-pseudo" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="pseudo.brute_test">
+<code class="descclassname">pseudo.</code><code class="descname">brute_test</code><span class="sig-paren">(</span><em>calcs</em>, <em>ecutwfc</em>, <em>dual=None</em>, <em>sampling=None</em>, <em>constraint=None</em>, <em>thresh=0.001</em>, <em>initial_variance=0.05</em>, <em>grid_density=10</em>, <em>mult_jobs=False</em>, <em>conv_thresh=0.01</em>, <em>calc_type='relax'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pseudo.html#brute_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pseudo.brute_test" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pseudo.crawlingMinimization">
+<code class="descclassname">pseudo.</code><code class="descname">crawlingMinimization</code><span class="sig-paren">(</span><em>calcs</em>, <em>options=None</em>, <em>faultTolerant=True</em>, <em>constraint=None</em>, <em>thresh=0.001</em>, <em>initial_variance=0.05</em>, <em>grid_density=10</em>, <em>mult_jobs=False</em>, <em>final_minimization='relax'</em>, <em>calc_type='relax'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pseudo.html#crawlingMinimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pseudo.crawlingMinimization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pseudo.getMinimization">
+<code class="descclassname">pseudo.</code><code class="descname">getMinimization</code><span class="sig-paren">(</span><em>origCalcs</em>, <em>fitVars=None</em>, <em>options=None</em>, <em>runlocal=False</em>, <em>faultTolerant=True</em>, <em>minimize_var='Energy'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pseudo.html#getMinimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pseudo.getMinimization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pseudo.plot">
+<code class="descclassname">pseudo.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>resultList</em>, <em>xaxis=''</em>, <em>xtitle=None</em>, <em>ytitle=None</em>, <em>title=None</em>, <em>rename=None</em>, <em>file_name=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pseudo.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pseudo.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>takes in a list of dictionaries of dictionaries of calculations and generates
+a plot with the x axis being some value in the list &#8216;key&#8217; and splits the calculations
+and plots them with each plot being a unique combination of the items in key that are not
+&#8216;xaxis&#8217;</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>resultList</strong> (<em>list</em>) &#8211; list of dictionaries of dictionaries of calculations</li>
+<li><strong>xaxis</strong> (<em>str</em>) &#8211; the keyword in oneCalc that you choose to be the x axis in your plots</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">Keyword Arguments:</th></tr>
+<tr class="field-even field"><td>&nbsp;</td><td class="field-body"><ul class="first simple">
+<li><strong>xtitle</strong> (<em>str</em>) &#8211; title of the x axis of the plot (default: None)</li>
+<li><strong>ytitle</strong> (<em>str</em>) &#8211; title of the y axis of the plot (default: None)</li>
+<li><strong>plotTitle</strong> (<em>str</em>) &#8211; title of the plots (default: None)</li>
+<li><strong>rename</strong> (<em>dict</em>) &#8211; a mapping of the names of the keywords of whose
+values used to generate the plot to some other name.
+ex. {&#8216; _AFLOWPI_ECUTW_&#8217;:&#8217;wavefunction cutoff&#8217;}</li>
+<li><strong>file_name</strong> (<em>str</em>) &#8211; use this instead of &#8220;PT_RESULTS.pdf&#8221; as filename of plot</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="retr.html" class="btn btn-neutral float-right" title="retr module" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="prep.html" class="btn btn-neutral" title="prep module" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Andrew Supka.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
