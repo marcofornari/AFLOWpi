@@ -219,7 +219,7 @@ try:
       os.chmod(AFLOW_EXEC,733)      
 
 except Exception as e:
-    print(('Could not install ISOTROPY package:',e))
+    print(('Could not install AFLOW binary:',e))
    
 
 
