@@ -713,8 +713,7 @@ def _transformParamsInput(inputString):
             if paramUnits=="cubic":
                     inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
                     paramUnits="alat"
-                    print(paramUnits)
-            raise SystemExit
+
             if paramUnits=='angstrom':
                     cellParamMatrix /= BohrToAngstrom
             if paramUnits=='' or paramUnits == 'alat':
