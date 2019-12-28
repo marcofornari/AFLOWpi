@@ -954,6 +954,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                 pElm_Nms = {'C', 'N', 'O', 'Se', 'S', 'Te','Sn','B','F','Al','Si','P','Cl',
                             'Ge','As','Br','Sb','I','Tl','Pb','Bi','Po','At', 'Ba'}
 
+
                 #s elements
                 sElm_Nms = {'H', 'Sr','Mg','Li','Be','Na','K','Ca','Rb','Cs'}
 

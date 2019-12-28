@@ -710,6 +710,11 @@ def _transformParamsInput(inputString):
             paramUnits = inputDict['CELL_PARAMETERS']['__modifier__'].replace('{','').replace('}','')
             paramUnits = paramUnits.lower()
 
+            if paramUnits=="cubic":
+                    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+                    paramUnits="alat"
+                    print(paramUnits)
+            raise SystemExit
             if paramUnits=='angstrom':
                     cellParamMatrix /= BohrToAngstrom
             if paramUnits=='' or paramUnits == 'alat':
@@ -2134,8 +2139,8 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                     nbnd*=2
 
             inputSplit['&control']['calculation']="'nscf'"
-            inputSplit['&system']['noinv']=".true."
-            inputSplit['&system']['nosym']=".true."
+#            inputSplit['&system']['noinv']=".true."
+#            inputSplit['&system']['nosym']=".true."
             inputSplit['&electrons']['conv_thr']="1.e-6"
             try:
                     inputSplit['&system']['nbnd']=nbnd

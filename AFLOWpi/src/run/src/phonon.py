@@ -542,7 +542,7 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
 
     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x',exit_on_error=False)    
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']
