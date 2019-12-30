@@ -35,6 +35,19 @@ def _grab_elastic_generated_inputs(oneCalc,ID):
     glob_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Structures_ESPRESSO')
     input_files = glob.glob(glob_path+'/*.in')
 
+    orig_kp = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])["K_POINTS"]
+
+    for i in input_files:
+        with open(i) as ifo:
+            ifs=ifo.read()
+        in_dict = AFLOWpi.retr._splitInput(ifs)
+        in_dict["K_POINTS"]=orig_kp
+        ifs = AFLOWpi.retr._joinInput(in_dict)
+
+        with open(i,"w") as ofo:
+            ofo.write(ifs)    
+
+
     return input_files
 
 def _prep_elastic(oneCalc,ID,eta_max=0.005,num_dist=49,use_stress = True,order=2):
