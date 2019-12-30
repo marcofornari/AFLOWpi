@@ -5607,7 +5607,7 @@ class plotter:
                 print(('                 %s'% (calc_type)))
 
 
-        def thermal_cond(self,temp_range=[0.0,800.0]):
+        def thermal_cond(self,temp_range=[300.0,800.0]):
                 add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
                 AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
                 calc_type='Plot Lattice Thermal Conductivity'
