@@ -5382,15 +5382,14 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def berry(self,kpFactor=2):
                 '''
-                Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
-                Adds a new step to the workflow.
+                Do electric polarization calc
 
                 Arguments:
                       self: the _calcs_container object
 
                 Keyword Arguments:
                       kpFactor (float): factor to which the k-point grid is made denser in each direction
-                      project (bool): if True: do the projected DOS after completing the DOS
+
 
                 Returns:
                       None
@@ -5608,7 +5607,7 @@ class plotter:
                 print(('                 %s'% (calc_type)))
 
 
-        def thermal_cond(self,temp_range=None):
+        def thermal_cond(self,temp_range=[0.0,800.0]):
                 add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
                 AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
                 calc_type='Plot Lattice Thermal Conductivity'
