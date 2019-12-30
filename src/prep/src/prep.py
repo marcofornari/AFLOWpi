@@ -5152,7 +5152,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kpFactor=1.0,U_eff=True):
+        def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kp_factor=1.0,U_eff=True):
                 '''
                 Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
                 user interface. Adds a new step to the workflow.
@@ -5192,7 +5192,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
                 self.int_dict = AFLOWpi.scfuj.scfprep(self.int_dict,paodir=paodir,U_eff=U_eff)
                 AFLOWpi.scfuj.run(self.int_dict,uThresh=thresh, nIters=nIters,mixing=mixing,
-                                  kp_mult=kpFactor,U_eff=U_eff)
+                                  kp_mult=kp_factor,U_eff=U_eff)
 
                 self.initial_calcs.append(self.int_dict)
 
@@ -5256,7 +5256,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.initial_calcs.append(self.int_dict)
 
 
-        def dos(self,kpFactor=2,project=True,n_conduction=None):
+        def dos(self,kp_factor=2,project=True,n_conduction=None):
                 '''
                 Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
                 Adds a new step to the workflow.
@@ -5265,7 +5265,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       self: the _calcs_container object
 
                 Keyword Arguments:
-                      kpFactor (float): factor to which the k-point grid is made denser in each direction
+                      kp_factor (float): factor to which the k-point grid is made denser in each direction
                       project (bool): if True: do the projected DOS after completing the DOS
 
                 Returns:
@@ -5276,7 +5276,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.type='dos'
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self.new_step(update_positions=True,update_structure=True)
-                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
+                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
 
 
 
@@ -5296,7 +5296,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def epsilon(self,kpFactor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
+        def epsilon(self,kp_factor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
                 '''
                 Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
                 Adds a new step to the workflow.
@@ -5305,7 +5305,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       self: the _calcs_container object
 
                 Keyword Arguments:
-                      kpFactor (float): factor to which the k-point grid is made denser in each direction                              
+                      kp_factor (float): factor to which the k-point grid is made denser in each direction                              
                       wmin (float): min frequency (default is 0.0)
                       wmax (float): max frequency (default is 30.0)
                       nw (int) number of frequency sampling points (default is 600)
@@ -5327,7 +5327,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.change_input('&system','noinv','.TRUE.')
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self.new_step(update_positions=True,update_structure=True)
-                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=n_conduction)
+                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
                 
                 occ=False
 
@@ -5380,7 +5380,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def berry(self,kpFactor=2):
+        def berry(self,kp_factor=2):
                 '''
                 Do electric polarization calc
 
@@ -5388,7 +5388,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       self: the _calcs_container object
 
                 Keyword Arguments:
-                      kpFactor (float): factor to which the k-point grid is made denser in each direction
+                      kp_factor (float): factor to which the k-point grid is made denser in each direction
 
 
                 Returns:
@@ -5400,13 +5400,13 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.new_step(update_positions=True,update_structure=True)
 
 #               self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=0)
-                add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kpFactor
+                add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kp_factor
                 self._addToAll(block='PREPROCESSING',addition=add)
                 AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir1",execPath='"./pw.x"',execPostfix="-northo 1")
-                add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kpFactor
+                add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kp_factor
                 self._addToAll(block='RUN',addition=add)          
                 AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir2",execPath='"./pw.x"',execPostfix="-northo 1")
-                add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kpFactor
+                add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kp_factor
                 self._addToAll(block='RUN',addition=add)   
                 AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir3",execPath='"./pw.x"',execPostfix="-northo 1")
 
