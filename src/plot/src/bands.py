@@ -113,16 +113,17 @@ def __bands(oneCalc,ID,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,S
                 SOC=False
 
         if SBC==True:
-                __bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,SBC=SBC,label_map=label_map)
+                AFLOWpi.plot.__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,SBC=SBC,label_map=label_map)
 
                 return
 
-        if not SOC:
-                __bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,label_map=label_map)
-        else:
-                __bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='X',label_map=label_map)
-                __bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='Y',label_map=label_map)
-                __bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='Z',label_map=label_map)
+
+        AFLOWpi.plot.__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,label_map=label_map)
+
+        if SOC:
+                AFLOWpi.plot.__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='X',label_map=label_map)
+                AFLOWpi.plot.__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='Y',label_map=label_map)
+                AFLOWpi.plot.__bandPlot(oneCalc,yLim,DOSPlot,postfix=postfix,tight_banding=tight_banding,spin_dir='Z',label_map=label_map)
 
 
 
