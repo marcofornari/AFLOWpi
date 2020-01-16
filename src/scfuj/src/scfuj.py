@@ -1116,7 +1116,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                     ql = get_orbital(speciesFromNum.strip('0123456789'))
 
                                     #Get list of all orbitals of type ql of the same atom
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*%s.*l=%d.*\n"%(speciesFromNum,ql),re.MULTILINE)          
+                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*(%s\s*).*l=%d.*\n"%(speciesFromNum,ql),re.MULTILINE)  
 #                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*%s.*l=%d.*\n"%(speciesFromNum.strip('0123456789'),ql),re.MULTILINE)          
 
 
