@@ -604,7 +604,7 @@ class tb_plotter:
                 self.calcs=calcs
 
         def topology(self):
-            AFLOWpi.plot.band_topology(self.calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False)
+            AFLOWpi.plot.band_topology(self.calcs,en_range=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False)
 
             calc_type='Plot Band Topology'
             print(('                 %s'% (calc_type)))
@@ -632,15 +632,15 @@ class tb_plotter:
             calc_type='Plot Spin Hall Conductivity'
             print(('                 %s'% (calc_type)))
 
-        def opdos(self,yLim=[-5,5],runlocal=False,postfix=''):
-            AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
+        def opdos(self,en_range=[-5,5],runlocal=False,postfix=''):
+            AFLOWpi.plot.opdos(self.calcs,yLim=en_range,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Orbital Projected DOS of PAO-TB Representation'
             print(('                 %s'% (calc_type)))
 
 
-        def apdos(self,yLim=[-5,5],runlocal=False,postfix=''):
-            AFLOWpi.plot.apdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix,tight_binding=True)
+        def apdos(self,en_range=[-5,5],runlocal=False,postfix=''):
+            AFLOWpi.plot.apdos(self.calcs,yLim=en_range,runlocal=runlocal,postfix=postfix,tight_binding=True)
 
             calc_type='Plot Atom Projected DOS of PAO-TB Representation'
             print(('                 %s'% (calc_type)))
@@ -694,8 +694,8 @@ class tb_plotter:
 
 
 
-        def bands(self,yLim=[-5,5],DOSPlot='',runlocal=False,postfix=''):
-            AFLOWpi.plot.bands(self.calcs,yLim=yLim,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix,tight_banding=True)
+        def bands(self,en_range=[-5,5],DOSPlot='',runlocal=False,postfix=''):
+            AFLOWpi.plot.bands(self.calcs,yLim=en_range,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix,tight_banding=True)
 
             calc_type='Plot Electronic Band Structure of PAO-TB Representation'
             if DOSPlot=='DOS':
@@ -704,7 +704,7 @@ class tb_plotter:
                     calc_type+=' with APDOS'
             print(('                 %s'% (calc_type)))
 
-        def dos(self,yLim=[-5,5],runlocal=False,postfix=''):
+        def dos(self,en_range=[-5,5],runlocal=False,postfix=''):
             pass
 
 

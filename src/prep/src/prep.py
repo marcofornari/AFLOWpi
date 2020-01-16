@@ -5535,7 +5535,7 @@ class plotter:
         def __init__(self,calcs):
                 self.calcs=calcs
         
-        def opdos(self,yLim=[-10,10],runlocal=False,postfix=''):
+        def opdos(self,en_range=[-10,10],runlocal=False,postfix=''):
                 '''
                 Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.
 
@@ -5543,7 +5543,7 @@ class plotter:
                       self: the plotter object
 
                 Keyword Arguments:
-                      yLim (list): a tuple or list of the range of energy around the fermi/Highest
+                      en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
                       LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
                                     calculation.
@@ -5557,12 +5557,12 @@ class plotter:
 
                 '''
 
-                AFLOWpi.plot.opdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
+                AFLOWpi.plot.opdos(self.calcs,yLim=en_range,runlocal=runlocal,postfix=postfix)
 
                 calc_type='Plot Orbital Projected DOS'
                 print(('                 %s'% (calc_type)))
 
-        def apdos(self,yLim=[-10,10],runlocal=False,postfix=''):
+        def apdos(self,en_range=[-10,10],runlocal=False,postfix=''):
                 '''
                 Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.
 
@@ -5570,7 +5570,7 @@ class plotter:
                       self: the plotter object
 
                 Keyword Arguments:
-                      yLim (list): a tuple or list of the range of energy around the fermi/Highest
+                      en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
                       LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
                                     calculation.
@@ -5584,7 +5584,7 @@ class plotter:
 
                 '''
 
-                AFLOWpi.plot.apdos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
+                AFLOWpi.plot.apdos(self.calcs,yLim=en_range,runlocal=runlocal,postfix=postfix)
 
                 calc_type='Plot Atom Projected DOS'
                 print(('                 %s'% (calc_type)))
@@ -5615,7 +5615,7 @@ class plotter:
                 print(('                 %s'% (calc_type)))
                 
 
-        def bands(self,yLim=[-10,10],DOSPlot='',runlocal=False,postfix=''):
+        def bands(self,en_range=[-10,10],DOSPlot='',runlocal=False,postfix=''):
                 '''
                 Wrapper method to call AFLOWpi.plot.bands in the high level user interface.
 
@@ -5623,7 +5623,7 @@ class plotter:
                       self: the plotter object
 
                 Keyword Arguments:
-                      yLim (list): a tuple or list of the range of energy around the fermi/Highest
+                      en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                 occupied level energy that is to be included in the plot.
                       DOSPlot (str): a string that flags for the option to have either a DOS plot
                                    share the Y-axis of the band structure plot. 
@@ -5649,7 +5649,7 @@ class plotter:
 
                 '''
 
-                AFLOWpi.plot.bands(self.calcs,yLim=yLim,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix)
+                AFLOWpi.plot.bands(self.calcs,yLim=en_range,DOSPlot=DOSPlot,runlocal=runlocal,postfix=postfix)
 
                 calc_type='Plot Electronic Band Structure'
                 if DOSPlot=='DOS':
@@ -5658,7 +5658,7 @@ class plotter:
                         calc_type+=' with Atom Projected Density of States'
                 print(('                 %s'% (calc_type)))
 
-        def dos(self,yLim=[-10,10],runlocal=False,postfix=''):
+        def dos(self,en_range=[-10,10],runlocal=False,postfix=''):
                 '''
                 Wrapper method to call AFLOWpi.plot.dos in the high level user interface.
 
@@ -5666,7 +5666,7 @@ class plotter:
                       self: the plotter object
 
                 Keyword Arguments:
-                      yLim (list): a tuple or list of the range of energy around the fermi/Highest
+                      en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
                       LSDA (bool): Plot the up and down of a spin polarized DOS
                                     calculation.
@@ -5680,7 +5680,7 @@ class plotter:
 
                 '''
 
-                AFLOWpi.plot.dos(self.calcs,yLim=yLim,runlocal=runlocal,postfix=postfix)
+                AFLOWpi.plot.dos(self.calcs,yLim=en_range,runlocal=runlocal,postfix=postfix)
 
                 calc_type ='Plot Density of States'
                 print(('                 %s'% (calc_type)))
