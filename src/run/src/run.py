@@ -2813,6 +2813,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      outdir='%s'
      spin_component=2
      filband='./%s_dn_band_data.out'
+     lsym=.false.     
  /
  """ %  (prefix,temp_dir,ID),
 
@@ -2821,6 +2822,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      outdir='%s'
      spin_component=1
      filband='./%s_up_band_data.out'
+     lsym=.false.
  /
  """ %  (prefix,temp_dir,ID),
 
@@ -2831,6 +2833,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
      lsigma(2)=.true.
      lsigma(3)=.true.
      filband='./%s_band_data.out'
+     lsym=.false.
  /
  """ %  (prefix,temp_dir,ID),
 

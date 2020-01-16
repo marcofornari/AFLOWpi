@@ -1083,9 +1083,10 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                 #and use a slightly different regex to get the l numbers
                 if byAtom:
                     atmSpList= [str(x) for x in range(1,len(atmPosList)+1)]
-
+                
                 #For each atomic species
                 for atmSp in atmSpList:
+
                         logging.info("Creating acbn0 inpufile for %s"%atmSp)
                         try:
                                 #Get orbital type to apply Hubbard correction
@@ -1096,9 +1097,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                 ql = get_orbital(atmSp.strip('0123456789'))
 #                                print 'ql',ql
                                 if byAtom==False:
-
-                                #Get list of all orbitals of type ql of the same species
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s.*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
+                                    #Get list of all orbitals of type ql of the same species
+                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
 
 
                                     
