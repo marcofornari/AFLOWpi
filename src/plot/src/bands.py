@@ -492,8 +492,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                         if spin_dir=='Z':
                                 rgb_arr=zspin
 
+                        if spin_dir!="":
+                                SOC=True
 
-                        SOC=True
                 except Exception as e:  pass
 
                 if tight_banding==True:
