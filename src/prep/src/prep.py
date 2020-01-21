@@ -4077,6 +4077,12 @@ class init:
                                            (Default: True)
                 """
 
+                if type(fileList)==type("temp"):
+                        fileList=[fileList]
+
+                if len(fileList)==0:
+                        print("No pwscf files included..exiting")
+                        sys.exit(0)
 
                 scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
                                                workdir=workdir,clean_input=clean_input,ref_override=ref_override)
@@ -4514,15 +4520,15 @@ EXITING.
                 return inputDict
 
         
-        def conventional_cell_input(self):
-                for ID,oneCalc in list(self.int_dict.items()):
-                        conv_input = AFLOWpi.retr.transform_input_conv(oneCalc,ID)
-                        self.int_dict[ID]['_AFLOWPI_INPUT_']=conv_input
-                        oneCalc['_AFLOWPI_INPUT_']=conv_input
-                        self.__saveOneCalc(oneCalc,ID)               
+        # def conventional_cell_input(self):
+        #         for ID,oneCalc in list(self.int_dict.items()):
+        #                 conv_input = AFLOWpi.retr.transform_input_conv(oneCalc,ID)
+        #                 self.int_dict[ID]['_AFLOWPI_INPUT_']=conv_input
+        #                 oneCalc['_AFLOWPI_INPUT_']=conv_input
+        #                 self.__saveOneCalc(oneCalc,ID)               
 
-                        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
-                                newIn.write(conv_input)         
+        #                 with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
+        #                         newIn.write(conv_input)         
 
         def get_initial_inputs(self):
                 temp_dict=collections.OrderedDict()
@@ -4554,6 +4560,37 @@ EXITING.
                 calc_type='Self-consistent'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
                 AFLOWpi.run.scf(self.int_dict)  
+
+
+        def emr(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='emr'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.emr(self.int_dict,engine='')
+
+                calc_type='Electron Magnetic Resonance'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
+
+
+        def nmr(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='emr'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.nmr(self.int_dict,engine='')
+
+                calc_type='Magnetic Magnetic Resonance'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
+
 
 
         def relax(self):
@@ -4665,11 +4702,6 @@ EXITING.
                         self._addToAll(block,addition)
                 self._add_block_buffer=[]
 
-
-
-
-
-
                 self.plot=plotter(self.int_dict)
 
 
@@ -4698,48 +4730,41 @@ EXITING.
                 %(namelist,parameter,value,del_value)
             self.addToAll(block='PREPROCESSING',addition=addition)
 
-
-
-
-
-
-
-
                 
-        def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
-                print('converge_smeareing DISABLED. Coming soon. Exiting.')
-                raise SystemExit
-                rel_low = relax.lower()
-                if rel_low not in ['vc-relax','relax','scf']:
-                        print("Invalid option for relax parameter in converge_smearing!")
-                        print("Must be either 'vc-relax','relax', or 'scf'")
-                        print("EXITING")
-                        raise SystemExit
+#         def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
+#                 print('converge_smeareing DISABLED. Coming soon. Exiting.')
+#                 raise SystemExit
+#                 rel_low = relax.lower()
+#                 if rel_low not in ['vc-relax','relax','scf']:
+#                         print("Invalid option for relax parameter in converge_smearing!")
+#                         print("Must be either 'vc-relax','relax', or 'scf'")
+#                         print("EXITING")
+#                         raise SystemExit
 
-                self.type='converge_smearing'
-                self.new_step(update_positions=True,update_structure=True)
-                self.initial_calcs.append(self.int_dict)
+#                 self.type='converge_smearing'
+#                 self.new_step(update_positions=True,update_structure=True)
+#                 self.initial_calcs.append(self.int_dict)
 
-                gen_func = "AFLOWpi.run._gen_smear_conv_calcs(oneCalc,ID,num_points=%s,smear_type='%s',smear_variance=%s,calc_type='%s')"%(num_points,smear_type,smear_variance,relax)
+#                 gen_func = "AFLOWpi.run._gen_smear_conv_calcs(oneCalc,ID,num_points=%s,smear_type='%s',smear_variance=%s,calc_type='%s')"%(num_points,smear_type,smear_variance,relax)
 
-                task_list=['AFLOWpi.run.scf(calc_subset)',]
+#                 task_list=['AFLOWpi.run.scf(calc_subset)',]
 
-                self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,gen_func,
-                                                           mult_jobs=mult_jobs,
-                                                           subset_tasks=task_list,substep_name='SMEARING',keep_file_names=False,
-                                                           clean_input=True,
-                                                           fault_tolerant=True)
+#                 self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,gen_func,
+#                                                            mult_jobs=mult_jobs,
+#                                                            subset_tasks=task_list,substep_name='SMEARING',keep_file_names=False,
+#                                                            clean_input=True,
+#                                                            fault_tolerant=True)
 
 
 
-                loadModString = '''oneCalc,ID = AFLOWpi.run._extrapolate_smearing(oneCalc,ID)'''
-                self._addToAll(block='POSTPROCESSING',addition=loadModString)           
-                #displays that this step has been added to the workflow. Nothing special but nice to have
-                #this so that the user can verify their workflow is as they expect it to be.
-                calc_type='Smearing Convergence'
+#                 loadModString = '''oneCalc,ID = AFLOWpi.run._extrapolate_smearing(oneCalc,ID)'''
+#                 self._addToAll(block='POSTPROCESSING',addition=loadModString)           
+#                 #displays that this step has been added to the workflow. Nothing special but nice to have
+#                 #this so that the user can verify their workflow is as they expect it to be.
+#                 calc_type='Smearing Convergence'
 
-#               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+# #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+#                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
                 
 
         def shake_atoms(self,dist=0.2,weight=False):            
@@ -5094,60 +5119,60 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                         print(warning)
 
 
-        def elph(self,mult_jobs=True,dx=0.1,tb_kp_mult=4.0,qp_mult=1.0):
+#         def elph(self,mult_jobs=True,dx=0.1,tb_kp_mult=4.0,qp_mult=1.0):
                 
-                #flag to determine if we need to recalculate the TB hamiltonian if 
-                #the user has chosen to calculate it on a later step in the workflow
-                self.tight_banding=False
-                #the type of calculation is added to the workflow list and is used 
-                #by AFLOWpi sometimes to find the step number of a specific type of
-                #calculation in the workflow for processing later
-                self.type='elph'
-                #updates the structure and atomic positions from previous steps and
-                #sets up a new ID.py, ID.qsub (if applicable) and ID.in
-                self.new_step(update_positions=True,update_structure=True)
-                #adds prep_fd to be run to every calculation in the set
-                loadModString = '''AFLOWpi.elph.prep_elph(oneCalc,ID)'''
-                self._addToAll(block='PREPROCESSING',addition=loadModString)            
-                #adds the command to pull the forces from the calculations in the subset
-                #after they've finished. All tasks that are to be performed on the subset
-                #need to take a dictionary of dictionaries called "calc_subset" which is 
-                #generated from the list of files or strings representing inputs to the 
-                #calculation engine in AFLOWpi.prep.prep_split_step.
+#                 #flag to determine if we need to recalculate the TB hamiltonian if 
+#                 #the user has chosen to calculate it on a later step in the workflow
+#                 self.tight_banding=False
+#                 #the type of calculation is added to the workflow list and is used 
+#                 #by AFLOWpi sometimes to find the step number of a specific type of
+#                 #calculation in the workflow for processing later
+#                 self.type='elph'
+#                 #updates the structure and atomic positions from previous steps and
+#                 #sets up a new ID.py, ID.qsub (if applicable) and ID.in
+#                 self.new_step(update_positions=True,update_structure=True)
+#                 #adds prep_fd to be run to every calculation in the set
+#                 loadModString = '''AFLOWpi.elph.prep_elph(oneCalc,ID)'''
+#                 self._addToAll(block='PREPROCESSING',addition=loadModString)            
+#                 #adds the command to pull the forces from the calculations in the subset
+#                 #after they've finished. All tasks that are to be performed on the subset
+#                 #need to take a dictionary of dictionaries called "calc_subset" which is 
+#                 #generated from the list of files or strings representing inputs to the 
+#                 #calculation engine in AFLOWpi.prep.prep_split_step.
                 
-                proj_thr = 0.90
-                kp_factor= 1.0
-                proj_sh  = "'auto'"
+#                 proj_thr = 0.90
+#                 kp_factor= 1.0
+#                 proj_sh  = "'auto'"
 
-                exec_prefix = None
-                loadModString = '''tb = AFLOWpi.prep.tight_binding(calc_subset,cond_bands=True,proj_thr=%s,kp_factor=%s,proj_sh=%s,exec_prefix=%s,band_mult=1.0,smearing=None,tb_kp_mult=%s)'''%(proj_thr,kp_factor,exec_prefix,proj_sh,tb_kp_mult)
+#                 exec_prefix = None
+#                 loadModString = '''tb = AFLOWpi.prep.tight_binding(calc_subset,cond_bands=True,proj_thr=%s,kp_factor=%s,proj_sh=%s,exec_prefix=%s,band_mult=1.0,smearing=None,tb_kp_mult=%s)'''%(proj_thr,kp_factor,exec_prefix,proj_sh,tb_kp_mult)
 
-                loadModString = 'AFLOWpi.elph._elph_pp(oneCalc,ID)'
-                self._addToAll(block='POSTPROCESSING',addition=loadModString)           
+#                 loadModString = 'AFLOWpi.elph._elph_pp(oneCalc,ID)'
+#                 self._addToAll(block='POSTPROCESSING',addition=loadModString)           
 
-                task_list=[loadModString]
-                build_com = 'AFLOWpi.elph._gen_elph_in(oneCalc,ID)'
+#                 task_list=[loadModString]
+#                 build_com = 'AFLOWpi.elph._gen_elph_in(oneCalc,ID)'
 
-                #add the command to the ID.py that will generate the subset FD_PHONON and perform
-                #the tasks in task_list. The flags for mult_jobs (parallel cluster jobs) is passed
-                #into this function and that option will be written to the ID.py
+#                 #add the command to the ID.py that will generate the subset FD_PHONON and perform
+#                 #the tasks in task_list. The flags for mult_jobs (parallel cluster jobs) is passed
+#                 #into this function and that option will be written to the ID.py
 
-                self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
-                                                           build_com,
-                                                           mult_jobs=mult_jobs,
-                                                           subset_tasks=task_list,
-                                                           substep_name='FD_ELPH',keep_file_names=True,
-                                                           clean_input=False)
+#                 self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
+#                                                            build_com,
+#                                                            mult_jobs=mult_jobs,
+#                                                            subset_tasks=task_list,
+#                                                            substep_name='FD_ELPH',keep_file_names=True,
+#                                                            clean_input=False)
                 
 
 
 
 
 
-                calc_type='Electron-Phonon Coupling with PAOFLOW'
+#                 calc_type='Electron-Phonon Coupling with PAOFLOW'
 
-#               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+# #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+#                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
@@ -5200,60 +5225,60 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-        def crawl_min(self,mult_jobs=False,grid_density=10,initial_variance=0.02,thresh=0.01,constraint=None,final_minimization='relax'):
-                '''
-                Wrapper method to call AFLOWpi.pseudo.crawlingMinimization in the high level user interface.
-                Adds a new step to the workflow.
+#         def crawl_min(self,mult_jobs=False,grid_density=10,initial_variance=0.02,thresh=0.01,constraint=None,final_minimization='relax'):
+#                 '''
+#                 Wrapper method to call AFLOWpi.pseudo.crawlingMinimization in the high level user interface.
+#                 Adds a new step to the workflow.
 
-                Arguments:
-                      self: the _calcs_container object
+#                 Arguments:
+#                       self: the _calcs_container object
 
-                Keyword Arguments:
-                      mult_jobs (bool): if True split the individual scf jobs into separate cluster jobs 
-                                     if False run them serially
-                      grid_density (int): controls the number of calculations to generate for the minimization
-                                           num_{calcs}=grid_density^{num_{parameters}-num_{constraints}}
-                      initial_variance (float): amount to vary the values of the parameters from the initial
-                                                 value. i.e. (0.02 = +/-2% variance)
-                      thresh (float): threshold for $\DeltaX$ of the lattice parameters between brute force
-                                  minimization iterations.
-                      constraint (list): a list or tuple containing two entry long list or tuples with
-                                          the first being the constraint type and the second the free 
-                                          parameter in params that its constraining for example in a 
-                                          orthorhombic cell: constraint=(["volume",'c'],) allows for A and B
-                                          to move freely but C is such that it keeps the cell volume the same
-                                          in all calculations generated by the input oneCalc calculation.                
-                      final_minimization (str): calculation to be run at the end of the brute force minimization
-                                                 options include "scf", "relax", and "vcrelax"
+#                 Keyword Arguments:
+#                       mult_jobs (bool): if True split the individual scf jobs into separate cluster jobs 
+#                                      if False run them serially
+#                       grid_density (int): controls the number of calculations to generate for the minimization
+#                                            num_{calcs}=grid_density^{num_{parameters}-num_{constraints}}
+#                       initial_variance (float): amount to vary the values of the parameters from the initial
+#                                                  value. i.e. (0.02 = +/-2% variance)
+#                       thresh (float): threshold for $\DeltaX$ of the lattice parameters between brute force
+#                                   minimization iterations.
+#                       constraint (list): a list or tuple containing two entry long list or tuples with
+#                                           the first being the constraint type and the second the free 
+#                                           parameter in params that its constraining for example in a 
+#                                           orthorhombic cell: constraint=(["volume",'c'],) allows for A and B
+#                                           to move freely but C is such that it keeps the cell volume the same
+#                                           in all calculations generated by the input oneCalc calculation.                
+#                       final_minimization (str): calculation to be run at the end of the brute force minimization
+#                                                  options include "scf", "relax", and "vcrelax"
                                      
 
-                Returns:
-                      None
+#                 Returns:
+#                       None
 
-                '''
+#                 '''
 
-                self.scf_complete=True
-                self.tight_banding==False
-                self.load_index+=1
-                self.type='crawl_min'
-                self.new_step(update_positions=True,update_structure=True)
+#                 self.scf_complete=True
+#                 self.tight_banding==False
+#                 self.load_index+=1
+#                 self.type='crawl_min'
+#                 self.new_step(update_positions=True,update_structure=True)
 
-                self.int_dict=AFLOWpi.pseudo.crawlingMinimization(self.int_dict,mult_jobs=mult_jobs,grid_density=grid_density,initial_variance=initial_variance,thresh=thresh,constraint=constraint)
-                self.initial_calcs.append(self.int_dict)
+#                 self.int_dict=AFLOWpi.pseudo.crawlingMinimization(self.int_dict,mult_jobs=mult_jobs,grid_density=grid_density,initial_variance=initial_variance,thresh=thresh,constraint=constraint)
+#                 self.initial_calcs.append(self.int_dict)
 
-                calc_type='Crawling brute force cell optimization'
-#               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+#                 calc_type='Crawling brute force cell optimization'
+# #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+#                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-        def evCurve_min(self,pThresh=25,final_minimization='relax'):
-                print('evCurve_min DISABLED. Untested. Exiting.')
-                raise SystemExit
-                self.scf_complete=True
-                self.type='evCurve_min'
-                self.new_step(update_positions=True,update_structure=True)
-                self.load_index+=1
-                self.int_dict=AFLOWpi.scfuj.evCurveMinimize(self.int_dict,pThresh=pThresh,final_minimization=final_minimization)
-                self.initial_calcs.append(self.int_dict)
+#         def evCurve_min(self,pThresh=25,final_minimization='relax'):
+#                 print('evCurve_min DISABLED. Untested. Exiting.')
+#                 raise SystemExit
+#                 self.scf_complete=True
+#                 self.type='evCurve_min'
+#                 self.new_step(update_positions=True,update_structure=True)
+#                 self.load_index+=1
+#                 self.int_dict=AFLOWpi.scfuj.evCurveMinimize(self.int_dict,pThresh=pThresh,final_minimization=final_minimization)
+#                 self.initial_calcs.append(self.int_dict)
 
 
         def dos(self,kp_factor=2,project=True,n_conduction=None):
@@ -5376,10 +5401,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 AFLOWpi.prep.totree(eps_path, self.int_dict,rename=None,symlink=False)
 
 
-
-
-
-
         def berry(self,kp_factor=2):
                 '''
                 Do electric polarization calc
@@ -5454,20 +5475,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-        def pseudo_test_brute(self,ecutwfc,dual=[],sampling=[],conv_thresh=0.01,constraint=None,initial_relax=None,
-                              min_thresh=0.01,initial_variance=0.05,grid_density=7,mult_jobs=False,options=None):
+#         def pseudo_test_brute(self,ecutwfc,dual=[],sampling=[],conv_thresh=0.01,constraint=None,initial_relax=None,
+#                               min_thresh=0.01,initial_variance=0.05,grid_density=7,mult_jobs=False,options=None):
 
-                print('Pseudopotential testing using crawling minimization coming soon. Exiting.')
-                raise SystemExit
-                self.load_index+=1
-                self.type='brute_pseudotest'
-                self.new_step(update_positions=True,update_structure=True)
-                self.initial_calcs.append(self.int_dict)                
+#                 print('Pseudopotential testing using crawling minimization coming soon. Exiting.')
+#                 raise SystemExit
+#                 self.load_index+=1
+#                 self.type='brute_pseudotest'
+#                 self.new_step(update_positions=True,update_structure=True)
+#                 self.initial_calcs.append(self.int_dict)                
 
-                AFLOWpi.pseudo.brute_test(self.int_dict,ecutwfc,dual=dual,sampling=sampling,constraint=None,thresh=conv_thresh,initial_variance=initial_variance,grid_density=grid_density,mult_jobs=mult_jobs,)
-                calc_type='Brute Force Pseudotesting'
-#               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
-                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+#                 AFLOWpi.pseudo.brute_test(self.int_dict,ecutwfc,dual=dual,sampling=sampling,constraint=None,thresh=conv_thresh,initial_variance=initial_variance,grid_density=grid_density,mult_jobs=mult_jobs,)
+#                 calc_type='Brute Force Pseudotesting'
+# #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
+#                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
@@ -5476,6 +5497,9 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                         print('must include at least one value for forced oxidation state')
                         raise SystemExit
 
+                print("EXPERIMENTAL. USE AT OWN RISK!")
+                print("EXPERIMENTAL. USE AT OWN RISK!")
+                print("EXPERIMENTAL. USE AT OWN RISK!")
 
                 self.scf()
 

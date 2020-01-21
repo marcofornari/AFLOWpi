@@ -377,8 +377,6 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
-    print('EMR NOT IMPLEMENTED')
-    raise SystemExit
 
 
     testOne(calcs,calcType='emr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
@@ -397,10 +395,6 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
     for ID,oneCalc in list(calcs.items()):
         try:
             AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
-        except Exception as e:
-            AFLOWpi.run._fancy_error_log(e)
-        try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -479,8 +473,6 @@ def nmr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           
     """
 
-    print('NMR NOT IMPLEMENTED')
-    raise SystemExit
 
     testOne(calcs,calcType='nmr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
     gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
