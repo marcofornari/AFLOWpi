@@ -292,10 +292,10 @@ def _getExecutable(engine,calcType):
                   'dos':'dos.x',
                   'pdos':'projwfc.x',
                   'bands':'bands.x',
-                  'emr':'gipaw.x', 
+                  'epr':'gipaw.x', 
+                  'efg':'gipaw.x', 
                   'nmr':'gipaw.x', 
                   'hyperfine':'gipaw.x', 
-                  'gvectors':'gipaw.x',
                   }
 
     elif engine.lower()=='want':
@@ -355,9 +355,11 @@ def generateSubRef(qsubRefFileString, oneCalc,ID):
 #############################################################################################################
 
 #############################################################################################################
-def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+
+
+def efg(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None,isotope=()):
     """
-    Wrapper to set up GIPAW EMR calculation
+    Wrapper to set up GIPAW EFG calculation
     
     Arguments:
           calcs (dict): Dictionary of dictionaries of calculations          
@@ -367,19 +369,18 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           execPrefix (str): commands to go before the executable when run 
                             (ex. mpiexec nice -n 19 <executable>) (default = None)          
           execPostfix (str): commands to go after the executable when run 
-                            (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
+                             (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
           holdFlag (bool): DEFUNCT. NEEDS REMOVAL
           config (str): DEFUNCT. NEEDS REMOVAL
           
 
     Returns:
-          None 
+          None
           
     """
 
+    testOne(calcs,calcType='efg',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
 
-
-    testOne(calcs,calcType='emr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
     gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
     if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
         symlink=True
@@ -392,11 +393,17 @@ def emr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
         raise SystemExit
     AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
 
+
     for ID,oneCalc in list(calcs.items()):
         try:
-            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='emr')
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='efg')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
+        try:
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+
 
 
 def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None,isotope=()):
@@ -420,9 +427,6 @@ def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,con
           None
           
     """
-    print('HYPERFINE NOT IMPLEMENTED')
-    raise SystemExit
-
 
     testOne(calcs,calcType='hyperfine',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
 
@@ -502,9 +506,9 @@ def nmr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
 
 
 
-def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+def epr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
     """
-    Wrapper to set up GIPAW gvectors calculation
+    Wrapper to set up GIPAW EPR calculation
     
     Arguments:
           calcs (dict): Dictionary of dictionaries of calculations          
@@ -524,10 +528,8 @@ def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,conf
           
     """
 
-    print('GVECTORS NOT IMPLEMENTED')
-    raise SystemExit
 
-    testOne(calcs,calcType='gvectors',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+    testOne(calcs,calcType='epr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
 
     gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
     if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
@@ -544,11 +546,11 @@ def gvectors(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,conf
 
     for ID,oneCalc in list(calcs.items()):
         try:
-            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='gvectors')
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='epr')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='gvectors')
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='epr')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -1771,7 +1773,7 @@ def _setupRestartGIPAW(oneCalc,ID):
     except:
         return oneCalc,ID
     '''ibef calc type was found (i.e. not post processing) try to include max_seconds'''
-    typeList = ['emr','efg','g_vectors','hyperfine']
+    typeList = ["nmr",'efg','epr','hyperfine']
     if calc_type in typeList:
         try:
             timediff=time.time()-globals()['__GLOBAL_CLOCK__']
@@ -2336,7 +2338,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
             if calcType in ["gdir1","gdir2","gdir3"]:    
                 oneCalc,_ = AFLOWpi.run._setupRestartPW(oneCalc,ID+'_'+calcType,__submitNodeName__)
 
-            if calcType in ['emr','nmr','hyperfine','gvectors']:
+            if calcType in ['nmr','hyperfine','epr',"efg"]:
                 oneCalc,ID,restartBool = __setupRestartGIPAW(oneCalc,ID)
 
 
@@ -2472,7 +2474,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                 try:
                     if calcType in ['scf']:
                         pass
-                    elif calcType in ['emr','nmr','hyperfine','gvectors']:
+                    elif calcType in ['nmr','hyperfine','epr',"efg"]:
                         __restartGIPAW(oneCalc,ID,a,__submitNodeName__)
                 except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
@@ -2832,23 +2834,27 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 
                     'scf':
                         'None',
+
                     'nmr':
                         '''&inputgipaw
   job = 'nmr'
+  tmp_dir="./"
   prefix='%s'
 
 /
 ''' %prefix,
-                    'g_tensor':
+                    'epr':
                         '''&inputgipaw
   job = 'g_tensor'
+  tmp_dir="./"
   prefix='%s'
 
 /''' %prefix,
 
-                    'emr':
+                    'efg':
                         '''&inputgipaw
   job = 'efg'
+  tmp_dir="./"
   prefix='%s'
                     
 /
@@ -2858,6 +2864,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
                         '''&inputgipaw
   job = 'hyperfine'
   prefix='%s'
+  tmp_dir="./"
   hfi_output_unit = 'MHz'
 /
 ''' %prefix,

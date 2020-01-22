@@ -4562,17 +4562,17 @@ EXITING.
                 AFLOWpi.run.scf(self.int_dict)  
 
 
-        def emr(self):
+        def efg(self):
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
-                self.type='emr'
+                self.type='efg'
                 self.new_step(update_positions=True,update_structure=True)
                 
-                AFLOWpi.run.emr(self.int_dict,engine='')
+                AFLOWpi.run.efg(self.int_dict,engine='')
 
-                calc_type='Electron Magnetic Resonance'
+                calc_type='Electric Field Gradient with GIPAW'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
@@ -4582,14 +4582,39 @@ EXITING.
                 self.tight_banding==False
                 self.load_index+=1
 
-                self.type='emr'
+                self.type='nmr'
                 self.new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.nmr(self.int_dict,engine='')
 
-                calc_type='Magnetic Magnetic Resonance'
+                calc_type='NMR with GIPAW'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
+        def epr(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='epr'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.epr(self.int_dict,engine='')
+
+                calc_type='EPR with GIPAW'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
+        def hyperfine(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='hyperfine'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.hyperfine(self.int_dict,engine='')
+
+                calc_type='Hyperfine Coupling with GIPAW'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
 
