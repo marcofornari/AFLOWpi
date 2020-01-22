@@ -4603,6 +4603,33 @@ EXITING.
                 calc_type='EPR with GIPAW'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
+        def knight_shift(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='knight'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.knight_shift(self.int_dict,engine='')
+
+                calc_type='Knight shift with GIPAW'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
+
+        def mossbauer(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='mossbauer'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.mossbauer(self.int_dict,engine='')
+
+                calc_type='Mossbauer with GIPAW'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
+
         def hyperfine(self):
                 self.scf_complete=True
                 self.tight_banding==False
@@ -4616,6 +4643,18 @@ EXITING.
                 calc_type='Hyperfine Coupling with GIPAW'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
+        def fsum(self):
+                self.scf_complete=True
+                self.tight_banding==False
+                self.load_index+=1
+
+                self.type='fsum'
+                self.new_step(update_positions=True,update_structure=True)
+                
+                AFLOWpi.run.fsum(self.int_dict,engine='')
+
+                calc_type='f-sum calculation with GIPAW'
+                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
         def relax(self):

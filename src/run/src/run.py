@@ -295,7 +295,10 @@ def _getExecutable(engine,calcType):
                   'epr':'gipaw.x', 
                   'efg':'gipaw.x', 
                   'nmr':'gipaw.x', 
+                  'knight':'gipaw.x', 
+                  'mossbauer':'gipaw.x', 
                   'hyperfine':'gipaw.x', 
+                  'fsum':'gipaw.x', 
                   }
 
     elif engine.lower()=='want':
@@ -400,7 +403,7 @@ def efg(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         try:
-            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='efg')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -450,6 +453,53 @@ def hyperfine(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,con
             AFLOWpi.run._fancy_error_log(e)
         try:
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='hyperfine')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+
+def fsum(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None,isotope=()):
+    """
+    Wrapper to set up GIPAW f-sum calculation
+    
+    Arguments:
+          calcs (dict): Dictionary of dictionaries of calculations          
+
+    Keyword Arguments:
+	  engine (str): executable that you are calling to run the calculations
+          execPrefix (str): commands to go before the executable when run 
+                            (ex. mpiexec nice -n 19 <executable>) (default = None)          
+          execPostfix (str): commands to go after the executable when run 
+                             (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
+          holdFlag (bool): DEFUNCT. NEEDS REMOVAL
+          config (str): DEFUNCT. NEEDS REMOVAL
+          
+
+    Returns:
+          None
+          
+    """
+
+    testOne(calcs,calcType='fsum',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+
+    gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
+    if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
+        symlink=True
+    else:
+        symlink=False
+    gipawExLoc = os.path.join(gipawdir,'gipaw.x')
+    if not os.path.exists(gipawExLoc):
+        logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
+        raise SystemExit
+    AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
+
+
+    for ID,oneCalc in list(calcs.items()):
+        try:
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='fsum')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+        try:
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='fsum')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
@@ -504,6 +554,99 @@ def nmr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
             AFLOWpi.run._fancy_error_log(e)
 
 
+def knight_shift(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+    """
+    Wrapper to set up GIPAW Knight shift calculation
+    
+    Arguments:
+          calcs (dict): Dictionary of dictionaries of calculations          
+
+    Keyword Arguments:
+	  engine (str): executable that you are calling to run the calculations
+          execPrefix (str): commands to go before the executable when run 
+                            (ex. mpiexec nice -n 19 <executable>) (default = None)          
+          execPostfix (str): commands to go after the executable when run 
+                             (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
+          holdFlag (bool): DEFUNCT. NEEDS REMOVAL
+          config (str): DEFUNCT. NEEDS REMOVAL
+
+
+    Returns:
+          None          
+          
+    """
+
+    testOne(calcs,calcType='knight',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+
+    gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
+    if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
+        symlink=True
+    else:
+        symlink=False
+    gipawExLoc = os.path.join(gipawdir,'gipaw.x')
+    if not os.path.exists(gipawExLoc):
+        logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
+        raise SystemExit
+    AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
+
+
+    for ID,oneCalc in list(calcs.items()):
+        try:
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='knight')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+        try:
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='knight')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+
+def mossbauer(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
+    """
+    Wrapper to set up GIPAW mossbauer calculation
+    
+    Arguments:
+          calcs (dict): Dictionary of dictionaries of calculations          
+
+    Keyword Arguments:
+	  engine (str): executable that you are calling to run the calculations
+          execPrefix (str): commands to go before the executable when run 
+                            (ex. mpiexec nice -n 19 <executable>) (default = None)          
+          execPostfix (str): commands to go after the executable when run 
+                             (ex. <execPrefix> <executable> -ndiag 12 -nimage 2) (default = None)
+          holdFlag (bool): DEFUNCT. NEEDS REMOVAL
+          config (str): DEFUNCT. NEEDS REMOVAL
+
+
+    Returns:
+          None          
+          
+    """
+
+    testOne(calcs,calcType='mossbauer',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
+
+    gipawdir=AFLOWpi.prep._ConfigSectionMap('prep','gipaw_dir')
+    if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
+        symlink=True
+    else:
+        symlink=False
+    gipawExLoc = os.path.join(gipawdir,'gipaw.x')
+    if not os.path.exists(gipawExLoc):
+        logging.error('ERROR: gipaw not found in %s please check your config file. EXITING' % gipawdir)
+        print(('ERROR: gipaw not found in %s please check your config file EXITING' % gipawdir))
+        raise SystemExit
+    AFLOWpi.prep.totree(gipawExLoc, calcs,rename=None,symlink=symlink)
+
+
+    for ID,oneCalc in list(calcs.items()):
+        try:
+            AFLOWpi.run._onePrep(oneCalc,ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='mossbauer')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+        try:
+            AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='mossbauer')
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
 
 
 def epr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=None):
@@ -527,7 +670,6 @@ def epr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
           None          
           
     """
-
 
     testOne(calcs,calcType='epr',engine=engine,execPrefix=execPrefix,execPostfix=execPostfix,holdFlag=holdFlag,config=config)
 
@@ -553,6 +695,8 @@ def epr(calcs,engine='',execPrefix=None,execPostfix=None,holdFlag=True,config=No
             AFLOWpi.run._testOne(ID,oneCalc,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='epr')
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
+
+
 
 
 #############################################################################################################
@@ -1773,7 +1917,7 @@ def _setupRestartGIPAW(oneCalc,ID):
     except:
         return oneCalc,ID
     '''ibef calc type was found (i.e. not post processing) try to include max_seconds'''
-    typeList = ["nmr",'efg','epr','hyperfine']
+    typeList = ["nmr",'efg','epr','hyperfine',"mossbauer","knight","fsum",]
     if calc_type in typeList:
         try:
             timediff=time.time()-globals()['__GLOBAL_CLOCK__']
@@ -2338,7 +2482,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
             if calcType in ["gdir1","gdir2","gdir3"]:    
                 oneCalc,_ = AFLOWpi.run._setupRestartPW(oneCalc,ID+'_'+calcType,__submitNodeName__)
 
-            if calcType in ['nmr','hyperfine','epr',"efg"]:
+            if calcType in ['nmr','hyperfine','epr',"efg","mossbauer","knight","fsum",]:
                 oneCalc,ID,restartBool = __setupRestartGIPAW(oneCalc,ID)
 
 
@@ -2474,7 +2618,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
                 try:
                     if calcType in ['scf']:
                         pass
-                    elif calcType in ['nmr','hyperfine','epr',"efg"]:
+                    elif calcType in ['nmr','hyperfine','epr',"efg","mossbauer","knight","fsum",]:
                         __restartGIPAW(oneCalc,ID,a,__submitNodeName__)
                 except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
@@ -2843,6 +2987,24 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 
 /
 ''' %prefix,
+
+                    'knight':
+                        '''&inputgipaw
+  job = 'knight'
+  tmp_dir="./"
+  prefix='%s'
+
+/
+''' %prefix,
+
+                    'mossbauer':
+                        '''&inputgipaw
+  job = 'mossbauer'
+  tmp_dir="./"
+  prefix='%s'
+
+/
+''' %prefix,
                     'epr':
                         '''&inputgipaw
   job = 'g_tensor'
@@ -2869,6 +3031,14 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
 /
 ''' %prefix,
 
+                    'fsum':
+                        '''&inputgipaw
+  job = 'f-sum'
+  prefix='%s'
+  tmp_dir="./"
+  hfi_output_unit = 'MHz'
+/
+''' %prefix,
 
                             }
 
