@@ -37,12 +37,13 @@ import re
 
 
 
-def phonon(calcs,runlocal=False,postfix='',THz=True,color_accoustic=False,color_optical=False):
+def phonon(calcs,runlocal=False,postfix='',THz=True,color_accoustic=False,color_optical=False,w_range=None):
         if runlocal:
                 for ID,oneCalc in list(calcs.items()):
-                        AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=postfix,THz=THz,color_accoustic=color_accoustic,color_optical=color_optical)
+                        AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=postfix,THz=THz,color_accoustic=color_accoustic,color_optical=color_optical,w_range=w_range)
         else:
-                AFLOWpi.prep._addToAll(calcs,'PLOT',"AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=%s,THz=%s,color_accoustic=%s,color_optical=%s)"%(repr(postfix),THz,color_accoustic,color_optical))
+                AFLOWpi.prep._addToAll(calcs,'PLOT',"AFLOWpi.plot.__plot_phonon(oneCalc,ID,postfix=%s,THz=%s,color_accoustic=%s,color_optical=%s,w_range=%s)"\
+                                       %(repr(postfix),THz,color_accoustic,color_optical,w_range))
 
 
 

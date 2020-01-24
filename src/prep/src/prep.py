@@ -4013,8 +4013,8 @@ class init:
 
         def scfs(self,allAFLOWpiVars, refFile,name='first',pseudodir=None,build_type='product',convert=True):
                 """
-                A wrapper method to call AFLOWpi.prep.scfs to form the calculation set. This will
-                also create directory within the set directory for every calculation in the set.
+                Generate calculation set using a reference input file containing keywords. The calculation set 
+                will be generated using some combination of the values assigned to each keyword
 
                 Arguments:
                       allAFLOWpiVars (dict): a dictionary whose keys correspond to the keywords in the 
@@ -4043,7 +4043,7 @@ class init:
 
 
                 Returns:
-                      A dictionary of dictionaries containing the set of calculations.
+                      A dictionary of dictionaries containing the set of calculations. (a calcs_container object)
 
                 """
 
@@ -4074,7 +4074,10 @@ class init:
 
                       ref_override (bool): Option to override values in the input file(s) with values in the reference
                                            input file. If no reference input file is included then this is ignored.
-                                           (Default: True)
+                                           
+
+                Returns:
+                      A dictionary of dictionaries containing the set of calculations. (a calcs_container object)
                 """
 
                 if type(fileList)==type("temp"):
@@ -4094,9 +4097,9 @@ class init:
 
                 Arguments:
                       step (int): the step of the calculation for whose calclogs are to be loaded
-                
+
                 Returns:
-                      calcs (dict): the loaded calc logs
+                      A dictionary of dictionaries containing the set of calculations. (a calcs_container object)
 
                 """
                 init_str = '\n*** Loading Calculation Set From Step #%02d ***'%step
@@ -4148,7 +4151,7 @@ class init:
                       negate_status (bool): filter on the opposite of the status filters
                 
                 Returns:
-                      calcs (dict): the loaded calcs for one or more steps with the given status
+                      calcs (dict): the loaded calcs for one or more steps with the given status (a calcs_container object)
 
                 """
                 loaded_calcs = AFLOWpi.retr.checkStatus(self.project,SET=self.set,config=self.config,step=step,status=status,negate_status=negate_status)
@@ -4547,9 +4550,6 @@ EXITING.
                 """
                 Resubmits calculation set to the queue. Only to be used when loading a calculation set from file.
 
-                Arguments:
-                      None
-
                 Keyword Arguments:
                       reset (bool): resets counter flag in .oneCalc file
 
@@ -4564,12 +4564,6 @@ EXITING.
         def scf(self):
                 """
                 Runs self consistent calculation with the calculation engine
-
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
 
                 Returns:
                      None
@@ -4591,12 +4585,6 @@ EXITING.
         def efg(self):
                 """
                 Runs electric field gradient calculation with GIPAW
-
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
 
                 Returns:
                      None
@@ -4620,12 +4608,6 @@ EXITING.
                 """
                 Runs NMR calculation with GIPAW
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -4646,12 +4628,6 @@ EXITING.
                 """
                 Runs EPR calculation with GIPAW
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -4671,12 +4647,6 @@ EXITING.
         def knight_shift(self):
                 """
                 Runs Knight shift calculation with GIPAW
-
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
 
                 Returns:
                      None
@@ -4699,12 +4669,6 @@ EXITING.
                 """
                 Runs Mossbauer calculation with GIPAW
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -4724,12 +4688,6 @@ EXITING.
         def hyperfine(self):
                 """
                 Runs hyperfine calculation with GIPAW
-
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
 
                 Returns:
                      None
@@ -4751,12 +4709,6 @@ EXITING.
                 """
                 Runs f-sum shift calculation with GIPAW
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -4777,12 +4729,6 @@ EXITING.
         def relax(self):
                 """
                 Relax (optimize) the atomic positions of the atoms in the unit cell with the calculation engine
-
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
 
                 Returns:
                      None
@@ -4809,12 +4755,6 @@ EXITING.
                 """
                 Fully relax (optimize) the cell geometry and positions of the atoms in the unit cell with the calculation engine
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -4838,15 +4778,12 @@ EXITING.
         def addToAll(self,block=None,addition=None):
                 """
                 add string of code to a block of the execution code in the <ID>.py files generated by AFLOWpi. 
-                WARNING! WARNING! WARNING! Will likely alter the behavior of AFLOWpi. Use at your own risk!
-
-                Arguments:
-                      None
+                WARNING! Will (likely) alter the behavior of AFLOWpi. Use at your own risk!
 
                 Keyword Arguments:
                       block (string): name of the block to add the code to. Block names include... 
-                                      "RUN","POSTPROCESSING","PLOT","CALCTRANSFORM","SUBMITNEXT","BATCH","CLEANUP",
-                                      "CONFIGFILE","LOGGING","ONECALC","LOADCALC","ID","RESTART","PREPROCESSING","LOCK"
+                                      "RUN", "POSTPROCESSING", "PLOT", "CALCTRANSFORM", "SUBMITNEXT", "BATCH", "CLEANUP", 
+                                      "CONFIGFILE", "LOGGING", "ONECALC", "LOADCALC", "ID", "RESTART", "PREPROCESSING", "LOCK"
 
                 Returns:
                      None
@@ -4951,16 +4888,15 @@ EXITING.
                 self.addToAll(block='PREPROCESSING',addition=loadModString)                             
 
 
-        def change_input(self,namelist=None,parameter=None,value=None):
+        def change_input(self,namelist,parameter,value=None):
                 """
                 Change a parameter in all input files in the calculation set
 
                 Arguments:
-                      None
-
-                Keyword Arguments:
                       namelist (string): name of the namelist that contains the parameter to change
                       parameter (string): name of the parameter in the namelist to change
+
+                Keyword Arguments:
                       value (string): string of the value to change the parameter to
 
                 Returns:
@@ -5022,10 +4958,7 @@ EXITING.
 
         def shake_atoms(self,dist=0.2,weight=False):            
                 """
-                Shakes atoms in input files randomly
-
-                Arguments:
-                      None
+                Shakes (displaces) atoms in input files randomly
 
                 Keyword Arguments:
                       dist (float): distance in angstroms to move each atom
@@ -5042,9 +4975,6 @@ EXITING.
         def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
                 """
                 Shakes atoms in input files randomly
-
-                Arguments:
-                      None
 
                 Keyword Arguments:
                       proj_thr (float): threshhold for the PAO-TB projection. 
@@ -5083,12 +5013,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Relax (optimize) the atomic positions of the atoms in 
                 the unit cell with the calculation engine and environ
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                      None
                 """
@@ -5107,9 +5031,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
         def environ_scf(self, config=None, environmode='from_file'):
                 """
                 run self consistent cycle with the calculation engine and environ
-
-                Arguments:
-                      None
 
                 Keyword Arguments:
                       config (string): configuration file for environ
@@ -5132,17 +5053,14 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 """
                 Run elastic constant calculation with ElaStic package
 
-                Arguments:
-                      None
-
                 Keyword Arguments:
                       mult_jobs (bool): run the calculations as separate cluster jobs
-                                        or serially as one cluster job (default=False)
+                                        or serially as one cluster job
                       order (int):  order=1 | use energy to calculate elastic constants (not recommended)
-                                        order=2 | use stresses to calculate elastic constants (default)
-                      eta_max (float):  extent of distortion of the cell (default=0.005)
+                                        order=2 | use stresses to calculate elastic constants
+                      eta_max (float):  extent of distortion of the cell
                       num_dist (int):   number of distortions to in each direction 
-                                        to calculate the elastic constants (default=10)
+                                        to calculate the elastic constants 
 
                 Returns:
                      None
@@ -5188,28 +5106,26 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,LOTO=False,hydrostatic_expansion=True,central_diff=False):
                 """
-                Run elastic constant calculation with ElaStic package
-
-                Arguments:
-                      None
+                Calculate lattice thermal properties with quasi-harmonic 
+                approximation and Debye-Calloway model
 
                 Keyword Arguments:
-                      delta_volume (float): percentage to expand or contract cell (default=0.03)
-                      nrx1 (int): number of cells in the first direction for the supercell (default=2)
-                      nrx2 (int): number of cells in the second direction for the supercell (default=2)
-                      nrx3 (int): number of cells in the third direction for the supercell (default=2)
-                      innx (int): whether to do central difference (innx=2)  in the phonon calculation 
-                                  or (innx=1) forward difference. (default=2)
-                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation (default=0.005)
+                      delta_volume (float): percentage to expand or contract cell
+                      nrx1 (int): number of cells in the first direction for the supercell 
+                      nrx2 (int): number of cells in the second direction for the supercell
+                      nrx3 (int): number of cells in the third direction for the supercell 
+                      innx (int): whether to do central difference (innx=2) in the phonon calculation 
+                                  or forward difference (innx=1). 
+                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation 
                       mult_jobs (bool): run the calculations as separate cluster jobs
-                                        or serially as one cluster job (default=False) 
-                      disp_sym (bool): reduce number of calculations by including displacement symmetry (default=True)
-                      atom_sym (bool): reduce number of calculations by including point symmetry (default=True)
-                      field_strength (float): strength of applied electric field if including LOTO (default=0.001)
-                      field_cycles (int): number of berry cycles in calculation with applied electric field (default=3)
-                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix (default=False)
-                      hydrostatic_expansion (bool): if True, let the cell optimize after being expanded or contracted (default=False)
-                      central_diff (bool): if True, do central difference derivative for gruneisen parameter (default=False)
+                                        or serially as one cluster job 
+                      disp_sym (bool): reduce number of calculations by including displacement symmetry 
+                      atom_sym (bool): reduce number of calculations by including point symmetry 
+                      field_strength (float): strength of applied electric field if including LOTO 
+                      field_cycles (int): number of berry cycles in calculation with applied electric field
+                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix 
+                      hydrostatic_expansion (bool): if True, let the cell optimize after being expanded or contracted 
+                      central_diff (bool): if True, do central difference derivative for gruneisen parameter 
 
                 Returns:
                      None
@@ -5364,26 +5280,23 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,raman=False):
                 """
-                Run elastic constant calculation with ElaStic package
-
-                Arguments:
-                      None
+                Calculate phonon dispersion using the frozen phonon method
 
                 Keyword Arguments:
-                      nrx1 (int): number of cells in the first direction for the supercell (default=2)
-                      nrx2 (int): number of cells in the second direction for the supercell (default=2)
-                      nrx3 (int): number of cells in the third direction for the supercell (default=2)
+                      nrx1 (int): number of cells in the first direction for the supercell 
+                      nrx2 (int): number of cells in the second direction for the supercell
+                      nrx3 (int): number of cells in the third direction for the supercell 
                       innx (int): whether to do central difference (innx=2)  in the phonon calculation 
-                                  or (innx=1) forward difference. (default=2)
-                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation (default=0.005)
+                                  or forward difference (innx=1). 
+                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation 
                       mult_jobs (bool): run the calculations as separate cluster jobs
-                                        or serially as one cluster job (default=False) 
-                      disp_sym (bool): reduce number of calculations by including displacement symmetry (default=True)
-                      atom_sym (bool): reduce number of calculations by including point symmetry (default=True)
-                      field_strength (float): strength of applied electric field if including LOTO (default=0.001)
-                      field_cycles (int): number of berry cycles in calculation with applied electric field (default=3)
-                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix (default=False)
-                      raman (bool): calculate raman tensor using finite fields method (default=False)
+                                        or serially as one cluster job
+                      disp_sym (bool): reduce number of calculations by including displacement symmetry
+                      atom_sym (bool): reduce number of calculations by including point symmetry
+                      field_strength (float): strength of applied electric field if including LOTO
+                      field_cycles (int): number of berry cycles in calculation with applied electric field
+                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix
+                      raman (bool): calculate raman tensor using finite fields method
 
                 Returns:
                      None
@@ -5566,23 +5479,18 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',kp_factor=1.0,U_eff=True):
                 '''
-                Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
-                user interface. Adds a new step to the workflow.
-                
-
-                Arguments:
-                      self: the _calcs_container object
+                Run self-consistent calculation of the Hubbard U correction
 
                 Keyword Arguments:
-                      thresh (float): threshold for self consistent hubbard U convergence (default=0.1eV)
-                      niters (int): max number of iterations of the acbn0 cycle (default=20)
+                      thresh (float): threshold for self consistent hubbard U convergence in eV
+                      niters (int): max number of iterations of the acbn0 cycle
                       paodir (string): the path of the PAO directory. This will override 
                                         an entry of the paodir in the AFLOWpi config file 
                                         used for the session
 
-                      relax (string): type of self-consistent calculation to do every ACBN0 cycle. (default='scf')
+                      relax (string): type of self-consistent calculation to do every ACBN0 cycle.
                       kp_factor (float): multiplier in the nscf calculation
-                      U_eff (bool): EXPERIMENTAL!! whether to do U_eff=U-J or include U and J separately. (default=True)
+                      U_eff (bool): EXPERIMENTAL!! whether to do U_eff=U-J or include U and J separately.
 
                 Returns:
                       None
@@ -5676,11 +5584,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def dos(self,kp_factor=2,project=True,n_conduction=None):
                 '''
-                Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
-                Adds a new step to the workflow.
-
-                Arguments:
-                      None
+                Calculate density of states using the calculation engine
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction
@@ -5718,24 +5622,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def epsilon(self,kp_factor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
                 '''
-                Wrapper method to call AFLOWpi.prep.doss in the high level user interface.
-                Adds a new step to the workflow.
-
-                Arguments:
-                      None
+                Calculate optical properties using the calculation engine
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction                              
-                      wmin (float): min frequency (default is 0.0)
-                      wmax (float): max frequency (default is 30.0)
-                      nw (int) number of frequency sampling points (default is 600)
-                      smeartype (string): type of smearing (default is 'gauss')
+                      wmin (float): min frequency 
+                      wmax (float): max frequency 
+                      nw (int) number of frequency sampling points 
+                      smeartype (string): type of smearing 
                       intersmear (float): smearing width for inter-band elements (in eV)
                       intrasmear (float): smearing width for intra-band elements (in eV)
-                      metalcalc (bool): consider using if system is metallic (default is False)
-                      jdos (bool):  if True: calculate joint density of states (default is False)
-                      offdiag (bool): if True: calculate off diag matrix elementes of dielectric tensor (default is False)
-                      occ (bool): if True: calculate occupation factors and its first derivative (default is False)
+                      metalcalc (bool): consider using if system is metallic 
+                      jdos (bool):  if True: calculate joint density of states 
+                      offdiag (bool): if True: calculate off diag matrix elementes of dielectric tensor 
+                      occ (bool): if True: calculate occupation factors and its first derivative 
 
                 Returns:
                       None
@@ -5800,9 +5700,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 '''
                 Do electric polarization calc
 
-                Arguments:
-                      None
-
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction
 
@@ -5832,11 +5729,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
         def bands(self,dk=None,nk=100,n_conduction=None):
                 '''
-                Wrapper method to write call AFLOWpi.prep.bands for calculating the Electronic Band
-                Structure. 
-
-                Arguments:
-                      None
+                Calculate energy eigenvalues along high symmetry path using the calculation engine
 
                 Keyword Arguments:
                       dk (float): the density in the Brillouin zone of the k point sampling along the
@@ -5901,8 +5794,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       n_val_e (dict): dictionary with species labels as keys and number of electrons as values
 
                 Keyword Arguments:
-                      conv_thr (float): threshold to stop optimization cycle (default=0.05)
-                      initial_step (float): length of the initial optimazation step (default=1.0)
+                      conv_thr (float): threshold to stop optimization cycle
+                      initial_step (float): length of the initial optimazation step
 
                 Returns:
                       None
@@ -5951,12 +5844,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 '''
                 Run calculations serially or submit calculations to the cluster
 
-                Arguments:
-                      None
-
-                Keyword Arguments:
-                      None
-
                 Returns:
                       None
 
@@ -5992,18 +5879,13 @@ class plotter:
         
         def opdos(self,en_range=[-10,10],runlocal=False,postfix=''):
                 '''
-                Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.
-
-                Arguments:
-                      self: the plotter object
+                Plot orbital projected DOS generated by the calculation engine
 
                 Keyword Arguments:
                       en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
-                      LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
-                                    calculation.
-                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-                                        or write it to the _ID.py to run during the workflow
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
                       postfix (string): a string of an optional postfix to the plot filename for every
                                          calculation.
 
@@ -6018,19 +5900,12 @@ class plotter:
                 print(('                 %s'% (calc_type)))
 
         def apdos(self,en_range=[-10,10],runlocal=False,postfix=''):
-                '''
-                Wrapper method to call AFLOWpi.plot.opdos in the high level user interface.
-
-                Arguments:
-                      self: the plotter object
-
+                '''              
                 Keyword Arguments:
                       en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
-                      LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
-                                    calculation.
-                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-                                        or write it to the _ID.py to run during the workflow
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
                       postfix (string): a string of an optional postfix to the plot filename for every
                                          calculation.
 
@@ -6047,24 +5922,74 @@ class plotter:
 
 
 
-        def phonon(self,runlocal=False,postfix='',THz=True):
-                AFLOWpi.plot.phonon(self.calcs,runlocal=runlocal,postfix=postfix,THz=THz)
+        def phonon(self,runlocal=False,postfix='',THz=False):
+                '''
+                Plot phonon dispersion generated by calculation engine
+
+                Keyword Arguments:
+                      w_range (list): frequency range for the plot. Default is full range of frequencies of all modes
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
+                      postfix (string): a string of an optional postfix to the plot filename for every
+                                         calculation.
+                      THz (bool): if True the frequencies will be plotted in THz. If False they will be in cm^-1
+
+                Returns:
+                      None
+
+                '''
+                
+                AFLOWpi.plot.phonon(self.calcs,runlocal=runlocal,postfix=postfix,THz=THz,w_range=w_range)
 
                 calc_type='Plot Phonon Bands and DOS'
 
                 print(('                 %s'% (calc_type)))
 
-        def gruneisen(self):
-                add = 'AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID)'
-                AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+        def gruneisen(self,w_range=None,grun_range=None):
+                '''
+                Plot frequency dependent gruneisen generated by calculation engine
+
+                Keyword Arguments:
+                      w_range (list): frequency range for the plot. Default is full range of frequencies of all modes
+                      grun_range (list): range of gruneisen parameter for the plot. 
+                                         Default is range of gruneisen parameter within w_range
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
+                Returns:
+                      None
+
+                '''
+                if runlocal:
+                        AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID,w_range=w_range,grun_range=grun_range)
+                else:
+                        add = 'AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID,w_range=%s,grun_range=%s)'%(w_range,grun_range)
+                        AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+
+
                 calc_type='Plot Frequency Resolved Gruneisen Parameter'
 
                 print(('                 %s'% (calc_type)))
 
 
-        def thermal_cond(self,temp_range=[300.0,800.0]):
-                add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
-                AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+        def thermal_cond(self,temp_range=[300.0,800.0],runlocal=False):
+                '''
+                Plot frequency dependent gruneisen generated by calculation engine
+
+                Keyword Arguments:
+                      temp_range (list): temperature range for the plot. 
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
+                Returns:
+                      None
+
+                '''
+
+                if runlocal:
+                        AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=temp_range)
+                else:
+                        add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
+                        AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
+
                 calc_type='Plot Lattice Thermal Conductivity'
 
                 print(('                 %s'% (calc_type)))
@@ -6072,30 +5997,22 @@ class plotter:
 
         def bands(self,en_range=[-10,10],DOSPlot='',runlocal=False,postfix=''):
                 '''
-                Wrapper method to call AFLOWpi.plot.bands in the high level user interface.
-
-                Arguments:
-                      self: the plotter object
+                Plot electronic band structure generated by calculation engine
 
                 Keyword Arguments:
                       en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                 occupied level energy that is to be included in the plot.
                       DOSPlot (str): a string that flags for the option to have either a DOS plot
-                                   share the Y-axis of the band structure plot. 
+                                   share the Y-axis of the band structure plot. Options include:
 
-                                   Options include:
-                                   ""      | A blank string (default) will cause No Density of
+                                   ""      | A blank string will cause No Density of
                                            | States plotted alongside the Band Structure
 
                                    "APDOS" | Atom Projected Density of States
                                    "DOS"   | Normal Density of States
 
-                                   
-                      
-                      LSDA (bool): Plot the up and down of a spin polarized orbital projected DOS
-                                calculation.
-                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-                                    or write it to the _ID.py to run during the workflow
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range                                   
                       postfix (str): a string of an optional postfix to the plot filename for every
                                    calculation.
 
@@ -6115,18 +6032,14 @@ class plotter:
 
         def dos(self,en_range=[-10,10],runlocal=False,postfix=''):
                 '''
-                Wrapper method to call AFLOWpi.plot.dos in the high level user interface.
-
-                Arguments:
-                      self: the plotter object
+                plot density of states generated by calculation engine
 
                 Keyword Arguments:
                       en_range (list): a tuple or list of the range of energy around the fermi/Highest
                                     occupied level energy that is to be included in the plot.
-                      LSDA (bool): Plot the up and down of a spin polarized DOS
-                                    calculation.
-                      runlocal (bool): a flag to choose whether or not to run the wrapped function now
-                                 or write it to the _ID.py to run during the workflow
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range                                   
+
                       postfix (str): a string of an optional postfix to the plot filename for every
                                       calculation.
 
@@ -6379,8 +6292,9 @@ def modifyNamelistPW(calcs,namelist,parameter,value,runlocal=False):
           value: the value of that parameter 
 
     Keyword Arguments:
-          runlocal (bool): a flag to choose whether or not to run the wrapped function now
-                        or write it to the _ID.py to run during the workflow.
+          runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range                                   
+
 
     Returns:
           Either the identical set of calculations if runlocal == False or the set of

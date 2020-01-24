@@ -1,4 +1,6 @@
-from .prep import newstepWrapper,_check_lock
+try:
+    from .prep import newstepWrapper,_check_lock
+except: pass
 import AFLOWpi
 import os 
 import re

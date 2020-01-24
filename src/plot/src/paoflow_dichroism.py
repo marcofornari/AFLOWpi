@@ -7,7 +7,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import glob
 
-def __plot_dichroism(oneCalc,ID,spin=False,real=False):
+def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
 
 
     extension='png'
@@ -41,10 +41,11 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
         else:
             spol=''
 
-
-
-
         dat = np.loadtxt(dat_file)
+
+        if en_range is not None:
+            dat=dat[np.where(np.logical_and(dat[:,0]>en_range[0],dat[:,0]<en_range[1]))]
+
         if spin:
             if real:
                 lab = r"Re[$\omega\sigma^{%s}_{%s%s}$]"%(spol,ipol,jpol)
@@ -57,11 +58,6 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
             else:
                 lab = r"Im[$\omega\sigma_{%s%s}$]"%(ipol,jpol)
             plt.plot(dat[:,0],dat[:,1],label=lab,color="g")
-
-
-
-
-
 
 
         plt.ylim([np.amin(dat[:,1])*1.05,np.amax(dat[:,1])*1.05])

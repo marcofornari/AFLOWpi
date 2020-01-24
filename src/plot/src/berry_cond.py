@@ -7,7 +7,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import glob 
 
-def __plot_berry_cond(oneCalc,ID,spin=False):
+def __plot_berry_cond(oneCalc,ID,spin=False,en_range=None):
 
 
     extension='png'
@@ -36,11 +36,10 @@ def __plot_berry_cond(oneCalc,ID,spin=False):
         else:
             spol=''
 
-
-
-
-
         dat = np.loadtxt(dat_file)
+
+        if en_range is not None:
+            dat=dat[np.where(np.logical_and(dat[:,0]>en_range[0],dat[:,0]<en_range[1]))]
 
         if spin:
             lab=r"$\sigma^{%s}_{%s%s}$"%(spol,ipol,jpol)
@@ -67,7 +66,6 @@ def __plot_berry_cond(oneCalc,ID,spin=False):
             plt.ylabel(r"$\sigma_{%s%s}$ $(\Omega^{-1} cm^{-1})$"%(ipol,jpol))
             plt.title('Anomalous Hall Conductivity: %s'%chem_name)
             fileplot = os.path.join(subdir,'ANOM_HALL_COND_%s%s_%s_%s.%s' % (ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
-
 
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
