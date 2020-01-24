@@ -66,7 +66,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'AFLOWpi'
-copyright = '2016, Andrew Supka'
+copyright = '2020, Andrew Supka'
 author = 'Andrew Supka'
 
 # The version info for the project you're documenting, acts as replacement for
