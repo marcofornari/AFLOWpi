@@ -101,6 +101,25 @@ class tight_binding:
 
 
     def shc(self,s_tensor=None,en_range=[0.05,5.05],de=0.05,spin_texture=False):
+        '''
+        do spin hall conductivity calculation with PAOFLOW
+
+        Arguments:
+              None
+
+        Keyword Arguments:
+              a_tensor (numpy.array): an Nx2 array with the direction to calculate the SHC. 
+                                      (default is [[0,1,2],] which is x,y,z direction)
+              en_range (array): floats of min and max for energy range
+              de (float): energy step
+              spin_texture (bool): whether or not to calculate spin texture
+
+        Returns:
+              None
+
+        '''             
+
+
 
         if s_tensor is None:
             s_tensor = [[0,0,0],[0,1,0],[0,2,0],[1,0,0],[1,1,0],[1,2,0],[2,0,0],[2,1,0],[2,2,0], \
@@ -129,6 +148,23 @@ class tight_binding:
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
     def ahc(self,a_tensor=None,en_range=[0.05,5.05],de=0.05):
+        '''
+        do anomalous hall conductivity calculation with PAOFLOW
+
+        Arguments:
+              None
+
+        Keyword Arguments:
+              a_tensor (numpy.array): an Nx2 array with the direction to calculate the AHC. 
+                                      (default is [[0,1],] which is x,y direction)
+              en_range (array): floats of min and max for energy range
+              de (float): energy step
+
+        Returns:
+              None
+
+        '''             
+
 
         # Berry curvature
         if a_tensor is None:
@@ -152,6 +188,22 @@ class tight_binding:
 
 
     def optical(self,d_tensor=None,en_range=[0.05,5.05],de=0.05):
+        '''
+        do epsilon calculation with PAOFLOW
+
+        Arguments:
+              None
+
+        Keyword Arguments:
+              a_tensor (numpy.array): an Nx2 array with the direction to calculate epsilon. 
+                                      (default is [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]])
+              en_range (array): floats of min and max for energy range
+              de (float): energy step
+
+        Returns:
+              None
+        '''             
+
 
         if d_tensor is None:
             d_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
@@ -172,17 +224,16 @@ class tight_binding:
 
 
 
-    def transport(self,t_tensor=None,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05):
+    def transport(self,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05):
         '''
         Wrapper method to call AFLOWpi.scfuj.prep_transport and 
         AFLOWpi.scfuj.run_transport in the high level user interface. 
         Adds a new step to the workflow.
 
         Arguments:
-              self: the _calcs_container object
+              None
 
         Keyword Arguments:
-              tensor (array): 2D array of directions to calculate transport
               t_min (float): min of temp range to calculate
               t_max (float): max of temp range to calculate
               t_step (float): temperature step
@@ -193,6 +244,8 @@ class tight_binding:
               None
 
         '''             
+
+        t_tensor=None
 
         # Boltzmann transport
         if t_tensor is None:
@@ -219,7 +272,25 @@ class tight_binding:
 
 
 
-    def dos(self,dos_range=[-5.5,5.5],k_grid=None,projected=True,de=0.05,cond_bands=True,fermi_surface=False):
+    def dos(self,dos_range=[-5.5,5.5],projected=True,de=0.05,fermi_surface=False):
+        '''
+        do anomalous hall conductivity calculation with PAOFLOW
+
+        Arguments:
+              None
+
+        Keyword Arguments:
+              dos_range (list): energy range around fermi energy to calculate the DOS
+              projected (bool): include the projected dos or not
+              de (float): energy sampling width
+              fermi_surface (bool): whether or not to calculate the fermi surface
+
+        Returns:
+              None
+        '''       
+
+        k_grid=None
+        cond_bands=True
 
         AFLOWpi.scfuj.paopy_dos_wrapper(self.calcs)
         ne=float(dos_range[1]-dos_range[0])/de
@@ -257,7 +328,33 @@ except: pass
             print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-    def bands(self,nk=1000,nbnd=None,eShift=15.0,cond_bands=True,band_topology=False,fermi_surface=False,ipol=0,jpol=1,spol=2):
+    def bands(self,nk=1000,band_topology=False,ipol=0,jpol=1,spol=2):
+        '''
+        Wrapper method to write call AFLOWpi.prep.bands for calculating the Electronic Band
+        Structure. 
+
+        Arguments:
+              None
+
+        Keyword Arguments:
+              nk (int): the approximate number of sampling points in the Brillouin Zone along
+                         the entirety of the path between high symmetry points. Points are 
+                         chosen so that they are equidistant along the entirety of the path.
+
+              band_topology (bool): do the band topology calculation along the path
+              ipol (int): first direction when calculating band topology quantites
+              jpol (int): second direction when calculating band topology quantites
+              spol (int): third direction when calculating band topology quantites
+
+        Returns:
+              None
+
+        '''
+
+        fermi_surface=False
+        nbnd=None
+        eShift=15.0
+        cond_bands=True
 
         AFLOWpi.scfuj.paopy_bands_wrapper(self.calcs,band_topology=band_topology,fermi_surface=fermi_surface,ipol=ipol,jpol=jpol,spol=spol,nk=nk)
 

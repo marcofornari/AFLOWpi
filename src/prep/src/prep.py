@@ -4477,12 +4477,12 @@ EXITING.
                         raise SystemExit
 
 
-        def increase_step(func):
-                @functools.wraps(func)
-                def wrapper(*args,**kwargs):
-                        self.step_index+=1
-                        print((self.step_index))
-                        return func(*args, **kwargs)
+        # def increase_step(func):
+        #         @functools.wraps(func)
+        #         def wrapper(*args,**kwargs):
+        #                 self.step_index+=1
+        #                 print((self.step_index))
+        #                 return func(*args, **kwargs)
 
 
         def items(self):
@@ -4530,13 +4530,13 @@ EXITING.
         #                 with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID),'w') as newIn:
         #                         newIn.write(conv_input)         
 
-        def get_initial_inputs(self):
-                temp_dict=collections.OrderedDict()
-                temp_dict=copy.deepcopy(self.int_dict)
-                for ID,oneCalc in list(self.int_dict.items()):
-                        temp_dict[ID]['_AFLOWPI_INPUT_']=self.initial_inputs[ID.split('_')[0]]
-                self.int_dict=copy.deepcopy(temp_dict)
-                return self
+        # def get_initial_inputs(self):
+        #         temp_dict=collections.OrderedDict()
+        #         temp_dict=copy.deepcopy(self.int_dict)
+        #         for ID,oneCalc in list(self.int_dict.items()):
+        #                 temp_dict[ID]['_AFLOWPI_INPUT_']=self.initial_inputs[ID.split('_')[0]]
+        #         self.int_dict=copy.deepcopy(temp_dict)
+        #         return self
 
         def _saveOneCalc(self,oneCalc,ID):
                 with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc' % ID),'wb') as oneCalcPickleFile:
@@ -4544,17 +4544,43 @@ EXITING.
 
 
         def resubmit(self,reset=True):
+                """
+                Resubmits calculation set to the queue. Only to be used when loading a calculation set from file.
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      reset (bool): resets counter flag in .oneCalc file
+
+                Returns:
+                     None
+                """
+
                 AFLOWpi.run.reset_logs(self.int_dict)
                 AFLOWpi.run.resubmit(self.int_dict)
 
 
         def scf(self):
+                """
+                Runs self consistent calculation with the calculation engine
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
                 self.change_input('&control','calculation','"scf"')#,change_initial=False)
                 self.type='scf'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 self.initial_calcs.append(self.int_dict)
 
                 calc_type='Self-consistent'
@@ -4563,12 +4589,25 @@ EXITING.
 
 
         def efg(self):
+                """
+                Runs electric field gradient calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='efg'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.efg(self.int_dict,engine='')
 
@@ -4578,12 +4617,25 @@ EXITING.
 
 
         def nmr(self):
+                """
+                Runs NMR calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='nmr'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.nmr(self.int_dict,engine='')
 
@@ -4591,12 +4643,25 @@ EXITING.
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def epr(self):
+                """
+                Runs EPR calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='epr'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.epr(self.int_dict,engine='')
 
@@ -4604,12 +4669,25 @@ EXITING.
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def knight_shift(self):
+                """
+                Runs Knight shift calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='knight'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.knight_shift(self.int_dict,engine='')
 
@@ -4618,12 +4696,25 @@ EXITING.
 
 
         def mossbauer(self):
+                """
+                Runs Mossbauer calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='mossbauer'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.mossbauer(self.int_dict,engine='')
 
@@ -4631,12 +4722,25 @@ EXITING.
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def hyperfine(self):
+                """
+                Runs hyperfine calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='hyperfine'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.hyperfine(self.int_dict,engine='')
 
@@ -4644,12 +4748,25 @@ EXITING.
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def fsum(self):
+                """
+                Runs f-sum shift calculation with GIPAW
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.load_index+=1
 
                 self.type='fsum'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 
                 AFLOWpi.run.fsum(self.int_dict,engine='')
 
@@ -4658,13 +4775,26 @@ EXITING.
 
 
         def relax(self):
+                """
+                Relax (optimize) the atomic positions of the atoms in the unit cell with the calculation engine
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.type='relax'
                 self.load_index+=1
                 self.change_input('&control','calculation','"relax"')#,change_initial=False)
 
-                self.new_step(update_positions=True,update_structure=True,)
+                self._new_step(update_positions=True,update_structure=True,)
                 self.initial_calcs.append(self.int_dict)
 
 
@@ -4676,12 +4806,26 @@ EXITING.
 
 
         def vcrelax(self):
+                """
+                Fully relax (optimize) the cell geometry and positions of the atoms in the unit cell with the calculation engine
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.type='vcrelax'
                 self.load_index+=1
                 self.change_input('&control','calculation','"vc-relax"')#,change_initial=False)
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 self.initial_calcs.append(self.int_dict)
 
 
@@ -4692,6 +4836,23 @@ EXITING.
                 
 
         def addToAll(self,block=None,addition=None):
+                """
+                add string of code to a block of the execution code in the <ID>.py files generated by AFLOWpi. 
+                WARNING! WARNING! WARNING! Will likely alter the behavior of AFLOWpi. Use at your own risk!
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      block (string): name of the block to add the code to. Block names include... 
+                                      "RUN","POSTPROCESSING","PLOT","CALCTRANSFORM","SUBMITNEXT","BATCH","CLEANUP",
+                                      "CONFIGFILE","LOGGING","ONECALC","LOADCALC","ID","RESTART","PREPROCESSING","LOCK"
+
+                Returns:
+                     None
+                """
+
+
                 if block is None or addition is None:
                         return
 
@@ -4711,7 +4872,7 @@ EXITING.
                         AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
                                 
 
-        def update_cell(self,update_positions=True,update_structure=True):
+        def _update_cell(self,update_positions=True,update_structure=True):
                 addit = "oneCalc,ID = AFLOWpi.prep._oneUpdateStructs(oneCalc,ID,update_structure=%s,update_positions=%s,override_lock=False)"%(update_positions,update_structure)
 
                 
@@ -4724,12 +4885,12 @@ EXITING.
                 except:
                         self.addToAll(block='PREPROCESSING',addition=addit)             
         
-        def new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
+        def _new_step(self,update_positions=True,update_structure=True,new_job=True,ext=''):
                 if self.step_index==0:
                         outp = "\n*** Generating Execution Pipeline from Workflow Script ***"
                         print((AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)))
 
-                self.update_cell()
+                self._update_cell()
 
                 self.step_index+=1
 
@@ -4770,6 +4931,19 @@ EXITING.
 
 
         def change_pseudos(self,directory):
+                """
+                Change the pseudopotentials used in the calculation
+
+                Arguments:
+                      directory (string): Name of the directory to search for the pseudopotentials. 
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
                 if not os.path.isabs(directory):
                         directory=os.path.join(os.path.dirname(os.path.realpath(__main__.__file__)),directory)
 
@@ -4778,21 +4952,36 @@ EXITING.
 
 
         def change_input(self,namelist=None,parameter=None,value=None):
-            if value is not None:
+                """
+                Change a parameter in all input files in the calculation set
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      namelist (string): name of the namelist that contains the parameter to change
+                      parameter (string): name of the parameter in the namelist to change
+                      value (string): string of the value to change the parameter to
+
+                Returns:
+                     None
+                """
+
+                if value is not None:
                     del_value=True
                     if "'" in value:
-                            try:
-                                    value.replace("'",'"')
-                            except:
-                                    pass
+                        try:
+                                value.replace("'",'"')
+                        except:
+                                pass
 
                     del_value=False
-            else:
+                else:
                     del_value=True
 
-            addition="oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'%s','%s','''%s''',del_value=%s)" \
-                %(namelist,parameter,value,del_value)
-            self.addToAll(block='PREPROCESSING',addition=addition)
+                addition="oneCalc,ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'%s','%s','''%s''',del_value=%s)" \
+                        %(namelist,parameter,value,del_value)
+                self.addToAll(block='PREPROCESSING',addition=addition)
 
                 
 #         def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
@@ -4806,7 +4995,7 @@ EXITING.
 #                         raise SystemExit
 
 #                 self.type='converge_smearing'
-#                 self.new_step(update_positions=True,update_structure=True)
+#                 self._new_step(update_positions=True,update_structure=True)
 #                 self.initial_calcs.append(self.int_dict)
 
 #                 gen_func = "AFLOWpi.run._gen_smear_conv_calcs(oneCalc,ID,num_points=%s,smear_type='%s',smear_variance=%s,calc_type='%s')"%(num_points,smear_type,smear_variance,relax)
@@ -4832,16 +5021,45 @@ EXITING.
                 
 
         def shake_atoms(self,dist=0.2,weight=False):            
+                """
+                Shakes atoms in input files randomly
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      dist (float): distance in angstroms to move each atom
+                      weight (bool): weight the amount each atom is moved by its atomic mass
+
+                Returns:
+                     None
+                """
+
                 command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight=%s)'%(dist,weight)
                 self.addToAll(block='PREPROCESSING',addition=command)
 
 
         def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
+                """
+                Shakes atoms in input files randomly
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      proj_thr (float): threshhold for the PAO-TB projection. 
+                                        Higher is better but means less conduction bands 
+                      kp_factor (float): multiplier in the nscf calculation
+
+                Returns:
+                     None
+                """
+
                 self.scf_complete=True
                 self.tight_banding==False
                 self.type='PAO-TB'
                 
-                self.new_step(update_positions=True,update_structure=True,)
+                self._new_step(update_positions=True,update_structure=True,)
 
                 self.initial_calcs.append(self.int_dict)
                 #for now remove later
@@ -4861,8 +5079,23 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
         def environ_relax(self):
+                """
+                Relax (optimize) the atomic positions of the atoms in 
+                the unit cell with the calculation engine and environ
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                     None
+                """
+
+
                 self.type='environ-relax'
-                self.new_step(update_positions=True,update_structure=True,)
+                self._new_step(update_positions=True,update_structure=True,)
                 self.initial_calcs.append(self.int_dict)
                 print("environ setup function...")
                 AFLOWpi.environ.setup_relax(self.int_dict)
@@ -4872,8 +5105,21 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
         
         def environ_scf(self, config=None, environmode='from_file'):
+                """
+                run self consistent cycle with the calculation engine and environ
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      config (string): configuration file for environ
+                      environmode (string): if 'from_file' use config
+                Returns:
+                     None
+                """
+
                 self.type='environ-scf'
-                self.new_step(update_positions=True,update_structure=True,)
+                self._new_step(update_positions=True,update_structure=True,)
                 self.initial_calcs.append(self.int_dict)
                 print("environ setup function...")
                 AFLOWpi.environ.setup_scf(self.int_dict, config, environmode)
@@ -4883,6 +5129,27 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
         def elastic(self,mult_jobs=False,order=2,eta_max=0.005,num_dist=10,):
+                """
+                Run elastic constant calculation with ElaStic package
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      mult_jobs (bool): run the calculations as separate cluster jobs
+                                        or serially as one cluster job (default=False)
+                      order (int):  order=1 | use energy to calculate elastic constants (not recommended)
+                                        order=2 | use stresses to calculate elastic constants (default)
+                      eta_max (float):  extent of distortion of the cell (default=0.005)
+                      num_dist (int):   number of distortions to in each direction 
+                                        to calculate the elastic constants (default=10)
+
+                Returns:
+                     None
+                """
+
+
+
                 #flag to determine if we need to recalculate the TB hamiltonian if 
                 #the user has chosen to calculate it on a later step in the workflow
                 self.tight_banding=False
@@ -4894,7 +5161,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.type='elastic'
                 #updates the structure and atomic positions from previous steps and
                 #sets up a new ID.py, ID.qsub (if applicable) and ID.in
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 #adds prep_fd to be run to every calculation in the set
                 loadModString = '''AFLOWpi.run._prep_elastic(oneCalc,ID,eta_max=%s,num_dist=%s,use_stress = %s,order=%s)'''%(eta_max,num_dist,use_stress,order)
                 self._addToAll(block='PREPROCESSING',addition=loadModString)            
@@ -4920,9 +5187,38 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
         def thermal(self,delta_volume=0.03,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=True,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,LOTO=False,hydrostatic_expansion=True,central_diff=False):
+                """
+                Run elastic constant calculation with ElaStic package
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      delta_volume (float): percentage to expand or contract cell (default=0.03)
+                      nrx1 (int): number of cells in the first direction for the supercell (default=2)
+                      nrx2 (int): number of cells in the second direction for the supercell (default=2)
+                      nrx3 (int): number of cells in the third direction for the supercell (default=2)
+                      innx (int): whether to do central difference (innx=2)  in the phonon calculation 
+                                  or (innx=1) forward difference. (default=2)
+                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation (default=0.005)
+                      mult_jobs (bool): run the calculations as separate cluster jobs
+                                        or serially as one cluster job (default=False) 
+                      disp_sym (bool): reduce number of calculations by including displacement symmetry (default=True)
+                      atom_sym (bool): reduce number of calculations by including point symmetry (default=True)
+                      field_strength (float): strength of applied electric field if including LOTO (default=0.001)
+                      field_cycles (int): number of berry cycles in calculation with applied electric field (default=3)
+                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix (default=False)
+                      hydrostatic_expansion (bool): if True, let the cell optimize after being expanded or contracted (default=False)
+                      central_diff (bool): if True, do central difference derivative for gruneisen parameter (default=False)
+
+                Returns:
+                     None
+                """
+
+                
+
+
                 workf = self.workflow
-#               print 'thermal DISABLED. Coming soon.'
-#               raise SystemExit
                 #check to see if phonon was already done and the structure hasn't changed since
                 #if structure has changed redo first set of phonons if it hasn't then skip doing
                 #it and just do the volume increase and the phonons at larger vol
@@ -4956,7 +5252,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                                 self.change_input('&control','calculation','"vc-relax"')
                                 self.change_input('&cell','cell_dofree','"shape"')
 
-                        self.new_step(update_positions=True,update_structure=True)
+                        self._new_step(update_positions=True,update_structure=True)
 
                         calc_type='Atomic position relaxation calculation at contracted volume.'
                         print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
@@ -5011,7 +5307,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                         self.change_input('&control','calculation','"vc-relax"')
                         self.change_input('&cell','cell_dofree','"shape"')
 
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
 
                 calc_type='Atomic position relaxation calculation at expanded volume.'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
@@ -5066,8 +5362,35 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,proj_phDOS=True,raman=False):
-                                        
+        def phonon(self,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.005,mult_jobs=False,LOTO=False,disp_sym=True,atom_sym=True,field_strength=0.001,field_cycles=3,raman=False):
+                """
+                Run elastic constant calculation with ElaStic package
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      nrx1 (int): number of cells in the first direction for the supercell (default=2)
+                      nrx2 (int): number of cells in the second direction for the supercell (default=2)
+                      nrx3 (int): number of cells in the third direction for the supercell (default=2)
+                      innx (int): whether to do central difference (innx=2)  in the phonon calculation 
+                                  or (innx=1) forward difference. (default=2)
+                      de (float): amount, in angstrom, to move each atom in frozen phonon calculation (default=0.005)
+                      mult_jobs (bool): run the calculations as separate cluster jobs
+                                        or serially as one cluster job (default=False) 
+                      disp_sym (bool): reduce number of calculations by including displacement symmetry (default=True)
+                      atom_sym (bool): reduce number of calculations by including point symmetry (default=True)
+                      field_strength (float): strength of applied electric field if including LOTO (default=0.001)
+                      field_cycles (int): number of berry cycles in calculation with applied electric field (default=3)
+                      LOTO (bool): include calculation of nonanalytic part of dynamical matrix (default=False)
+                      raman (bool): calculate raman tensor using finite fields method (default=False)
+
+                Returns:
+                     None
+                """
+
+
+                proj_phDOS=True
 
                 #the user has chosen to calculate it on a later step in the workflow
                 self.tight_banding=False
@@ -5077,7 +5400,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.type='phonon'
                 #updates the structure and atomic positions from previous steps and
                 #sets up a new ID.py, ID.qsub (if applicable) and ID.in
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 #adds prep_fd to be run to every calculation in the set
                 loadModString = '''AFLOWpi.run.prep_fd(__submitNodeName__,oneCalc,ID,nrx1=%i,nrx2=%i,nrx3=%i,innx=%i,de=%f,atom_sym=%s,disp_sym=%s,proj_phDOS=%s)'''%(nrx1,nrx2,nrx3,innx,de,atom_sym,disp_sym,proj_phDOS)
                 self._addToAll(block='PREPROCESSING',addition=loadModString)            
@@ -5168,19 +5491,19 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
 
-                if atom_sym and innx==1:
-                        warning='''                 ***************************************
-                   WARNING! WARNING! WARNING! WARNING! 
-                 ***************************************
-                 forward difference derivative (innx=1) 
-                 and atom_sym=True are only compatable 
-                 assuming d2E/dx2 is constant. If it is 
-                 not constant then your results MAY be 
-                 incorrect. It is advised that you use 
-                 innx=2 when using atom_sym=True.
-                 ***************************************'''
-                        warning = AFLOWpi.run._colorize_message(warning,level='CRITICAL',show_level=False)
-                        print(warning)
+                # if atom_sym and innx==1:
+                #         warning='''                 ***************************************
+                #    WARNING! WARNING! WARNING! WARNING! 
+                #  ***************************************
+                #  forward difference derivative (innx=1) 
+                #  and atom_sym=True are only compatable 
+                #  assuming d2E/dx2 is constant. If it is 
+                #  not constant then your results MAY be 
+                #  incorrect. It is advised that you use 
+                #  innx=2 when using atom_sym=True.
+                #  ***************************************'''
+                #         warning = AFLOWpi.run._colorize_message(warning,level='CRITICAL',show_level=False)
+                #         print(warning)
 
 
 #         def elph(self,mult_jobs=True,dx=0.1,tb_kp_mult=4.0,qp_mult=1.0):
@@ -5194,7 +5517,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #                 self.type='elph'
 #                 #updates the structure and atomic positions from previous steps and
 #                 #sets up a new ID.py, ID.qsub (if applicable) and ID.in
-#                 self.new_step(update_positions=True,update_structure=True)
+#                 self._new_step(update_positions=True,update_structure=True)
 #                 #adds prep_fd to be run to every calculation in the set
 #                 loadModString = '''AFLOWpi.elph.prep_elph(oneCalc,ID)'''
 #                 self._addToAll(block='PREPROCESSING',addition=loadModString)            
@@ -5241,7 +5564,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',mixing=0.0,kp_factor=1.0,U_eff=True):
+        def acbn0(self,thresh=0.1,nIters=20, paodir=None,relax='scf',kp_factor=1.0,U_eff=True):
                 '''
                 Wrapper method to call AFLOWpi.scfuj.scfPrep and AFLOWpi.scfuj.run in the high level 
                 user interface. Adds a new step to the workflow.
@@ -5251,17 +5574,23 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       self: the _calcs_container object
 
                 Keyword Arguments:
-                      thresh (float): threshold for self consistent hubbard U convergence
-                      niters (int): max number of iterations of the acbn0 cycle
+                      thresh (float): threshold for self consistent hubbard U convergence (default=0.1eV)
+                      niters (int): max number of iterations of the acbn0 cycle (default=20)
                       paodir (string): the path of the PAO directory. This will override 
                                         an entry of the paodir in the AFLOWpi config file 
                                         used for the session
-                      mixing (float): the amount of the previous acbn0 U iteration to mix into
-                                      the current (only needed when there is U val oscillation)
+
+                      relax (string): type of self-consistent calculation to do every ACBN0 cycle. (default='scf')
+                      kp_factor (float): multiplier in the nscf calculation
+                      U_eff (bool): EXPERIMENTAL!! whether to do U_eff=U-J or include U and J separately. (default=True)
+
                 Returns:
                       None
 
                 '''             
+
+                mixing=0.0
+
                 rel_low = relax.lower()
                 if rel_low not in ['vc-relax','relax','scf']:
                         print("Invalid option for relax parameter in acbn0!")
@@ -5274,7 +5603,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.load_index+=1
                 self.type='scfuj'
                 self.change_input('&control','calculation','"%s"'%relax)
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 self.initial_calcs.append(self.int_dict)
 
 
@@ -5325,7 +5654,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #                 self.tight_banding==False
 #                 self.load_index+=1
 #                 self.type='crawl_min'
-#                 self.new_step(update_positions=True,update_structure=True)
+#                 self._new_step(update_positions=True,update_structure=True)
 
 #                 self.int_dict=AFLOWpi.pseudo.crawlingMinimization(self.int_dict,mult_jobs=mult_jobs,grid_density=grid_density,initial_variance=initial_variance,thresh=thresh,constraint=constraint)
 #                 self.initial_calcs.append(self.int_dict)
@@ -5339,7 +5668,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #                 raise SystemExit
 #                 self.scf_complete=True
 #                 self.type='evCurve_min'
-#                 self.new_step(update_positions=True,update_structure=True)
+#                 self._new_step(update_positions=True,update_structure=True)
 #                 self.load_index+=1
 #                 self.int_dict=AFLOWpi.scfuj.evCurveMinimize(self.int_dict,pThresh=pThresh,final_minimization=final_minimization)
 #                 self.initial_calcs.append(self.int_dict)
@@ -5351,20 +5680,22 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Adds a new step to the workflow.
 
                 Arguments:
-                      self: the _calcs_container object
+                      None
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction
                       project (bool): if True: do the projected DOS after completing the DOS
+                      n_conduction (int): number of conduction bands to include. Default is 0.75*n_valence
 
                 Returns:
                       None
 
                 '''
+
                 self.tight_banding=False
                 self.type='dos'
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
 
 
@@ -5391,7 +5722,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Adds a new step to the workflow.
 
                 Arguments:
-                      self: the _calcs_container object
+                      None
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction                              
@@ -5415,7 +5746,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.change_input('&system','nosym','.TRUE.')
                 self.change_input('&system','noinv','.TRUE.')
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
                 self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
                 
                 occ=False
@@ -5470,7 +5801,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Do electric polarization calc
 
                 Arguments:
-                      self: the _calcs_container object
+                      None
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction
@@ -5482,7 +5813,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 '''
                 self.tight_banding=False
                 self.type='berry'
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
 
 #               self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=0)
                 add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kp_factor
@@ -5505,7 +5836,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Structure. 
 
                 Arguments:
-                      calcs (dict): a dictionary of dicionaries representing the set of calculations
+                      None
 
                 Keyword Arguments:
                       dk (float): the density in the Brillouin zone of the k point sampling along the
@@ -5524,7 +5855,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.type='bands'
 
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
-                self.new_step(update_positions=True,update_structure=True)
+                self._new_step(update_positions=True,update_structure=True)
 
                 postfix = ConfigSectionMap('run','exec_postfix')
 
@@ -5546,7 +5877,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #                 raise SystemExit
 #                 self.load_index+=1
 #                 self.type='brute_pseudotest'
-#                 self.new_step(update_positions=True,update_structure=True)
+#                 self._new_step(update_positions=True,update_structure=True)
 #                 self.initial_calcs.append(self.int_dict)                
 
 #                 AFLOWpi.pseudo.brute_test(self.int_dict,ecutwfc,dual=dual,sampling=sampling,constraint=None,thresh=conv_thresh,initial_variance=initial_variance,grid_density=grid_density,mult_jobs=mult_jobs,)
@@ -5557,6 +5888,27 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
         def force_oxidation(self,n_val_e,conv_thr=0.05,initial_step=1.0):
+                '''
+                EXPERIMENTAL!!!!!!
+
+                forces atoms in of each species to have N number of atoms in specific orbitals. 
+                In principle this works but in practice this can give very strange results!
+                Use at your own risk!!
+
+                EXPERIMENTAL!!!!!!
+
+                Arguments:
+                      n_val_e (dict): dictionary with species labels as keys and number of electrons as values
+
+                Keyword Arguments:
+                      conv_thr (float): threshold to stop optimization cycle (default=0.05)
+                      initial_step (float): length of the initial optimazation step (default=1.0)
+
+                Returns:
+                      None
+
+                '''
+
                 if len(n_val_e)==0:
                         print('must include at least one value for forced oxidation state')
                         raise SystemExit
@@ -5596,6 +5948,21 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                         AFLOWpi.prep.addToBlockWrapper(oneCalc,ID,block,addition)    
 
         def submit(self):
+                '''
+                Run calculations serially or submit calculations to the cluster
+
+                Arguments:
+                      None
+
+                Keyword Arguments:
+                      None
+
+                Returns:
+                      None
+
+                '''
+
+
                 if self.submit_flag==False:
                         try:
                                 init_calcs=initial_calcs=self.initial_calcs[0]                          
