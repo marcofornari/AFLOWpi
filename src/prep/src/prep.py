@@ -4883,6 +4883,12 @@ EXITING.
 
                 if not os.path.isabs(directory):
                         directory=os.path.join(os.path.dirname(os.path.realpath(__main__.__file__)),directory)
+                        
+                if not os.path.exists(directory):
+                        print("could not find directory:")
+                        print(directory)
+                        print("EXITING")
+                        raise SystemExit
 
                 loadModString = "oneCalc,ID = AFLOWpi.prep._oneChangeCalcs(oneCalc,ID,keyword='%s',value=%s)" %("pseudos",repr(directory))
                 self.addToAll(block='PREPROCESSING',addition=loadModString)                             
@@ -6822,32 +6828,28 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
                         inputfile = replaceRegEx.sub("ecutrho = %f,\n"%(float(value)*4.0),inputfile)
 
         elif keyword == 'pseudos':
-                inputfile = d['_AFLOWPI_INPUT_']
                 new_pseudodir = value
-                for key in d:
-                        v = d[key]
-                        if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
-                                speciesRe = ''.join([i for i in v if not i.isdigit()])
+                inputfile = d['_AFLOWPI_INPUT_']
+                in_dict=AFLOWpi.retr._splitInput(inputfile)
+                spec=in_dict["ATOMIC_SPECIES"]["__content__"]
+                spec_spl=[x.split() for x in spec.split("\n") if len(x.strip())!=0]
+                for i in range(len(spec_spl)):
+                        print(spec_spl[i])
+                        speciesRe=spec_spl[i][0].strip("0123456789")
 
-                                vp = AFLOWpi.prep._getPseudofilename(speciesRe,new_pseudodir)
+                        vp = AFLOWpi.prep._getPseudofilename(speciesRe,new_pseudodir)
+                        
+                        a = os.path.join(new_pseudodir,vp)
+                        b = os.path.join(subdir, vp)
+                
+                        shutil.copy(a, b)
+                        spec_spl[i][2]=vp
 
-                                try:
-                                        a = os.path.join(new_pseudodir,vp)
-                                        b = os.path.join(subdir, vp)
-                                        if not os.path.exists(b):
-                                            shutil.copy(a, b)
-                                except AttributeError:
-                                        logging.debug('Cannot find pseudopotential files in %s ...Exiting' % new_pseudodir)
-                                        print(('cannot find correct PAO files in %s ...Exiting' % new_pseudodir))
-                                        raise SystemExit
-                          
-                                #Replace PP name in inputfile                 
-                                ppLineRE=re.compile("%s.*\s+\S*\.UPF"%v) # v is element symbol
-                                ppLine = ppLineRE.findall(inputfile)
-                                replacePpRE = re.compile("\S*\.UPF")
-                                replacePp = replacePpRE.sub(vp,ppLine[0])
+                spec="\n".join([" ".join(x) for x in spec_spl])
+                in_dict["ATOMIC_SPECIES"]["__content__"]=spec                
+                inputfile=AFLOWpi.retr._joinInput(in_dict)
+                d['_AFLOWPI_INPUT_'] = inputfile
 
-                                inputfile = ppLineRE.sub(replacePp,inputfile)
 
         else:
                 replaceRegEx = re.compile(r"%s\s*?=.*?\n"%keyword)
