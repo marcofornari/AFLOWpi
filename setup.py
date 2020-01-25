@@ -80,7 +80,6 @@ def __init__gen(src_folder):
    with open('./__init__.py','w') as initFile:
        initFile.write(new_file)
 
-
    os.chdir(orig_dir)
 
 modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph',"environ"]
@@ -107,17 +106,13 @@ for j in modules:
 
 for j in modules:
    try:
-
       print(('generating ./src/%s/tests/__init__.py'%j))
       __init__gen('./src/%s/tests/'%j)      
    except Exception as e:
       pass
 
-
 try:
    
-
-
    PAOPY_SRC = glob.glob('src/PAOFLOW/src/*.py')
    PAOPY_DEF = glob.glob('src/PAOFLOW/src/defs/*.py')
 
@@ -127,7 +122,7 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "0.9.9",
+         version = "1.1.0",
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
@@ -159,17 +154,17 @@ try:
                       'AFLOWpi.plot'    :'src/plot/src/',
                       'AFLOWpi.pseudo'  :'src/pseudo/src/',
                       'AFLOWpi.db'      :'src/db/src/',
-                      'AFLOWpi.elph'      :'src/elph/src/',
-                      'AFLOWpi.environ'      :'src/environ/src/',
+                      'AFLOWpi.elph'    :'src/elph/src/',
+                      'AFLOWpi.environ' :'src/environ/src/',
                       'AFLOWpi.aflowlib':'src/aflowlib/src/',
-                      'PAOFLOW'         :'src/PAOFLOW/',   
-                      'PAOFLOW.defs'         :'src/PAOFLOW/src/'   
+                      'PAOFLOW'         :'src/PAOFLOW/src',   
+                      'PAOFLOW.defs'    :'src/PAOFLOW/src/defs'   
 },
 
 
                       
          package_data = {
-                                  'AFLOWpi':['PAOFLOW/src/*/*','PAOFLOW/src/*.py','PAOFLOW/examples/*.py',
+                                  'AFLOWpi':['PAOFLOW/examples/*.py',
                                              'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
                                   },
