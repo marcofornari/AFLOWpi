@@ -4979,7 +4979,20 @@ EXITING.
                 Keyword Arguments:
                       proj_thr (float): threshhold for the PAO-TB projection. 
                                         Higher is better but means less conduction bands 
-                      kp_factor (float): multiplier in the nscf calculation
+                      kp_factor (float): sampling multiplier in the nscf calculation
+                      exec_prefix (string): overrides exec_prefix in config file when running PAOFLOW
+                      band_factor (float): number of bands to use in the projection. 1.0 means that you
+                                           use the same number of bands as atomic wfc (recommended)
+                      smearing (float): type of smearing to use in PAOFLOW calculations. 3 values accepted: 
+                                        "gauss","m-p",None
+                      tb_kp_factor (float): sampling multiplier for the PAOFLOW kpoint sampling grid. if 
+                                            self-consistent sampling is 10 10 10 and factor is 4 then PAOFLOW 
+                                            grid will be 40 40 40 
+                      emin (float): default energy minimum below fermi energy for PAOFLOW 
+                      emax (float): default energy maximum above fermi energy for PAOFLOW 
+                      ne (int): number of samples in the energy window
+          
+                
 
                 Returns:
                      None
