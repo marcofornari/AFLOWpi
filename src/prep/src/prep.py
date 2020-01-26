@@ -4911,11 +4911,8 @@ EXITING.
 
                 if value is not None:
                     del_value=True
-                    if "'" in value:
-                        try:
-                                value.replace("'",'"')
-                        except:
-                                pass
+                    if type(value)==type("test"):
+                            value = re.sub("'",'"',value)
 
                     del_value=False
                 else:
