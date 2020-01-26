@@ -107,7 +107,9 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
         if postfix!='':
             postfix='_'+postfix
         '''name of file of the DOS plots is dosBandPlot_<_AFLOWPI_PREFIX_>'''
-        fileplot = os.path.join(subdir,'DOS_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix))
+
+        exten=AFLOWpi.plot._get_plot_ext_type()
+        fileplot = os.path.join(subdir,'DOS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix,exten))
 
         #to set figure size and default fonts
         matplotlib.rc("font", family="serif")      #to set the font type
@@ -445,10 +447,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
         """get the path to the subdirectory of the calc that you are making plots for"""        
         subdir = oneCalc['_AFLOWPI_FOLDER_']
         
+        exten=AFLOWpi.plot._get_plot_ext_type()
         try:
-                filePlotName = 'PDOS_%s%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom)
+                filePlotName = 'PDOS_%s%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom,exten)
         except IOError:
-                filePlotName = 'PDOS_%s%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom)
+                filePlotName = 'PDOS_%s%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom,exten)
 
         fileplot = os.path.join(subdir,filePlotName)
 
@@ -690,10 +693,11 @@ def __plotByAtom(maxNum,speciesNum,fig,atom,oneCalc,ID,yLim=[-10,10],LSDA=False,
         """get the path to the subdirectory of the calc that you are making plots for"""        
         subdir = oneCalc['_AFLOWPI_FOLDER_']
         
+        exten=AFLOWpi.plot._get_plot_ext_type()
         try:
-                filePlotName = 'PDOS_%s%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom)
+                filePlotName = 'PDOS_%s%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom,exten)
         except IOError:
-                filePlotName = 'PDOS_%s%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom)
+                filePlotName = 'PDOS_%s%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,atom,exten)
 
         fileplot = os.path.join(subdir,filePlotName)
 
@@ -1211,8 +1215,9 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         """get the path to the subdirectory of the calc that you are making plots for"""
 
         '''name of file of the DOS plots is dosBandPlot_<_AFLOWPI_PREFIX_>'''
-        
-        fileplot = os.path.join(subdir,'PDOS_%s_%s%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix))
+        exten=AFLOWpi.plot._get_plot_ext_type()
+
+        fileplot = os.path.join(subdir,'PDOS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix,exten))
 
         fig.savefig(fileplot,bbox_inches='tight')
         try:

@@ -494,7 +494,9 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
             t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
             pylab.xlim([0.0,np.amax(therm_data[:,0])])
 
-    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.pdf' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID))
+    ext=AFLOWpi.plot._get_plot_ext_type()
+
+    fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,ext))
 
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
@@ -538,8 +540,9 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 
         matplotlib.pyplot.ylabel(r'$\kappa_{lat}$ $(\frac{W}{m\cdot K})$')
 
+        ext=AFLOWpi.plot._get_plot_ext_type()
 
-        fig_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"LATTICE_TC_%s_%s.pdf"%(AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID))
+        fig_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"LATTICE_TC_%s_%s.%s"%(AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,ext))
         matplotlib.pyplot.savefig(fig_file_name,bbox_inches='tight')
 
 

@@ -575,8 +575,10 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                     postfix_append='_'+postfix
                 else:
                     postfix_append=''
+                
+                ext=AFLOWpi.plot._get_plot_ext_type()
 
-                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.pdf'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append))
+                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.%s'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append,ext))
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
                 pylab.close()
 

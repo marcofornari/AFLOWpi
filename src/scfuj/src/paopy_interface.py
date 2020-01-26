@@ -58,8 +58,8 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
         print(e)
 
 
-def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000):
-    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s,emin=%s,emax=%s,ne=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing),emin,emax,ne)
+def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
+    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s,emin=%s,emax=%s,ne=%s,symmetrize=%s,sym_thr=%s,sym_max_iter=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing),emin,emax,ne,symmetrize,sym_thr,sym_max_iter)
         
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
@@ -125,7 +125,7 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
         ofo.write(outstr)
 
 
-def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None,emin=-5.0,emax=5.0,ne=1000):
+def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
     
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     ibrav=oneCalc['_AFLOWPI_ORIG_IBRAV_']
@@ -164,6 +164,10 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft2','int',nk2)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft3','int',nk3)
 
+    if symmetrize:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symmetrize','logical','T')
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_max_iter','',sym_max_iter)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','',sym_thr)
 
 
     if acbn0==True:
