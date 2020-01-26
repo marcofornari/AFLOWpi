@@ -190,7 +190,6 @@ def __getPath_WanT(oneCalc,ID):
                     ofo.write(ofs)
             
     except:
-#            pass
             nspin=1
 
     if nspin==2:
@@ -380,7 +379,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 #               except:
 #                       return
 #                if nspin==1:
-                filebands = os.path.join(subdir,'%s_bands_paopy_up_cleaned.dat'%calcID)
+                filebands = os.path.join(subdir,'%s_bands_paopy_cleaned.dat'%calcID)
                 if not os.path.exists(filebands):
                         filebands_up = os.path.join(subdir,'%s_bands_paopy_up_cleaned.dat'%calcID)
                         filebands_dn = os.path.join(subdir,'%s_bands_paopy_down_cleaned.dat'%calcID)

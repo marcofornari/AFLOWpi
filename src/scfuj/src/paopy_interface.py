@@ -166,8 +166,8 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
 
     if symmetrize:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symmetrize','logical','T')
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_max_iter','',sym_max_iter)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','',sym_thr)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_max_iter','int',sym_max_iter)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','decimal',"%16.14f"%sym_thr)
 
 
     if acbn0==True:
