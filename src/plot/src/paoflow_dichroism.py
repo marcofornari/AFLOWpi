@@ -92,4 +92,5 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
 
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
         plt.close()

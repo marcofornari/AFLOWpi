@@ -505,6 +505,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
                 t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',dpi=300)
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
         pyplot.cla()
         pyplot.clf()

@@ -580,6 +580,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
                 fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.%s'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append,ext))
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+                AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
                 pylab.close()
 
 

@@ -213,6 +213,10 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
         t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
+
         try:
                         AFLOWpi.retr._moveToSavedir(fileplot)
         except Exception as e:
@@ -1080,6 +1084,8 @@ def __apdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         #save fig
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
         try:
                 AFLOWpi.retr._moveToSavedir(fileplot)
         except Exception as e:
@@ -1220,6 +1226,9 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         fileplot = os.path.join(subdir,'PDOS_%s_%s%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,postfix,exten))
 
         fig.savefig(fileplot,bbox_inches='tight')
+
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
         try:
                 AFLOWpi.retr._moveToSavedir(fileplot)
         except:

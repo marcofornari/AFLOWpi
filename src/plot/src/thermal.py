@@ -36,6 +36,14 @@ import scipy
 import matplotlib.gridspec as gridspec
 
 
+def plot_lattice_TC(calcs,postfix="",temp_range=None):
+        for ID,oneCalc in list(calcs.items()):
+                AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=temp_range)
+
+def plot_gruneisen(calcs,postfix="",w_range=None,grun_range=None):
+        for ID,oneCalc in list(calcs.items()):
+                AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID,w_range=w_range,grun_range=grun_range)
+
 def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 
         
@@ -429,6 +437,7 @@ def __plot_gruneisen(oneCalc,ID,postfix="",THz=False,w_range=None):
 #       t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',dpi=500)
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
         pyplot.cla()
         pyplot.clf()
@@ -499,6 +508,7 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.%s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,ext))
 
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+    AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
     pyplot.cla()
     pyplot.clf()
@@ -544,7 +554,7 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
 
         fig_file_name = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"LATTICE_TC_%s_%s.%s"%(AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,ext))
         matplotlib.pyplot.savefig(fig_file_name,bbox_inches='tight')
-
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fig_file_name)
 
 
 
@@ -657,6 +667,7 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_ap_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
         
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
+    AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
     matplotlib.pyplot.close()
 
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
@@ -692,7 +703,8 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
     t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
-            
+    AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
     pyplot.cla()
     pyplot.clf()
     pyplot.close()
@@ -726,8 +738,9 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
     ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
     t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
-    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
-            
+    matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300) 
+    AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)           
+
     pyplot.cla()
     pyplot.clf()
     pyplot.close()

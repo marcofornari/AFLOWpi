@@ -69,4 +69,5 @@ def __plot_berry_cond(oneCalc,ID,spin=False,en_range=None):
 
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
         plt.close()

@@ -2584,10 +2584,11 @@ def updatelogs(calcs,logname,runlocal=False):
         break
 
     '''write the location of each of the _ID.oneCalc files for all the calcs'''
+
     log_file_name=os.path.join(calcLogDir,logname+'.log')
     with open(log_file_name,'w') as testLogFile:
         for ID,oneCalc in list(calcs.items()):
-            dname="%s_%s_%04d"%(oneCalc["PROJECT"],oneCalc["SET"],oneCalc["_AFLOWPI_INDEX_"])
+            dname=os.path.basename(oneCalc['_AFLOWPI_FOLDER_'])
             testLogFile.write(os.path.join("../../",dname,'_%s.oneCalc' % ID)+'\n')
 
     if AFLOWpi.prep._ConfigSectionMap("cluster","daemon").lower()=='true':
@@ -3414,7 +3415,7 @@ def extractvars(refFile):
 
 
 
-def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,keep_name=False,clean_input=True,ref_override=False):
+def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,keep_name=False,clean_input=True,ref_override=False,override_dir_name=False):
         """
         Reads in a string of an QE input file path, a string of an QE input, a file object of a 
         QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -3438,6 +3439,8 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
         """
 
+
+
         returnDict=collections.OrderedDict()
         index=0
 
@@ -3446,18 +3449,47 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
         if type(fileList)==type('aString'):
             fileList=[fileList]
 
+        flist_t=[]
         for inputFile in fileList:
             try:
                 holder=inputFile
                 with open(inputFile,'r') as inputFileObj:
                     inputFile = inputFileObj.read()
                 file_name=os.path.basename(holder)
-                temp_file_hash_name='.'.join(file_name.split('.')[:-1])
+                if "." in file_name:
+                        temp_file_hash_name='.'.join(file_name.split('.')[:-1])
+                else:
+                        temp_file_hash_name=file_name
+
+                flist_t.extend([file_name])
+            except: 
+                     override_dir_name=False
+
+        if override_dir_name:
+                if len(flist_t)!=len(list(set(flist_t))):
+                        print(len(flist_t),len(list(set(flist_t))))
+                        print("filenames must be unique when filename_is_dirname=True! EXITING!")
+
+
+
+
+        for inputFile in fileList:
+            try:
+                holder=inputFile
+                with open(inputFile,'r') as inputFileObj:
+                    inputFile = inputFileObj.read()
+                file_name=os.path.basename(holder)
+                if "." in file_name:
+                        temp_file_hash_name='.'.join(file_name.split('.')[:-1])
+                else:
+                        temp_file_hash_name=file_name
             except:
+                override_dir_name=False
                 try:
                     inputFile = inputFile.read()
                 except:
                     inputFile=inputFile
+                    
 
             '''try to open the reffile '''
             if reffile is not None:
@@ -3766,7 +3798,14 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             DICT.update({'_AFLOWPI_INPUT_':inputfile})
             DICT.update({'__refFile__':inputfile})
-            DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,'%s_%s_%04d' % (PROJDIR, SET, DICT['_AFLOWPI_INDEX_']))})
+            if override_dir_name:
+                    if temp_file_hash_name=="AFLOWpi":
+                            print("Using filename 'AFLOWpi.in' with option override_dir_name=True is not allowed! EXITING!")
+                            raise SystemExit
+
+                    DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,temp_file_hash_name)})
+            else:
+                    DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,'%s_%s_%04d' % (PROJDIR, SET, DICT['_AFLOWPI_INDEX_']))})
             DICT['__qsubFileName__']='_%s.qsub' % calc_label
             DICT['__calcVarName__']= 'oneCalc'
             DICT['PROJECT']= PROJECT
@@ -4052,7 +4091,7 @@ class init:
                 return scfs
 
 
-        def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True,keep_name=False):
+        def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True,filename_as_dirname=False):
                 """
                 Reads in a string of an QE input file path, a string of an QE input, a file object of a 
                 QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -4088,7 +4127,8 @@ class init:
                         sys.exit(0)
 
                 scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
-                                               workdir=workdir,clean_input=clean_input,ref_override=ref_override,keep_name=keep_name)
+                                               workdir=workdir,clean_input=clean_input,ref_override=ref_override,
+                                               override_dir_name=filename_as_dirname)
                 return calcs_container(scfs)
 
         def load(self,step=1):
@@ -4367,7 +4407,7 @@ def _copyConfig(config,dest):
     for section in sectionList:
         optionList = configParse.options(section)        
         for option in optionList:
-            if option == '' or option == 'pao_dir' or option == 'pseudo_dir' or option == 'engine_dir' or option == 'want_dir' or option == 'work_dir' or option == 'engine_dir' or option == 'job_template':
+            if option == '' or option == 'pao_dir' or option == 'pseudo_dir' or option == 'engine_dir' or option == 'want_dir' or option == 'work_dir' or option == 'engine_dir' or option == 'job_template' or option=="fig_dir":
                 possiblePath = configParse.get(section, option)
                 possiblePath  =  os.path.normpath(os.path.join(configFileDir, possiblePath))       
 
@@ -5975,7 +6015,7 @@ class plotter:
 
                 '''
                 if runlocal:
-                        AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID,w_range=w_range,grun_range=grun_range)
+                        AFLOWpi.plot.plot_gruneisen(self.calcs,w_range=w_range,grun_range=grun_range)
                 else:
                         add = 'AFLOWpi.plot.__gruneisen_of_omega_ap(oneCalc,ID,w_range=%s,grun_range=%s)'%(w_range,grun_range)
                         AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)
@@ -6000,7 +6040,7 @@ class plotter:
                 '''
 
                 if runlocal:
-                        AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=temp_range)
+                        AFLOWpi.plot.plot_lattice_TC(self.calcs,temp_range=temp_range)
                 else:
                         add = 'AFLOWpi.plot._plot_lattice_TC(oneCalc,ID,temp_range=%s)'%repr(temp_range)
                         AFLOWpi.prep.addToAll_(self.calcs,block='PLOT',addition=add)

@@ -59,11 +59,11 @@ def band_topology(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight
 
         '''
 
-        for oneCalc in list(calcs.items()):
+        for ID,oneCalc in list(calcs.items()):
                 if runlocal:
-                        AFLOWpi.plot.__band_topology_Plot(oneCalc,DOSPlot,postfix=postfix,tight_banding=tight_banding)
+                        AFLOWpi.plot.__band_topology(oneCalc,ID,DOSPlot=DOSPlot,postfix=postfix,tight_banding=tight_banding)
                 else:
-                        AFLOWpi.prep._addToBlock(oneCalc[1],oneCalc[0],'PLOT',"AFLOWpi.plot.__band_topology(oneCalc,ID,DOSPlot='%s',postfix='%s',tight_banding=%s)" % (DOSPlot,postfix,tight_banding))  
+                        AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__band_topology(oneCalc,ID,DOSPlot='%s',postfix='%s',tight_banding=%s)" % (DOSPlot,postfix,tight_banding))  
 
 
 def __band_topology(oneCalc,ID,DOSPlot='',postfix='',tight_banding=False):
@@ -670,6 +670,7 @@ def __band_topology_Plot(oneCalc,ipol,jpol,spol=2,yLim=[-10,10],DOSPlot='',postf
 #       t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
         try:
                 AFLOWpi.retr._moveToSavedir(fileplot)

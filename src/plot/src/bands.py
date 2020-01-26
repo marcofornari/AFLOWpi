@@ -190,6 +190,7 @@ def __getPath_WanT(oneCalc,ID):
                     ofo.write(ofs)
             
     except:
+#            pass
             nspin=1
 
     if nspin==2:
@@ -197,7 +198,7 @@ def __getPath_WanT(oneCalc,ID):
     else:
             filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_cleaned.dat'%calcID)
 
-    with open("bands_0.dat","r") as ofo:
+    with open(os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"bands_0.dat"),"r") as ofo:
             by_band = numpy.array([list(map(float,x.split())) for x in ofo.readlines()]).T
 
 
@@ -378,9 +379,9 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 #                       AFLOWpi.prep._clean_want_bands(oneCalc,calcID)
 #               except:
 #                       return
-                filebands = os.path.join(subdir,'%s_bands_paopy_cleaned.dat'%calcID)
+#                if nspin==1:
+                filebands = os.path.join(subdir,'%s_bands_paopy_up_cleaned.dat'%calcID)
                 if not os.path.exists(filebands):
-
                         filebands_up = os.path.join(subdir,'%s_bands_paopy_up_cleaned.dat'%calcID)
                         filebands_dn = os.path.join(subdir,'%s_bands_paopy_down_cleaned.dat'%calcID)
                 Efermi_shift=Efermi
@@ -1324,6 +1325,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
         #save fig
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
         try:
                 AFLOWpi.retr._moveToSavedir(fileplot)

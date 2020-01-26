@@ -291,7 +291,10 @@ def updateUvals(oneCalc, Uvals,Jvals,ID=None,U_eff=True):
                 inputDict['&system']['lda_plus_u']='.TRUE.'
 
                 if "noncolin" in list(inputDict['&system'].keys()):
-                    inputDict['&system']["lda_plus_u_kind"]=1
+                    if inputDict['&system']["noncolin"]==".true.":
+                        inputDict['&system']["lda_plus_u_kind"]=1
+                    else:
+                        inputDict['&system']["lda_plus_u_kind"]=0
                 else:
                     inputDict['&system']["lda_plus_u_kind"]=0
 
@@ -1139,7 +1142,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                         else:break
 
                                 #Create input file for respective species
-                                infnm = "_" + oneCalcID + "_acbn0_infile_%s.txt"%atmSp
+                                infnm = oneCalcID + "_acbn0_%s.in"%atmSp
                                 fout = open(os.path.join(subdir,infnm), 'w')
                                 S = "latvects = " + cellParaStr + "\n"
                                 fout.write(S)   
@@ -1149,7 +1152,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                 fout.write(S)
                                 fout.write("nspin = %d\n" % nspin)
                                 fout.write("fpath = %s\n" % subdir)
-                                outfnm = "_" + oneCalcID + "_acbn0_outfile_%s.txt"%atmSp
+                                outfnm = oneCalcID + "_acbn0_%s.out"%atmSp
                                 fout.write("outfile = %s\n"%outfnm)
                                 S = "reduced_basis_dm = " + str(red_basis).strip('[]') + "\n"
                                 fout.write(S)
@@ -1209,7 +1212,7 @@ def getU_frmACBN0out(oneCalc,ID,byAtom=False,U_eff=True):
         for isp in species:
                 #Check for acbn0 output in the work directory
                 try:
-                        acbn0_outFile = subdir + "/_" + oneCalcID + "_acbn0_outfile_" + isp + ".txt"
+                        acbn0_outFile = subdir + "/" + oneCalcID + "_acbn0_" + isp + ".out"
                         if os.path.isfile(acbn0_outFile):
                                 #Get U value from acbn0 output
                                 try:
