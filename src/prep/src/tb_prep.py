@@ -35,7 +35,7 @@ import time
 from collections import OrderedDict
 
 class tight_binding:
-    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss',emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
+    def __init__(self,calcs,cond_bands=True,proj_thr=0.95,kp_factor=2.0,proj_sh=5.5,tb_kp_mult=4,exec_prefix="",band_mult=1.0,smearing='gauss',emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
         self.calcs=calcs
         self.plot=AFLOWpi.prep.tb_plotter(self.calcs)
         self.cond_bands=cond_bands
@@ -44,6 +44,7 @@ class tight_binding:
         self.thresh=proj_thr
         self.shift=proj_sh
         self.cond_bands_proj=True
+        tetra_nscf=False
 
         tb_plotter=AFLOWpi.prep.tb_plotter(calcs)
 
@@ -89,7 +90,10 @@ class tight_binding:
         self.step_counter+=1
 
         AFLOWpi.scfuj.paopy_header_wrapper(self.calcs,shift_type=1,shift='auto',
-                                           thresh=proj_thr,tb_kp_mult=tb_kp_mult,smearing=smearing,emin=emin,emax=emax,ne=ne)
+                                           thresh=proj_thr,tb_kp_mult=tb_kp_mult,
+                                           smearing=smearing,emin=emin,emax=emax,ne=ne,
+                                           symmetrize=symmetrize,sym_thr=sym_thr,
+                                           sym_max_iter=sym_max_iter)
 
         command='''if oneCalc["__execCounter__"]<=%s:
      AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
@@ -696,7 +700,7 @@ class tb_plotter:
 
             '''
 
-            AFLOWpi.plot.band_topology(self.calcs,en_range=en_range,DOSPlot='',runlocal=runlocal,postfix=posfix,tight_banding=False)
+            AFLOWpi.plot.band_topology(self.calcs,yLim=en_range,DOSPlot='',runlocal=runlocal,postfix=postfix,tight_banding=False)
 
             calc_type='Plot Band Topology'
             print(('                 %s'% (calc_type)))

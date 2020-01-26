@@ -4052,7 +4052,7 @@ class init:
                 return scfs
 
 
-        def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True):
+        def from_file(self,fileList,reffile=None,pseudodir=None,workdir=None,clean_input=True,ref_override=True,keep_name=False):
                 """
                 Reads in a string of an QE input file path, a string of an QE input, a file object of a 
                 QE input or a list of them and attempts to fill create a calculation from them. If they
@@ -4088,7 +4088,7 @@ class init:
                         sys.exit(0)
 
                 scfs=AFLOWpi.prep.calcFromFile(self.keys,fileList,reffile=reffile,pseudodir=pseudodir,
-                                               workdir=workdir,clean_input=clean_input,ref_override=ref_override)
+                                               workdir=workdir,clean_input=clean_input,ref_override=ref_override,keep_name=keep_name)
                 return calcs_container(scfs)
 
         def load(self,step=1):
@@ -4975,27 +4975,28 @@ EXITING.
                 self.addToAll(block='PREPROCESSING',addition=command)
 
 
-        def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000,tetra_nscf=False):
+        def tight_binding(self,proj_thr=0.95,kp_factor=2.0,exec_prefix="",band_factor=1.0,smearing='gauss',tb_kp_factor=4.0,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
                 """
-                Shakes atoms in input files randomly
+                Builds TB-PAO hamiltonian from PWSCF
 
                 Keyword Arguments:
-                      proj_thr (float): threshhold for the PAO-TB projection. 
-                                        Higher is better but means less conduction bands 
-                      kp_factor (float): sampling multiplier in the nscf calculation
-                      exec_prefix (string): overrides exec_prefix in config file when running PAOFLOW
-                      band_factor (float): number of bands to use in the projection. 1.0 means that you
-                                           use the same number of bands as atomic wfc (recommended)
-                      smearing (float): type of smearing to use in PAOFLOW calculations. 3 values accepted: 
-                                        "gauss","m-p",None
-                      tb_kp_factor (float): sampling multiplier for the PAOFLOW kpoint sampling grid. if 
-                                            self-consistent sampling is 10 10 10 and factor is 4 then PAOFLOW 
-                                            grid will be 40 40 40 
-                      emin (float): default energy minimum below fermi energy for PAOFLOW 
-                      emax (float): default energy maximum above fermi energy for PAOFLOW 
-                      ne (int): number of samples in the energy window
-          
-                
+                      proj_thr     (float):  threshhold for the PAO-TB projection. 
+                                             Higher is better but means less conduction bands 
+                      kp_factor    (float):  sampling multiplier in the nscf calculation
+                      exec_prefix  (string): overrides exec_prefix in config file when running PAOFLOW
+                      band_factor  (float):  number of bands to use in the projection. 1.0 means that you
+                                             use the same number of bands as atomic wfc (recommended)
+                      smearing     (float):  type of smearing to use in PAOFLOW calculations. 3 values accepted: 
+                                             "gauss","m-p",None
+                      tb_kp_factor (float):  sampling multiplier for the PAOFLOW kpoint sampling grid. if 
+                                             self-consistent sampling is 10 10 10 and factor is 4 then PAOFLOW 
+                                             grid will be 40 40 40 
+                      emin         (float):  default energy minimum below fermi energy for PAOFLOW 
+                      emax         (float):  default energy maximum above fermi energy for PAOFLOW 
+                      ne           (int):    number of samples in the energy window
+                      symmetrize   (bool):   symmetrize the PAO-TB hamiltonian
+                      sym_thr      (float):  threshold for symmetrization
+                      sym_max_iter (float):  max iterations for symmetrization
 
                 Returns:
                      None
@@ -5020,7 +5021,7 @@ EXITING.
                         
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
-                return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne,tetra_nscf=tetra_nscf)
+                return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne,symmetrize=symmetrize,sym_thr=sym_thr,sym_max_iter=sym_max_iter)
 
 
 
