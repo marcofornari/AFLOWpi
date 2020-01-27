@@ -1101,7 +1101,8 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
 #                                print 'ql',ql
                                 if byAtom==False:
                                     #Get list of all orbitals of type ql of the same species
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
+#                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
+                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
 
 
                                     
