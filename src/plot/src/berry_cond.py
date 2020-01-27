@@ -10,14 +10,15 @@ import glob
 def __plot_berry_cond(oneCalc,ID,spin=False,en_range=None):
 
 
-    extension='png'
+
+    extension = AFLOWpi.plot._get_plot_ext_type()
 
     subdir = oneCalc['_AFLOWPI_FOLDER_']
 
     if spin:
-        dem_files = glob.glob(subdir+'/shcEf_*')
+        dem_files = glob.glob(subdir+'/%s_shcEf_*'%ID)
     else:
-        dem_files = glob.glob(subdir+'/ahcEf_*')
+        dem_files = glob.glob(subdir+'/%s_ahcEf_*'%ID)
 
 
     for dat_file in dem_files:

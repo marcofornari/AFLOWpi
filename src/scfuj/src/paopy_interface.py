@@ -29,6 +29,7 @@ import numpy as np
 import re
 import itertools
 import shutil
+import glob
 
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/examples/','main.py')
@@ -56,6 +57,30 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
         os.system(command)
     except Exception as e:
         print(e)
+
+
+def PAOFLOW_DATA_CONV(oneCalc,ID):
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,-1)    
+    except: pass
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,1)    
+    except: pass
+    try:
+        AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_hall_files(oneCalc,ID)    
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_bands_files(oneCalc,ID)
+    except: pass
 
 
 def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
@@ -87,12 +112,12 @@ def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol
 def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step):
     command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s)"""%(repr(t_tensor),t_min,t_max,t_step)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
-    AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
+
 
 def paopy_optical_wrapper(calcs,d_tensor):
     command="""     AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
-    AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
+
 
 def paopy_acbn0_wrapper(calcs):
     pass
@@ -167,7 +192,7 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     if symmetrize:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symmetrize','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_max_iter','int',sym_max_iter)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','decimal',"%16.14f"%sym_thr)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','decimal',"%6.4e"%sym_thr)
 
 
     if acbn0==True:
@@ -355,3 +380,111 @@ def _get_spin_ordering(oneCalc,ID):
             nl.append(len(grouped_l[i])/14)
 
     return nl,sh
+
+
+def _rename_hall_files(oneCalc,ID):
+    dirn = oneCalc["_AFLOWPI_FOLDER_"]
+    hall_files = ["ahcEf_xy.dat","MCDi_xy.dat","MCDr_xy.dat",
+                  "SCDi_z_xy.dat","SCDr_z_xy.dat","shcEf_z_xy.dat",]
+
+    for fn in hall_files:
+        old=os.path.join(dirn,fn)
+        new=os.path.join(dirn,"%s_%s"%(ID,fn))
+        try:
+            os.rename(old,new)
+        except: pass
+
+
+
+
+def _rename_bands_files(oneCalc,ID):
+    '''
+
+
+    Arguments:
+
+
+    Keyword Arguments:
+
+        
+    Returns:
+
+
+    '''
+
+    try:
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/kpath_points.txt')[-1]
+    except:
+        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands_up.out'%ID)[-1]
+
+    with open(want_stdout_path,"r") as ofo:
+            lines=ofo.readlines()
+
+    output_path_string=""
+    flag=False
+    points_list=[]
+    for l in lines:
+            if len(l.strip())==0:
+                    flag=True
+            if flag==False:
+                    lspl=l.split()
+                    output_path_string+="0.0 0.0 0.0 %s ! %s\n"%(lspl[1],lspl[0])
+            else:
+                    points_list.extend([float(x) for x in l.split()])
+
+    points=np.reshape(np.asarray(points_list),(int(len(points_list)/3.0),3))
+    
+    r = np.diff(points,axis=0)
+
+    dist=np.cumsum(np.sqrt(np.sum(r**2,axis=1)))
+    dist = np.concatenate((np.array([0.0]),dist),axis=0)
+    
+    calcID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True)
+
+    nspin=2
+    try:
+            with open("bands_1.dat","r") as ofo:
+                    by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
+            ofs=""
+            for band in range(by_band.shape[0]):
+                    for kpt in range(by_band.shape[1]):
+                            ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+                    if band!=by_band.shape[0]-1:
+                            ofs+="\n"
+
+            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
+            with open(filebands,"w") as ofo:
+                    ofo.write(ofs)
+            
+    except:
+            nspin=1
+
+    if nspin==2:
+            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_up_cleaned.dat'%calcID)
+    else:
+            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_cleaned.dat'%calcID)
+
+    with open(os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"bands_0.dat"),"r") as ofo:
+            by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
+
+
+
+    try:
+            ofs=""
+            for band in range(1,by_band.shape[0]):
+                    for kpt in range(by_band.shape[1]):
+                            ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+                    if band!=by_band.shape[0]-1:
+                            ofs+="\n"       
+
+            with open(filebands,"w") as ofo:
+                    ofo.write(ofs)
+    except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+            raise SystemExit
+            pass
+            
+    nfm = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_kpath_points.txt'%ID)
+    try:
+        os.rename(want_stdout_path,nfm)
+    except: pass

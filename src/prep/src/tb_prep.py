@@ -97,6 +97,7 @@ class tight_binding:
 
         command='''if oneCalc["__execCounter__"]<=%s:
      AFLOWpi.scfuj._run_paopy(oneCalc,ID,exec_prefix="%s")
+     AFLOWpi.scfuj.PAOFLOW_DATA_CONV(oneCalc,ID)
      oneCalc['__execCounter__']+=1
      AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(self.step_counter,exec_prefix)
 
@@ -201,7 +202,8 @@ class tight_binding:
 
 
         if d_tensor is None:
-            d_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
+            d_tensor = [[0,0],[1,1],[2,2]]
+#            d_tensor = [[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]
 
         ne=float(en_range[1]-en_range[0])/de
 
@@ -292,23 +294,6 @@ class tight_binding:
 
             print((AFLOWpi.run._colorize_message('ADDING TB STEP:  ',level='GREEN',show_level=False)+\
                 AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
-
-            pdos_pp_str="""
-
-try:
-    AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
-except: pass
-try:
-    AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,-1)    
-except: pass
-try:
-    AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,1)    
-except: pass
-try:
-    AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
-except: pass
-"""
-            AFLOWpi.prep.addToAll_(self.calcs,'POSTPROCESSING',pdos_pp_str)
 
         if fermi_surface==True:
             calc_type='Fermi Surface'

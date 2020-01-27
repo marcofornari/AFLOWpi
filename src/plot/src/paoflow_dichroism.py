@@ -15,14 +15,14 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
 
     if real:
         if spin:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/SCDr_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_SCDr_*'%ID)
         else:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/MCDr_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_MCDr_*'%ID)
     else:
         if spin:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/SCDi_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_SCDi_*'%ID)
         else:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/MCDi_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_MCDi_*'%ID)
 
 
     for dat_file in dem_files:
