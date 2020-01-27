@@ -312,6 +312,6 @@ def read_inputfile_xml ( fpath, inputfile, data_controller ):
     # symmetrization and wedge -> grid
     data_attributes['expand_wedge'] = read_attribute(aroot, expand_wedge, 'expand_wedge', 'logical')
     data_attributes['symmetrize'] = read_attribute(aroot, symmetrize, 'symmetrize', 'logical')
-    data_attributes['symm_thresh'] = read_attribute(aroot,symm_thresh, 'symm_thresh', 'integer')
+    data_attributes['symm_thresh'] = read_attribute(aroot,symm_thresh, 'symm_thresh', 'decimal')
     data_attributes['symm_max_iter'] = read_attribute(aroot, symm_max_iter, 'symm_max_iter', 'integer')
 
