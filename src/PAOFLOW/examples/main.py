@@ -96,16 +96,17 @@ def main():
     paoflow.dos(do_dos=attr['do_dos'], do_pdos=attr['do_pdos'], emin=attr['emin'], emax=attr['emax'])
 
   if attr['spin_Hall']:
-    paoflow.spin_Hall(do_ac=attr['ac_cond_spin'], emin=attr['eminSH'], emax=attr['emaxSH'])
+    paoflow.spin_Hall(do_ac=attr['ac_cond_spin'], emin=attr['eminSH'], emax=attr['emaxSH'],s_tensor=arry['s_tensor'])
 
   if attr['Berry']:
-    paoflow.anomalous_Hall(do_ac=attr['ac_cond_Berry'], emin=attr['eminAH'], emax=attr['emaxSH'])
+    paoflow.anomalous_Hall(do_ac=attr['ac_cond_Berry'], emin=attr['eminAH'], emax=attr['emaxSH'],a_tensor=arry['a_tensor'])
 
   if attr['Boltzmann']:
-    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'], tstep=attr['tstep'], emin=attr['emin'], emax=attr['emax'], ne=attr['ne'])
+    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'], tstep=attr['tstep'], emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],
+                      t_tensor=arry['t_tensor'])
 
   if attr['epsilon']:
-    paoflow.dielectric_tensor(metal=attr['metal'], emin=attr['epsmin'], emax=attr['epsmax'], ne=attr['ne'])
+    paoflow.dielectric_tensor(metal=attr['metal'], emin=attr['epsmin'], emax=attr['epsmax'], ne=attr['ne'],d_tensor=arry['d_tensor'])
 
   # Print the total execution time and request
   #   desired quantites for further processing
