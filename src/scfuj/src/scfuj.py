@@ -525,7 +525,7 @@ def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_
                                     del splitInput['&system']['degauss']
                                 except: pass
 
-                            splitInput['&electrons']['conv_thr']='1.0D-10'
+                            splitInput['&electrons']['conv_thr']='1.0D-6'
 
 #                            if not wsyminv:
 #                                splitInput['&system']['nosym']='.True.'

@@ -943,10 +943,12 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                                     full_grid,symop,jchia,spin_orb,mag_calc,nk1,nk2,nk3,
                                     nkl_no_interp,partial_grid,npool)
 
-        upscale=8
-        nfft1=nk1+upscale
-        nfft2=nk2+upscale
-        nfft3=nk3+upscale
+        upscale1=int(0.25*nk1)
+        upscale2=int(0.25*nk2)
+        upscale3=int(0.25*nk3)
+        nfft1=nk1+upscale1
+        nfft2=nk2+upscale2
+        nfft3=nk3+upscale3
 
         full_grid_interp = get_full_grid(nfft1,nfft2,nfft3)
         nkl=[]
@@ -960,11 +962,13 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
 
         for i in range(max_iter):
             st=time.time()
-            add=upscale*((-1)**i)
+            add1=upscale1*((-1)**i)
+            add2=upscale2*((-1)**i)
+            add3=upscale3*((-1)**i)
 
-            nfft1=nk1+add
-            nfft2=nk2+add
-            nfft3=nk3+add
+            nfft1=nk1+add1
+            nfft2=nk2+add2
+            nfft3=nk3+add3
 
 
             Hksp = np.reshape(Hksp,(nk1*nk2*nk3,nawf*nawf))
@@ -1001,9 +1005,9 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                                             sym_TR,full_grid_interp,symop,jchia,spin_orb,
                                             mag_calc,nfft1,nfft2,nfft3,nkl_interp,partial_grid_interp,npool)
 
-            nk1+=add
-            nk2+=add
-            nk3+=add
+            nk1+=add1
+            nk2+=add2
+            nk3+=add3
 
             Hksp = reshift_efermi(Hksp,npool,nelec,spin_orb)
 
