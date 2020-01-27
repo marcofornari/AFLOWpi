@@ -364,7 +364,8 @@ def _form_TB_dir(oneCalc,ID,from_ls=True):
 
         for UPF_FILE in glob.glob("%s/*.UPF"%(save_dir)):
             shutil.copy(UPF_FILE,TB_dir)
-
+        for UPF_FILE in glob.glob("%s/*.upf"%(save_dir)):
+            shutil.copy(UPF_FILE,TB_dir)
 
 
     except Exception as e:
