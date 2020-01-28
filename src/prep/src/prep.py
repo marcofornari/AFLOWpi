@@ -3803,7 +3803,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
                             print("Using filename 'AFLOWpi.in' with option override_dir_name=True is not allowed! EXITING!")
                             raise SystemExit
 
-                    DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,temp_file_hash_name)})
+                    DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,temp_file_hash_name+"_%04d"%DICT['_AFLOWPI_INDEX_'])})
             else:
                     DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,'%s_%s_%04d' % (PROJDIR, SET, DICT['_AFLOWPI_INDEX_']))})
             DICT['__qsubFileName__']='_%s.qsub' % calc_label
