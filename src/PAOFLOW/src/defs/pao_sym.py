@@ -866,7 +866,7 @@ def wedge_to_grid(Hksp,U,a_index,phase_shifts,kp,new_k_ind,orig_k_ind,si_per_k,i
 ############################################################################################
 ############################################################################################
 
-def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_atom,sym_info,sym_shift,nk1,nk2,nk3,spin_orb,sym_TR,jchia,mag_calc,symm_grid,thresh,max_iter,nelec):
+def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_atom,sym_info,sym_shift,nk1,nk2,nk3,spin_orb,sym_TR,jchia,mag_calc,symm_grid,thresh,max_iter,nelec,verbose):
     # calculates full H(k) grid from wedge
     npool=4
 
@@ -960,7 +960,7 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
         #max difference bewtween H(k) and H(k*)
         tmax=999999
 
-        for i in range(max_iter):
+        for i in range(int(max_iter*2)):
             st=time.time()
             add1=upscale1*((-1)**i)
             add2=upscale2*((-1)**i)
@@ -1050,8 +1050,8 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
 
 
 
-            if rank==0 and i%2:
-                print(i//2,tmax,time.time()-st)
+            if rank==0 and i%2 and verbose:
+                print("Symmetrization iteration #%2d: %6.4e"%((i//2)+1,tmax[0]))
 
             # stop if we hit threshold
             if tmax<thresh:                
@@ -1093,6 +1093,7 @@ def open_grid_wrapper(data_controller):
     symm_grid   = data_attr['symmetrize']
     thresh      = data_attr['symm_thresh']
     max_iter    = data_attr['symm_max_iter']
+    verbose     = data_attr['verbose']
     Hks         = data_arrays['Hks']
     atom_pos    = data_arrays['tau']/alat
     atom_lab    = data_arrays['atoms']
@@ -1164,7 +1165,7 @@ def open_grid_wrapper(data_controller):
         Hksp = open_grid(Hksp,full_grid,kp_red,symop,symop_cart,atom_pos,
                          shells,a_index,equiv_atom,sym_info,sym_shift,
                          nk1,nk2,nk3,spin_orb,sym_TR,jchia,mag_calc,
-                         symm_grid,thresh,max_iter,nelec)
+                         symm_grid,thresh,max_iter,nelec,verbose)
 
 
         if rank==0:
