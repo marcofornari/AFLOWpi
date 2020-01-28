@@ -22,7 +22,7 @@ import scipy.linalg as LA
 from scipy.special import factorial as fac
 from tempfile import NamedTemporaryFile
 import re
-from .communication import scatter_full, gather_full
+from .communication import scatter_full, gather_full,allgather_full,gather_scatter
 from scipy.spatial.distance import cdist
 from mpi4py import MPI
 from .zero_pad import zero_pad
@@ -970,28 +970,49 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
             nfft2=nk2+add2
             nfft3=nk3+add3
 
+            if rank==0:
+                Hksp = np.reshape(Hksp,(nk1*nk2*nk3,nawf*nawf))
+                Hksp = np.ascontiguousarray(Hksp.T)
 
-            Hksp = np.reshape(Hksp,(nk1*nk2*nk3,nawf*nawf))
-            Hksp = np.ascontiguousarray(Hksp.T)
-            Hksp = scatter_full(Hksp,npool)        
+            Hksp = scatter_full(Hksp,npool)                    
+
             Hksp = np.reshape(Hksp,(Hksp.shape[0],nk1,nk2,nk3))
             HRs = np.fft.ifftn(Hksp,axes=(1,2,3))
-            Hksp=None
-            Hksp=np.zeros((HRs.shape[0],nfft1,nfft2,nfft3),dtype=complex)
 
-            for m in range(Hksp.shape[0]):
-                Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add,add,add))
+            switch=True
+            if switch==True:
+                Hksp=None
+                Hksp=np.zeros((HRs.shape[0],nfft1,nfft2,nfft3),dtype=complex)
 
-            HRs  = None
-            Hksp = np.reshape(Hksp,(Hksp.shape[0],nfft1*nfft2*nfft3))
-            Hksp = gather_full(Hksp,npool)
-            if rank==0:
-                Hksp = np.ascontiguousarray(Hksp.T)
-                Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))
+                for m in range(Hksp.shape[0]):
+                    Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))
+
+                HRs  = None
+                Hksp = np.reshape(Hksp,(Hksp.shape[0],nfft1*nfft2*nfft3))
+                Hksp = gather_full(Hksp,npool)
+                if rank==0:
+                    Hksp = np.ascontiguousarray(Hksp.T)
+                    Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))
+                else:
+                    Hksp=np.zeros((nfft1*nfft2*nfft3,nawf,nawf),dtype=complex)
+                comm.Bcast(Hksp)
+
             else:
-                Hksp=np.zeros((nfft1*nfft2*nfft3,nawf,nawf),dtype=complex)
-
-            comm.Bcast(Hksp)
+                HRs=np.zeros((Hksp.shape[0],nfft1,nfft2,nfft3),dtype=complex)
+                for m in range(Hksp.shape[0]):
+                    HRs[m,:,:,:]=zero_pad(Hksp[m,:,:,:],nk1,nk2,nk3,add1,add2,add3)
+                Hksp=None
+                Hksp=np.fft.fftn(HRs,axes=(1,2,3))
+                HRs=None
+                Hksp = np.reshape(Hksp,(Hksp.shape[0],nfft1*nfft2*nfft3))
+                Hksp = gather_scatter(Hksp,1,npool)
+                Hksp = np.ascontiguousarray(Hksp.T)
+                Hksp = gather_full(Hksp,npool)
+                if rank==0:
+                    Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))            
+                    print(Hksp[0,:8,:8].real)
+                
+                Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))            
 
             # if it's the non interpolated grid
             if i%2:
@@ -1009,18 +1030,17 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
             nk2+=add2
             nk3+=add3
 
-            Hksp = reshift_efermi(Hksp,npool,nelec,spin_orb)
 
-            if rank==0 and i%2:
-                print(i//2,tmax,time.time()-st)
+
+#            if rank==0 and i%2:
+#                print(i//2,tmax,time.time()-st)
 
             # stop if we hit threshold
             if tmax<thresh:                
-                if i%2 and i>=3:
-                   
+                if i%2 and i>=3:                   
                     break
 
-                    
+    Hksp = reshift_efermi(Hksp,npool,nelec,spin_orb)                    
     
     # for debugging purposes
     try:
@@ -1112,9 +1132,12 @@ def open_grid_wrapper(data_controller):
 
     # we wont need this for now
     if rank==0:
-        data_arrays['Hks'] = np.zeros((nawf,nawf,nk1*nk2*nk3,nspin),dtype=complex)
+        if nspin==2:
+            data_arrays['Hks'] = np.zeros((nawf,nawf,nk1*nk2*nk3,nspin),dtype=complex)
+        else:
+            data_arrays['Hks'] = None
     else:
-        data_arrays['Hks']=None
+        data_arrays['Hks'] = None
 
     # expand grid from wedge
     for ispin in range(nspin):
@@ -1127,7 +1150,10 @@ def open_grid_wrapper(data_controller):
 
 
         if rank==0:
-            data_arrays['Hks'][:,:,:,ispin]=np.ascontiguousarray(np.transpose(Hksp,axes=(1,2,0)))
+            if nspin==2:
+                data_arrays['Hks'][:,:,:,ispin]=np.ascontiguousarray(np.transpose(Hksp,axes=(1,2,0)))
+            else:
+                data_arrays['Hks']=np.ascontiguousarray(np.transpose(Hksp,axes=(1,2,0))[...,None])
             np.save("kham.npy",np.ascontiguousarray(np.transpose(Hksp,axes=(1,2,0))))
         else:
             Hksp=None
@@ -1184,7 +1210,6 @@ def symmetrize(Hksp,U,a_index,phase_shifts,kp,new_k_ind,orig_k_ind,si_per_k,inv_
 def symmetrize_grid(Hksp,U,a_index,phase_shifts,kp,inv_flag,U_inv,sym_TR,full_grid,symop,jchia,spin_orb,mag_calc,nk1,nk2,nk3,nkl,partial_grid,npool):
 
     max_iter=1
-
     tmax=[]
     Hksp_d=np.zeros((partial_grid.shape[0],Hksp.shape[1],Hksp.shape[2]),dtype=complex)
 
@@ -1209,7 +1234,7 @@ def symmetrize_grid(Hksp,U,a_index,phase_shifts,kp,inv_flag,U_inv,sym_TR,full_gr
     else:
         gather_full(Hksp_d,npool)
 
-    comm.Bcast(Hksp)
+#    comm.Bcast(Hksp)
     tm=np.array([np.amax(tmax)])
     tmax=np.copy(tm)
     comm.Reduce(tm,tmax,op=MPI.MAX)
@@ -1254,7 +1279,7 @@ def reshift_efermi(Hksp,npool,nelec,spin_orb):
         nk=eig.shape[0]
         eig=np.sort(np.ravel(eig))
         efermi=eig[int(nk*nbnd-1)]
-        print(efermi)
+#        print(efermi)
     else:
         efermi=None
 

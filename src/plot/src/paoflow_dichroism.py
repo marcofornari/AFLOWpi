@@ -63,7 +63,8 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
         plt.ylim([np.amin(dat[:,1])*1.05,np.amax(dat[:,1])*1.05])
         plt.xlim([np.amin(dat[:,0]),np.amax(dat[:,0])])
         plt.legend(loc=1)
-        plt.axhline(0.0,ls="-",color="k")
+        plt.axhline(0.0,ls="--",color="k")
+        plt.axvline(0.0,ls="-",color="k")
 
         plt.xlabel(r"$\hbar \omega$ $(eV)$")
         chem_name = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
