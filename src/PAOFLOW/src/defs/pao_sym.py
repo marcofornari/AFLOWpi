@@ -975,12 +975,12 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                 Hksp = np.ascontiguousarray(Hksp.T)
 
             Hksp = scatter_full(Hksp,npool)                    
-
             Hksp = np.reshape(Hksp,(Hksp.shape[0],nk1,nk2,nk3))
             HRs = np.fft.ifftn(Hksp,axes=(1,2,3))
 
             switch=True
             if switch==True:
+
                 Hksp=None
                 Hksp=np.zeros((HRs.shape[0],nfft1,nfft2,nfft3),dtype=complex)
 
@@ -995,7 +995,25 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                     Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))
                 else:
                     Hksp=np.zeros((nfft1*nfft2*nfft3,nawf,nawf),dtype=complex)
+
                 comm.Bcast(Hksp)
+
+
+                # Hksp=None
+                # Hksp=np.zeros((HRs.shape[0],nfft1,nfft2,nfft3),dtype=complex)
+
+                # for m in range(Hksp.shape[0]):
+                #     Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))
+
+                # HRs  = None
+                # Hksp = np.reshape(Hksp,(Hksp.shape[0],nfft1*nfft2*nfft3))
+                # Hksp = gather_full(Hksp,npool)
+                # if rank==0:
+                #     Hksp = np.ascontiguousarray(Hksp.T)
+                #     Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))
+                # else:
+                #     Hksp=np.zeros((nfft1*nfft2*nfft3,nawf,nawf),dtype=complex)
+                # comm.Bcast(Hksp)
 
             else:
                 HRs=np.zeros((Hksp.shape[0],nfft1,nfft2,nfft3),dtype=complex)
@@ -1032,8 +1050,8 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
 
 
 
-#            if rank==0 and i%2:
-#                print(i//2,tmax,time.time()-st)
+            if rank==0 and i%2:
+                print(i//2,tmax,time.time()-st)
 
             # stop if we hit threshold
             if tmax<thresh:                
