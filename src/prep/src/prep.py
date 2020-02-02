@@ -1740,7 +1740,11 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
             AFLOWpi.prep._fillTemplate(oneCalc,new_ID)
             '''at a global start timer for figuring out runtime of pw.x'''
 
-            AFLOWpi.prep._addToBlock(new_oneCalc,new_ID,'LOADCALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)
+            if int(ID.split("_")[-1])==1:
+                    s_ID="_".join(ID.split("_")[:-1])+"_00"
+            else:
+                    s_ID=ID
+            AFLOWpi.prep._addToBlock(new_oneCalc,new_ID,'LOADCALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %s_ID)
 
             tryLoadStr = '''
 try:
@@ -2459,7 +2463,8 @@ def maketree(calcs, pseudodir=None,workdir=None):
 #            oneCalc_file_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc'%ID)
 #            if not os.path.exists(oneCalc_file_name):
 #                   AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-            AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+            save_ID="_".join(ID.split("_")[:-1])+"_00"
+            AFLOWpi.prep._saveOneCalc(oneCalc,save_ID)
             if AFLOWpi.prep._findInBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)==False:
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)
                 
