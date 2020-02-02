@@ -665,7 +665,9 @@ def __band_topology_Plot(oneCalc,ipol,jpol,spol=2,yLim=[-10,10],DOSPlot='',postf
         figtitle = ''
         compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
         figtitle = '%s: %s' % (description,compoundNameLatex) 
-        ax1.set_title(figtitle,fontsize=24)
+
+        if AFLOWpi.plot._get_title_option():
+                ax1.set_title(figtitle,fontsize=24)
 #       ax1.axes.xaxis.set_label_position('top')
 #       t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center') #[x,y]
 

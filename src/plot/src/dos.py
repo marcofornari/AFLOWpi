@@ -87,7 +87,7 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
         '''
 
 
-        
+        fig_title=AFLOWpi.plot._get_title_option()        
 
         '''extracts HOMO from nscf calculation output file as input to the plotting'''
         print('Plotting DOS')
@@ -210,7 +210,8 @@ def __dosPlot(oneCalc,ID,yLim=[-10,10],LSDA=False,postfix=''):
 
      #to set a centerd title, with a bigger font
         figtitle = r'Density of States: %s' % (compoundNameLatex,)
-        t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
+        if fig_title:
+                t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
 
@@ -900,6 +901,8 @@ def __apdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         subdir = oneCalc['_AFLOWPI_FOLDER_']
 
 
+        fig_title=AFLOWpi.plot._get_title_option()
+
         print(('Plotting atomic projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True))))
         logging.info('Plotting atomic projected DOS of %s ' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True)))
         petype = AFLOWpi.plot._get_plot_ext_type()
@@ -1130,6 +1133,8 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
         logging.info('summing pdos for %s' % oneCalc['_AFLOWPI_FOLDER_'].split('/')[-1])
 
         
+        fig_title=AFLOWpi.plot._get_title_option()
+
         LSDA=False
         nspin = int(AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID))
         if nspin!=1:
@@ -1171,7 +1176,8 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
 
         old_high=0.0
         old_low =0.0
-        t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center',) #[x,y]
+        if fig_title:
+                t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=20,horizontalalignment='center',) #[x,y]
 
         for species in range(len(atomList)):
                 ax = __plotByAtom(len(atomList),species,fig,atomList[species],oneCalc,ID,yLim,LSDA=LSDA,ax=ax_list,TB=tight_binding)
@@ -1181,7 +1187,7 @@ def __opdos(oneCalc,ID,yLim,postfix='',scale=False,tight_binding=False,label_map
                 spec_lab=atomList[species]
                 if spec_lab in list(label_map.keys()):
                         spec_lab=label_map[spec_lab]
-
+                
                 ax.axes.set_title(spec_lab,weight='bold',loc='left',fontsize=18)
 
                 ax.axes.set_autoscalex_on(False)

@@ -569,7 +569,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
                 figtitle = r'%s %s' % (trans_plot_dict[Type]['ft'],compoundNameLatex)
 
-                t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=50,horizontalalignment='center') #[x,y] 
+                if AFLOWpi.plot._get_title_option():
+                        t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=50,horizontalalignment='center') #[x,y] 
 
                 if postfix!='':
                     postfix_append='_'+postfix

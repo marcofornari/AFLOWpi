@@ -62,11 +62,16 @@ def __plot_berry_cond(oneCalc,ID,spin=False,en_range=None):
 
         if spin:
             plt.ylabel(r"$\sigma^{%s}_{%s%s}$ $(\Omega^{-1} cm^{-1})$"%(spol,ipol,jpol))
-            plt.title('Spin Hall Conductivity: %s'%chem_name)
+
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Spin Hall Conductivity: %s'%chem_name)
+
             fileplot = os.path.join(subdir,'SPIN_HALL_COND_%s_%s%s_%s_%s.%s' % (spol,ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
         else:
             plt.ylabel(r"$\sigma_{%s%s}$ $(\Omega^{-1} cm^{-1})$"%(ipol,jpol))
-            plt.title('Anomalous Hall Conductivity: %s'%chem_name)
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Anomalous Hall Conductivity: %s'%chem_name)
+
             fileplot = os.path.join(subdir,'ANOM_HALL_COND_%s%s_%s_%s.%s' % (ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
 
 

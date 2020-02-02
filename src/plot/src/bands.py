@@ -40,15 +40,6 @@ from matplotlib.colors import ListedColormap
 from matplotlib.patches import Rectangle
 
 
-def _get_plot_ext_type():
-        plot_ext_type = AFLOWpi.prep._ConfigSectionMap('plot','plot_file_type')
-        if plot_ext_type == "":
-                plot_ext_type = "pdf"   
-        if plot_ext_type.lower() not in ["png","pdf"]:
-                plot_ext_type = "pdf"   
-        plot_ext_type = "png"   
-#        plot_ext_type = "pdf"  
-        return plot_ext_type
 
 def bands(calcs,yLim=[-10,10],DOSPlot='',runlocal=False,postfix='',tight_banding=False):
         '''
@@ -262,7 +253,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         
 
         font_mult=1.0
-        fig_title=True
+        fig_title=AFLOWpi.plot._get_title_option()
         matplotlib.rcParams['figure.dpi'] = 600
         matplotlib.rcParams['savefig.dpi'] = 600
         calcCopy = oneCalc
@@ -1164,7 +1155,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                 if BC: description='Electronic Band Structure and Berry Curvature'
                         
                 figtitle = '%s: %s' % (description,compoundNameLatex) 
-                ax1.set_title(figtitle,fontsize=24*font_mult)
+                if fig_title:
+                        ax1.set_title(figtitle,fontsize=24*font_mult)
 
 
                 neg_cax = fig.add_axes([0.98,0.2875,0.02,0.25])

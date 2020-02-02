@@ -76,7 +76,9 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
             else:
                 plt.ylabel(r"Im[$\omega\sigma^{%s}_{%s%s}$] ($10^{29}sec^{-2}$)"%(spol,ipol,jpol))
                 fileplot = os.path.join(subdir,'SPIN_DICHRO_IMAG_%s_%s%s_%s_%s.%s'%(spol,ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
-            plt.title('Spin Circular Dichroism: %s'%chem_name)
+
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Spin Circular Dichroism: %s'%chem_name)
 
 
         else:
@@ -86,7 +88,9 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
             else:
                 plt.ylabel(r"Im[$\omega\sigma_{%s%s}$] ($10^{29}sec^{-2}$)"%(ipol,jpol))
                 fileplot = os.path.join(subdir,'MAG_DICHRO_IMAG_%s%s_%s_%s.%s'%(ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
-            plt.title('Magnetic Circular Dichroism: %s'%chem_name)
+
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Magnetic Circular Dichroism: %s'%chem_name)
 
 
 

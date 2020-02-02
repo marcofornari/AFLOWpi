@@ -68,6 +68,7 @@ def __plot_phonon(oneCalc,ID,postfix='',THz=True,color_accoustic=False,color_opt
 
         calcID = AFLOWpi.prep._return_ID(oneCalc,calcID,step_type='phonon',last=True)        
 
+        auto_title=AFLOWpi.plot._get_title_option()
 
         if postfix!='':
                 postfix='_'+postfix

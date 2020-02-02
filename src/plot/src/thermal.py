@@ -499,8 +499,12 @@ def __gruneisen_of_omega(oneCalc,ID,projected=True):
             
             pylab.axhline(np.mean(therm_data[:,1]),color='b',linewidth=2.0)
             pylab.plot(x,y1,'r',marker='',linewidth=2.0)
+
+
             figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-            t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
+
+            if AFLOWpi.plot._get_title_option():
+                    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=24,horizontalalignment='center') #[x,y]
             pylab.xlim([0.0,np.amax(therm_data[:,0])])
 
     ext=AFLOWpi.plot._get_plot_ext_type()
@@ -545,8 +549,10 @@ def _plot_lattice_TC(oneCalc,ID,temp_range=[80.0,800.0]):
         matplotlib.pyplot.xlim(temp_range)
         matplotlib.pyplot.xlabel('T (K)')
 
+
         figtitle = 'Lattice Thermal Conductivity: %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-        t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
+        if AFLOWpi.plot._get_title_option():
+                t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=14,horizontalalignment='center') #[x,y]
 
         matplotlib.pyplot.ylabel(r'$\kappa_{lat}$ $(\frac{W}{m\cdot K})$')
 
@@ -662,7 +668,8 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
 
     ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
+    if AFLOWpi.plot._get_title_option():
+            t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
 
     fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'SCATTER_ap_%s_%s.png' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,))
         
@@ -701,7 +708,8 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
 
     ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
+    if AFLOWpi.plot._get_title_option():
+            t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300)
     AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
 
@@ -737,7 +745,8 @@ def __gruneisen_of_omega_ap(oneCalc,ID,w_range=None,grun_range=None,label_map={}
 
     ax.set_xlabel('$\omega$ $(cm^{-1})$',fontsize=24)
     figtitle = '$Gr\ddotuneisen$ $Parameter:$ %s' % (AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)) 
-    t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
+    if AFLOWpi.plot._get_title_option():
+            t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=28,horizontalalignment='center') #[x,y]
     matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout='tight',dpi=300) 
     AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)           
 
