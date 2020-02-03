@@ -54,3 +54,15 @@ def _gen_eps_in(oneCalc,ID,calculation,exten,intersmear=0.136,wmin=0.0,wmax=30.0
 
     with open(os.path.join(hdir,'%s_%s.in'%(ID,exten)),'w') as ofs:
         ofs.write(in_str)
+
+def _rename_qe_eps(oneCalc,ID):
+    prefix=oneCalc['_AFLOWPI_PREFIX_']
+    hdir= oneCalc['_AFLOWPI_FOLDER_']
+
+    for dat_type in ["epsr","epsi","ieps","eels"]:
+        old=os.path.join(hdir,dat_type+"_"+prefix+".dat")
+        new=os.path.join(hdir,ID+"_"+dat_type+".dat")
+        try:
+            os.rename(old,new)
+        except Exception as e: print(e)
+            

@@ -5714,6 +5714,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 command = "AFLOWpi.run._write_qe_eps_in(oneCalc,ID,intersmear=%s,wmin=%s,wmax=%s,nw=%s,smeartype='%s',intrasmear=%s,metalcalc=%s,jdos=%s,offdiag=%s,occ=%s)"%(intersmear,wmin,wmax,nw,smeartype,intrasmear,metalcalc,jdos,offdiag,occ)
                 self._addToAll(block='PREPROCESSING',addition=command)  
 
+                command = "AFLOWpi.run._rename_qe_eps(oneCalc,ID)"
+                self._addToAll(block='POSTPROCESSING',addition=command)  
 
                 AFLOWpi.run.scf(self.int_dict)
 
