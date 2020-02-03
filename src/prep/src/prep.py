@@ -6117,6 +6117,27 @@ class plotter:
 
 
 
+        def optical(self,runlocal=False,postfix='',en_range=None):
+                '''
+                Plot optical properties calculated with PAOFLOW
+
+                Keyword Arguments:
+                      en_range (list): list of upper and lower bounds around fermi energy for plot range
+                      runlocal (bool): if True, run plotting routine from user script. 
+                                       Useful if replotting previously generated data with different en_range
+                      postfix (str): postfix to plot file names                
+                Returns:
+                      None
+
+                '''
+
+
+
+                AFLOWpi.plot.optical_plots(self.calcs,runlocal=runlocal,postfix=postfix,x_range=en_range,QE=True)
+                
+                calc_type='Plot Optical Epsilon'
+                print(('                 %s'% (calc_type)))
+
 
 
 ####################################################################################################################

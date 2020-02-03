@@ -63,20 +63,20 @@ def transport_plots(calcs,runlocal=False,postfix='',x_range=None):
                         AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',x_range=%s)" %(postfix,x_range))
 
 
-def optical_plots(calcs,runlocal=False,postfix='',x_range=None):
+def optical_plots(calcs,runlocal=False,postfix='',x_range=None,QE=False):
 
 
         if runlocal:
                 for ID,oneCalc in list(calcs.items()):
-                    AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,epsilon=True,x_range=x_range)
+                    AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,epsilon=True,x_range=x_range,QE=QE)
         else:
                 for ID,oneCalc in list(calcs.items()):
-                        AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',epsilon=True,x_range=%s)" %(postfix,x_range))
+                        AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',epsilon=True,x_range=%s,QE=%s)" %(postfix,x_range,QE))
 
 
 
 
-def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y_range=None):
+def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y_range=None,QE=False):
         '''
 
 
@@ -155,6 +155,8 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
 
         ID_list =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True,straight=True)
+        if QE:
+                ID_list =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='epsilon',last=True,straight=True)
 
 ####################################################################################################################
         if epsilon==True:
@@ -172,22 +174,22 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                 file_name_up=[]
                 file_name_down=[]
                 for ID_ent in ID_list:
-
-                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-
-                    file_name.extend(glob.glob(search))
-                    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-                    file_name_up.extend(glob.glob(search))
-                    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-
-                    file_name_down.extend(glob.glob(search))
-
+                    if not QE:
+                            search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name.extend(glob.glob(search))
+                            search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name_up.extend(glob.glob(search))
+                            search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name_down.extend(glob.glob(search))
+                    else:
+                            search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name.extend(glob.glob(search))
+                            file_name_down=[]
                 
-
+                print(file_name)
                 spin_polarized=False
                 if len(file_name_down)!=0:
                         spin_polarized=True
-                
                 if len(file_name_down) == 0 and len(file_name) == 0:
                         continue
 

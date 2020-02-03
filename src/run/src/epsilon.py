@@ -59,9 +59,12 @@ def _rename_qe_eps(oneCalc,ID):
     prefix=oneCalc['_AFLOWPI_PREFIX_']
     hdir= oneCalc['_AFLOWPI_FOLDER_']
 
-    for dat_type in ["epsr","epsi","ieps","eels"]:
-        old=os.path.join(hdir,dat_type+"_"+prefix+".dat")
-        new=os.path.join(hdir,ID+"_"+dat_type+".dat")
+
+    qe_names=["epsr","epsi","ieps","eels"]
+    afp_names=["epsilon_real","epsilon_imag","ieps","eels"]
+    for dat_type in range(len(qe_names)):
+        old=os.path.join(hdir,qe_names[dat_type]+"_"+prefix+".dat")
+        new=os.path.join(hdir,ID+"_"+afp_names[dat_type]+".dat")
         try:
             os.rename(old,new)
         except Exception as e: print(e)
