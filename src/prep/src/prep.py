@@ -1740,7 +1740,7 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
             AFLOWpi.prep._fillTemplate(oneCalc,new_ID)
             '''at a global start timer for figuring out runtime of pw.x'''
 
-            if int(ID.split("_")[-1])==1:
+            if int(ID.split("_")[-1])==1 and from_step==1:
                     s_ID="_".join(ID.split("_")[:-1])+"_00"
             else:
                     s_ID=ID
