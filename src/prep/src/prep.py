@@ -3192,7 +3192,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
 
 
             ak = '_AFLOWPI_PSEUDO_DIR_'
-            av = os.curdir
+            av = AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
             DICT.update({ak:av})
 
             inputfile = re.sub(ak,av,inputfile)
@@ -3712,7 +3712,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
             DICT.update({'_AFLOWPI_CONFIG_':CONFIG_FILE})
 
             ak = '_AFLOWPI_PSEUDO_DIR_'
-            av = './'
+            av = AFLOWpi.prep._ConfigSectionMap('prep','pseudo_dir')
             DICT.update({ak:av})
             ak = '_AFLOWPI_OUTDIR_'
             av = './'
@@ -6892,7 +6892,7 @@ def _oneChangeCalcs(oneCalc,ID,keyword='calculation',value='scf'):
                 in_dict["ATOMIC_SPECIES"]["__content__"]=spec                
                 inputfile=AFLOWpi.retr._joinInput(in_dict)
                 d['_AFLOWPI_INPUT_'] = inputfile
-
+                d['_AFLOWPI_PSEUDO_DIR_'] = new_pseudodir
 
         else:
                 replaceRegEx = re.compile(r"%s\s*?=.*?\n"%keyword)

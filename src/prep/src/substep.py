@@ -44,6 +44,7 @@ def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=
     if config is None:
         config=oneCalc['_AFLOWPI_CONFIG_']
 
+
     intoInit={'PROJECT':subset_name,'SET':'','workdir':oneCalc['_AFLOWPI_FOLDER_'],'config':config}
     fake_session_keys = AFLOWpi.prep.init(**intoInit)
 
@@ -165,6 +166,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             config = configparser.RawConfigParser()
             config.read(oneCalc['_AFLOWPI_CONFIG_'])
             config.set('prep', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
+            config.set('prep', 'pseudo_dir', oneCalc['_AFLOWPI_PSEUDO_DIR_'])
 
             if config.has_section('cluster'):
                 if config.has_option('cluster','job_template'):
