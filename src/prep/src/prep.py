@@ -2624,7 +2624,7 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
              workdir =  os.path.join(configFileLocation, workdir)
 
          """
-         FIX THSI         FIX THIS         FIX THIS         FIX THIS         FIX THIS
+         FIX THIS         FIX THIS         FIX THIS         FIX THIS         FIX THIS
          """
          if os.path.isabs(config) == False:
              execDIR=os.path.dirname(os.path.abspath(__main__.__file__))
@@ -2638,7 +2638,7 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
 
          AFLOWpi.prep._forceGlobalConfigFile(config)
          """
-         FIX THSI         FIX THIS         FIX THIS         FIX THIS         FIX THIS
+         FIX THIS         FIX THIS         FIX THIS         FIX THIS         FIX THIS
          """
          filename = os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname+'.log')
 
@@ -2646,8 +2646,10 @@ def loadlogs(PROJECT='',SET='',logname='',config=None,suppress_warning=False):
              """in case we have split files with .dat,.bak,and .dir"""
              if os.path.exists(os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname+'.dat'))==False:
                  if os.path.exists(os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname+'.log'))==False:
-                     logging.info('saved calc log: %s does not exist. Check the workdir parameter in your config file as well as project and set of these calcs.' % filename)
-                     print(('saved calc log: %s does not exist. Check the workdir parameter in your config file  as well as project and set of these calcs.' % filename))
+                     if not suppress_warning:
+                             logging.info('saved calc log: %s does not exist. Check the workdir parameter in your config file as well as project and set of these calcs.' % filename)
+                     
+                             print(('saved calc log: %s does not exist. Check the workdir parameter in your config file  as well as project and set of these calcs.' % filename))
                      raise SystemExit
              else:
                  filename = os.path.join(workdir,PROJECT,SET,'AFLOWpi','calclogs',logname)

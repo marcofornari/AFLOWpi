@@ -217,11 +217,15 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
         header = ['Folder'.ljust(8),'ID'.ljust(25)]
         for ID,oneCalc in list(calcsList[step].items()):
             string = ['%-8s' % x for x in list(calcsList[step][ID]['__status__'].keys())]
+
             if len(string_prev)>len(string):
-                string=string_prev
+#            if True:
                 string_prev=string
-                header.extend(string)
-            
+                string=string_prev
+
+            header.extend(string)
+            break
+
         calcCopy=copy.deepcopy(calcsList[step])
         if len(calcsList[step])!=0:
             for ID,oneCalc in list(calcsList[step].items()):
@@ -238,7 +242,8 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
 
             headerString=' | '.join(header)
             outString+=  '-'*(len(headerString))+'\n'
-            outString+=  'STEP: %s' % (step+1)+'  | %s/%s'%(len(calcCopy),origLength)+'\n'
+            outString+=  'STEP: %s' % (step+1)+'  | %s/%s'%(len(calcCopy),origLength)+" ### "+oneCalc["_AFLOWPI_WORKFLOW_"][step]+' ###\n'
+
             outString+=  '-'*(len(headerString))+'\n'
             outString+=  headerString+'\n'
             outString+=  '-'*(len(headerString))+'\n'
@@ -249,7 +254,7 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
                 outString+= ' | '.join(string)+'\n'
             #copy back for return of subset
             calcsList[step]=copy.deepcopy(calcCopy)
-            print(outString)
+    print(outString)
 
     return calcsList
             
