@@ -119,6 +119,152 @@ def check(Hksp_s,si_per_k,new_k_ind,orig_k_ind,phase_shifts,U,a_index,inv_flag,e
             else:
                 print("%2d"%(i+1),"GOOD",isl[i],sym_TR[i])
 
+
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+def LPF(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
+    '''
+    Pad frequency domain with zeroes, such that any relationship between
+        aux[k] and aux[N-k] is preserved.
+
+    Arguments:
+        aux (ndarray): unpadded frequency domain data
+        nk1 (int): current size of aux along axis 0
+        nk2 (int): current size of aux along axis 1
+        nk3 (int): current size of aux along axis 2
+        nfft1 (int): number of zeroes to pad axis 0 by
+        nfft1 (int): number of zeroes to pad axis 1 by
+        nfft1 (int): number of zeroes to pad axis 2 by
+
+    Returns:
+        auxp3 (ndarray): padded frequency domain data
+    '''
+
+    # post-padding dimensions
+    nk1p = nfft1+nk1
+    nk2p = nfft2+nk2
+    nk3p = nfft3+nk3
+    # halfway points
+    sk1 = int((nk1+1)/2)
+    sk2 = int((nk2+1)/2)
+    sk3 = int((nk3+1)/2)
+    # parities (even <-> p==1)
+    p1 = (nk1 & 1)^1
+    p2 = (nk2 & 1)^1
+    p3 = (nk3 & 1)^1
+
+    # accomodate nfft==0
+    if nfft1 == 0:  p1 = 0
+    if nfft2 == 0:  p2 = 0
+    if nfft3 == 0:  p3 = 0
+
+    # first dimension
+    auxp1 = np.zeros((nk1,nk2,nk3p),dtype=complex)
+    auxp1[:,:,:sk3+p3]=aux[:,:,:sk3+p3]
+    auxp1[:,:,nfft3+sk3:]=aux[:,:,sk3:]
+    # second dimension
+    auxp2 = np.zeros((nk1,nk2p,nk3p),dtype=complex)
+    auxp2[:,:sk2+p2,:]=auxp1[:,:sk2+p2,:]
+    auxp2[:,nfft2+sk2:,:]=auxp1[:,sk2:,:]
+    # third dimension
+    auxp3 = np.zeros((nk1p,nk2p,nk3p),dtype=complex)
+    auxp3[:sk1+p1,:,:]=auxp2[:sk1+p1,:,:]
+    auxp3[nfft1+sk1:,:,:]=auxp2[sk1:,:,:]
+
+    if rank==0:
+        print(sk1)
+    # halve Nyquist axes
+    if p1:
+        auxp3[ sk1-1,:,:] = 0.0
+        auxp3[-sk1+1,:,:] = 0.0
+        auxp3[sk1,:,:]    = 0.0
+    if p2:
+        auxp3[:, sk2-1,:] = 0.0
+        auxp3[:,-sk2+1,:] = 0.0
+        auxp3[:,-sk2,:]   = 0.0
+    if p3:
+        auxp3[:,:, sk3-1] = 0.0
+        auxp3[:,:,-sk3+1] = 0.0
+        auxp3[:,:,-sk3]   = 0.0
+    return(auxp3)
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+def down_samp(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
+    '''
+    Pad frequency domain with zeroes, such that any relationship between
+        aux[k] and aux[N-k] is preserved.
+
+    Arguments:
+        aux (ndarray): unpadded frequency domain data
+        nk1 (int): current size of aux along axis 0
+        nk2 (int): current size of aux along axis 1
+        nk3 (int): current size of aux along axis 2
+        nfft1 (int): number of zeroes to pad axis 0 by
+        nfft1 (int): number of zeroes to pad axis 1 by
+        nfft1 (int): number of zeroes to pad axis 2 by
+
+    Returns:
+        auxp3 (ndarray): padded frequency domain data
+    '''
+
+    nk1+=nfft1
+    nk2+=nfft2
+    nk3+=nfft3
+
+    nfft1*=-1
+    nfft2*=-1
+    nfft3*=-1
+
+    # post-padding dimensions
+    nk1p = nfft1+nk1
+    nk2p = nfft2+nk2
+    nk3p = nfft3+nk3
+    # halfway points
+    sk1 = int((nk1+1)/2)
+    sk2 = int((nk2+1)/2)
+    sk3 = int((nk3+1)/2)
+    # parities (even <-> p==1)
+    p1 = (nk1 & 1)^1
+    p2 = (nk2 & 1)^1
+    p3 = (nk3 & 1)^1
+
+    # accomodate nfft==0
+    if nfft1 == 0:  p1 = 0
+    if nfft2 == 0:  p2 = 0
+    if nfft3 == 0:  p3 = 0
+
+    # first dimension
+    auxp1 = np.zeros((nk1p,nk2p,nk3),dtype=complex)
+    auxp1[:,:,:sk3+p3] =aux[:,:,:sk3+p3]   
+    auxp1[:,:,sk3:]    =aux[:,:,nfft3+sk3:]
+    # second dimension
+    auxp2 = np.zeros((nk1p,nk2,nk3),dtype=complex)
+    auxp2[:,:sk2+p2,:]=auxp1[:,:sk2+p2,:]   
+    auxp2[:,sk2:,:]   =auxp1[:,nfft2+sk2:,:]
+    # third dimension
+    auxp3 = np.zeros((nk1,nk2,nk3),dtype=complex)
+    auxp3[:sk1+p1,:,:]=auxp2[:sk1+p1,:,:]   
+    auxp3[sk1:,:,:]   =auxp2[nfft1+sk1:,:,:]
+
+
+    # double Nyquist axes
+    if p1:
+        auxp3[ sk1,:,:] *= 2
+    if p2:
+        auxp3[:, sk2,:] *= 2
+    if p3:
+        auxp3[:,:, sk3] *= 2
+
+
+    return auxp3
+
 ############################################################################################
 ############################################################################################
 ############################################################################################
@@ -742,9 +888,17 @@ def enforce_t_rev(Hksp_s,nk1,nk2,nk3,spin_orb,U_inv,jchia):
                 jv= (nk2-j)%nk2
                 kv= (nk3-k)%nk3
                 if not spin_orb:
-                    Hksp_s[iv,jv,kv] = np.conj(Hksp_s[i,j,k])
+                    temp1 = np.conj(Hksp_s[i,j,k])
+                    temp2 = np.conj(Hksp_s[iv,jv,kv])
+                    Hksp_s[iv,jv,kv] = (Hksp_s[iv,jv,kv] + temp1)/2.0
+                    Hksp_s[i,j,k]    = (Hksp_s[i,j,k]    + temp2)/2.0
                 else:
-                    Hksp_s[iv,jv,kv] = np.conj(U_inv*(U_TR @ Hksp_s[i,j,k] @ np.conj(U_TR.T)))
+                    temp1=np.conj(U_inv*(U_TR @ Hksp_s[i,j,k] @ np.conj(U_TR.T)))
+#                    temp2=np.conj(U_inv*(U_TR @ Hksp_s[iv,jv,kv] @ np.conj(U_TR.T)))
+#                    Hksp_s[iv,jv,kv] = (Hksp_s[iv,jv,kv] + temp1)/2.0
+#                    Hksp_s[i,j,k]    = (Hksp_s[i,j,k]    + temp2)/2.0
+                    Hksp_s[iv,jv,kv] = temp1
+
 
     Hksp_s= np.reshape(Hksp_s,(nk1*nk2*nk3,nawf,nawf),order="C")
 
@@ -946,6 +1100,8 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
         upscale1=int(0.25*nk1)
         upscale2=int(0.25*nk2)
         upscale3=int(0.25*nk3)
+        
+
         nfft1=nk1+upscale1
         nfft2=nk2+upscale2
         nfft3=nk3+upscale3
@@ -975,6 +1131,7 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                 Hksp = np.ascontiguousarray(Hksp.T)
 
             Hksp = scatter_full(Hksp,npool)                    
+
             Hksp = np.reshape(Hksp,(Hksp.shape[0],nk1,nk2,nk3))
             HRs = np.fft.ifftn(Hksp,axes=(1,2,3))
 
@@ -985,11 +1142,18 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
                 Hksp=np.zeros((HRs.shape[0],nfft1,nfft2,nfft3),dtype=complex)
 
                 for m in range(Hksp.shape[0]):
-                    Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))
+                    
+                    Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))                            
+#                     if not i%2:
+#                         Hksp[m,:,:,:]=np.fft.fftn(zero_pad(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))                        
+#                     else:
+# #                        Hksp[m,:,:,:]=np.fft.fftn(LPF(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))                        
+#                         Hksp[m,:,:,:]=np.fft.fftn(down_samp(HRs[m,:,:,:],nk1,nk2,nk3,add1,add2,add3))                        
 
                 HRs  = None
                 Hksp = np.reshape(Hksp,(Hksp.shape[0],nfft1*nfft2*nfft3))
                 Hksp = gather_full(Hksp,npool)
+
                 if rank==0:
                     Hksp = np.ascontiguousarray(Hksp.T)
                     Hksp = np.reshape(Hksp,(nfft1*nfft2*nfft3,nawf,nawf))
@@ -1051,7 +1215,7 @@ def open_grid(Hksp,full_grid,kp,symop,symop_cart,atom_pos,shells,a_index,equiv_a
 
 
             if rank==0 and i%2 and verbose:
-                print("Symmetrization iteration #%2d: %6.4e"%((i//2)+1,tmax[0]))
+                print("Sym iter #%2d: %6.4e"%((i//2)+1,tmax[0]))
 
             # stop if we hit threshold
             if tmax<thresh:                
@@ -1253,7 +1417,6 @@ def symmetrize_grid(Hksp,U,a_index,phase_shifts,kp,inv_flag,U_inv,sym_TR,full_gr
     else:
         gather_full(Hksp_d,npool)
 
-#    comm.Bcast(Hksp)
     tm=np.array([np.amax(tmax)])
     tmax=np.copy(tm)
     comm.Reduce(tm,tmax,op=MPI.MAX)
