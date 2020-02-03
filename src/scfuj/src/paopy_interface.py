@@ -411,53 +411,62 @@ def _rename_bands_files(oneCalc,ID):
 
 
     '''
-
     try:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/kpath_points.txt')[-1]
-    except:
-        want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_WanT_bands_up.out'%ID)[-1]
+        try:
+            want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/kpath_points.txt')[-1]
+        except:
+            want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_kpath_points.txt'%ID)[-1]
 
-    with open(want_stdout_path,"r") as ofo:
-            lines=ofo.readlines()
+        with open(want_stdout_path,"r") as ofo:
+                lines=ofo.readlines()
 
-    output_path_string=""
-    flag=False
-    points_list=[]
-    for l in lines:
-            if len(l.strip())==0:
-                    flag=True
-            if flag==False:
-                    lspl=l.split()
-                    output_path_string+="0.0 0.0 0.0 %s ! %s\n"%(lspl[1],lspl[0])
-            else:
-                    points_list.extend([float(x) for x in l.split()])
+        output_path_string=""
+        flag=False
+        points_list=[]
+        for l in lines:
+                if len(l.strip())==0:
+                        flag=True
+                if flag==False:
+                        lspl=l.split()
+                        output_path_string+="0.0 0.0 0.0 %s ! %s\n"%(lspl[1],lspl[0])
+                else:
+                        points_list.extend([float(x) for x in l.split()])
 
-    points=np.reshape(np.asarray(points_list),(int(len(points_list)/3.0),3))
-    
-    r = np.diff(points,axis=0)
+        points=np.reshape(np.asarray(points_list),(int(len(points_list)/3.0),3))
 
-    dist=np.cumsum(np.sqrt(np.sum(r**2,axis=1)))
-    dist = np.concatenate((np.array([0.0]),dist),axis=0)
-    
+        r = np.diff(points,axis=0)
+
+        dist=np.cumsum(np.sqrt(np.sum(r**2,axis=1)))
+        dist = np.concatenate((np.array([0.0]),dist),axis=0)
+    except: pass
     calcID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True)
 
-    nspin=2
-    try:
-            with open("bands_1.dat","r") as ofo:
-                    by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
-            ofs=""
-            for band in range(by_band.shape[0]):
-                    for kpt in range(by_band.shape[1]):
-                            ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
-                    if band!=by_band.shape[0]-1:
-                            ofs+="\n"
 
-            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
-            with open(filebands,"w") as ofo:
-                    ofo.write(ofs)
-            
-    except:
-            nspin=1
+    si= AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+    try:
+        nspin=int(si["&system"]["nspin"])        
+    except Exception as e: 
+        nspin=1
+
+
+
+    if nspin==2:
+        try:
+                with open("bands_1.dat","r") as ofo:
+                        by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
+                ofs=""
+                for band in range(by_band.shape[0]):
+                        for kpt in range(by_band.shape[1]):
+                                ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+                        if band!=by_band.shape[0]-1:
+                                ofs+="\n"
+
+                filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
+                with open(filebands,"w") as ofo:
+                        ofo.write(ofs)
+        except Exception as e: print(e)
+
+
 
     if nspin==2:
             filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_up_cleaned.dat'%calcID)
@@ -466,8 +475,6 @@ def _rename_bands_files(oneCalc,ID):
 
     with open(os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"bands_0.dat"),"r") as ofo:
             by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
-
-
 
     try:
             ofs=""
