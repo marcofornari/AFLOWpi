@@ -3067,7 +3067,7 @@ def build_calcs(PARAM_VARS,build_type='product'):
                  logging.info('Creating calculations by zip mode')
                  outp = "\n*** Creating calculations by zip mode ***\n"
                  print((AFLOWpi.run._colorize_message(outp,level='ERROR',show_level=False)))
-                 CALCS_ITER = it.izip(*PARAM_VARS)
+                 CALCS_ITER = zip(*PARAM_VARS)
 
              else:
                      print("ERROR: Parameter lists are of different lengths.")
