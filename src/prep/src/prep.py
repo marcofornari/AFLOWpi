@@ -5024,7 +5024,7 @@ EXITING.
                      None
                 """
 
-                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight=%s)'%(dist,weight)
+                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight_by_mass=%s)'%(dist,weight)
                 self.addToAll(block='PREPROCESSING',addition=command)
 
 
