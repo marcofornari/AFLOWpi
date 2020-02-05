@@ -2142,7 +2142,9 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
             inputSplit=AFLOWpi.retr._splitInput(inputfile)
             if "noncolin" in list(inputSplit['&system'].keys()):
-                    nbnd*=2
+                    val=inputSplit['&system']['noncolin']
+                    if val=='.true.':
+                            nbnd*=2
 
             inputSplit['&control']['calculation']="'nscf'"
 #            inputSplit['&system']['noinv']=".true."
@@ -6282,7 +6284,9 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
 
 
     if "noncolin" in list(inputDict['&system'].keys()):
-            nbnd*=2
+            val=inputDict['&system']['noncolin']
+            if val=='.true.':
+                    nbnd*=2
 
     try:
             '''adds nbnd to input file'''
