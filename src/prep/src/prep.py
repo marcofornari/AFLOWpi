@@ -2109,6 +2109,8 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
 
                     if n_conduction is None:
                             nbnd = AFLOWpi.prep._num_bands(oneCalc)
+                    elif type(n_conduction)==type(1.0):
+                            nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=True,factor=n_conduction)
                     else:
                             nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
 
@@ -5644,17 +5646,16 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 #                 self.initial_calcs.append(self.int_dict)
 
 
-        def dos(self,kp_factor=2,project=True,n_conduction=None):
+        def dos(self,kp_factor=2,project=True,n_conduction=0.75):
                 '''
                 Calculate density of states using the calculation engine
 
                 Keyword Arguments:
                       kp_factor (float): factor to which the k-point grid is made denser in each direction
                       project (bool): if True: do the projected DOS after completing the DOS
-                      n_conduction (int): number of conduction bands to include. Default is 0.75*n_valence
-
-                Returns:
-                      None
+                      n_conduction (float or int): either an integer number of conduction bands 
+                                                   or if a float it is a a multiplier of the number
+                                                   of valence bands.
 
                 '''
 
@@ -5662,7 +5663,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.type='dos'
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self._new_step(update_positions=True,update_structure=True)
-                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
+                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,
+                                                  n_conduction=n_conduction+1)
 
 
 
@@ -5682,12 +5684,16 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
 
-        def epsilon(self,kp_factor=2,n_conduction=None,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
+        def epsilon(self,kp_factor=2,n_conduction=0.75,intersmear=0.136,wmin=0.0,wmax=30.0,nw=600,smeartype='gauss',intrasmear=0.0,metalcalc=False,jdos=False,offdiag=False):
                 '''
                 Calculate optical properties using the calculation engine
 
                 Keyword Arguments:
-                      kp_factor (float): factor to which the k-point grid is made denser in each direction                              
+                      kp_factor (float): factor to which the k-point grid is made denser in 
+                                         each direction                              
+                      n_conduction (float or int): either an integer number of conduction bands 
+                                                   or if a float it is a a multiplier of the number
+                                                   of valence bands.
                       wmin (float): min frequency 
                       wmax (float): max frequency 
                       nw (int) number of frequency sampling points 
@@ -5709,7 +5715,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.change_input('&system','noinv','.TRUE.')
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self._new_step(update_positions=True,update_structure=True)
-                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,n_conduction=n_conduction)
+                self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,
+                                                  n_conduction=n_conduction+1)
                 
                 occ=False
 
@@ -5791,7 +5798,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-        def bands(self,dk=None,nk=100,n_conduction=None):
+        def bands(self,dk=None,nk=100,n_conduction=0.75):
                 '''
                 Calculate energy eigenvalues along high symmetry path using the calculation engine
 
@@ -5803,9 +5810,10 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                                  chosen so that they are equidistant along the entirety of the path.
                                  The actual number of points will be slightly different than the 
                                  inputted value of nk. nk!=None will override any value for dk.
+                      n_conduction (float or int): either an integer number of conduction bands 
+                                                   or a float it is a a multiplier of the number
+                                                   of valence bands.
 
-                Returns:
-                      None
 
                 '''
                 self.tight_banding=False
@@ -5820,7 +5828,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
         
                 AFLOWpi.run.scf(self)
 
-                self.int_dict = AFLOWpi.prep.bands(self.int_dict,dk=dk,nk=nk,n_conduction=n_conduction)
+                self.int_dict = AFLOWpi.prep.bands(self.int_dict,dk=dk,nk=nk,
+                                                   n_conduction=n_conduction+1)
                 AFLOWpi.run.bands(self)
 
                 calc_type='Electronic Band Structure'
@@ -6148,7 +6157,7 @@ class plotter:
 ####################################################################################################################
 ####################################################################################################################
 
-def _num_bands(oneCalc,mult=True):
+def _num_bands(oneCalc,mult=True,factor=1.75):
     '''
     attempt to find the number of kohn-sham orbitals after the scf calculation to find
     the value of the "nbnd" parameter in the "&system" namelist of QE input files.
@@ -6179,7 +6188,7 @@ def _num_bands(oneCalc,mult=True):
                 continue
 
     if mult==True:
-            nbnd = int(1.75*match1/2.0)
+            nbnd = int(factor*match1/2.0)
     else:
             nbnd = int(1.0*match1/2.0)
 
