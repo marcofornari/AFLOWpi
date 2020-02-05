@@ -1740,10 +1740,11 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
             AFLOWpi.prep._fillTemplate(oneCalc,new_ID)
             '''at a global start timer for figuring out runtime of pw.x'''
 
-            if int(ID.split("_")[-1])==1 and from_step==1:
-                    s_ID="_".join(ID.split("_")[:-1])+"_00"
-            else:
-                    s_ID=ID
+            s_ID=ID
+            # if int(ID.split("_")[-1])==1 and from_step==1:
+            #         s_ID="_".join(ID.split("_")[:-1])+"_00"
+            # else:
+            #         s_ID=ID
             AFLOWpi.prep._addToBlock(new_oneCalc,new_ID,'LOADCALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %s_ID)
 
             tryLoadStr = '''
@@ -2465,7 +2466,8 @@ def maketree(calcs, pseudodir=None,workdir=None):
 #            oneCalc_file_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc'%ID)
 #            if not os.path.exists(oneCalc_file_name):
 #                   AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-            save_ID="_".join(ID.split("_")[:-1])+"_00"
+#            save_ID="_".join(ID.split("_")[:-1])+"_00"
+            save_ID=ID
             AFLOWpi.prep._saveOneCalc(oneCalc,save_ID)
             if AFLOWpi.prep._findInBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)==False:
                 AFLOWpi.prep._addToBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)
@@ -5657,16 +5659,21 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                                                    or if a float it is a a multiplier of the number
                                                    of valence bands.
 
+
                 '''
 
                 self.tight_banding=False
                 self.type='dos'
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self._new_step(update_positions=True,update_structure=True)
+
+                if type(n_conduction) == type(1.0):
+                        n_conduction+=1.0
+
                 self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,
-                                                  n_conduction=n_conduction+1)
+                                                  n_conduction=n_conduction)
 
-
+                
 
 
 
@@ -5709,14 +5716,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                       None
 
                 '''
+ 
+
                 self.tight_banding=False
                 self.type='epsilon'
                 self.change_input('&system','nosym','.TRUE.')
                 self.change_input('&system','noinv','.TRUE.')
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self._new_step(update_positions=True,update_structure=True)
+
+                if type(n_conduction) == type(1.0):
+                        n_conduction+=1.0
+
                 self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kp_factor,
-                                                  n_conduction=n_conduction+1)
+                                                  n_conduction=n_conduction)
                 
                 occ=False
 
@@ -5828,8 +5841,11 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
         
                 AFLOWpi.run.scf(self)
 
+                if type(n_conduction) == type(1.0):
+                        n_conduction+=1.0
+
                 self.int_dict = AFLOWpi.prep.bands(self.int_dict,dk=dk,nk=nk,
-                                                   n_conduction=n_conduction+1)
+                                                   n_conduction=n_conduction)
                 AFLOWpi.run.bands(self)
 
                 calc_type='Electronic Band Structure'
@@ -6259,6 +6275,8 @@ def _oneDoss(oneCalc,ID,kpFactor=1.5,n_conduction=None):
     
     if n_conduction is None:
             nbnd = AFLOWpi.prep._num_bands(oneCalc)
+    elif type(n_conduction)==type(1.0):
+            nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=True,factor=n_conduction)
     else:
             nbnd = AFLOWpi.prep._num_bands(oneCalc,mult=False)+n_conduction
 
