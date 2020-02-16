@@ -5954,9 +5954,11 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.submit_flag=True
 
 
-
-
-
+        def generate_cif(self,inpt=True,outp=True,runlocal=False,prefix=''):
+                AFLOWpi.retr.pw2cif(self.int_dict,inpt=inpt,outp=outp,
+                                    runlocal=runlocal,outputFolder=None,
+                                    filePrefix=prefix)
+                
 
 
 class plotter:

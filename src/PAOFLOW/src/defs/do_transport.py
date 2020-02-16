@@ -17,7 +17,7 @@
 #
 
 
-def do_transport ( data_controller, temps, ene, velkp ):
+def do_transport ( data_controller, temps, ene, velkp, save_L0=False ):
   import numpy as np
   from mpi4py import MPI
   from os.path import join
@@ -37,8 +37,13 @@ def do_transport ( data_controller, temps, ene, velkp ):
 
   spin_mult = 1. if nspin==2 or attr['dftSO'] else 2.
 
-  for ispin in range(nspin):
+  # if we are doing carrier concentration we need to save
+  # the sigma tensors for when we calculate the hall tensor
+  if save_L0:
+    arrays['boltz_L0']=np.zeros((nspin,temps.size,3,3,esize))
 
+  for ispin in range(nspin):
+    counter=0
     # Quick function opens file in output folder with name 's'
     ojf = lambda st,sp : open(join(attr['opath'],'%s_%d.dat'%(st,sp)),'w')
 
@@ -85,6 +90,9 @@ def do_transport ( data_controller, temps, ene, velkp ):
 
         for i in range(esize):
           wtup(fsigma, gtup(sigma,i))
+        if save_L0:            
+          arrays['boltz_L0'][ispin,counter,:]=np.copy(L0)
+          counter+=1
         sigma = None
 
         #----------------------
@@ -138,3 +146,98 @@ def do_transport ( data_controller, temps, ene, velkp ):
     fSeebeck.close()
     if attr['smearing'] is not None:
       fsigmadk.close()
+
+
+def do_carrier_conc( data_controller,velkp,ene,temps ):
+
+  from mpi4py import MPI
+  from .do_Boltz_tensors import do_Hall_tensors
+  import numpy as np
+  from os.path import join
+  comm = MPI.COMM_WORLD
+  rank = comm.Get_rank()
+
+  ary,attr = data_controller.data_dicts()    
+
+  omega = attr['omega']
+  bnd   = attr['bnd']
+  nspin = attr['nspin']
+  spin_mult = 1. if nspin==2 or attr['dftSO'] else 2.
+  E_k   = ary['E_k']
+  d2Ed2k= ary['d2Ed2k']
+  kq_wght= ary['kq_wght']  
+
+  siemen_conv,temp_conv = 6.9884,11604.52500617  
+  eminBT =np.amin(ene)
+  emaxBT =np.amax(ene)
+
+
+  en_buff=1.0
+
+  #only count the states from emin-en_buff emin+en_buff
+  E_k_mask = np.where(np.logical_and(E_k[:,:bnd,:]>=(eminBT-en_buff),E_k[:,:bnd,:]<=(emaxBT+en_buff)))
+  E_k_range = np.ascontiguousarray(E_k[E_k_mask[0],E_k_mask[1],E_k_mask[2]])
+  velkp_range = np.swapaxes(velkp,1,0)
+  velkp_range = np.ascontiguousarray(velkp_range[:,E_k_mask[0],E_k_mask[1],E_k_mask[2]])
+  d2Ed2k_range = np.ascontiguousarray(d2Ed2k[:,E_k_mask[0],E_k_mask[1],E_k_mask[2]])    
+
+
+
+  # combine spin channels
+  L0_temps = np.sum(ary['boltz_L0'],axis=0)/nspin
+
+
+  cc_str = ''
+
+  for temp in range(temps.shape[0]):
+
+    itemp = temps[temp]/temp_conv   
+    inv_L0=np.zeros_like(L0_temps[0])
+    for n in range(ene.size):
+      try:
+        inv_L0[:,:,n] = LAN.inv(L0_temps[temp,:,:,n])
+      except:
+        inv_L0[:,:,n]= 0.0
+
+    # get sig_ijk
+    sig_ijk = do_Hall_tensors( E_k_range,velkp_range,d2Ed2k_range,
+                               kq_wght,itemp,ene)
+
+    
+    # calculate hall conductivity
+    if rank==0:
+        R_ijk = np.zeros_like(sig_ijk)
+        
+#        #return inverse L0 to base units
+#        inv_L0 *= 1.0/omega
+#        inv_L0 *= 6.9884 
+
+        #scale by cell size 
+
+        #multiply by spin multiplier
+        sig_ijk *= spin_mult
+
+
+        for i in range(3):
+            for j in range(3):
+                for k in range(3):
+                    for a in range(3):
+                        for b in range(3):
+                            R_ijk[i,j,k,:] += -inv_L0[a,j,:]*sig_ijk[a,b,k,:]*inv_L0[i,b,:]
+
+
+
+
+        for n in range(ene.size):
+            pcp = 3.0/(R_ijk[1,2,0,n]+R_ijk[2,0,1,n]+R_ijk[0,1,2,n])
+            pcpm = pcp/(omega*(5.29177249e-9**3))
+
+            cc_str+='%8.2f % .5f % 9.5e % 9.5e \n' \
+                %(temps[temp],ene[n],pcp,pcpm)
+
+
+  with open(join(attr['opath'],'carrier_conc.dat'),'w') as ofo:
+    ofo.write(cc_str)
+        
+
+        
