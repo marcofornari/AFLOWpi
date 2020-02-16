@@ -154,6 +154,8 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
   from .do_Boltz_tensors import do_Hall_tensors
   import numpy as np
   from os.path import join
+  from numpy import linalg as npl
+
   comm = MPI.COMM_WORLD
   rank = comm.Get_rank()
 
@@ -195,7 +197,7 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
     inv_L0=np.zeros_like(L0_temps[0])
     for n in range(ene.size):
       try:
-        inv_L0[:,:,n] = LAN.inv(L0_temps[temp,:,:,n])
+        inv_L0[:,:,n] = npl.inv(L0_temps[temp,:,:,n])
       except:
         inv_L0[:,:,n]= 0.0
 
@@ -206,6 +208,7 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
     
     # calculate hall conductivity
     if rank==0:
+
         R_ijk = np.zeros_like(sig_ijk)
         
 #        #return inverse L0 to base units
