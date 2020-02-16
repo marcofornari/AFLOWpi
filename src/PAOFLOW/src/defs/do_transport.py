@@ -238,9 +238,9 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
             cc_str+='%8.2f % .5f % 9.5e % 9.5e \n' \
                 %(temps[temp],ene[n],pcp,pcpm)
 
-
-  with open(join(attr['opath'],'carrier_conc.dat'),'w') as ofo:
-    ofo.write(cc_str)
+  if rank==0:
+    with open(join(attr['opath'],'carrier_conc.dat'),'w') as ofo:
+      ofo.write(cc_str)
         
 
         
