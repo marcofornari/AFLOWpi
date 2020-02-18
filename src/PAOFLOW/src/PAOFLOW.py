@@ -811,10 +811,6 @@ class PAOFLOW:
         from .defs.do_band_curvature import do_band_curvature
         do_band_curvature (self.data_controller)
 
-        from .defs.communication import gather_full        
-        temp=gather_full(np.ascontiguousarray(np.transpose(arrays['d2Ed2k'],(1,0,2,3))),attr['npool'])
-        if self.rank==0:
-          np.save('temp.npy',temp)
       else:
         # No more need for k-space Hamiltonian
         del arrays['Hksp']

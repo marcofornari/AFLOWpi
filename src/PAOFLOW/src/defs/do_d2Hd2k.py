@@ -58,8 +58,7 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
     # Compute the gradient of the k-space Hamiltonian
     #----------------------
     Rfft=np.transpose(Rfft,(3,0,1,2))
-    if rank==0:
-        print(Hksp.shape)
+
     num_n,nk1,nk2,nk3,nspin = Hksp.shape
 
     _,nk1,nk2,nk3,nspin = Hksp.shape
@@ -105,8 +104,7 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
         for ispin in range(d2Hksp.shape[4]):
             for n in range(d2Hksp.shape[0]):                
                 d2Hksp[n,:,:,:,ispin] = FFT.fftn(RIJ*Hksp[n,:,:,:,ispin]*-1.0*alat**2)
-        if rank==5:
-            print(np.amax(np.abs(Hksp[5,:,:,:,0].imag)))
+
         #############################################################################################
         #############################################################################################
         #############################################################################################
