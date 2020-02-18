@@ -42,3 +42,6 @@ def do_momentum ( data_controller ):
          #                                                arry['dHksp'][ik,l,:,:,ispin], 
          #                                                arry['v_k'][ik,:,:,ispin],
          #                                                arry['degen'][ispin][ik])
+
+  for i in range(8):
+    print(arry['pksp'][88,:,i,i,0].imag)

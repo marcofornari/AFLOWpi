@@ -58,7 +58,8 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
     # Compute the gradient of the k-space Hamiltonian
     #----------------------
     Rfft=np.transpose(Rfft,(3,0,1,2))
-
+    if rank==0:
+        print(Hksp.shape)
     num_n,nk1,nk2,nk3,nspin = Hksp.shape
 
     _,nk1,nk2,nk3,nspin = Hksp.shape
@@ -70,25 +71,29 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
 
 
 
-    Hksp_aux = np.zeros_like(Hksp)
-
     comm.Barrier()
     ########################################
     ### real space grid replaces k space ###
     ########################################
-
-    for n in range(Hksp.shape[0]):
-        for ispin in range(Hksp.shape[4]):
-            Hksp_aux[n,:,:,:,ispin] = FFT.ifftn(Hksp[n,:,:,:,ispin],axes=(0,1,2))*-1.0*alat**2
-
-    #############################################################################################
-    #############################################################################################
-    #############################################################################################
+    # c1=c2=0
+    # for ik in range(len(degen[0])):
+    #     if len(degen[0][ik]) != 0:
+    #         c1+=1
+    #     else:
+    #         c2+=1
+    # print(c1+c2,c1,c2)
     
-    num_n = Hksp_aux.shape[0]
+
+    #############################################################################################
+    #############################################################################################
+    #############################################################################################
+    Hksp/=1.0j*alat
+    num_n = Hksp.shape[0]
+
+    dvec_list=[]
 
     for ij in range(M_ij.shape[0]):
-
+        dir_tmp=[]
         d2Hksp = None
         d2Hksp = np.zeros((num_n,nk1,nk2,nk3,nspin),dtype=complex,order='C')    
         
@@ -99,8 +104,9 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
 
         for ispin in range(d2Hksp.shape[4]):
             for n in range(d2Hksp.shape[0]):                
-                d2Hksp[n,:,:,:,ispin] = FFT.fftn(RIJ*Hksp_aux[n,:,:,:,ispin])
-
+                d2Hksp[n,:,:,:,ispin] = FFT.fftn(RIJ*Hksp[n,:,:,:,ispin]*-1.0*alat**2)
+        if rank==5:
+            print(np.amax(np.abs(Hksp[5,:,:,:,0].imag)))
         #############################################################################################
         #############################################################################################
         #############################################################################################
@@ -109,6 +115,7 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
         d2Hksp = np.reshape(d2Hksp,(num_n,nk1*nk2*nk3,nspin),order='C')        
         d2Hksp = gather_scatter(d2Hksp,1,npool)
         nawf   = int(np.sqrt(d2Hksp.shape[0]))
+
         d2Hksp = np.reshape(d2Hksp,(nawf,nawf,d2Hksp.shape[1],nspin),order='C')
 
         tksp = np.zeros_like(d2Hksp)
@@ -120,18 +127,24 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
         #                               .dot(d2Hksp[:,:,ik,ispin].dot(v_kp[ik,:,:,ispin]))
 
         #find non-degenerate set of psi(k) for d2H/d2k_ij
-        for ik in range(tksp.shape[2]):
-            for ispin in range(tksp.shape[3]):
-                tksp[:,:,ik,ispin],_ = perturb_split(d2Hksp[:,:,ik,ispin],
-                                                   d2Hksp[:,:,ik,ispin],
-                                                   v_kp[ik,:,:,ispin],
-                                                   degen[ispin][ik])
+        for ispin in range(tksp.shape[3]):
+            isp_tmp=[]
+            for ik in range(tksp.shape[2]):
+
+                tksp[:,:,ik,ispin],_,dvec = perturb_split(d2Hksp[:,:,ik,ispin],
+                                                          d2Hksp[:,:,ik,ispin],
+                                                          v_kp[ik,:,:,ispin],
+                                                          degen[ispin][ik],return_v_k=True)
 
 #                tksp[:,:,ik,ispin] = np.conj(v_kp[ik,:,:,ispin].T)\
 #                                              .dot(d2Hksp[:,:,ik,ispin])\
 #                                              .dot(v_kp[ik,:,:,ispin])
 
+                isp_tmp.append(dvec)
+            dir_tmp.append(isp_tmp)
+        dvec_list.append(dir_tmp)
 
+        
 
         for ispin in range(d2Hksp.shape[3]):
             for n in range(bnd):                
@@ -141,7 +154,7 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
 
     Hksp_aux= d2Hksp = None    
 
-    return M_ij
+    return M_ij,dvec_list
 
 
 
