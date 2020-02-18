@@ -127,6 +127,11 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
                                                    v_kp[ik,:,:,ispin],
                                                    degen[ispin][ik])
 
+#                tksp[:,:,ik,ispin] = np.conj(v_kp[ik,:,:,ispin].T)\
+#                                              .dot(d2Hksp[:,:,ik,ispin])\
+#                                              .dot(v_kp[ik,:,:,ispin])
+
+
 
         for ispin in range(d2Hksp.shape[3]):
             for n in range(bnd):                

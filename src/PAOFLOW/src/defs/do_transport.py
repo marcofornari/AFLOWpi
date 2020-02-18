@@ -90,9 +90,11 @@ def do_transport ( data_controller, temps, ene, velkp, save_L0=False ):
 
         for i in range(esize):
           wtup(fsigma, gtup(sigma,i))
+
         if save_L0:            
           arrays['boltz_L0'][ispin,counter,:]=np.copy(L0)
           counter+=1
+
         sigma = None
 
         #----------------------
@@ -183,8 +185,6 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
   velkp_range = np.ascontiguousarray(velkp_range[:,E_k_mask[0],E_k_mask[1],E_k_mask[2]])
   d2Ed2k_range = np.ascontiguousarray(d2Ed2k[:,E_k_mask[0],E_k_mask[1],E_k_mask[2]])    
 
-
-
   # combine spin channels
   L0_temps = np.sum(ary['boltz_L0'],axis=0)/nspin
 
@@ -195,19 +195,26 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
 
     itemp = temps[temp]/temp_conv   
     inv_L0=np.zeros_like(L0_temps[0])
+
+    # to avoid very small contributions to to numerical error
+#    L0_temps = np.around(L0_temps,decimals=5)
     for n in range(ene.size):
       try:
         inv_L0[:,:,n] = npl.inv(L0_temps[temp,:,:,n])
       except:
         inv_L0[:,:,n]= 0.0
 
+
+
     # get sig_ijk
     sig_ijk = do_Hall_tensors( E_k_range,velkp_range,d2Ed2k_range,
                                kq_wght,itemp,ene)
 
-    
+
+
     # calculate hall conductivity
     if rank==0:
+#        sig_ijk=np.around(sig_ijk,decimals=5)
 
         R_ijk = np.zeros_like(sig_ijk)
         
@@ -220,7 +227,7 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
         #multiply by spin multiplier
         sig_ijk *= spin_mult
 
-
+        # loop over 27 components of R_ijk
         for i in range(3):
             for j in range(3):
                 for k in range(3):
@@ -229,8 +236,7 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
                             R_ijk[i,j,k,:] += -inv_L0[a,j,:]*sig_ijk[a,b,k,:]*inv_L0[i,b,:]
 
 
-
-
+        # take average 
         for n in range(ene.size):
             pcp = 3.0/(R_ijk[1,2,0,n]+R_ijk[2,0,1,n]+R_ijk[0,1,2,n])
             pcpm = pcp/(omega*(5.29177249e-9**3))
