@@ -810,6 +810,7 @@ mo    '''
       arrays['dHksp'] = np.reshape(arrays['dHksp'], (snktot,3,nawf,nawf,nspin), order="C")
 
       if band_curvature:
+        from .defs.do_band_curvature import do_band_curvature
         do_band_curvature (self.data_controller)
       else:
         # No more need for k-space Hamiltonian

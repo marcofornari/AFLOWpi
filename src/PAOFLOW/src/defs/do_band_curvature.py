@@ -67,9 +67,6 @@ def do_band_curvature ( data_controller ):
             d2Ed2k[ij,ik,:,ispin] += np.sum((((pksp_i*pksp_j.T +\
                                                pksp_j*pksp_i.T) / E_temp).real),axis=1)[:bnd]
 
-    #scale factor
-    sf = 11.055095423844927
-    d2Ed2k*=sf
 
     ary['d2Ed2k']=d2Ed2k
       
