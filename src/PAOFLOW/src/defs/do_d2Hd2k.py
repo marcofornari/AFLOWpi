@@ -86,7 +86,6 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
     #############################################################################################
     #############################################################################################
     #############################################################################################
-    Hksp/=1.0j*alat
     num_n = Hksp.shape[0]
 
     dvec_list=[]
@@ -103,7 +102,8 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
 
         for ispin in range(d2Hksp.shape[4]):
             for n in range(d2Hksp.shape[0]):                
-                d2Hksp[n,:,:,:,ispin] = FFT.fftn(RIJ*Hksp[n,:,:,:,ispin]*-1.0*alat**2)
+                # because of the way this is coded...Hksp is actually HR*1.0j*alat
+                d2Hksp[n,:,:,:,ispin] = FFT.fftn(RIJ*Hksp[n,:,:,:,ispin]*1.0j*alat)
 
         #############################################################################################
         #############################################################################################
@@ -118,32 +118,23 @@ def do_d2Hd2k_ij(Hksp,Rfft,alat,npool,v_kp,bnd,degen):
 
         tksp = np.zeros_like(d2Hksp)
 
-        # #bring d2H/d2k_ij into basis of H(k)
-        # for ispin in range(d2Hksp.shape[3]):
-        #     for ik in range(d2Hksp.shape[2]):
-        #         tksp[:,:,ik,ispin] = np.conj(v_kp[ik,:,:,ispin].T)\
-        #                               .dot(d2Hksp[:,:,ik,ispin].dot(v_kp[ik,:,:,ispin]))
-
         #find non-degenerate set of psi(k) for d2H/d2k_ij
         for ispin in range(tksp.shape[3]):
             isp_tmp=[]
             for ik in range(tksp.shape[2]):
 
+                # we save dvec so that it can be used when calculating the second term in d2E/d2k
                 tksp[:,:,ik,ispin],_,dvec = perturb_split(d2Hksp[:,:,ik,ispin],
                                                           d2Hksp[:,:,ik,ispin],
                                                           v_kp[ik,:,:,ispin],
                                                           degen[ispin][ik],return_v_k=True)
-
-#                tksp[:,:,ik,ispin] = np.conj(v_kp[ik,:,:,ispin].T)\
-#                                              .dot(d2Hksp[:,:,ik,ispin])\
-#                                              .dot(v_kp[ik,:,:,ispin])
 
                 isp_tmp.append(dvec)
             dir_tmp.append(isp_tmp)
         dvec_list.append(dir_tmp)
 
         
-
+        # get the value for d2H/d2k
         for ispin in range(d2Hksp.shape[3]):
             for n in range(bnd):                
                 M_ij[ij,:,n,ispin] = tksp[n,n,:,ispin].real

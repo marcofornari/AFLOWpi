@@ -443,7 +443,7 @@ class PAOFLOW:
 
     Returns:
         None
-    '''
+mo    '''
     from .defs.do_wave_function_site_projection import wave_function_site_projection
 
     try:
@@ -780,6 +780,7 @@ class PAOFLOW:
     from .defs.do_gradient import do_gradient
     from .defs.do_momentum import do_momentum
     from .defs.communication import gather_scatter
+    import numpy as np 
 
     arrays,attr = self.data_controller.data_dicts()
 
@@ -788,6 +789,7 @@ class PAOFLOW:
 
       for ik in range(snktot):
         for ispin in range(nspin):
+          #make sure Hksp is hermitian (it should be)
           arrays['Hksp'][ik,:,:,ispin] = (np.conj(arrays['Hksp'][ik,:,:,ispin].T) + arrays['Hksp'][ik,:,:,ispin])/2.
 
       arrays['Hksp'] = np.reshape(arrays['Hksp'], (snktot, nawf**2, nspin))
@@ -808,8 +810,13 @@ class PAOFLOW:
       arrays['dHksp'] = np.reshape(arrays['dHksp'], (snktot,3,nawf,nawf,nspin), order="C")
 
       if band_curvature:
+        import numpy as np
         from .defs.do_band_curvature import do_band_curvature
         do_band_curvature (self.data_controller)
+        from .defs.communication import gather_full
+        temp=gather_full(np.ascontiguousarray(np.transpose(arrays['d2Ed2k'],axes=(1,0,2,3))),attr['npool'])
+        if self.rank==0:
+          np.save('temp.npy',temp)
 
       else:
         # No more need for k-space Hamiltonian
