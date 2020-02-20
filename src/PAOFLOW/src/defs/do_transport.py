@@ -206,6 +206,7 @@ def do_carrier_conc( data_controller,velkp,ene,temps ):
         inv_L0[:,:,n]= 0.0
 
 
+    inv_L0*=siemen_conv/attr['omega']
 
     # get sig_ijk
     sig_ijk = do_Hall_tensors( E_k_range,velkp_range,d2Ed2k_range,
