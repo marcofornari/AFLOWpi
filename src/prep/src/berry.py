@@ -1,6 +1,7 @@
 import AFLOWpi
 import os 
-
+import re
+import numpy as np
 
 def _prep_berry(oneCalc,ID,gdir,kp_mult):
 
@@ -25,7 +26,54 @@ def _prep_berry(oneCalc,ID,gdir,kp_mult):
     inputString = AFLOWpi.retr._joinInput(inputDict)
     ID_gdir = ID+"_gdir%s"%gdir
 
-    with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID_gdir),'w') as newIn:
-        newIn.write(inputString)
+    ifn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.in'%ID_gdir)
+
+    if not os.path.exists(ifn):
+        with open(ifn,'w') as newIn:
+            newIn.write(inputString)
 
     return oneCalc,ID_gdir
+
+
+
+
+
+def setup_berry(calcs,kp_factor):
+    add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kp_factor
+    AFLOWpi.prep.addToAll_(calcs,block='PREPROCESSING',addition=add)
+    AFLOWpi.run._skeletonRun(calcs,calcType="gdir1",execPath='"./pw.x"',execPostfix="-northo 1")
+    add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kp_factor
+    AFLOWpi.prep.addToAll_(calcs,block='RUN',addition=add)
+    AFLOWpi.run._skeletonRun(calcs,calcType="gdir2",execPath='"./pw.x"',execPostfix="-northo 1")
+    add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kp_factor
+    AFLOWpi.prep.addToAll_(calcs,block='RUN',addition=add)
+    AFLOWpi.run._skeletonRun(calcs,calcType="gdir3",execPath='"./pw.x"',execPostfix="-northo 1")
+
+
+def _pull_pol_berry(oneCalc,ID):
+
+    afd=oneCalc["_AFLOWPI_FOLDER_"]
+
+    direc=[1,2,3]
+
+    tmp_pol=[]
+    pdir=[]
+    for i in range(len(direc)):
+        fn=os.path.join(afd,"%s_gdir%s.out"%(ID,direc[i]))
+        with open(fn) as ifo:
+            ifs=ifo.read()
+
+        pdir.append(list(map(float,re.findall(r"The polarization direction is:  \((.*)\)",ifs)[0].split(","))))
+        tmp_pol.append(float(re.findall("P =\s*([-\d.]+)",ifs)[0]))
+
+    tmp_pol = np.array(tmp_pol)
+    pdir    = np.array(pdir)
+
+    tmp_pol = pdir.dot(tmp_pol)
+
+    dst_nm="_".join(ID.split("_")[:2])
+    savep=os.path.join(os.path.dirname(afd),dst_nm)
+
+    with open(savep,"w") as ifo:
+        ifs=ifo.write("% 16.8f % 16.8f % 16.8f\n"%(tmp_pol[0],tmp_pol[1],tmp_pol[2]))
+        

@@ -5119,7 +5119,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
 
-        def elastic(self,mult_jobs=True,order=2,eta_max=0.005,num_dist=10,):
+        def elastic(self,mult_jobs=True,order=2,eta_max=0.005,num_dist=10,piezo=False,kp_factor=2):
                 """
                 Run elastic constant calculation with ElaStic package
 
@@ -5155,8 +5155,10 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 output_move_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._copy_qe_out_file(oneCalc,ID)')"""
                 task_list=['AFLOWpi.run.scf(calc_subset)',output_move_string]
 
-#               if with_u:
-#                       task_list=['calc_subset=AFLOWpi.scfuj.scfprep(calc_subset)','AFLOWpi.scfuj.run(calc_subset)',output_move_string]
+                if piezo:
+                        task_list.append("AFLOWpi.prep.setup_berry(calc_subset,%s)"%kp_factor)
+                        ppbs="""AFLOWpi.prep._addToAll(calc_subset,'POSTPROCESSING','AFLOWpi.prep._pull_pol_berry(oneCalc,ID)')"""
+                        task_list.append(ppbs)
 
                 self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,'AFLOWpi.run._grab_elastic_generated_inputs(oneCalc,ID)',
                                                            mult_jobs=mult_jobs,
@@ -5797,17 +5799,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.tight_banding=False
                 self.type='berry'
                 self._new_step(update_positions=True,update_structure=True)
-
-#               self.int_dict = AFLOWpi.prep.doss(self.int_dict,kpFactor=kpFactor,n_conduction=0)
-                add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kp_factor
-                self._addToAll(block='PREPROCESSING',addition=add)
-                AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir1",execPath='"./pw.x"',execPostfix="-northo 1")
-                add = "        oneCalc,ID_gdir2 = AFLOWpi.prep._prep_berry(oneCalc,ID,2,%s)"%kp_factor
-                self._addToAll(block='RUN',addition=add)          
-                AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir2",execPath='"./pw.x"',execPostfix="-northo 1")
-                add = "        oneCalc,ID_gdir3 = AFLOWpi.prep._prep_berry(oneCalc,ID,3,%s)"%kp_factor
-                self._addToAll(block='RUN',addition=add)   
-                AFLOWpi.run._skeletonRun(self.int_dict,calcType="gdir3",execPath='"./pw.x"',execPostfix="-northo 1")
+                
+                AFLOWpi.prep.setup_berry(self.int_dict,kp_factor)
 
                 calc_type='Berry phase and Polarization'
 
