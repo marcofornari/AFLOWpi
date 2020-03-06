@@ -1,6 +1,7 @@
 import AFLOWpi
 import os 
 import re
+import glob
 import numpy as np
 
 def _prep_berry(oneCalc,ID,gdir,kp_mult):
@@ -33,10 +34,6 @@ def _prep_berry(oneCalc,ID,gdir,kp_mult):
             newIn.write(inputString)
 
     return oneCalc,ID_gdir
-
-
-
-
 
 def setup_berry(calcs,kp_factor):
     add = "oneCalc,ID_gdir1 = AFLOWpi.prep._prep_berry(oneCalc,ID,1,%s)"%kp_factor
@@ -77,3 +74,40 @@ def _pull_pol_berry(oneCalc,ID):
     with open(savep,"w") as ifo:
         ifs=ifo.write("% 16.8f % 16.8f % 16.8f\n"%(tmp_pol[0],tmp_pol[1],tmp_pol[2]))
         
+
+
+def _read_piezo_dat(oneCalc,ID):
+
+    afd=oneCalc["_AFLOWPI_FOLDER_"]
+
+    fil = sorted(glob.glob("%s/%s_ELASTIC/Dst*"%(afd,ID)))
+
+    dinfo=[]
+    cvl=[]
+
+    for i in range(len(fil)):
+        fn=os.path.basename(fil[i])[3:].split("_")[:2]
+        dinfo.append(list(map(int,fn)))
+
+        dat=np.loadtxt(fil[i])
+        cvl.append(dat)
+
+
+    dinfo=np.array(dinfo)-1
+    cvl=np.array(cvl)
+
+    ndist=np.unique(dinfo[:,0]).size
+    diter=np.unique(dinfo[:,1]).size
+
+
+    cvl_sort=np.zeros((ndist,diter,3))
+
+    for i in range(cvl.shape[0]):
+        cvl_sort[dinfo[i,0],dinfo[i,1]]=cvl[i]
+
+    return cvl_sort
+
+def _calc_piezo_tensor(oneCalc,ID):
+    pols = AFLOWpi.prep._read_piezo_dat(oneCalc,ID)
+
+    

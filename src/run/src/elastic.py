@@ -33,7 +33,7 @@ import numpy
 
 def _grab_elastic_generated_inputs(oneCalc,ID):
     glob_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Structures_ESPRESSO')
-    input_files = glob.glob(glob_path+'/*.in')
+    input_files = sorted(glob.glob(glob_path+'/*.in'))
 
     orig_kp = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])["K_POINTS"]
 

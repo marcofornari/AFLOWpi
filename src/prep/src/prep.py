@@ -5158,7 +5158,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 if piezo:
                         task_list.append("AFLOWpi.prep.setup_berry(calc_subset,%s)"%kp_factor)
                         ppbs="""AFLOWpi.prep._addToAll(calc_subset,'POSTPROCESSING','AFLOWpi.prep._pull_pol_berry(oneCalc,ID)')"""
-                        task_list.append(ppbs)
+                        task_list.append(ppbs)            
+
 
                 self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,'AFLOWpi.run._grab_elastic_generated_inputs(oneCalc,ID)',
                                                            mult_jobs=mult_jobs,
@@ -5167,6 +5168,10 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
                 loadModString = '''AFLOWpi.run._pp_elastic(oneCalc,ID)'''
                 self._addToAll(block='POSTPROCESSING',addition=loadModString)           
+
+                if piezo:
+                        add="AFLOWpi.prep._calc_piezo_tensor(oneCalc,ID)"
+                        self._addToAll(block='POSTPROCESSING',addition=add)
 
                 calc_type='Elastic Constants'
 
