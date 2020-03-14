@@ -61,7 +61,7 @@ def _pull_pol_berry(oneCalc,ID):
             ifs=ifo.read()
 
         pdir.append(list(map(float,re.findall(r"The polarization direction is:  \((.*)\)",ifs)[0].split(","))))
-        tmp_pol.append(float(re.findall("P =\s*([-\d.]+)",ifs)[0]))
+        tmp_pol.append(float(re.findall("P =\s*([-\d.]+)",ifs)[2]))
 
     tmp_pol = np.array(tmp_pol)
     pdir    = np.array(pdir)
@@ -76,8 +76,16 @@ def _pull_pol_berry(oneCalc,ID):
     
 
 def _pull_stress_piezo(oneCalc,ID):
+
+    #pull stress from output
     stress=AFLOWpi.retr.getStress(oneCalc,ID)
+
+    #convert stribg to 6 element array
     stress=np.array([list(map(float,i.split()[3:])) for i in stress.split("\n")[3:-1]])
+
+    #convert from kbar to N/m^2
+    stress*=1.e8
+
 
     afd=oneCalc["_AFLOWPI_FOLDER_"]
 
@@ -91,7 +99,7 @@ def _pull_stress_piezo(oneCalc,ID):
     savep=os.path.join(os.path.dirname(afd),dst_nm)
 
     with open(savep,"w") as ifo:
-        ifs=ifo.write("% 8.4f % 8.4f % 8.4f % 8.4f % 8.4f % 8.4f\n"%(stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]))
+        ifs=ifo.write("% 12.8e % 12.8e % 12.8e % 12.8e % 12.8e % 12.8e\n"%(stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]))
 
 def _read_piezo_dat(oneCalc,ID):
 
@@ -153,14 +161,16 @@ def _read_piezo_stress_dat(oneCalc,ID):
     for i in range(cvl.shape[0]):
         cvl_sort[dinfo[i,0],dinfo[i,1]]=cvl[i]
 
+
     return cvl_sort
 
     
 
 def _calc_piezo_tensor(oneCalc,ID):
     pols   = AFLOWpi.prep._read_piezo_dat(oneCalc,ID)
-    stress = AFLOWpi.prep._read_piezo_stres_dat(oneCalc,ID)
-
+    stress = AFLOWpi.prep._read_piezo_stress_dat(oneCalc,ID)
+    print(pols)
+    print(stress)
     order=7
     if pols.shape[1]<6:
         order=1
@@ -169,12 +179,14 @@ def _calc_piezo_tensor(oneCalc,ID):
     elif pols.shape[1]<10:
         order=5
 
+    stress/=1.e8
+
     res=np.zeros((pols.shape[0],6,3))
 
     for s_dir in range(6):
         for p_dir in range(3):
             for dst in range(pols.shape[0]):
-                res[dst,s_dir]=np.polyfit(stress[dst,:,s_dir],pols[dst,:,p_dir],order=order)[-2]
+                res[dst,s_dir]=np.polyfit(stress[dst,:,s_dir],pols[dst,:,p_dir],order)[-2]
 
 
     print(res)
