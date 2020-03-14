@@ -23,7 +23,7 @@
 #
 # ***************************************************************************
 
-
+import setuptools
 import sys
 import os
 from distutils.core import setup, Command,Extension
@@ -39,7 +39,7 @@ import site
 
 
 
-ext_modules=[Extension("cints",sources=["src/scfuj/extensions/cints.c"]) ]
+#ext_modules=
 
 
 import glob
@@ -113,8 +113,6 @@ for j in modules:
 
 try:
    
-   PAOPY_SRC = glob.glob('src/PAOFLOW/src/*.py')
-   PAOPY_DEF = glob.glob('src/PAOFLOW/src/defs/*.py')
 
    ACBN0=['scfuj/acbn0_support/integs.py',
           'scfuj/acbn0_support/acbn0.py',
@@ -126,8 +124,8 @@ try:
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
-
-
+         platforms=["linux_x86_64"],
+         url="http://aflowlib.org/src/aflowpi/",
 
          packages = ['AFLOWpi',
                    'AFLOWpi.qe',
@@ -141,8 +139,6 @@ try:
                    'AFLOWpi.prep',
                    'AFLOWpi.environ',
                    'AFLOWpi.elph',
-                   "PAOFLOW",
-                   "PAOFLOW.defs",
                      
 ],
          package_dir = {'AFLOWpi'       :'src',
@@ -157,8 +153,6 @@ try:
                       'AFLOWpi.elph'    :'src/elph/src/',
                       'AFLOWpi.environ' :'src/environ/src/',
                       'AFLOWpi.aflowlib':'src/aflowlib/src/',
-                      'PAOFLOW'         :'src/PAOFLOW/src',   
-                      'PAOFLOW.defs'    :'src/PAOFLOW/src/defs'   
 },
 
 
@@ -167,10 +161,12 @@ try:
                                   'AFLOWpi':['PAOFLOW/examples/*.py',
                                              'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
+
                                   },
 
 
-       ext_modules = ext_modules,
+         ext_modules = [Extension("cints",sources=["src/scfuj/extensions/cints.c"],include_dirs = ['src/scfuj/extensions/'],) ],
+#       install_requires=["numpy","scipy","matplotlib","PAOFLOW"],
        long_description = """Install Script for AFLOWpi""",) 
    
 
