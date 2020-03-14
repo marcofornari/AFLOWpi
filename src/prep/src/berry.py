@@ -66,21 +66,38 @@ def _pull_pol_berry(oneCalc,ID):
     tmp_pol = np.array(tmp_pol)
     pdir    = np.array(pdir)
 
-    tmp_pol = pdir.dot(tmp_pol)
+    tmp_pol=pdir.T @ tmp_pol
 
-    dst_nm="_".join(ID.split("_")[:2])
+    dst_nm="_".join(ID.split("_")[:2])+"_pol"
     savep=os.path.join(os.path.dirname(afd),dst_nm)
 
     with open(savep,"w") as ifo:
         ifs=ifo.write("% 16.8f % 16.8f % 16.8f\n"%(tmp_pol[0],tmp_pol[1],tmp_pol[2]))
-        
+    
 
+def _pull_stress_piezo(oneCalc,ID):
+    stress=AFLOWpi.retr.getStress(oneCalc,ID)
+    stress=np.array([list(map(float,i.split()[3:])) for i in stress.split("\n")[3:-1]])
+
+    afd=oneCalc["_AFLOWPI_FOLDER_"]
+
+
+    fn=os.path.join(afd,"%s.out"%(ID))
+    with open(fn) as ifo:
+        ifs=ifo.read()
+
+
+    dst_nm="_".join(ID.split("_")[:2])+"_stress"
+    savep=os.path.join(os.path.dirname(afd),dst_nm)
+
+    with open(savep,"w") as ifo:
+        ifs=ifo.write("% 8.4f % 8.4f % 8.4f % 8.4f % 8.4f % 8.4f\n"%(stress[0,0],stress[1,1],stress[2,2],stress[1,2],stress[0,2],stress[0,1]))
 
 def _read_piezo_dat(oneCalc,ID):
 
     afd=oneCalc["_AFLOWPI_FOLDER_"]
 
-    fil = sorted(glob.glob("%s/%s_ELASTIC/Dst*"%(afd,ID)))
+    fil = sorted(glob.glob("%s/%s_ELASTIC/Dst*pol"%(afd,ID)))
 
     dinfo=[]
     cvl=[]
@@ -107,7 +124,59 @@ def _read_piezo_dat(oneCalc,ID):
 
     return cvl_sort
 
-def _calc_piezo_tensor(oneCalc,ID):
-    pols = AFLOWpi.prep._read_piezo_dat(oneCalc,ID)
+def _read_piezo_stress_dat(oneCalc,ID):
 
+    afd=oneCalc["_AFLOWPI_FOLDER_"]
+
+    fil = sorted(glob.glob("%s/%s_ELASTIC/Dst*stress"%(afd,ID)))
+
+    dinfo=[]
+    cvl=[]
+
+    for i in range(len(fil)):
+        fn=os.path.basename(fil[i])[3:].split("_")[:2]
+        dinfo.append(list(map(int,fn)))
+
+        dat=np.loadtxt(fil[i])
+        cvl.append(dat)
+
+
+    dinfo=np.array(dinfo)-1
+    cvl=np.array(cvl)
+
+    ndist=np.unique(dinfo[:,0]).size
+    diter=np.unique(dinfo[:,1]).size
+
+
+    cvl_sort=np.zeros((ndist,diter,6))
+
+    for i in range(cvl.shape[0]):
+        cvl_sort[dinfo[i,0],dinfo[i,1]]=cvl[i]
+
+    return cvl_sort
+
+    
+
+def _calc_piezo_tensor(oneCalc,ID):
+    pols   = AFLOWpi.prep._read_piezo_dat(oneCalc,ID)
+    stress = AFLOWpi.prep._read_piezo_stres_dat(oneCalc,ID)
+
+    order=7
+    if pols.shape[1]<6:
+        order=1
+    elif pols.shape[1]<8:
+        order=3
+    elif pols.shape[1]<10:
+        order=5
+
+    res=np.zeros((pols.shape[0],6,3))
+
+    for s_dir in range(6):
+        for p_dir in range(3):
+            for dst in range(pols.shape[0]):
+                res[dst,s_dir]=np.polyfit(stress[dst,:,s_dir],pols[dst,:,p_dir],order=order)[-2]
+
+
+    print(res)
+    
     

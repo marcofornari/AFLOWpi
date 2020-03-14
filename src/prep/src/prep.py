@@ -5159,7 +5159,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                         task_list.append("AFLOWpi.prep.setup_berry(calc_subset,%s)"%kp_factor)
                         ppbs="""AFLOWpi.prep._addToAll(calc_subset,'POSTPROCESSING','AFLOWpi.prep._pull_pol_berry(oneCalc,ID)')"""
                         task_list.append(ppbs)            
-
+                        ppbs="""AFLOWpi.prep._addToAll(calc_subset,'POSTPROCESSING','AFLOWpi.prep._pull_stress_piezo(oneCalc,ID)')"""
+                        task_list.append(ppbs)            
 
                 self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,'AFLOWpi.run._grab_elastic_generated_inputs(oneCalc,ID)',
                                                            mult_jobs=mult_jobs,
