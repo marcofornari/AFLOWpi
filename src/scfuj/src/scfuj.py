@@ -207,12 +207,12 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
 
 
         #Assign initial U values
-        species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
+#        species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
 #        temp_species,_ = AFLOWpi.prep._resolve_AS_order(inputfile)
 #        species = temp_species.keys()
-        species = re.findall("(.*).*UPF",inputfile)
-        species = [x.split()[0] for x in species]
-
+#        species = re.findall("(.*).*UPF",inputfile)
+#        species = [x.split()[0] for x in species]
+        species=[x.split()[0] for x in AFLOWpi.retr._splitInput(inputfile)["ATOMIC_SPECIES"]["__content__"].split("\n") if len(x.strip()) !=0]
         splitInput = AFLOWpi.retr._splitInput(inputfile)
 
 
@@ -284,8 +284,10 @@ def updateUvals(oneCalc, Uvals,Jvals,ID=None,U_eff=True):
 #                species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
 #               species = re.findall("(\w+).*UPF",inputfile)
 
-                species = re.findall("(.*).*UPF",inputfile)
-                species = [x.split()[0] for x in species]
+                species=[x.split()[0] for x in AFLOWpi.retr._splitInput(inputfile)["ATOMIC_SPECIES"]["__content__"].split("\n") if len(x.strip()) !=0]
+#                species = re.findall("(.*).*UPF",inputfile)
+#                species = [x.split()[0] for x in species]
+
 #                AFLOWpi.prep._get_order_from_atomic_species(inputfile)
                 inputDict = AFLOWpi.retr._splitInput(inputfile)
                 inputDict['&system']['lda_plus_u']='.TRUE.'
