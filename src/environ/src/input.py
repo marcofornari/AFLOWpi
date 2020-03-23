@@ -46,7 +46,7 @@ class EnvironFile():
 			# main axis of embedded system (ignore for now)
 			'system_axis': 3,
 			# read the electrostatic part? (yes for sscs testing)
-			'env_electrostatic': False,
+			'env_electrostatic': True,
 			# static permittivity required if input is set by environ type (default to water)
 			'env_static_permittivity': 1.0,
 			# for tdddft (ignore for now)
