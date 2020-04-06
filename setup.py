@@ -23,7 +23,7 @@
 #
 # ***************************************************************************
 
-import setuptools
+#import setuptools
 import sys
 import os
 from distutils.core import setup, Command,Extension
