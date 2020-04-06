@@ -66,7 +66,7 @@ def _pull_pol_berry(oneCalc,ID):
     tmp_pol = np.array(tmp_pol)
     pdir    = np.array(pdir)
 
-    tmp_pol=pdir.T @ tmp_pol
+    tmp_pol=pdir.T.dot(tmp_pol)
 
 
 
@@ -142,45 +142,70 @@ def _read_piezo_stress_dat(oneCalc,ID):
 
     afd=oneCalc["_AFLOWPI_FOLDER_"]
 
-    fil = sorted(glob.glob("%s/%s_ELASTIC/Dst*stress"%(afd,ID)))
 
-    dinfo=[]
-    cvl=[]
+    with open(os.path.join(afd,"Distorted_Parameters")) as ifo:
+        ifs=ifo.read()
 
-    for i in range(len(fil)):
-        fn=os.path.basename(fil[i])[3:].split("_")[:2]
-        dinfo.append(list(map(int,fn)))
+    strain=re.findall(r"Lagrangian strain = \((.*)\)\n",ifs)
+    strain=np.array([list(map(float,i.replace("eta","").split(","))) for i in strain])
 
-        dat=np.loadtxt(fil[i])
-        cvl.append(dat)
+    etas=re.findall(r"eta = ([-.\de]+)",ifs)
+    etas=np.unique(np.array(list(map(float,etas))))
 
+#    print(strain)
+#    print(etas)
+    eta_ij=strain[:,:,None]*etas
 
-    dinfo=np.array(dinfo)-1
-    cvl=np.array(cvl)
-
-    ndist=np.unique(dinfo[:,0]).size
-    diter=np.unique(dinfo[:,1]).size
-
-
-    cvl_sort=np.zeros((ndist,diter,6))
-
-    for i in range(cvl.shape[0]):
-        cvl_sort[dinfo[i,0],dinfo[i,1]]=cvl[i]
-
-    #convert from ryd/bohr to 10e-12*N/m^2
-    cvl_sort*=14.7105132422
-
-
-
-    return cvl_sort
+    return eta_ij
 
     
 
 def _calc_piezo_tensor(oneCalc,ID):
+    import matplotlib
+    matplotlib.use("pdf")
+    import matplotlib.pyplot as plt
+    import matplotlib.gridspec as gridspec
+
     pols   = AFLOWpi.prep._read_piezo_dat(oneCalc,ID)
     stress = AFLOWpi.prep._read_piezo_stress_dat(oneCalc,ID)
-    print(pols)
-    print(stress)
+    alat,a_vectors=AFLOWpi.retr._getCellParams(oneCalc,ID)
+
+    a_vectors/=alat
+#    print(pols)
+#    print(stress[0,1])
+#    print(stress.shape)
+#    print(stress[0,3])
+
+
+
+
+    comps=[[0,0],[1,1],[2,2],[1,2],[0,2],[0,1]]
+#    a_vevtors[comps[l,]]
+
+    sdl=["xx","yy","zz","yz","xz","xy"]
+    pdl=["x","y","z"]
+    pdm=["^","o","s"]
+
+    
+    fig=plt.figure(figsize=(8,24),constrained_layout=True)
+    axes = fig.add_gridspec(ncols=2, nrows=6)
+
+    pols=pols-pols[:,pols.shape[1]//2][:,None]
+
+    for dst in range(2):
+        for s_dir in range(6):
+            ax=fig.add_subplot(axes[s_dir,dst])
+            ax.set_xlim(np.amin(stress[dst,s_dir]),np.amax(stress[dst,s_dir]))
+#            for p_dir in range(3):                
+            for p_dir in [0,1,2]:                
+                ax.plot(stress[dst,s_dir],pols[dst,:,p_dir],label="%s_%s"%(sdl[s_dir],pdl[p_dir]),marker=pdm[p_dir],color="C%d"%s_dir)
+
+                
+            plt.legend()
+    plt.savefig("test.pdf")
+
+
+
     order=7
     if pols.shape[1]<6:
         order=1
@@ -194,9 +219,18 @@ def _calc_piezo_tensor(oneCalc,ID):
     for s_dir in range(6):
         for p_dir in range(3):
             for dst in range(pols.shape[0]):
-                res[dst,s_dir]=np.polyfit(stress[dst,:,s_dir],pols[dst,:,p_dir],order)[-2]
+                res[dst,s_dir,p_dir]=np.polyfit(stress[dst,s_dir],pols[dst,:,p_dir],order)[-2]
 
-
-    print(res)
     
+    print(res)
+    print(a_vectors)
+
+    # e_ij=np.zeros((3,6))
+
+    # for l in range(3):
+    #     for p_dir in range(3):
+    #         for s_dir in range(6):
+    #             e_ij[p_dir,s_dir]+=a_vectors[p_dir,l]*res[1,s_dir,l]
+
+    # print(e_ij)
     
