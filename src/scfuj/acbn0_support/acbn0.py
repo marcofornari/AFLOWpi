@@ -240,7 +240,13 @@ def read_txtdata(fpath,nspin):
     kpnts = np.loadtxt(fin)
     fin.close()
 
+    if len(kpnts.shape)==1:
+
+        kpnts=kpnts[None]
+        kpnts_wght=np.array([kpnts_wght])
+
     nkpnts  = kpnts.shape[0]
+
     print(("read_txt_data: number of kpoints = %d"%nkpnts))
 
 
@@ -265,6 +271,7 @@ def read_txtdata(fpath,nspin):
 
 
     nbasis  = int(np.sqrt(kovp_1.shape[0]/float(nkpnts)))
+    print(nbasis)
     print(("read_txt_data: nbasis = %f"%nbasis))
 
     kovp    = np.reshape(kovp_1,(nbasis,nbasis,nkpnts),order='C')
