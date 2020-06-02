@@ -1544,7 +1544,7 @@ def _getPath(dk, oneCalc,ID=None,points=False):
                 numK = int(numpy.ceil((kdistance(hs, p1, p2)/newDK)))
                 totalK+=numK
 
-                numK = str(numK)
+
 
                 if points==True:
                     a0 = numpy.linspace(p1[0],p2[0],numK).astype(numpy.float16)
