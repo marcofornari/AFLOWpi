@@ -338,7 +338,7 @@ class EnvironFile():
 
 	def edit(self, key, val):
 		if not key in self.edict:
-			print 'key not found, have you set up the environ file correctly?'
+			print('key not found, have you set up the environ file correctly?')
 			return
 		# TODO sanity check the input
 		self.edict[key] = val
@@ -389,10 +389,10 @@ def get_environ_input(mode, wdir=None, **kwargs):
 			efile.write_file(os.getcwd() + '/' + 'environ.in')
 			return
 
-		print kwargs
+		print(kwargs)
 		if 'loopval' in kwargs and 'loopparam' in kwargs:
 			# part of a loop, thus do a substitution based on the param fed in
-			print 'updating'
+			print('updating')
 			efile.edict[kwargs['loopparam']] = kwargs['loopval']
 			efile.write_file(os.getcwd() + '/' + 'ENVIRON_%02d'%(kwargs['loopidx']+1))
 		efile.write_file(os.getcwd() + '/' + 'environ.in')

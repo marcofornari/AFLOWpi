@@ -125,7 +125,7 @@ def _getHighSymPoints(oneCalc,ID=None):
         elif  (1.0/a**2 < 1.0/b**2+1.0/c**2): ibrav_var =  'ORCF2'
 
     elif(int(ibrav)==14):
-        print alpha,beta,gamma
+        print((alpha,beta,gamma))
         minAngle = np.amin([alpha,beta,gamma])
         maxAngle = np.amax([alpha,beta,gamma])
         if alpha==90.0 or beta==90.0 or gamma==90.0:
@@ -428,7 +428,7 @@ def _getHighSymPoints(oneCalc,ID=None):
 
                                    
 
-    for k,v in special_points.iteritems():
+    for k,v in list(special_points.items()):
         first  = np.array(v).dot(np.linalg.inv(aflow_conv))
         if ibrav == 9:
             second = qe_conv.T.dot(first)
@@ -482,13 +482,13 @@ def _path_by_lattice_variation(ibrav_var):
         band_path = 'gG-Y-F-H-Z-I|H1-Y1-X-gG-N|M-gG'
     if ibrav_var=='MCLC5':
         band_path = 'gG-Y-F-L-I|I1-Z-H-F1|H1-Y1-X-gG-N|M-gG'
-    if ibrav_var=='TRI1A':         
+    if ibrav_var=='TRI1a':         
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG' 
-    if ibrav_var=='TRI2A':        
+    if ibrav_var=='TRI2a':        
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-    if ibrav_var=='TRI1B':        
+    if ibrav_var=='TRI1b':        
         band_path = "X-gG-Y|L-gG-Z|N-gG-M|R-gG"
-    if ibrav_var=='TRI2B':        
+    if ibrav_var=='TRI2b':        
         band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
 
     return band_path
@@ -496,18 +496,17 @@ def _path_by_lattice_variation(ibrav_var):
 def _getHighSymPoints_aflow(oneCalc,ID=None):
 
     in_str = oneCalc['_AFLOWPI_INPUT_']
+    in_str = in_str.encode('utf-8')
 
     AFLOWSYM_LOC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM')
     AFLOW_EXE    = os.path.join(AFLOWSYM_LOC,'aflow')
 
     find_sym_process = subprocess.Popen('%s --kpath --grid=1'%AFLOW_EXE,stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,shell=True)
-    output = find_sym_process.communicate(input=in_str)[0]
+
+    output = find_sym_process.communicate(input=in_str)[0].decode()
 
     ibrav_var = re.findall('K_POINTS\s*crystal\s*!\s*(\S*)\s*',output)[0]
-
-
-    
 
     band_path = _path_by_lattice_variation(ibrav_var)
 

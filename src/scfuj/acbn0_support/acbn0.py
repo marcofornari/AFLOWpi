@@ -7,7 +7,6 @@
 import os
 import csv
 import sys
-import scipy.io as sio
 import numpy as np
 from numpy import linalg as la
 from scipy import linalg as sla
@@ -18,12 +17,12 @@ import time
 try:
     from cints import contr_coulomb_v3 as ccc
     logging.info('Using cints for coulomb integral.')
-    print 'Using cints for coulomb integral.'
-except Exception,e:
+    print('Using cints for coulomb integral.')
+except Exception as e:
     logging.warning('cints did not properly import. Switching to pyints.') 
     logging.warning(e)
-    print 'cints did not properly import. Switching to pyints.'
-    print e
+    print('cints did not properly import. Switching to pyints.')
+    print(e)
     from pyints import contr_coulomb_v2 as ccc
 #%%
 
@@ -44,7 +43,7 @@ def get_Nmm_spin(fpath,spin_label,Hks,Sks,kpnts_wght):
         Nlm_aux = Nlm_aux + kpnts_wght[nk]*Nlm_k[:,:,nk]
     Nlm_aux = Nlm_aux/float(np.sum(kpnts_wght))
     Nlm_0 = np.sum(Nlm_aux,axis=1)
-    print "get_Nmm_spin: Nlm_0 for spin = %s -->"%spin_label, Nlm_0.real
+    print(("get_Nmm_spin: Nlm_0 for spin = %s -->"%spin_label, Nlm_0.real))
     return Nlm_0
 
 def get_hartree_energy_spin(DR_0_up,DR_0_dn,bfs,reduced_basis_2e,fpath):
@@ -96,14 +95,14 @@ def read_basis_unitcell(fpath,latvects,coords,atlabels):
     for i,atomcoords in enumerate(coords):
         myatomlist.append( (atlabels[i].strip(),(atomcoords[0],atomcoords[1],atomcoords[2])) )
         
-    print myatomlist
+    print(myatomlist)
     atoms=Molecule('unitcell',atomlist = myatomlist,units = 'Angstrom')
     
     #inttol = 1e-6 # Tolerance to which integrals must be equal
     
     basis_file_path = fpath
     bfs = integs.my_getbasis(atoms,basis_file_path)
-    print "Done generating bfs"
+    print("Done generating bfs")
     return bfs
 
 
@@ -117,7 +116,7 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
     #spin_label = "up","down","nospin"
     #Similar to write_reduced_Dk_in_k, but the DM is not reduced
 
-    print "write_reduced_Dk_spin_v2: Writing reduced DM(k) for spin=%s"%(spin_label)
+    print(("write_reduced_Dk_spin_v2: Writing reduced DM(k) for spin=%s"%(spin_label)))
     
     #The size is the full size of the basis
     nbasis  = Hks.shape[0]
@@ -135,9 +134,11 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
         #Mind that Hk has to be in nonorthogonal basis
         Hk = Hks[:,:,ik]
         Sk = Sks[:,:,ik] 
+        
+        load = False
 
         w,v =sla.eigh(Hk,Sk) #working with the transposes
-
+        
         #arranging the eigs
         evals     =np.sort(w)
         evecs     =v[:,w.argsort()]
@@ -172,10 +173,14 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
         Nlm_k[:,:nocc_mo,ik]=n_lm_2e
         uuvv_evecs=evecs[:,occ_indexes]
         n_lm_dm_sum=np.sum(n_lm_dm,0)
-        for uu in range(nbasis):
-            uu_vec=uuvv_evecs[uu]*n_lm_dm_sum 
-            for vv in range(nbasis):
-                Dk[uu,vv,ik] = np.vdot(uu_vec,uuvv_evecs[vv]) 
+
+        try:
+           Dk[:,:,ik] = np.tensordot(np.conj(uuvv_evecs*n_lm_dm_sum),uuvv_evecs,axes=([1],[1])) 
+        except:
+            for uu in range(nbasis):
+                uu_vec=uuvv_evecs[uu]*n_lm_dm_sum 
+                for vv in range(nbasis):
+                    Dk[uu,vv,ik] = np.vdot(uu_vec,uuvv_evecs[vv]) 
 
 
 
@@ -202,10 +207,12 @@ def write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,spin_label,
 
 def read_large_file(fpath,fname):
     fns=fname.split(".")
+
     bin_file = os.path.join(fpath,fns[0]+".npy")
     
     if os.path.exists(bin_file):
-        fin   = open(bin_file,"r")
+        print(fns)
+        fin   = open(bin_file,"rb")
         ret=np.load(fin)
         fin.close()
         return ret
@@ -234,7 +241,7 @@ def read_txtdata(fpath,nspin):
     fin.close()
 
     nkpnts  = kpnts.shape[0]
-    print "read_txt_data: number of kpoints = %d"%nkpnts
+    print(("read_txt_data: number of kpoints = %d"%nkpnts))
 
 
 #    for i in :
@@ -258,7 +265,7 @@ def read_txtdata(fpath,nspin):
 
 
     nbasis  = int(np.sqrt(kovp_1.shape[0]/float(nkpnts)))
-    print "read_txt_data: nbasis = %f"%nbasis
+    print(("read_txt_data: nbasis = %f"%nbasis))
 
     kovp    = np.reshape(kovp_1,(nbasis,nbasis,nkpnts),order='C')
 
@@ -270,7 +277,7 @@ def read_txtdata(fpath,nspin):
         elif ispin==0 and nspin==1 :
            fname = 'kham.txt'
         else :
-           print 'wrong case 1'
+           print('wrong case 1')
 #        fin    = open(fpath+'/'+fname,"r")
 #        kham_0 = np.loadtxt(fin,dtype=np.complex128)
 #        fin.close
@@ -287,7 +294,7 @@ def read_txtdata(fpath,nspin):
         elif ispin==0 and nspin==1 :
            kham_nospin = kham
         else :
-           print 'wrong case 2'
+           print('wrong case 2')
     
     if nspin == 1: 
        f = open(fpath+'/Hk_nospin',"wb")
@@ -309,7 +316,7 @@ def read_txtdata(fpath,nspin):
        f.close()
        return nkpnts,kpnts,kpnts_wght,kovp,kham_up,kham_down
     else:
-       print "wrong case 3"
+       print("wrong case 3")
 
 def get_DR_0_spin(fpath,spin_label,kpnts_wght):
 #    import numpy as np
@@ -320,15 +327,15 @@ def get_DR_0_spin(fpath,spin_label,kpnts_wght):
     f = open(fpath +'/Dk_reduced_file_'+spin_label,"rb")
     Dk      = np.load(f);
     f.close()
-    print "get_DR_0_spin: Dk reduced spin %s found, shaped %d x %d x %d"%(spin_label,Dk.shape[0],Dk.shape[1],Dk.shape[2])
+    print(("get_DR_0_spin: Dk reduced spin %s found, shaped %d x %d x %d"%(spin_label,Dk.shape[0],Dk.shape[1],Dk.shape[2])))
     
     nkpnts     =kpnts_wght.shape[0]
-    print "get_DR_0_spin: number of kpoints %d"%nkpnts
+    print(("get_DR_0_spin: number of kpoints %d"%nkpnts))
 
     #Overwrite nawf, in case masking of awfc was use
     nawf = Dk.shape[0]
-    print "get_DR_0_spin: number of basis %d"%nawf
-    print "get_DR_0_spin: total kpoints weight %f"%np.sum(kpnts_wght)
+    print(("get_DR_0_spin: number of basis %d"%nawf))
+    print(("get_DR_0_spin: total kpoints weight %f"%np.sum(kpnts_wght)))
     
     D = np.zeros((nawf,nawf),dtype=np.complex128)
     for nk in range(nkpnts):
@@ -364,7 +371,7 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
     Bohr2Angs =  0.529177249
 
     #%%
-    print "Generate PyQuante instance of the BFS class"
+    print("Generate PyQuante instance of the BFS class")
     bfs     = read_basis_unitcell(fpath,latvects,coords,atlabels)
     nbasis  = len(bfs)
     fout.write("PyQuante: Number of basis per prim cell is %d\n"%nbasis)
@@ -377,7 +384,7 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
     elif nspin == 2: 
        nkpnts,kpnts,kpnts_wght,Sks,Hks_up,Hks_down = read_txtdata(fpath,nspin)
     else:
-       print 'wrong case 1'
+       print('wrong case 1')
     
 
     fout.write('Calculating Nlm_k and reduced D_k''s\n')
@@ -390,7 +397,7 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
        nocc_mo_gamma = write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,'up',Hks_up,Sks)
        nocc_mo_gamma = write_reduced_Dk_spin_v2(fpath,reduced_basis_dm,reduced_basis_2e,'down',Hks_down,Sks)
     else:
-       print 'wrong case 2'
+       print('wrong case 2')
 #    fout.write("write_reduced_Dk_spin_v2:     %s\n"%(time.time()-start))
 
     fout.write('Calculating Nlm_0\n')
@@ -402,7 +409,7 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
        Nlm_0_up     = get_Nmm_spin(fpath,'up'    ,Hks_up    ,Sks,kpnts_wght)
        Nlm_0_down   = get_Nmm_spin(fpath,'down'  ,Hks_down  ,Sks,kpnts_wght)
     else:
-       print 'wrong case 3'
+       print('wrong case 3')
 #    fout.write("get_Nmm_spin:     %s\n"%(time.time()-start )   )
     if nspin == 1: 
        Naa=0.0
@@ -439,23 +446,23 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
             for mp in range(lm_size):
                 Nab = Nab + Nlm_0_up[m]*Nlm_0_down[mp]
     else:
-       print 'wrong case 4'
+       print('wrong case 4')
 
     if nspin == 1: 
-       print "NaNa + NaNb + NbNa + Nbb = %f"%(2*Nab.real+2*Naa.real)
+       print(("NaNa + NaNb + NbNa + Nbb = %f"%(2*Nab.real+2*Naa.real)))
        denominator_U = 2*Nab.real+2*Naa.real
        denominator_J = 2*Naa.real
     elif nspin == 2: 
-       print "NaNa + NaNb + NbNa + Nbb = %f"%(2*Nab.real+Naa.real+Nbb.real)
+       print(("NaNa + NaNb + NbNa + Nbb = %f"%(2*Nab.real+Naa.real+Nbb.real)))
        denominator_U = 2*Nab.real+Naa.real+Nbb.real
        denominator_J = Naa.real+Nbb.real
     else:
-       print 'wrong case'
+       print('wrong case')
     fout.write("denominator_U = %f\ndenominator_J = %f\n"%(denominator_U,denominator_J))
-    print("denominator_U = %f\ndenominator_J = %f"%(denominator_U,denominator_J))
+    print(("denominator_U = %f\ndenominator_J = %f"%(denominator_U,denominator_J)))
 
 
-    print "Finding the Coulomb and exchange energies"
+    print("Finding the Coulomb and exchange energies")
     fout.write("Started finding the Coulomb and exchange energies at %s\n"%(time.ctime()))
 
 
@@ -474,7 +481,7 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
     t1   = time.time() 
 #=    print "energy spin: ",(t1-t0)
 #    fout.write("get_hartree_energy_spin:     %s\n"%(t0-t1 )   )
-    print("Energy Uaa=%+14.10f Ha; Energy Jaa=%+14.10f Ha; %7.3f s"%(U_energy,J_energy,t1-t0))
+    print(("Energy Uaa=%+14.10f Ha; Energy Jaa=%+14.10f Ha; %7.3f s"%(U_energy,J_energy,t1-t0)))
     fout.write("Energy Uaa=%+14.10f Ha; Energy Jaa=%+14.10f Ha; %7.3f s\n"%(U_energy,J_energy,t1-t0))
 
     SI = 0
@@ -482,16 +489,16 @@ def test(fpath,reduced_basis_dm,reduced_basis_2e,latvects,coords,atlabels,outfil
     U = (U_energy -2*SI)/denominator_U
     J = (J_energy -2*SI)/denominator_J
 
-    print("Parameter U=%f eV"%(U*Ha2eV))
+    print(("Parameter U=%f eV"%(U*Ha2eV)))
     fout.write("Parameter U=%f eV\n"%(U*Ha2eV))
-    print("Parameter J=%f eV"%(J*Ha2eV))
+    print(("Parameter J=%f eV"%(J*Ha2eV)))
     fout.write("Parameter J=%f eV\n"%(J*Ha2eV))
     
     if J*Ha2eV == float('Inf'):
-        print("Parameter U_eff = %f eV"%(U*Ha2eV))
+        print(("Parameter U_eff = %f eV"%(U*Ha2eV)))
         fout.write("Parameter U_eff = %f eV\n"%(U*Ha2eV))
     else:
-        print("Parameter U_eff = %f eV"%((U-J)*Ha2eV))
+        print(("Parameter U_eff = %f eV"%((U-J)*Ha2eV)))
         fout.write("Parameter U_eff = %f eV\n"%((U-J)*Ha2eV))
 
 

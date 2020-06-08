@@ -35,7 +35,7 @@ def _cleanKeyDict(oneCalc):
     cleanRegex=re.compile(r'[!@#$%^&*~{}\[\]\'?><(),.;"]+')
     keyCleanDict=OrderedDict()
     keyClean=''
-    for key in oneCalc.keys():
+    for key in list(oneCalc.keys()):
         if len(cleanRegex.findall(key)):
             keyCleanSplit=cleanRegex.split(key)
             keyClean=''.join(keyCleanSplit)
@@ -57,16 +57,16 @@ def read_db(db_path):
     for row in columns:
 
             # build dict
-            info = dict(zip(column_names, row))
+            info = dict(list(zip(column_names, row)))
             try:
                 calc_data[row[0]] =info
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
 
 
-    for k,v in calc_data.iteritems():
-        for j,l in v.iteritems():
-            print '%s %-20s : %s'%(k,j,l)
+    for k,v in list(calc_data.items()):
+        for j,l in list(v.items()):
+            print(('%s %-20s : %s'%(k,j,l)))
     
 def _dictToTable(inputDict,dbPath,tableName):
     
@@ -75,36 +75,36 @@ def _dictToTable(inputDict,dbPath,tableName):
     # Create table
     c.execute('''CREATE TABLE IF NOT EXISTS %s
            (ID TEXT NOT NULL PRIMARY KEY)''' % tableName)
-    sample = inputDict.items()[0][1]
+    sample = list(inputDict.items())[0][1]
     cleanedKey = AFLOWpi.db._cleanKeyDict(sample)
     cleanedKey['ID']='ID'
 
-    for key in sample.keys():
+    for key in list(sample.keys()):
         try:
             c.execute('SELECT %s FROM %s' % (cleanedKey[key],tableName))
-        except Exception,f:
+        except Exception as f:
 #            print 1            
             try:
                 c.execute('''ALTER TABLE %s ADD COLUMN %s TEXT;''' % (tableName,cleanedKey[key])) 
                 
-            except sqlite3.OperationalError,e:
+            except sqlite3.OperationalError as e:
 #                print 2
-                print f
-                print e
+                print(f)
+                print(e)
                 
  
 
-    for ID,oneCalc in inputDict.iteritems():
+    for ID,oneCalc in list(inputDict.items()):
         inputDict[ID]['ID']=ID
-        for key,value in oneCalc.iteritems():
+        for key,value in list(oneCalc.items()):
             try:
-                exeStr = "INSERT OR REPLACE INTO %s" % tableName +" {}".format(tuple('%s' % cleanedKey[key] for key in oneCalc.keys()))+"VALUES {}".format(tuple('%s' % value for value in oneCalc.values()))
+                exeStr = "INSERT OR REPLACE INTO %s" % tableName +" {}".format(tuple('%s' % cleanedKey[key] for key in list(oneCalc.keys())))+"VALUES {}".format(tuple('%s' % value for value in list(oneCalc.values())))
 #                print exeStr
                 c.execute(exeStr)
 
-            except Exception,e:
-                print 3
-                print e
+            except Exception as e:
+                print((3))
+                print(e)
                 pass
 
 
@@ -136,7 +136,7 @@ def export(project,set_name='',config='',author='',affiliation='',exclude_steps=
     '''
 
 
-    print "Extracting output from calculations and saving to database"
+    print("Extracting output from calculations and saving to database")
    
     # aflowcopy = copy.deepcopy(aflowkeys)
     # aflowcopy['calc_set']=aflowcopy['set']

@@ -15,87 +15,69 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
-import numpy as np
-import cmath
-import sys, time
-import os
-from write2bxsf import *
-from mpi4py import MPI
-from mpi4py.MPI import ANY_SOURCE
-from write3Ddatagrid import *
-from clebsch_gordan import *
-from load_balancing import *
-from communication import *
-
-# initialize parallel execution
-comm=MPI.COMM_WORLD
-rank = comm.Get_rank()
-size = comm.Get_size()
-
-def do_spin_texture(fermi_dw,fermi_up,E_k,vec,sh,nl,nk1,nk2,nk3,nawf,nspin,spin_orbit,npool,inputpath):
-    nktot = nk1*nk2*nk3
-    ind_plot = np.zeros(nawf,dtype=int)
-
-    E_k_full = gather_full(E_k,npool)
 
 
-    icount = None
-    if rank == 0:
-        icount = 0
-        for ib in range(nawf):
-            if ((np.amin(E_k_full[:,ib]) < fermi_up and np.amax(E_k_full[:,ib]) > fermi_up) or \
-                (np.amin(E_k_full[:,ib]) < fermi_dw and np.amax(E_k_full[:,ib]) > fermi_dw) or \
-                (np.amin(E_k_full[:,ib]) > fermi_dw and np.amax(E_k_full[:,ib]) < fermi_up)):
-                ind_plot[icount] = ib
-                icount +=1
+### In serious need of update
+def do_spin_texture ( data_controller ):
+  import os
+  import numpy as np
+  from mpi4py import MPI
+  from .communication import gather_full
 
-    E_k_full = None
+  comm = MPI.COMM_WORLD
+  rank = comm.Get_rank()
 
-    icount = comm.bcast(icount)
+  arrays = data_controller.data_arrays
+  attributes = data_controller.data_attributes
 
+  fermi_up,fermi_dw = attributes['fermi_up'],attributes['fermi_dw']
+  nawf,nk1,nk2,nk3 = attributes['nawf'],attributes['nk1'],attributes['nk2'],attributes['nk3']
+  E_k_full = gather_full(arrays['E_k'], attributes['npool'])
+ 
+  ind_plot = []
+  icount = None
+  if rank == 0:
+    icount = 0
+    for ib in range(nawf):
+      E_k_min = np.amin(E_k_full[:,ib,0])
+      E_k_max = np.amax(E_k_full[:,ib,0])
+      btwUp = (E_k_min < fermi_up and E_k_max > fermi_up)
+      btwDwn = (E_k_min < fermi_dw and E_k_max > fermi_dw)
+      btwUaD = (E_k_min > fermi_dw and E_k_max < fermi_up)
+      if btwUp or btwDwn or btwUaD:
+        ind_plot.append(ib)
+        icount += 1
 
+  icount = comm.bcast(icount)
+  ind_plot = comm.bcast(ind_plot)
 
-    # Compute spin operators
-    # Pauli matrices (x,y,z)
-    sP=0.5*np.array([[[0.0,1.0],[1.0,0.0]],[[0.0,-1.0j],[1.0j,0.0]],[[1.0,0.0],[0.0,-1.0]]])
-    if spin_orbit:
-        # Spin operator matrix  in the basis of |l,m,s,s_z> (TB SO)
-        Sj = np.zeros((3,nawf,nawf),dtype=complex)
-        for spol in range(3):
-            for i in range(nawf/2):
-                Sj[spol,i,i] = sP[spol][0,0]
-                Sj[spol,i,i+1] = sP[spol][0,1]
-            for i in range(nawf/2,nawf):
-                Sj[spol,i,i-1] = sP[spol][1,0]
-                Sj[spol,i,i] = sP[spol][1,1]
-    else:
-        # Spin operator matrix  in the basis of |j,m_j,l,s> (full SO)
-        Sj = np.zeros((3,nawf,nawf),dtype=complex)
-        for spol in range(3):
-            Sj[spol,:,:] = clebsch_gordan(nawf,sh,nl,spol)
+  Sj = arrays['Sj']
+  snktot = arrays['v_k'].shape[0]
+  sktxtaux = np.zeros((snktot,3,nawf,nawf), dtype=complex)
 
-    # Compute matrix elements of the spin operator
+  # Compute matrix elements of the spin operator
+  for ik in range(snktot):
+      for l in range(3):
+        sktxtaux[ik,l,:,:] = np.conj(arrays['v_k'][ik,:,:,0].T).dot(Sj[l,:,:]).dot(arrays['v_k'][ik,:,:,0])
 
+  sktxtaux = np.take(np.diagonal(sktxtaux,axis1=2,axis2=3), ind_plot, axis=2)
+  sktxt = gather_full(np.ascontiguousarray(sktxtaux), attributes['npool'])
+  sktxtaux = None
 
-
-
-    sktxtaux = np.zeros((vec.shape[0],3,nawf,nawf),dtype=complex)
-
-    for ik in range(vec.shape[0]):
-        for ispin in range(nspin):
-            for l in range(3):
-                sktxtaux[ik,l,:,:] = np.conj(vec[ik,:,:,ispin].T).dot \
-                            (Sj[l,:,:]).dot(vec[ik,:,:,ispin])
-
-    sktxt = gather_full(sktxtaux,npool)
-    sktxtaux = None
-
-    if rank == 0:
-        sktxt = np.reshape(sktxt,(nk1,nk2,nk3,3,nawf,nawf),order='C')
-
+  if rank == 0:
+    if 'kq' in arrays and E_k_full.shape[0] == arrays['kq'].shape[1]:
+      f=open(os.path.join(attributes['opath'],'spin-texture-bands'+'.dat'),'w')
+      for ik in range(E_k_full.shape[0]):
         for ib in range(icount):
-            np.savez(os.path.join(inputpath,'spin_text_band_'+str(ib)), spinband = sktxt[:,:,:,:,ind_plot[ib],ind_plot[ib]])
+          idx=ind_plot[ib]
+          f.write('\t'.join(['%d'%ik]+['% 5.8f'%E_k_full[ik,idx]]+['% 5.8f'%j for j in sktxt[ik,:,ib].real])+'\n')
+        f.write("\n")
+      f.close()
+    else:
+      sktxt = np.reshape(sktxt, (nk1,nk2,nk3,3,icount), order='C')
+      for ib in range(icount):
+        np.savez(os.path.join(attributes['opath'],'spin_text_band_'+str(ib)), spinband=sktxt[:,:,:,:,ib])
 
-    sktxt = None
 
-    return()
+  sktxt = None
+  E_k_full = None

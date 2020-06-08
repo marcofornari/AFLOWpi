@@ -12,7 +12,7 @@ def _setup_iterative(calcs,conv_func,false_func,true_func):
     add = '    '+false_func
     AFLOWpi.prep.addToAll_(calcs,block='ITERATIVE',addition=add)
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         add = '''    AFLOWpi.run._submitJob("%s",oneCalc,__submitNodeName__,forceOneJob=False)'''%ID
         AFLOWpi.prep._addToBlock(oneCalc,ID,'ITERATIVE',add)
 

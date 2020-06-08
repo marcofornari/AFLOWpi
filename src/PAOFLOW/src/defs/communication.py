@@ -19,7 +19,7 @@
 import numpy as np
 import time
 from mpi4py import MPI
-from load_balancing import *
+from .load_balancing import *
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
@@ -27,6 +27,7 @@ size = comm.Get_size()
 
 # Scatters first dimension of an array of arbitrary length
 def scatter_array ( arr, sroot=0 ):
+
     # Compute data type and shape of the scattered array on this process
     pydtype = None
     auxlen = None
@@ -113,7 +114,7 @@ def scatter_full(arr,npool,sroot=0):
 
     temp = np.zeros(per_proc_shape,order="C",dtype=pydtype)
 
-    nchunks = nsize/size
+    nchunks = int(nsize/size)
     
     if nchunks!=0:
         for pool in range(npool):
@@ -135,7 +136,7 @@ def scatter_full(arr,npool,sroot=0):
     return temp
 
 
-def gather_full(arr,npool,sroot=0,out=None):
+def gather_full(arr,npool,sroot=0):
 
     first_ind_per_proc = np.array([arr.shape[0]])
     nsize              = np.zeros_like(first_ind_per_proc)
@@ -149,19 +150,18 @@ def gather_full(arr,npool,sroot=0,out=None):
 
     nsize=nsize[0]
 
-    return_val=True
-    if rank==sroot and type(out)==type(None):
-        out = np.zeros(per_proc_shape,order="C",dtype=arr.dtype)
-    else: return_val=False
+    if rank==sroot:
+        temp = np.zeros(per_proc_shape,order="C",dtype=arr.dtype)
+    else: temp = None
 
-    nchunks = nsize/size
+    nchunks = int(nsize/size)
     
     if nchunks!=0:
         for pool in range(npool):
             chunk_s,chunk_e = load_balancing(npool,pool,nchunks)
 
             if rank==sroot:
-                gather_array(out[(chunk_s*size):(chunk_e*size)],arr[chunk_s:chunk_e],sroot=sroot)
+                gather_array(temp[(chunk_s*size):(chunk_e*size)],arr[chunk_s:chunk_e],sroot=sroot)
             else:
                 gather_array(None,arr[chunk_s:chunk_e],sroot=sroot)
     else:
@@ -169,35 +169,15 @@ def gather_full(arr,npool,sroot=0,out=None):
 
     if nsize%size!=0:
         if rank==sroot:
-            gather_array(out[(chunk_e*size):],arr[chunk_e:],sroot=sroot)
+            gather_array(temp[(chunk_e*size):],arr[chunk_e:],sroot=sroot)
         else:
             gather_array(None,arr[chunk_e:],sroot=sroot)
         
-    if rank==sroot and return_val:
-        return out
-
+    if rank == sroot:
+        return temp
 
 
 def gather_scatter(arr,scatter_axis,npool):
-
-    first_ind_per_proc = np.array([arr.shape[0]])
-    nsize              = np.zeros_like(first_ind_per_proc)
-
-    comm.Barrier()
-    comm.Allreduce(first_ind_per_proc,nsize)
-
-    if len(arr.shape)>1:
-        per_proc_shape = np.concatenate((nsize,arr.shape[1:]))
-    else: per_proc_shape = np.array([arr.shape[0]])
-
-    nsize=nsize[0]
-
-
-    comm.Barrier()
-
-
-
-
     #scatter indices for scatter_axis to each proc
     axis_ind = np.array(list(range(arr.shape[scatter_axis])),dtype=int)
     axis_ind = scatter_full(axis_ind,npool)
@@ -212,19 +192,10 @@ def gather_scatter(arr,scatter_axis,npool):
         gather_array(None,np.array(axis_ind.size,dtype=int))
         gather_array(None,np.array(axis_ind,dtype=int))
 
-    per_proc_shape[1]=axis_ind.size
     axis_ind = None
 
     comm.Bcast(size_r)
     comm.Bcast(scatter_ind)
-
-
-    temp = np.zeros(per_proc_shape,order="C",dtype=arr.dtype)
-    comm.Barrier()
-
-
-
-
 
     #start and end points of indices of scatter axis for each proc
     end   = np.cumsum(size_r)
@@ -234,11 +205,93 @@ def gather_scatter(arr,scatter_axis,npool):
     for r in range(size):
         comm.Barrier()
         #gather array from each proc with indices for each proc on scatter_axis
-        if r==rank:
-            gather_full(np.take(arr,scatter_ind[start[r]:end[r]],axis=scatter_axis),npool,sroot=r,out=temp)
+        if r == rank:
+            temp = gather_full(np.take(arr,scatter_ind[start[r]:end[r]],axis=scatter_axis),npool,sroot=r)
         else:
-            gather_full(np.take(arr,scatter_ind[start[r]:end[r]],axis=scatter_axis),npool,sroot=r,out=temp)
+            gather_full(np.take(arr,scatter_ind[start[r]:end[r]],axis=scatter_axis),npool,sroot=r)
 
     start = end = scatter_ind = None
 
+    return temp
+
+
+def gen_window(array,root=0):
+    # creates a shared memory copy of array on
+    # rank == root that all procs can access
+
+    if rank==root:
+        array_shape=array.shape
+        pydtype = array.dtype
+    else:
+        array_shape=None
+        pydtype=None
+
+    array_shape=comm.bcast(array_shape)
+    pydtype=comm.bcast(pydtype)
+
+    size=np.prod(array_shape)
+
+    itemsize = MPI._typedict[np.dtype(pydtype).char].Get_size()
+    if rank == root:
+        nbytes = size * itemsize
+    else:
+        nbytes = 0
+
+    win = MPI.Win.Allocate_shared(nbytes, itemsize, comm=comm)
+    buf, itemsize = win.Shared_query(0)
+    win_array = np.ndarray(buffer=buf, dtype=pydtype, shape=array_shape,)
+
+    if rank==root:
+        win_array[:]=array
+
+    comm.Barrier()
+    
+    return win_array
+
+
+def allgather_array ( arr, arraux, sroot=0 ):
+
+    # An array to store the size and dimensions of gathered arrays
+    lsizes = np.empty((size,3), dtype=int)
+    if rank == sroot:
+        lsizes = load_sizes(size, arr.shape[0], np.prod(arr.shape[1:]))
+
+    # Broadcast the data offsets
+    comm.Bcast([lsizes, MPI.INT], root=sroot)
+
+    # Get the datatype for the MPI transfer
+    mpidtype = MPI._typedict[np.dtype(arraux.dtype).char]
+
+    # Gather the data according to load_sizes
+    comm.Allgatherv([arraux, mpidtype], [arr, lsizes[:,0], lsizes[:,1], mpidtype],)
+
+
+def allgather_full(arr,npool,sroot=0):
+
+    first_ind_per_proc = np.array([arr.shape[0]])
+    nsize              = np.zeros_like(first_ind_per_proc)
+
+    comm.Barrier()
+    comm.Allreduce(first_ind_per_proc,nsize)
+
+    if len(arr.shape)>1:
+        per_proc_shape = np.concatenate((nsize,arr.shape[1:]))
+    else: per_proc_shape = np.array([arr.shape[0]])
+
+    nsize=nsize[0]
+
+    temp = np.zeros(per_proc_shape,order="C",dtype=arr.dtype)
+
+    nchunks = nsize/size
+    
+    if nchunks!=0:
+        for pool in range(npool):
+            chunk_s,chunk_e = load_balancing(npool,pool,nchunks)
+            allgather_array(temp[(chunk_s*size):(chunk_e*size)],arr[chunk_s:chunk_e])
+    else:
+        chunk_e=0
+
+    if nsize%size!=0:
+        allgather_array(temp[(chunk_e*size):],arr[chunk_e:])
+        
     return temp

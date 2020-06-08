@@ -31,7 +31,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 import copy
@@ -44,17 +44,17 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
         try:
             calcs = AFLOWpi.retr.grabEnergyOut(calcs)
             zaxis='aux_energy'            
-            for ID,oneCalc in calcs.iteritems():
+            for ID,oneCalc in list(calcs.items()):
                 calcs[ID][zaxis]=calcs[ID]['Energy']
         except:
             pass
 
 
-        if zaxis_title==None:
+        if zaxis_title is None:
             zaxis_title='Energy (Ry)'
 
     if len(calcs)>1 and type(calcs)==type([1,2,3]):
-        if zaxis_title!=None:
+        if zaxis_title is not None:
             if type(zaxis_title)==type([1,2,3]):
                 pass
             else:
@@ -65,7 +65,7 @@ def grid_plot(calcs,xaxis,yaxis,zaxis='Energy',colorbarUnits=None,zaxis_title=No
 
         
     else:
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             calcs_aux[ID][zaxis]=0.0
 
         AFLOWpi.plot.__distortionEnergy(calcs_aux,xaxis,yaxis,zaxis=zaxis,calcs=[calcs],colorbarUnits=colorbarUnits,titleArray=[zaxis_title],plotTitle=plotTitle,xAxisStr=xAxisStr,yAxisStr=yAxisStr,fileName=fileName,percentage=False)
@@ -79,24 +79,24 @@ def distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnits=
 
 
         calc_array=[calcs.extend(calcs1)]
-	command = """
-	   calcArray=[]
+        command = """
+           calcArray=[]
 
-	   labels= ['CUB','RHO','TET']
-	   refDict={}
-	   import os
-	   curDir = os.path.abspath(os.curdir)
-	   for label in labels:
+           labels= ['CUB','RHO','TET']
+           refDict={}
+           import os
+           curDir = os.path.abspath(os.curdir)
+           for label in labels:
 
-		calcs =  AFLOWpi.prep.loadlogs('CRT', label,label,config='/Users/supka/fornari-research-dev/tests/AFLOWpi_tests.config')
+                calcs =  AFLOWpi.prep.loadlogs('CRT', label,label,config='/Users/supka/fornari-research-dev/tests/AFLOWpi_tests.config')
 
 
-	## append the calculations to a list for input them into the plotting function
-		calcArray.append(calcs)
+        ## append the calculations to a list for input them into the plotting function
+                calcArray.append(calcs)
 
-	   AFLOWpi.plot.__distortionEnergy(calcArray[0],'_AFLOWPI_A_','_AFLOWPI_B_',calcs=calcArray[1:],plotTitle='$ABO_{3}$ Distortion $\Delta$E',titleArray=[labels[1]+'$\Delta$E Ry',labels[2]+'$\Delta$E Ry'],xAxisStr='A',yAxisStr='B')
-	"""
-	AFLOWpi.prep.runAfterAllDone(calcArray,command)
+           AFLOWpi.plot.__distortionEnergy(calcArray[0],'_AFLOWPI_A_','_AFLOWPI_B_',calcs=calcArray[1:],plotTitle='$ABO_{3}$ Distortion $\Delta$E',titleArray=[labels[1]+'$\Delta$E Ry',labels[2]+'$\Delta$E Ry'],xAxisStr='A',yAxisStr='B')
+        """
+        AFLOWpi.prep.runAfterAllDone(calcArray,command)
 
 
 
@@ -119,50 +119,50 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
           titleArray (list): an array for the labels for the colorbar for the sets (default:None)
           fileName (str): name (and path where default is directory where script is run from ) 
                           of the output file (default: 'distortionEnergy.pdf')
-	
+        
     Returns:
           None
 
     '''
 
     if len(calcs)>3:
-	    print 'List of distortion calculations must not exceed 3'
-	    return
+            print('List of distortion calculations must not exceed 3')
+            return
 
-    if xAxisStr==None:
-	    xAxisStr=xaxis
-    if yAxisStr==None:
-	    yAxisStr=yaxis
+    if xAxisStr is None:
+            xAxisStr=xaxis
+    if yAxisStr is None:
+            yAxisStr=yaxis
 
     
     def grabMatrix(calcs):
-	    calcs1 = AFLOWpi.retr.grabEnergyOut(calcs)
-	    X=set()
-	    Y=set()
-	    Z=[]
-	    for key,oneCalc, in calcs1.iteritems():
-		    X.add(oneCalc[xaxis])
-		    Y.add(oneCalc[yaxis])
+            calcs1 = AFLOWpi.retr.grabEnergyOut(calcs)
+            X=set()
+            Y=set()
+            Z=[]
+            for key,oneCalc, in list(calcs1.items()):
+                    X.add(oneCalc[xaxis])
+                    Y.add(oneCalc[yaxis])
                     val = oneCalc[zaxis]
 
-		    Z.append(val)
+                    Z.append(val)
 
-	    Z=numpy.ma.masked_array(Z)    
-	    Z=Z.reshape(len(Y),len(X))  
-	    return Z
+            Z=numpy.ma.masked_array(Z)    
+            Z=Z.reshape(len(Y),len(X))  
+            return Z
 
 
     def grabLabels(calcs,xLabel,yLabel):
-	    xVals=[]
-	    yVals=[]
-	    counter=0
-	    for ID,oneCalc in calcs.iteritems():
-		    if oneCalc[xLabel] not in xVals:
-			    xVals.append(oneCalc[xLabel])
-		    if oneCalc[yLabel] not in yVals:
-			    yVals.append(oneCalc[yLabel])
-	    
-	    return [xVals,yVals]
+            xVals=[]
+            yVals=[]
+            counter=0
+            for ID,oneCalc in list(calcs.items()):
+                    if oneCalc[xLabel] not in xVals:
+                            xVals.append(oneCalc[xLabel])
+                    if oneCalc[yLabel] not in yVals:
+                            yVals.append(oneCalc[yLabel])
+            
+            return [xVals,yVals]
 
     energy1 = grabMatrix(calcs1)
     energyArrayList=[]
@@ -182,8 +182,8 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
                 for k in j:
                     if k > 0.1:
                         neg_flag=False
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
 
         energyArrayList.append(diff)
 
@@ -192,12 +192,12 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
     z_min = 0
 
     for item in range(len(energyArrayList)):
-	    if energyArrayList[item].max()>z_max:
-		    z_max = energyArrayList[item].max()
-	    if energyArrayList[item].min()<z_min:
-		    z_min = energyArrayList[item].min()
+            if energyArrayList[item].max()>z_max:
+                    z_max = energyArrayList[item].max()
+            if energyArrayList[item].min()<z_min:
+                    z_min = energyArrayList[item].min()
     for item in range(len(energyArrayList)):
-	    for item1 in range(len(energyArrayList)):
+            for item1 in range(len(energyArrayList)):
                 
 
                 energyArrayListMask[item] = numpy.ma.masked_where(energyArrayList[item]>energyArrayList[item1], energyArrayListMask[item])
@@ -210,23 +210,23 @@ def __distortionEnergy(calcs1,xaxis,yaxis,zaxis='Energy',calcs=None,colorbarUnit
         cbcolor = ['Greens','Blues','Reds']
 
     for item in range(len(energyArrayListMask)):
-	    parr=energyArrayListMask[item]
+            parr=energyArrayListMask[item]
 
-	    plot2 = pyplot.pcolor(parr, vmin=z_min, vmax=z_max,cmap=cbcolor[item])
-	    parrMask= numpy.ma.getmaskarray(parr)
-	    if printBool:
-		    for y in range(parrMask.shape[0]):
-			    for x in range(parrMask.shape[1]):
-				    if not parrMask[y,x]:
-					    pyplot.text(x + 0.5, y + 0.5, '%.4f' % parr[y, x],
-							horizontalalignment='center',
-							verticalalignment='center',
-							)
+            plot2 = pyplot.pcolor(parr, vmin=z_min, vmax=z_max,cmap=cbcolor[item])
+            parrMask= numpy.ma.getmaskarray(parr)
+            if printBool:
+                    for y in range(parrMask.shape[0]):
+                            for x in range(parrMask.shape[1]):
+                                    if not parrMask[y,x]:
+                                            pyplot.text(x + 0.5, y + 0.5, '%.4f' % parr[y, x],
+                                                        horizontalalignment='center',
+                                                        verticalalignment='center',
+                                                        )
 
-	    try:
-		    pyplot.colorbar().set_label(titleArray[item])
-	    except:
-		    pass
+            try:
+                    pyplot.colorbar().set_label(titleArray[item])
+            except:
+                    pass
 
 
     pyplot.xlabel(xAxisStr)

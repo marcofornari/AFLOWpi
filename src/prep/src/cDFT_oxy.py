@@ -1,4 +1,6 @@
-from prep import newstepWrapper,_check_lock
+try:
+    from .prep import newstepWrapper,_check_lock
+except: pass
 import AFLOWpi
 import os 
 import re
@@ -19,13 +21,13 @@ def _prep_cDFT_oxy(oneCalc,ID,oxy_dict,initial_step=1.0):
 
     # check if the necessary input parameters are in the pwscf input..if not add them
     for spec in range(len(spec_list)):
-        if spec_list[spec] in oxy_dict.keys():
+        if spec_list[spec] in list(oxy_dict.keys()):
 
-            if not 'lda_plus_u' in in_dict['&system'].keys():
+            if not 'lda_plus_u' in list(in_dict['&system'].keys()):
                 in_dict['&system']['lda_plus_u']='.true.'
-            if not 'hubbard_u(%s)'%(spec+1) in in_dict['&system'].keys():
+            if not 'hubbard_u(%s)'%(spec+1) in list(in_dict['&system'].keys()):
                 in_dict['&system']['hubbard_u(%s)'%(spec+1)]='1.e-8'
-            if not 'hubbard_alpha(%s)'%(spec+1) in in_dict['&system'].keys():
+            if not 'hubbard_alpha(%s)'%(spec+1) in list(in_dict['&system'].keys()):
                 in_dict['&system']['hubbard_alpha(%s)'%(spec+1)]=str(0.0)
 
             temp_init_alpha.append(initial_step)
@@ -33,7 +35,7 @@ def _prep_cDFT_oxy(oneCalc,ID,oxy_dict,initial_step=1.0):
 
     # add the initial value for the independent variables
     # we'll be changing to minimize the "cost" function
-    if 'cDFT_grad_hist' not in oneCalc.keys():
+    if 'cDFT_grad_hist' not in list(oneCalc.keys()):
         oneCalc['cDFT_grad_hist']=[]
         oneCalc['cDFT_alpha_hist']=[temp_init_alpha]
 
@@ -72,14 +74,14 @@ def _check_cDFT_conv(oneCalc,ID,oxy_dict,conv_thr):
     #add dummy list of occ value and count
     for spec in range(len(spec_list)):
         atom_label = spec_list[spec]
-        if atom_label in oxy_dict.keys():
+        if atom_label in list(oxy_dict.keys()):
             val_dict[spec_list[spec]] = [0.0,0]
 
     # use a regular expression to pull the trace of the occupations from the output data
     for atom_ind in range(len(atoms)):
         atom_label = atoms[atom_ind]
 
-        if atom_label in oxy_dict.keys():
+        if atom_label in list(oxy_dict.keys()):
 
             ais = str((atom_ind+1))
             rgx_str = r"atom\s*"+ais+"\s*Tr\[ns\(na\)\s*\]\s*=\s*([-.\d]*)"
@@ -99,12 +101,12 @@ def _check_cDFT_conv(oneCalc,ID,oxy_dict,conv_thr):
 
                 val_dict[atom_label][0] = temp_val + sol
                 val_dict[atom_label][1] = temp_cnt + 1          
-            except Exception,e: print e 
+            except Exception as e: print(e) 
 
     # check to see if the occupations match the target value. 
     # if there is more than one atom for a given species...
     # take the average occupation for that species
-    for spec,dat in val_dict.iteritems():
+    for spec,dat in list(val_dict.items()):
         if abs(oxy_dict[spec]-dat[0]/dat[1])>=conv_thr:
             conv_bool=False
 
@@ -129,14 +131,14 @@ def _cDFT_newstep(oneCalc,ID,oxy_dict):
     #add dummy list of occ value and count
     for spec in range(len(spec_list)):
         atom_label = spec_list[spec]
-        if atom_label in oxy_dict.keys():
+        if atom_label in list(oxy_dict.keys()):
             val_dict[spec_list[spec]] = [0.0,0]
 
     # use a regular expression to pull the trace of the occupations from the output data
     for atom_ind in range(len(atoms)):
         atom_label = atoms[atom_ind]
 
-        if atom_label in oxy_dict.keys():
+        if atom_label in list(oxy_dict.keys()):
 
             ais = str((atom_ind+1))
             rgx_str = r"atom\s*"+ais+"\s*Tr\[ns\(na\)\s*\]\s*=\s*([-.\d]*)"
@@ -156,14 +158,14 @@ def _cDFT_newstep(oneCalc,ID,oxy_dict):
 
                 val_dict[atom_label][0] = temp_val + sol
                 val_dict[atom_label][1] = temp_cnt + 1          
-            except Exception,e: print e 
+            except Exception as e: print(e) 
 
 
     # check to see if the occupations match the target value. 
     # if there is more than one atom for a given species...
     # take the average occupation for that species
     temp_grad = []
-    for spec,dat in val_dict.iteritems():
+    for spec,dat in list(val_dict.items()):
         temp_grad.append(oxy_dict[spec]-dat[0]/dat[1])
     oneCalc['cDFT_grad_hist'].append(temp_grad)
 

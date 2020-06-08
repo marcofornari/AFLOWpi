@@ -55,8 +55,8 @@ def _phonon_band_path(oneCalc,ID,nk=400):
           
     """
 
-    dk=0.0001
-    nk=2000
+    dk=0.001
+    nk=5000
     path = AFLOWpi.retr._getPath(dk,oneCalc,ID=ID)
 
     '''scale the k points in the path list so they're as close to nk as possible'''
@@ -64,8 +64,8 @@ def _phonon_band_path(oneCalc,ID,nk=400):
     total =  [int(x.split()[3]) for x in  path.split('\n')[1:] if len(x)!=0]
 
     for entries in range(len(total)):
-	    if total[entries]==0:
-		    total[entries]+=1
+            if total[entries]==0:
+                    total[entries]+=1
 
     total=sum(total)
     scaleFactor = float(nk)/float(total)
@@ -101,7 +101,7 @@ def _pull_forces(oneCalc,ID):
     force_regex=re.compile(r'Forces acting on atoms.*\n\n((?:.*force\s*=\s*[-0-9.]+\s*[-0-9.]+\s*[-0-9.]+\s*)+\n)',re.M)
     try:
         force_block=force_regex.findall(out_string)[-1]
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return
     force_split = [x.split()[6:] for x in force_block.split('\n') if len(x.strip())!=0]
@@ -122,14 +122,14 @@ def _pull_forces(oneCalc,ID):
         root = tree.getroot()
         output = root.find("output")
         forces = output.find("forces").text
-        forces = numpy.array([map(float,i.split()) for i in forces.split("\n") if len(i.strip())!=0])
+        forces = numpy.array([list(map(float,i.split())) for i in forces.split("\n") if len(i.strip())!=0])
         forces *= 2.0
 
         ffname = os.path.join(os.path.dirname(oneCalc['_AFLOWPI_FOLDER_']),'force.%s'%force_postfix)
-        if not np.all(forces==0.0):
+        if not numpy.all(forces==0.0):
             numpy.savetxt(ffname,forces)
 
-    except Exception,e: print e
+    except Exception as e: print(e)
 
 
 def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_strength=0.001,project_phDOS=True,run_matdyn=True,run_fd_ifc=True):
@@ -152,7 +152,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
 
         
     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
-    print execPrefix
+    print(execPrefix)
             
     #run fd_ifc
     if run_fd_ifc:
@@ -179,7 +179,7 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
                 AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x' )
 
 
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)            
 
 #######################################################################
@@ -187,18 +187,14 @@ def _pp_phonon(__submitNodeName__,oneCalc,ID,LOTO=True,de=0.01,raman=True,field_
             epol_string=AFLOWpi.run._pull_eps_out(oneCalc,ID)
             born_charge_string=AFLOWpi.run._pull_born_out(oneCalc,ID)
 
-            LOTO_REPLACE='''
-T
-
+            LOTO_REPLACE='''T
     %s
-%s
-
-    ''' % (epol_string,born_charge_string)
+%s''' % (epol_string,born_charge_string)
 
 
             header_string=re.sub("F\n",LOTO_REPLACE,header_string)
 ########################################################################
-      except Exception,e:
+      except Exception as e:
           AFLOWpi.run._fancy_error_log(e)
 
     else:
@@ -237,7 +233,7 @@ T
                     AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_%s'%(ID,field),execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd_ef.x',exit_on_error=False)
 
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)            
 
 
@@ -246,16 +242,16 @@ T
             AFLOWpi.run._project_phDOS(oneCalc,ID) 
             appdos_fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.eig.ap"%ID)
             AFLOWpi.run._sum_aproj_phDOS(appdos_fn,de=2.0)
-        except Exception,e:
-    	    AFLOWpi.run._fancy_error_log(e)
+        except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
     #remove the fd.x output files in case we do another phonon calc
     try:
-	    globpath=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_PHONON'%ID)
-	    phil = glob.glob(globpath+'/displaced*.in')
-	    for i in phil:
-		    os.remove(i)
-    except Exception,e:
-	    AFLOWpi.run._fancy_error_log(e)
+            globpath=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_PHONON'%ID)
+            phil = glob.glob(globpath+'/displaced*.in')
+            for i in phil:
+                    os.remove(i)
+    except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
 
 
 def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=True,disp_sym=True,proj_phDOS=True,phdos_mult=4,scale_dos_grid=1.0):
@@ -269,11 +265,11 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 
     Keyword Arguments:
           nrx1 (int): supercell size for first primitive lattice vector
-	  nrx2 (int): supercell size for second primitive lattice vector
-	  nrx3 (int): supercell size for third primitive lattice vector
-	  innx (int): how many differernt shifts in each direction for 
+          nrx2 (int): supercell size for second primitive lattice vector
+          nrx3 (int): supercell size for third primitive lattice vector
+          innx (int): how many differernt shifts in each direction for 
                       finite difference phonon calculation
-	  de (float): amount to shift the atoms for finite differences
+          de (float): amount to shift the atoms for finite differences
 
     Returns:
           None          
@@ -312,6 +308,7 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
  nrx3           = %i
  innx           = %i
  de             = %f
+ verbose        = .true.
 /
 
 !The following namelist is for additional flexibility
@@ -347,6 +344,12 @@ def write_fdx_template(oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,atom_sym=T
 
 
 
+
+    if atom_sym:
+        # if atom_sym=True let the AFLOWpi script
+        # take care of the symmetry of the forces
+        noatsym=True
+        nodispsym=True
     fd_ifc_template='''&input
       prefix='%s'
 !      outdir='./'
@@ -482,28 +485,18 @@ def clean_cell_params(output):
           
     """
 
-    lines = iter(output.splitlines())
-    output=''
-    for line in lines:
-        # signifies start of shifts in supercell
-        if 'CELL_PARAMETERS' not in line:
-            output+=line+'\n'
-            continue
-        else:
-            break
-        # use same iterator so we don't have to store an index
-    params = [[ast.literal_eval(n) for n in line.split()] for line in lines]
-    output+='CELL_PARAMETERS {angstrom}\n'
-    for i in range(len(params)):    
-	    for j in range(len(params[i])):
-		    if numpy.abs(params[i][j])<0.0001:
-			    params[i][j]=0.0
-			    
+    indict=AFLOWpi.retr._splitInput(output)
+    CP = indict["CELL_PARAMETERS"]["__content__"]
 
-    for j in params:
-        output+=' '.join([str(i) for i in j])+'\n'
+    CP_list = [[float(x.split()[0]),float(x.split()[1]),float(x.split()[2])] for x in CP.split("\n") if len(x.strip())!=0]
+    CP = "\n".join(["% 18.14f % 18.14f % 18.14f"%(x[0],x[1],x[2]) for x in CP_list])
+    indict["CELL_PARAMETERS"]["__content__"]=CP
+    try:
+        del indict["K_POINTS"]
+    except: pass
 
-    
+    output=AFLOWpi.retr._joinInput(indict)
+
     return output
 
 
@@ -520,11 +513,11 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
 
     Keyword Arguments:
           nrx1 (int): supercell size for first primitive lattice vector
-	  nrx2 (int): supercell size for second primitive lattice vector
-	  nrx3 (int): supercell size for third primitive lattice vector
-	  innx (int): how many differernt shifts in each direction for 
+          nrx2 (int): supercell size for second primitive lattice vector
+          nrx3 (int): supercell size for third primitive lattice vector
+          innx (int): how many differernt shifts in each direction for 
                       finite difference phonon calculation
-	  de (float): amount to shift the atoms for finite differences
+          de (float): amount to shift the atoms for finite differences
 
     Returns:
           None          
@@ -549,7 +542,7 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
 
     execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
 
-    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x' )    
+    AFLOWpi.run._oneRun(__submitNodeName__,oneCalc,'%s_fd'%ID,execPrefix=execPrefix,execPostfix='',engine='espresso',calcType='custom',execPath='./fd.x',exit_on_error=False)    
 
 
     ocd = oneCalc['_AFLOWPI_FOLDER_']
@@ -558,10 +551,8 @@ def prep_fd(__submitNodeName__,oneCalc,ID,nrx1=2,nrx2=2,nrx3=2,innx=2,de=0.01,at
     
     phil = glob.glob(globpath+'/displaced*.in')
 
-
-
-
     infile=    reduce_kpoints(oneCalc["_AFLOWPI_INPUT_"],[nrx1,nrx2,nrx3,])
+
     splitInput = AFLOWpi.retr._splitInput(infile)
     kpoints = splitInput['K_POINTS']['__content__']
     mod = splitInput['K_POINTS']['__modifier__']
@@ -590,21 +581,21 @@ def reduce_kpoints(inputfile,factor):
                     else:
                         splitInput=AFLOWpi.retr._splitInput(inputfile)
                         scfKPointString = splitInput['K_POINTS']['__content__']
-			scfKPointSplit = [float(x) for x in scfKPointString.split()]
+                        scfKPointSplit = [float(x) for x in scfKPointString.split()]
 
 
                             
                             
 
-			for kpoint in range(len(scfKPointSplit)-3):
-				scfKPointSplit[kpoint] = str(int(numpy.ceil(float(scfKPointSplit[kpoint])/float(factor[kpoint]))))
+                        for kpoint in range(len(scfKPointSplit)-3):
+                                scfKPointSplit[kpoint] = str(int(numpy.ceil(float(scfKPointSplit[kpoint])/float(factor[kpoint]))))
 
 
                         scfKPointSplit[3]=str(int(scfKPointSplit[3]))
                         scfKPointSplit[4]=str(int(scfKPointSplit[4]))
                         scfKPointSplit[5]=str(int(scfKPointSplit[5]))
 
-			newKPointString = ' '.join(scfKPointSplit)
+                        newKPointString = ' '.join(scfKPointSplit)
                         new_mod='{automatic}'
                         # if scfKPointSplit[0]=="1" and scfKPointSplit[1]=="1" and scfKPointSplit[2]=="1":
                         #     newKPointString=""
@@ -616,7 +607,7 @@ def reduce_kpoints(inputfile,factor):
 
                     return inputfile
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -635,7 +626,7 @@ def _project_phDOS(oneCalc,ID):
     by_eig=[]
     for i in qs:
         eig=[j for j in i[1].split('\n') if len(j.strip())!=0]
-        qs=[map(float,k.split()[1:-1]) for k in eig]
+        qs=[list(map(float,k.split()[1:-1])) for k in eig]
         eig_val=[float(i[0])]
         for l in qs:
     #        x=numpy.complex(l[0],l[1])
@@ -670,7 +661,7 @@ def _project_phDOS(oneCalc,ID):
 
 
         for i in range(len(by_atom)):
-            ip='%32s'%q_list[i/eig_per_q]
+            ip='%32s'%q_list[int(i/eig_per_q)]
 
             entries = ['%16.10f'%x for x in map(float,by_atom[i])]
             for j in entries:
@@ -694,7 +685,7 @@ def _sum_aproj_phDOS(appdos_fn,de=1.0):
     dos_data[:,0] = total_phDOS[1][:-1]
 
     for spec in range(1,len(species)+1):
-        for w in xrange(new_bins.shape[0]-1):
+        for w in range(new_bins.shape[0]-1):
             #for each spec and freq bin
             dos_data[w,spec+1] = numpy.sum(numpy.exp(-((new_bins[w]-data[:,0])/de)**2)*(summed_weights[:,spec]))
             #total phdos
@@ -725,7 +716,7 @@ def _get_ph_weights(appdos_fn):
     
     at_labels = data[0].split()[4:]
 
-    data = numpy.asarray([map(float,x.split()) for x in data[1:] if len(x.strip())!=0])
+    data = numpy.asarray([list(map(float,x.split())) for x in data[1:] if len(x.strip())!=0])
     
     kpts=data[:3]
     data=data[:,3:]

@@ -30,6 +30,22 @@ import shlex
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
+from sphinx.application import Sphinx
+from sphinx.util.docfields import Field
+
+
+def setup(app: Sphinx):
+    app.add_object_type(
+        'confval',
+        'confval',
+        objname='configuration value',
+        indextemplate='pair: %s; configuration value',
+        doc_field_types=[
+            Field('type', label='Type', has_arg=False, names=('type',)),
+            Field('default', label='Default', has_arg=False, names=('default',)),
+        ]
+    )
+
 sys.path.insert(0,os.path.abspath('./AFLOWpi/'))
 extensions = [
     'sphinx.ext.autodoc',
@@ -65,9 +81,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'AFLOWpi'
-copyright = u'2016, Andrew Supka'
-author = u'Andrew Supka'
+project = 'AFLOWpi'
+copyright = '2020, Andrew Supka'
+author = 'Andrew Supka'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -222,8 +238,60 @@ html_static_path = ['_static']
 htmlhelp_basename = 'AFLOWpidoc'
 
 # -- Options for LaTeX output ---------------------------------------------
+# latex_elements = {
+# # The paper size ('letterpaper' or 'a4paper').
+# 'papersize': 'a4paper',
+
+# # The font size ('10pt', '11pt' or '12pt').
+# 'pointsize': '12pt',
+
+# 'fontpkg': r"""
+# \PassOptionsToPackage{bookmarksnumbered}{hyperref}
+
+# """,
+
+# # Additional stuff for the LaTeX preamble.
+# 'preamble': r"""
+# \usepackage{setspace}
+# """,
+
+# #'footer': r"""
+# #""",
+
+# 'maketitle': r'''
+# \pagenumbering{arabic}
+# ''',
+# }
 
 latex_elements = {
+   'sphinxsetup':r'''verbatimwithframe=false,    
+VerbatimColor={named}{OldLace},
+TitleColor={named}{DarkGoldenrod},
+hintBorderColor={named}{LightCoral},
+attentionborder=3pt,
+attentionBorderColor={named}{Crimson},
+attentionBgColor={named}{FloralWhite},
+noteborder=2pt,
+noteBorderColor={named}{Olive},
+cautionborder=3pt,
+cautionBorderColor={named}{Cyan},
+cautionBgColor={named}{LightCyan}
+''',
+
+    'passoptionstopackages': r'\PassOptionsToPackage{svgnames}{xcolor}',
+
+    'preamble': r'''
+\usepackage[titles]{tocloft}
+\cftsetpnumwidth {1.25cm}\cftsetrmarg{1.5cm}
+\setlength{\cftchapnumwidth}{0.75cm}
+\setlength{\cftsecindent}{\cftchapnumwidth}
+\setlength{\cftsecnumwidth}{1.25cm}
+''',
+    'fncychap': r'\usepackage[Bjornstrup]{fncychap}',
+    'printindex': r'\footnotesize\raggedright\printindex',
+}
+
+#latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
 #'papersize': 'letterpaper',
 
@@ -235,14 +303,14 @@ latex_elements = {
 
 # Latex figure (float) alignment
 #'figure_align': 'htbp',
-}
+#}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'AFLOWpi.tex', u'AFLOWpi Developers Guide',
-   u'Andrew Supka', 'manual'),
+  (master_doc, 'AFLOWpi.tex', 'AFLOWpi Developers Guide',
+   'Andrew Supka', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -271,7 +339,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'AFLOWpi', u'AFLOWpi Documentation',
+    (master_doc, 'AFLOWpi', 'AFLOWpi Documentation',
      [author], 1)
 ]
 
@@ -285,7 +353,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'AFLOWpi', u'AFLOWpi Documentation',
+  (master_doc, 'AFLOWpi', 'AFLOWpi Documentation',
    author, 'AFLOWpi', 'AFLOWpi is a framework for preparation, execution, and data retrieval of high throughput material discovery',
    'Miscellaneous'),
 ]

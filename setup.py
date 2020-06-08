@@ -31,7 +31,7 @@ from distutils.util import change_root, convert_path
 from distutils.command.install import install
 import shutil
 sys.path.append(os.path.curdir)
-
+import site
 
 #os.environ["CC"] = "gcc"
 #os.environ["CXX"] = "g++"
@@ -72,14 +72,13 @@ def __init__gen(src_folder):
                for j in classes:
                   new_file+='from  .%s import %s\n'%(file_name,j)
 
-       except Exception,e:
-           print 'CRITICAL ERROR DURING GENERATION OF __init__.py' 
-           print e
+       except Exception as e:
+           print('CRITICAL ERROR DURING GENERATION OF __init__.py') 
+           print(e)
            raise SystemExit
 
    with open('./__init__.py','w') as initFile:
        initFile.write(new_file)
-
 
    os.chdir(orig_dir)
 
@@ -92,11 +91,11 @@ for j in modules:
 
 for j in modules:
    try:
-      print 'generating ./src/%s/src/__init__.py'%j
+      print(('generating ./src/%s/src/__init__.py'%j))
       __init__gen('./src/%s/src/'%j)
 
-   except Exception,e:
-      print e
+   except Exception as e:
+      print(e)
 
 
 for j in modules:
@@ -107,20 +106,13 @@ for j in modules:
 
 for j in modules:
    try:
-
-      print 'generating ./src/%s/tests/__init__.py'%j
+      print(('generating ./src/%s/tests/__init__.py'%j))
       __init__gen('./src/%s/tests/'%j)      
-   except Exception,e:
+   except Exception as e:
       pass
-#      print e
-
-
-
 
 try:
    
-
-
    PAOPY_SRC = glob.glob('src/PAOFLOW/src/*.py')
    PAOPY_DEF = glob.glob('src/PAOFLOW/src/defs/*.py')
 
@@ -130,7 +122,7 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "0.9.9",
+         version = "1.1.0",
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
@@ -148,7 +140,10 @@ try:
                    'AFLOWpi.aflowlib',
                    'AFLOWpi.prep',
                    'AFLOWpi.environ',
-                   'AFLOWpi.elph'
+                   'AFLOWpi.elph',
+                   "PAOFLOW",
+                   "PAOFLOW.defs",
+                     
 ],
          package_dir = {'AFLOWpi'       :'src',
                       'AFLOWpi.qe'      :'src/qe',
@@ -159,14 +154,17 @@ try:
                       'AFLOWpi.plot'    :'src/plot/src/',
                       'AFLOWpi.pseudo'  :'src/pseudo/src/',
                       'AFLOWpi.db'      :'src/db/src/',
-                      'AFLOWpi.elph'      :'src/elph/src/',
-                      'AFLOWpi.environ'      :'src/environ/src/',
-                      'AFLOWpi.aflowlib':'src/aflowlib/src/'},
+                      'AFLOWpi.elph'    :'src/elph/src/',
+                      'AFLOWpi.environ' :'src/environ/src/',
+                      'AFLOWpi.aflowlib':'src/aflowlib/src/',
+                      'PAOFLOW'         :'src/PAOFLOW/src',   
+                      'PAOFLOW.defs'    :'src/PAOFLOW/src/defs'   
+},
 
 
                       
          package_data = {
-                                  'AFLOWpi':['PAOFLOW/src/*/*','PAOFLOW/src/*.py',
+                                  'AFLOWpi':['PAOFLOW/examples/*.py',
                                              'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
                                   },
@@ -178,21 +176,45 @@ try:
 
 
 
-except Exception,e:
-   print e
-   print 'Something went wrong...exiting'
+except Exception as e:
+   print(e)
+   print('Something went wrong...exiting')
    exit
 
 
 
-try:
+def binaries_directory():
+      """Return the installation directory, or None"""
+      # taken from stackoverflow
+      if '--user' in sys.argv:
+         paths = (site.getusersitepackages(),)
+      else:
+         py_version = '%s.%s' % (sys.version_info[0], sys.version_info[1])
+         paths = (s % (py_version) for s in (
+            sys.prefix + '/lib/python%s/dist-packages/',
+            sys.prefix + '/lib/python%s/site-packages/',
+            sys.prefix + '/local/lib/python%s/dist-packages/',
+            sys.prefix + '/local/lib/python%s/site-packages/',
+            '/Library/Python/%s/site-packages/',
+         ))
+         
 
-   AFLOW_EXEC = os.path.join(os.getenv('HOME'),'.local/lib/python2.7/site-packages/AFLOWpi','AFLOWSYM','aflow')
+      for path in paths:
+         if os.path.exists(path):
+            return path
+      print('no installation path found', file=sys.stderr)
+      return None
+
+try:
+   inst_dir=binaries_directory()
+
+
+   AFLOW_EXEC = os.path.join(inst_dir,'AFLOWpi','AFLOWSYM','aflow')
    if not os.access(AFLOW_EXEC,3):
       os.chmod(AFLOW_EXEC,733)      
 
-except Exception,e:
-    print 'Could not install ISOTROPY package:',e
+except Exception as e:
+    print(('Could not install AFLOW binary:',e))
    
 
 

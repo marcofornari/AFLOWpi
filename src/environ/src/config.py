@@ -7,13 +7,13 @@ class EnvironConfig():
 		# read from AFLOW config file and save important things
 		if mode == 'setup':
 			if not projectname:
-				print 'projectname must be given in setup phase'
+				print('projectname must be given in setup phase')
 				raise Exception()
 			if not setname:
-				print 'setname must be given in setup phase'
+				print('setname must be given in setup phase')
 				raise Exception()
 			if configfile is None:
-				print 'configfile needs to be given in setup phase'
+				print('configfile needs to be given in setup phase')
 				raise Exception()
 			wpre = ""
 			try:
@@ -22,8 +22,8 @@ class EnvironConfig():
 						if 'work_dir' in line:
 							wpre = line.split()[2].strip()
 			except OSError:
-				print(os.path.abspath(configfile))
-				print 'configfile not found, check directory is set correctly'
+				print((os.path.abspath(configfile)))
+				print('configfile not found, check directory is set correctly')
 				raise Exception
 			if wpre[-1] != '/':
 				wpre += '/'
@@ -70,9 +70,9 @@ class EnvironConfig():
 
 def set_params(config):
 	astr = ""
-	for key, val in config.config['pdict'].iteritems():
+	for key, val in list(config.config['pdict'].items()):
 		astr += "%s = %s\n"%(str(key), str(val))
-	print 'set_params output: %s'%(astr)
+	print(('set_params output: %s'%(astr)))
 	return astr
 
 def set_workflow(config, mode, execPrefix, execPostfix):
@@ -96,6 +96,6 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(mode, execPrefix, execPostfix)
 		# no loops
 		astr += "AFLOWpi.environ.get_environ_input('from_config')\n"
 		astr += scfsingle + '\n'
-	print 'set_workflow output: %s'%(astr)
+	print(('set_workflow output: {}'.format(astr)))
 	return astr
 

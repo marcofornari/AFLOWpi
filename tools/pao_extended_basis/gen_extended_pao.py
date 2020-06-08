@@ -158,6 +158,8 @@ def read_UPF(fullpath):
     psp["full_aewfc_label"] =full_aewfc_label       
     psp["full_aewfc_l"]     =full_aewfc_l       
 
+    print(full_aewfc_label)
+
     full_pswfc_label=[]
     full_pswfc_l    =[]
     full_pswfc      = np.zeros((0,mesh),dtype=np.float64)
@@ -211,15 +213,19 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e,jj):
 
 #    wfc_ae[hp]=0.0
 #    wfc_ps[hp]=0.0
-
+    
     try:
-        fig_fullpath=os.path.dirname(wfc_ae_fullpath)+"/PP_CHI.pdf"
+        fig_fullpath=os.path.dirname(wfc_ae_fullpath)+"/ppc.pdf"
         print('Printing figures to: ',fig_fullpath)
 
         with PdfPages(fig_fullpath) as pdf:
 
              for ichi in range(len(ll)):
+                 wfc_max = np.amax(np.abs(wfc_ps[:,ichi]))
+                 if wfc_max > 10000.0:
+                     print("warning wfc #%s amplitude > 3 (%6.2f). Try reducing dx in ld1 input"%(ichi+1,wfc_max))
 
+#                     raise SystemExit
                  rmesh,wfc_ae[:,ichi]
                  plt.figure(figsize=(3,3))
                  plt.plot(rmesh,wfc_ae[:,ichi],':',color='r',linewidth=3,label='AE',alpha=0.8)
@@ -238,6 +244,33 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e,jj):
     except Exception,e:
        print(e)
 
+    try:
+        fig_fullpath=os.path.dirname(wfc_ae_fullpath)+"/ppc_lr.pdf"
+        print('Printing figures to: ',fig_fullpath)
+
+        with PdfPages(fig_fullpath) as pdf:
+
+             for ichi in range(len(ll)):
+
+                 rmesh,wfc_ae[:,ichi]
+                 plt.figure(figsize=(3,3))
+                 plt.plot(rmesh,wfc_ae[:,ichi],':',color='r',linewidth=3,label='AE',alpha=0.8)
+                 plt.plot(rmesh,wfc_ps[:,ichi],label='PS computed')
+                 plt.legend(loc=4,prop={'size':6})
+                 plt.axvline(0.5,color='k',ls="--")
+                 plt.axvline(1.0,color='k',ls="--")
+                 plt.axvline(1.5,color='k',ls="--")
+                 plt.axvline(2.0,color='k',ls="--")
+                 plt.axvline(2.5,color='k',ls="--")
+                 plt.xlim([0,100.0])
+                 plt.ylim([-1.5,1.5])
+                 plt.title('PP_CHI.%s'%(str(ichi+1)))
+                 pdf.savefig()
+                 plt.close()
+    except Exception,e:
+       print(e)
+
+
     np.savez(os.path.dirname(wfc_ae_fullpath)+"/AE_and_PS",r=rmesh,AE=wfc_ae,PS=wfc_ps)
     
     print('Printing formatted PP CHI to: ',os.path.dirname(wfc_ae_fullpath)+"/PP_CHI.txt")
@@ -250,7 +283,7 @@ def PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e,jj):
         print('    <PP_CHI.{0:d} type="real" size="{1:d}"'
               ' columns="4" index="x" label="{2:s}"'
               ' l="{3:d}" occupation="{4:s}" n="x"\npseudo_energy="{5:s}">'.format(ichi+1,mesh_size,llabels[ichi],ll[ichi],occ_str,pseudo_e_str),file=fid)
-        print(occ_str)
+#        print(occ_str)
         chi_str= radial2string(wfc_ps[:,ichi])
         print('{0:s}'.format(chi_str),file=fid)
         print('    </PP_CHI.{0:d}>'.format(ichi+1),file=fid)
@@ -276,7 +309,7 @@ def PS2AE_batch(UPF_fullpath,wfc_ae_fullpath,rcut,ll,jj=0):
     psp     = read_UPF(UPF_fullpath)
 
 
-    print(jj)
+
     ######################################################################################
     with open(UPF_fullpath,'r') as ifo:
         upf_str = ifo.read()
@@ -354,7 +387,7 @@ def AE2PS_l(data,phi,l,rcut,jj=0):
 
 
     beta_l = np.where(lll==l)[0]
-    print(jj)
+
     B = np.zeros((len(beta_l),1),dtype=np.float64)
     A = np.zeros((len(beta_l),len(beta_l)),dtype=np.float64)
     for ii,ibeta in enumerate(beta_l):
@@ -470,15 +503,14 @@ def pseudizeWFC(ld1FileString, UPF_file):
 
 
         rcut = max(map(float,from_upf[:,5].tolist()))
-        llabels	= from_upf[:,0]
-        ll	= map(int,from_upf[:,2].tolist())
-        pseudo_e= map(float,from_upf[:,-1].tolist())
-        occups  = map(float,from_upf[:,3].tolist())
-        nn  = map(int,from_upf[:,1].tolist())
-        print(ll)
-        print(llabels)
-        print(pseudo_e)
-        print(occups)
+        llabels	= np.array(from_upf[:,0])
+        ll	= np.array(map(int,from_upf[:,2].tolist()))
+        pseudo_e= np.array(map(float,from_upf[:,-1].tolist()))
+
+        occups  = np.array(map(float,from_upf[:,3].tolist()))
+
+        nn  = np.array(map(int,from_upf[:,1].tolist()))
+
         AE_AEWFC_REL = np.array([x.split() for x in re.findall(r'<PP_AEWFC_REL\.(.*)\>\n',upf_str)])
         jj = [float(x.split()[3][5:-2]) for x in re.findall(r'<PP_RELBETA\.(.*)\>\n',upf_str)]
 
@@ -497,7 +529,7 @@ def pseudizeWFC(ld1FileString, UPF_file):
 
         except: pass
 
-        print(rel_jj)
+
         PS2AE_print(UPF_fullpath,wfc_ae_fullpath,llabels,ll,rcut,pseudo_e,jj)
 
         return occups,rel_jj
@@ -590,12 +622,21 @@ def main():
                             upf_str = ifo.read()
                         gg = re.findall(r'Generation configuration:\s*\n((?:\s*\d\S\s+.*\n)+)',upf_str)[-1]
 
+                        ppFileLines = file(UPF_file,'r').read()
                         from_upf = [x.split()[0] for x in gg.split('\n') if len(x.strip())!=0]
+                        config_re = re.findall(r'Generation configuration:\s*\n((?:\s*\d\S\s+.*\n)+)',ppFileLines)[-1]
+                        from_upf = np.array([x.split() for x in config_re.split('\n') if len(x.strip())!=0])
 
-                        wfc_combinations = [list(xrange(1,len(from_upf)+1))]
 
+
+                        pseudo_e= np.array(map(float,from_upf[:,-1].tolist()))
+                        occups  = np.array(map(float,from_upf[:,3].tolist()))
+                        inds=np.where(~np.logical_and(np.isclose(occups,0),pseudo_e<0.0))[0]+1
+                        
+                        wfc_combinations = inds[None].tolist()
                         print(wfc_combinations)
 
+                        
 		except Exception,e:
                         print(e)
 			print("Error in case specification of ld1.x input file")

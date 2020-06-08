@@ -15,6 +15,7 @@ def zero_pad(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
     '''
     Pad frequency domain with zeroes, such that any relationship between
         aux[k] and aux[N-k] is preserved.
+
     Arguments:
         aux (ndarray): unpadded frequency domain data
         nk1 (int): current size of aux along axis 0
@@ -23,6 +24,7 @@ def zero_pad(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
         nfft1 (int): number of zeroes to pad axis 0 by
         nfft1 (int): number of zeroes to pad axis 1 by
         nfft1 (int): number of zeroes to pad axis 2 by
+
     Returns:
         auxp3 (ndarray): padded frequency domain data
     '''
@@ -73,6 +75,7 @@ def zero_pad(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
 
 def zero_pad_float(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
     """ Deprecated. Use zero_pad instead.
+
     Note that this function uses the old padding algorithm, which
         1) does not (quite) preserve symmetry of DFT for even nk
         2) puts the zeros in the wrong spot altogether for odd nk...
@@ -96,5 +99,3 @@ def zero_pad_float(aux,nk1,nk2,nk3,nfft1,nfft2,nfft3):
     auxp3[int(nfft1+nk1/2):,:,:]=auxp2[int(nk1/2):,:,:]
 
     return(auxp3)
-
-

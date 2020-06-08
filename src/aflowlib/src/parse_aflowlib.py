@@ -24,7 +24,7 @@
 # ***************************************************************************
 
 import AFLOWpi
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import ast
 import copy 
 import re
@@ -59,14 +59,14 @@ class parser():
         self.search_parameters[parameter]=condition
 
     def get_file(self,filename,text=False,file_path='./'):
-        num_entries = len(self.results.keys())
-        print 'Parsing AFLOWlib entries for %s\n' % filename
+        num_entries = len(list(self.results.keys()))
+        print(('Parsing AFLOWlib entries for %s\n' % filename))
         found_counter=0
-        for auid,entry in self.results.iteritems():
+        for auid,entry in list(self.results.items()):
             search_str = 'http://'+entry['aurl'].replace(':','/')+'/'
 
             try:
-                connection = urllib2.urlopen(search_str+filename)
+                connection = urllib.request.urlopen(search_str+filename)
                 relax_file_str = connection.read()
                 
                 page_str = 'http://aflowlib.org/material.php?id=aflow:'+auid+'\n'
@@ -78,24 +78,24 @@ class parser():
                     try:
                         if not os.path.exists(os.path.join(file_path,auid)): 
                             os.mkdir(os.path.join(file_path,auid))
-                    except Exception,e:
-                        print 'could not create directory in %s for AFLOWlib parser.'%file_path
+                    except Exception as e:
+                        print(('could not create directory in %s for AFLOWlib parser.'%file_path))
                         
                     fp = os.path.join(file_path,auid,filename)
                     try:
-                        bin_file = urllib2.urlopen(search_str+filename)
+                        bin_file = urllib.request.urlopen(search_str+filename)
                         with open(fp,'wb') as bfo:
                             bfo.write(bin_file.read())
                     
                         self.results[auid][filename]=fp                   
-                    except Exception,e:
-                        print e
+                    except Exception as e:
+                        print(e)
                 found_counter+=1
             except:
                 self.results[auid][filename]=''
                 
 
-        print 'Found %s in %s of %s entries.\n'%(filename,found_counter,num_entries)
+        print(('Found %s in %s of %s entries.\n'%(filename,found_counter,num_entries)))
 
     
 #    def _transform_condition(parameter,condition):
@@ -105,7 +105,7 @@ class parser():
     def search(self,limit=10000):
         
         search_string=''
-        for parameter,condition in self.search_parameters.iteritems():
+        for parameter,condition in list(self.search_parameters.items()):
             search_string+=parameter+'('+condition+')'+','
         for value in self.search_vals:
             search_string+=value+','
@@ -119,13 +119,13 @@ class parser():
         return_dict={}
         counter=0
         paging=0
-        print 'Parsing AFLOWlib...'
+        print('Parsing AFLOWlib...')
         while True:
             paging+=1
 
             search = self.search_base+search_string+'paging(%d)'%paging
 
-            connection = urllib2.urlopen(search)            
+            connection = urllib.request.urlopen(search)            
             res_str = connection.read()
 
             #change some json stuff to python form before using ast.literal
@@ -141,15 +141,15 @@ class parser():
             temp_dict=ast.literal_eval(res_str)
 
             if paging==1:
-                num_res = int(temp_dict.keys()[0].split()[-1])
+                num_res = int(list(temp_dict.keys())[0].split()[-1])
                 if num_res>limit:
-                    print 'Total number of results: %s. Results limited to %s'%(num_res,limit)
+                    print(('Total number of results: %s. Results limited to %s'%(num_res,limit)))
                 else:
-                    print 'Total number of results: %s'%num_res
+                    print(('Total number of results: %s'%num_res))
 
                 
                 
-            temp_dict=temp_dict.values()     
+            temp_dict=list(temp_dict.values())     
 
             #convert list object to dictionary entries
             for v in temp_dict:
@@ -173,11 +173,11 @@ class parser():
 
 
             lb = ((paging-1)*40)+1
-            print 'Retreving results %s-%s'%(lb,ub)
+            print(('Retreving results %s-%s'%(lb,ub)))
 
-        print 'Done\n'
+        print('Done\n')
 
-        print 'Found %s entries.\n'%len(return_dict.keys())
+        print(('Found %s entries.\n'%len(list(return_dict.keys()))))
         
 
         self.results = return_dict

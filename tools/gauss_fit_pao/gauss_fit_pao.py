@@ -7,14 +7,14 @@ import numpy as np
 
 
 def usage():
-	print "Gaussian fitting of Pseudo-Atomic Orbitals (PAOs)"
+	print("Gaussian fitting of Pseudo-Atomic Orbitals (PAOs)")
 	S = '''
 		Usage: gauss_pao.py <atom label> <path of PP>
 
 		atom label 	- atom label
 		path of PP 	- path of Norm-conserving PP
 	'''
-	print S
+	print(S)
 
 def get_atno(atomlabel) :
 
@@ -112,9 +112,9 @@ def get_atno(atomlabel) :
 	try:
 		atno = mass[atomlabel][0]
 		return atno
-	except Exception, e:
-		print "Atom is not in List provide atom. no."
-		atno = input("atom no.?")
+	except Exception as e:
+		print("Atom is not in List provide atom. no.")
+		atno = eval(input("atom no.?"))
 		return int(float(atno))
 
 	
@@ -125,12 +125,12 @@ def fitPAOs(atomlabel,pp_path):
 
 	gbs_path = "%s_sto3g.gbs"%atomlabel
 	if not os.path.exists(gbs_path):
-		print 'STO-3G file not foundi - Please include file in current working directory'
+		print('STO-3G file not foundi - Please include file in current working directory')
 		sys.exit()
 
 	str="grep CHI %s|grep label|awk '{print $6}'|cut -d'\"' -f2|paste -s"%pp_path
 	orb_lbls=subprocess.check_output(str,shell=True).split()
-	print orb_lbls
+	print(orb_lbls)
 	gbs_lines = open(gbs_path,'r').read()
 	r1 = re.compile(r'[a-zA-Z]+\s*\d+',re.MULTILINE)
 	block_lbls = r1.findall(gbs_lines)
@@ -145,7 +145,7 @@ def fitPAOs(atomlabel,pp_path):
 		for j in range(len(block_lbls)):
 			if orb_lbl.lower() in block_lbls[j] or orb_lbl.upper() in block_lbls[j]:
 				nblock = j+1
-				print orb_lbl, block_lbls[j],nblock
+				print((orb_lbl, block_lbls[j],nblock))
 				break
 
 		nent = 3 #No. of entries in block - same for all sto3g files - 3 Gaussians
@@ -175,37 +175,37 @@ def fitPAOs(atomlabel,pp_path):
 		#==============Method-3:optimized gaussians: exponents and coefficientsi========================#
 		opt_prim_gauss_sph = fitsubs.optimize_prim_gauss_sph(prim_gauss_cart,l_phi,rmesh,l)
 
-		print "##################################################"
-		print "prim_gauss_cart    :\n"  , prim_gauss_cart 
-		print "opt1_prim_gauss_sph:\n"  , opt1_prim_gauss_sph
-		print "opt3_prim_gauss_sph:\n"  , opt3_prim_gauss_sph
-		print "opt_prim_gauss_sph :\n"  , opt_prim_gauss_sph
+		print("##################################################")
+		print(("prim_gauss_cart    :\n"  , prim_gauss_cart)) 
+		print(("opt1_prim_gauss_sph:\n"  , opt1_prim_gauss_sph))
+		print(("opt3_prim_gauss_sph:\n"  , opt3_prim_gauss_sph))
+		print(("opt_prim_gauss_sph :\n"  , opt_prim_gauss_sph))
 
 
 		os.system('clear')
-		print "==============cartesian gaussians"
+		print("==============cartesian gaussians")
 		title='cartesian gaussians'
 		fitsubs.plot_prim_gauss(prim_gauss_cart,rmesh,l,l_phi,title)
 		plt.ylim((-0.5, 1.5))
 		plt.draw()
 		plt.savefig("%s_%s_fig1.pdf"%(atomlabel,orb_lbl.upper()))
 
-		print "==============optimized gaussians: coefficients"
+		print("==============optimized gaussians: coefficients")
 		title='opt gauss: coefficients only'
 		fitsubs.plot_prim_gauss_sph(opt1_prim_gauss_sph,rmesh,l,l_phi,title)
 		plt.ylim((-0.5, 1.5))
 		plt.draw()
 		plt.savefig("%s_%s_fig2.pdf"%(atomlabel,orb_lbl.upper()))
 
-		print "==============optimized gaussians: exponents and coefficients from opt coeffs"
+		print("==============optimized gaussians: exponents and coefficients from opt coeffs")
 		title='opt gauss: exponents and coefficients from opt coeffs'
-		print title
+		print(title)
 		fitsubs.plot_prim_gauss_sph(opt3_prim_gauss_sph,rmesh,l,l_phi,title)
 		plt.ylim((-0.5, 1.5))
 		plt.draw()
 		plt.savefig("%s_%s_fig3.pdf"%(atomlabel,orb_lbl.upper()))
 
-		print "==============optimized gaussians: exponents and coefficients"
+		print("==============optimized gaussians: exponents and coefficients")
 		title='opt gauss: exponents and coefficients'
 		fitsubs.plot_prim_gauss_sph(opt_prim_gauss_sph,rmesh,l,l_phi,title)
 		plt.ylim((-0.5, 1.5))
@@ -226,7 +226,7 @@ def fitPAOs(atomlabel,pp_path):
 def mk_basis(atomlabel,pp_path):
 
 	
-	import sys,commands
+	import sys,subprocess
 	from string import digits
 	import fitsubs
 
@@ -237,7 +237,7 @@ def mk_basis(atomlabel,pp_path):
 
 	ppNm = pp_path
 
-	orbs = commands.getoutput("grep CHI %s |grep label|cut -d= -f6|awk '{print $1}'"%ppNm).translate(None,digits).replace("\"","").split()
+	orbs = subprocess.getoutput("grep CHI %s |grep label|cut -d= -f6|awk '{print $1}'"%ppNm).translate(None,digits).replace("\"","").split()
 	basis_file = []
 	basis_type = []
 	for i in orbs:
@@ -245,18 +245,18 @@ def mk_basis(atomlabel,pp_path):
 		if i == "s" or i == "S": basis_type.append(0)
 		elif i == "p" or i == "P": basis_type.append(1)
 		elif i == "d" or i == "D": basis_type.append(2)
-		else: print "Unidentified orbital"
+		else: print("Unidentified orbital")
 
 	basis_file_path = './%s_atom'%atomlabel
 
 	f = open(basis_file_path+'/'+'%s_basis.py'%atomlabel,'w+')
 	f.write('basis_data={ %d :[\n' % atno)
 	total_f = len(basis_file)
-	print 'Total number of files: %d\n' % total_f
+	print(('Total number of files: %d\n' % total_f))
 	for fcounter, ibf in enumerate(basis_file):
-	    print 'Reading:'+basis_file_path+'/'+ibf
+	    print(('Reading:'+basis_file_path+'/'+ibf))
 	    basisFile = basis_file_path+'/'+ibf
-	    execfile(basis_file_path+'/'+ibf,globals())
+	    exec(compile(open(basis_file_path+'/'+ibf, "rb").read(), basis_file_path+'/'+ibf, 'exec'),globals())
 	    il = basis_type[fcounter]
 	    total_m = len(qespresso_order[il])
 	    for mcounter,im in enumerate(qespresso_order[il]):
@@ -294,7 +294,7 @@ if __name__ == '__main__':
 		fitPAOs(atomlabel,pp_path)
 		mk_basis(atomlabel,pp_path)
 	else:
-		print 'Error in No of Arguments'
+		print('Error in No of Arguments')
 		usage()
 		sys.exit()
 

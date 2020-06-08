@@ -16,7 +16,7 @@ def load_dyn(fn,nat,nq):
     for line in fs:
         try:
             try:
-                dat = map(float,line.split())
+                dat = list(map(float,line.split()))
             except:
                 counter+=0.5                
             if len(dat)==2:
@@ -28,7 +28,7 @@ def load_dyn(fn,nat,nq):
             dyn[int(counter),:,ipol,n,m]=dat[0]+dat[1]*1.0j,dat[2]+dat[3]*1.0j,dat[4]+dat[5]*1.0j
             tcounter+=1
         
-        except Exception,e: pass
+        except Exception as e: pass
         if int(counter)==nq:
             break
 
@@ -46,13 +46,13 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
     expn_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_up')
     cont_ID  = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_dn')
     cent_diff=True
-    if cont_ID == None:
+    if cont_ID is None:
         cont_ID = norm_ID
         cent_diff=False
 
     expn_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_up')
     cont_vol_ID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='thermal_relax_dn')
-    if cont_vol_ID == None:
+    if cont_vol_ID is None:
         cont_vol_ID = norm_ID
     
     norm_vol = AFLOWpi.retr.getCellVolume(oneCalc,norm_ID,string=False,conventional=False)
@@ -74,17 +74,17 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
 
 
     fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(norm_ID,dat_type))
-    print "loading dynmat for V"
+    print("loading dynmat for V")
     dyn = AFLOWpi.retr.load_dyn(fn,nat,nq)
 
     fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(expn_ID,dat_type))
-    print "loading dynmat for V+dV"
+    print("loading dynmat for V+dV")
     delDq = AFLOWpi.retr.load_dyn(fn,nat,nq)
 
 
     if cont_ID!=norm_ID:
         fn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],"%s.ph%s.dyn"%(cont_ID,dat_type))
-        print "loading dynmat for V-dV"
+        print("loading dynmat for V-dV")
         delDq -= AFLOWpi.retr.load_dyn(fn,nat,nq)
     else:
         delDq -= dyn
@@ -98,7 +98,7 @@ def _delta_dyn(oneCalc,ID,dat_type="DOS"):
 
 
 
-    for i in xrange(dyn.shape[0]):
+    for i in range(dyn.shape[0]):
         eig[i],vq[i] = scipy.linalg.eigh(dyn[i])
         grun[i]      = -1.0*np.real(np.conj(vq[i].T).dot((delDq[i]/dV).dot(vq[i])))[n,n]
 

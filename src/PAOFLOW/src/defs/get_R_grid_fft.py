@@ -15,99 +15,37 @@
 # in the root directory of the present distribution,
 # or http://www.gnu.org/copyleft/gpl.txt .
 #
-import numpy as np
-from scipy import fftpack as FFT
-
-def get_R_grid_fft_crys(nk1,nk2,nk3):
-    nrtot = nk1*nk2*nk3
-    R = np.zeros((nrtot,3),dtype=float)
-    Rfft = np.zeros((3,nk1,nk2,nk3),dtype=float,order="C")
-    R_wght = np.ones((nrtot),dtype=float)
-    idx = np.zeros((nk1,nk2,nk3),dtype=int)
-
-    for i in range(nk1):
-        for j in range(nk2):
-            for k in range(nk3):
-                n = k + j*nk3 + i*nk2*nk3
-                Rx = float(i)/float(nk1)
-                Ry = float(j)/float(nk2)
-                Rz = float(k)/float(nk3)
-                if Rx >= 0.5: Rx=Rx-1.0
-                if Ry >= 0.5: Ry=Ry-1.0
-                if Rz >= 0.5: Rz=Rz-1.0
-                Rx -= int(Rx)
-                Ry -= int(Ry)
-                Rz -= int(Rz)
-#                if i==nk1/2:Rx=0
-#                if j==nk2/2:Ry=0
-#                if k==nk3/2:Rz=0
 
 
-                R[n,:] = Rx*nk1,Ry*nk2,Rz*nk3
-                Rfft[:,i,j,k] = R[n,:]
-                idx[i,j,k]=n
+def get_R_grid_fft ( data_controller, nr1, nr2, nr3):
+  import numpy as np
+  from scipy import fftpack as FFT
 
-    return(R,Rfft,R_wght,nrtot,idx)
+  arrays = data_controller.data_arrays
+  attributes = data_controller.data_attributes
 
-def get_R_grid_fft(nk1,nk2,nk3,a_vectors):
-    nrtot = nk1*nk2*nk3
-    R = np.zeros((nrtot,3),dtype=float)
-    Rfft = np.zeros((3,nk1,nk2,nk3),dtype=float,order="C")
-    R_wght = np.ones((nrtot),dtype=float)
-    idx = np.zeros((nk1,nk2,nk3),dtype=int)
+  nrtot = nr1*nr2*nr3
 
-    for i in range(nk1):
-        for j in range(nk2):
-            for k in range(nk3):
-                n = k + j*nk3 + i*nk2*nk3
-                Rx = float(i)/float(nk1)
-                Ry = float(j)/float(nk2)
-                Rz = float(k)/float(nk3)
-                if Rx >= 0.5: Rx=Rx-1.0
-                if Ry >= 0.5: Ry=Ry-1.0
-                if Rz >= 0.5: Rz=Rz-1.0
-                Rx -= int(Rx)
-                Ry -= int(Ry)
-                Rz -= int(Rz)
-#                if i==nk1/2:Rx=0
-#                if j==nk2/2:Ry=0
-#                if k==nk3/2:Rz=0
+  a_vectors = arrays['a_vectors']
 
-                R[n,:] = Rx*nk1*a_vectors[0]+Ry*nk2*a_vectors[1]+Rz*nk3*a_vectors[2]
-#                R[n,:] = Rx*nk1,Ry*nk2,Rz*nk3
-                Rfft[:,i,j,k] = R[n,:]
-                idx[i,j,k]=n
+  arrays['R'] = np.zeros((nrtot,3), dtype=float)
+  arrays['idx'] = np.zeros((nr1,nr2,nr3), dtype=int)
+  arrays['Rfft'] = np.zeros((nr1,nr2,nr3,3), dtype=float)
+  arrays['R_wght'] = np.ones((nrtot), dtype=float)
 
-    return(R,Rfft,R_wght,nrtot,idx)
-
-
-def get_R_grid_fft_d(nk1,nk2,nk3,a_vectors):
-    nrtot = nk1*nk2*nk3
-    R = np.zeros((nrtot,3),dtype=float)
-    Rfft = np.zeros((3,nk1,nk2,nk3),dtype=float,order="C")
-    R_wght = np.ones((nrtot),dtype=float)
-    idx = np.zeros((nk1,nk2,nk3),dtype=int)
-
-    for i in range(nk1):
-        for j in range(nk2):
-            for k in range(nk3):
-                n = k + j*nk3 + i*nk2*nk3
-                Rx = float(i)/float(nk1)
-                Ry = float(j)/float(nk2)
-                Rz = float(k)/float(nk3)
-                if Rx >= 0.5: Rx=Rx-1.0
-                if Ry >= 0.5: Ry=Ry-1.0
-                if Rz >= 0.5: Rz=Rz-1.0
-                Rx -= int(Rx)
-                Ry -= int(Ry)
-                Rz -= int(Rz)
-                if i==nk1/2:Rx=0
-                if j==nk2/2:Ry=0
-                if k==nk3/2:Rz=0
-
-                R[n,:] = Rx*nk1*a_vectors[0]+Ry*nk2*a_vectors[1]+Rz*nk3*a_vectors[2]
-#                R[n,:] = Rx*nk1,Ry*nk2,Rz*nk3
-                Rfft[:,i,j,k] = R[n,:]
-                idx[i,j,k]=n
-
-    return R
+  for i in range(nr1):
+    for j in range(nr2):
+      for k in range(nr3):
+        n = k + j*nr3 + i*nr2*nr3
+        Rx = float(i)/float(nr1)
+        Ry = float(j)/float(nr2)
+        Rz = float(k)/float(nr3)
+        if Rx >= 0.5: Rx=Rx-1.0
+        if Ry >= 0.5: Ry=Ry-1.0
+        if Rz >= 0.5: Rz=Rz-1.0
+        Rx -= int(Rx)
+        Ry -= int(Ry)
+        Rz -= int(Rz)
+        arrays['R'][n,:] = Rx*nr1*a_vectors[0,:] + Ry*nr2*a_vectors[1,:] + Rz*nr3*a_vectors[2,:]
+        arrays['Rfft'][i,j,k,:] = arrays['R'][n,:]
+        arrays['idx'][i,j,k] = n

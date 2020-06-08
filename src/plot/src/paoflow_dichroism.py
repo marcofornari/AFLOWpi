@@ -7,7 +7,7 @@ matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import glob
 
-def __plot_dichroism(oneCalc,ID,spin=False,real=False):
+def __plot_dichroism(oneCalc,ID,spin=False,real=False,en_range=None):
 
 
     extension='png'
@@ -15,21 +15,21 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
 
     if real:
         if spin:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/SCDr_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_SCDr_*'%ID)
         else:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/MCDr_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_MCDr_*'%ID)
     else:
         if spin:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/SCDi_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_SCDi_*'%ID)
         else:
-            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/MCDi_*')
+            dem_files = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_MCDi_*'%ID)
 
 
     for dat_file in dem_files:
 
         width = 9
-	height = 6
-	plt.figure(figsize=(width, height))#to adjust the figure size
+        height = 6
+        plt.figure(figsize=(width, height))#to adjust the figure size
 
         dat_name = dat_file[:-4]
         dat_split_name = dat_name.split('_')
@@ -41,10 +41,11 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
         else:
             spol=''
 
-
-
-
         dat = np.loadtxt(dat_file)
+
+        if en_range is not None:
+            dat=dat[np.where(np.logical_and(dat[:,0]>en_range[0],dat[:,0]<en_range[1]))]
+
         if spin:
             if real:
                 lab = r"Re[$\omega\sigma^{%s}_{%s%s}$]"%(spol,ipol,jpol)
@@ -59,15 +60,11 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
             plt.plot(dat[:,0],dat[:,1],label=lab,color="g")
 
 
-
-
-
-
-
         plt.ylim([np.amin(dat[:,1])*1.05,np.amax(dat[:,1])*1.05])
         plt.xlim([np.amin(dat[:,0]),np.amax(dat[:,0])])
         plt.legend(loc=1)
-        plt.axhline(0.0,ls="-",color="k")
+        plt.axhline(0.0,ls="--",color="k")
+        plt.axvline(0.0,ls="-",color="k")
 
         plt.xlabel(r"$\hbar \omega$ $(eV)$")
         chem_name = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True)
@@ -79,7 +76,9 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
             else:
                 plt.ylabel(r"Im[$\omega\sigma^{%s}_{%s%s}$] ($10^{29}sec^{-2}$)"%(spol,ipol,jpol))
                 fileplot = os.path.join(subdir,'SPIN_DICHRO_IMAG_%s_%s%s_%s_%s.%s'%(spol,ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
-            plt.title('Spin Circular Dichroism: %s'%chem_name)
+
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Spin Circular Dichroism: %s'%chem_name)
 
 
         else:
@@ -89,11 +88,14 @@ def __plot_dichroism(oneCalc,ID,spin=False,real=False):
             else:
                 plt.ylabel(r"Im[$\omega\sigma_{%s%s}$] ($10^{29}sec^{-2}$)"%(ipol,jpol))
                 fileplot = os.path.join(subdir,'MAG_DICHRO_IMAG_%s%s_%s_%s.%s'%(ipol,jpol,AFLOWpi.retr._getStoicName(oneCalc,strip=True),ID,extension))
-            plt.title('Magnetic Circular Dichroism: %s'%chem_name)
+
+            if AFLOWpi.plot._get_title_option():
+                plt.title('Magnetic Circular Dichroism: %s'%chem_name)
 
 
 
 
 
-	matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        matplotlib.pyplot.savefig(fileplot,bbox_inches='tight',layout="tight")
+        AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
         plt.close()

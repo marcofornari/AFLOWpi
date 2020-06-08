@@ -1,2 +1,2 @@
 __all__ = ['regex']
-import regex
+from . import regex

@@ -25,14 +25,13 @@
 
 import os
 import datetime
-import cPickle
 import logging 
 import matplotlib
 import glob
 matplotlib.use('PDF')
 from matplotlib import pylab
 import numpy 
-import StringIO
+import io
 import copy 
 import re 
 import AFLOWpi.prep
@@ -56,38 +55,38 @@ import scipy.interpolate
 def transport_plots(calcs,runlocal=False,postfix='',x_range=None):
 
 
-	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
+        if runlocal:
+                for ID,oneCalc in list(calcs.items()):
                     AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,x_range=x_range)
-	else:
-		for ID,oneCalc in calcs.iteritems():
-			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',x_range=%s)" %(postfix,x_range))
+        else:
+                for ID,oneCalc in list(calcs.items()):
+                        AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',x_range=%s)" %(postfix,x_range))
 
 
-def optical_plots(calcs,runlocal=False,postfix='',x_range=None):
+def optical_plots(calcs,runlocal=False,postfix='',x_range=None,QE=False):
 
 
-	if runlocal:
-		for ID,oneCalc in calcs.iteritems():
-                    AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,epsilon=True,x_range=x_range)
-	else:
-		for ID,oneCalc in calcs.iteritems():
-			AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',epsilon=True,x_range=%s)" %(postfix,x_range))
+        if runlocal:
+                for ID,oneCalc in list(calcs.items()):
+                    AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix=postfix,epsilon=True,x_range=x_range,QE=QE)
+        else:
+                for ID,oneCalc in list(calcs.items()):
+                        AFLOWpi.prep._addToBlock(oneCalc,ID,'PLOT',"AFLOWpi.plot.__transport_plot(oneCalc,ID,postfix='%s',epsilon=True,x_range=%s,QE=%s)" %(postfix,x_range,QE))
 
 
 
 
-def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y_range=None):
-	'''
+def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y_range=None,QE=False):
+        '''
 
 
-	Arguments:
+        Arguments:
 
 
-	Keyword Arguments:
+        Keyword Arguments:
 
 
-	'''
+        '''
 
         trans_plot_dict={}
         trans_plot_dict['ZT']            = {'pf':'ZetaT_',
@@ -137,7 +136,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
         #                                     'yl':'$\epsilon_{imag}$ (au)',
         #                                     'fp':'EPSILON_IMAG',
 
-	#}
+        #}
         trans_plot_dict['epsilon']       = {'pf':'epsilon_',
                                             'ft':'$\epsilon$:',
                                             'lc':'\epsilon ',
@@ -156,12 +155,14 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
 
         ID_list =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True,straight=True)
+        if QE:
+                ID_list =  AFLOWpi.prep._return_ID(oneCalc,ID,step_type='epsilon',last=True,straight=True)
 
 ####################################################################################################################
-	if epsilon==True:
-		type_list=['epsilon',]
-	else:
-		type_list=['kappa','seebeck','cond']
+        if epsilon==True:
+                type_list=['epsilon',]
+        else:
+                type_list=['kappa','seebeck','cond']
 
         for Type in type_list:
             try:
@@ -173,24 +174,24 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                 file_name_up=[]
                 file_name_down=[]
                 for ID_ent in ID_list:
-
-                    search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-
-                    file_name.extend(glob.glob(search))
-		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-                    file_name_up.extend(glob.glob(search))
-		    search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
-
-                    file_name_down.extend(glob.glob(search))
-
-		
-
+                    if not QE:
+                            search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name.extend(glob.glob(search))
+                            search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*up*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name_up.extend(glob.glob(search))
+                            search = oneCalc['_AFLOWPI_FOLDER_']+'/%s_PAOFLOW_%s*down*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name_down.extend(glob.glob(search))
+                    else:
+                            search=oneCalc['_AFLOWPI_FOLDER_']+'/%s_%s*.dat'%(ID_ent,trans_plot_dict[Type]['pf']) 
+                            file_name.extend(glob.glob(search))
+                            file_name_down=[]
+                
+                print(file_name)
                 spin_polarized=False
                 if len(file_name_down)!=0:
                         spin_polarized=True
-		
-		if len(file_name_down) == 0 and len(file_name) == 0:
-			continue
+                if len(file_name_down) == 0 and len(file_name) == 0:
+                        continue
 
                 if spin_polarized==False:
                         ############################################################################################
@@ -201,14 +202,14 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                             temperature = file_name[i][:-4].split('_')[-1][:-1]
                             if epsilon==True:
 
-				    if temperature=="ima":
-					    temperature="-100"
-				    elif temperature=="rea":
-					    temperature="-200"
-				    else:
-					    continue
-			    else:
-				    temperature = file_name[i][:-4].split('_')[-1][:-1]
+                                    if temperature=="ima":
+                                            temperature="-100"
+                                    elif temperature=="rea":
+                                            temperature="-200"
+                                    else:
+                                            continue
+                            else:
+                                    temperature = file_name[i][:-4].split('_')[-1][:-1]
 
                             data_by_temp[temperature] = read_transport_datafile(file_name[i])               
 
@@ -220,32 +221,32 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                         data_by_temp_up=collections.OrderedDict()
 
                         for i in range(len(file_name_down)):
-		            temperature = file_name_down[i][:-4].split('_')[-1][:-1]
+                            temperature = file_name_down[i][:-4].split('_')[-1][:-1]
                             if epsilon==True:
-				    if temperature=="ima":
-					    temperature="-100"
-				    elif temperature=="rea":
-					    temperature="-200"
-				    else:
-					    continue
+                                    if temperature=="ima":
+                                            temperature="-100"
+                                    elif temperature=="rea":
+                                            temperature="-200"
+                                    else:
+                                            continue
 
-			    else:
-				    temperature = file_name_down[i][:-4].split('_')[-1][:-1]
+                            else:
+                                    temperature = file_name_down[i][:-4].split('_')[-1][:-1]
 
                             data_by_temp_dn[temperature] = read_transport_datafile(file_name_down[i]) 
 
                         for i in range(len(file_name_up)):
-		            temperature = file_name_up[i][:-4].split('_')[-1][:-1]
+                            temperature = file_name_up[i][:-4].split('_')[-1][:-1]
                             if epsilon==True:
-				    if temperature=="ima":
-					    temperature="-100"
-				    elif temperature=="rea":
-					    temperature="-200"
-				    else:
+                                    if temperature=="ima":
+                                            temperature="-100"
+                                    elif temperature=="rea":
+                                            temperature="-200"
+                                    else:
 
-					    continue
-			    else:
-				    temperature = file_name_up[i][:-4].split('_')[-1][:-1]
+                                            continue
+                            else:
+                                    temperature = file_name_up[i][:-4].split('_')[-1][:-1]
 
                             data_by_temp_up[temperature] = read_transport_datafile(file_name_up[i]) 
 
@@ -259,36 +260,36 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                 if spin_polarized==True:
                     height = 28
                 pylab.figure(figsize=(width, height)) #to adjust the figure size
-		matplotlib.rc("font", size=30)             #to set the font size
+                matplotlib.rc("font", size=30)             #to set the font size
                 markers=["o","s","8","D","H","1"]
                 colors =['b','g','c','r','m','0.75','y','orange']
                 lines  =['-','--',':',]              
-		if epsilon==True:
-			lines  =['-',]              
-			colors =['k','r']
+                if epsilon==True:
+                        lines  =['-',]              
+                        colors =['k','r']
 
                 if spin_polarized==False:
                         ax2=pylab.subplot(111)
 
-			ax2.tick_params(axis='both', which='major', labelsize=21)
+                        ax2.tick_params(axis='both', which='major', labelsize=21)
 
-                        sorted_all =  sorted([[float(x[0]),x[1]] for x in data_by_temp.items()])
+                        sorted_all =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp.items())])
 
                         for temp_index in range(len(sorted_all)):              
-		            if epsilon==True:
-				    temp = int(sorted_all[temp_index][0])
+                            if epsilon==True:
+                                    temp = int(sorted_all[temp_index][0])
 
-				    if temp==-100:
-					    label_text='$'+trans_plot_dict[Type]['lc']+'_{2}$'
-				    elif temp==-200:
-					    label_text='$'+trans_plot_dict[Type]['lc']+'_{1}$'
-				    else:
-					    continue
+                                    if temp==-100:
+                                            label_text='$'+trans_plot_dict[Type]['lc']+'_{2}$'
+                                    elif temp==-200:
+                                            label_text='$'+trans_plot_dict[Type]['lc']+'_{1}$'
+                                    else:
+                                            continue
 
 
-			    else:
-#				    label_text='$'+trans_plot_dict[Type]['lc']+'$ @ %sK'%int(sorted_all[temp_index][0])
-				    label_text='%sK'%int(sorted_all[temp_index][0])
+                            else:
+#                                   label_text='$'+trans_plot_dict[Type]['lc']+'$ @ %sK'%int(sorted_all[temp_index][0])
+                                    label_text='%sK'%int(sorted_all[temp_index][0])
 
 
                             ls_choice  = lines[temp_index%len(lines)]
@@ -300,23 +301,23 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
 
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e14
-			    if Type=='sig_seebeck':
-				    y_vals=numpy.asarray(y_vals)/1.0e-9
-			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)
-				    y_vals /= 1.e14
-				    y_vals /= 1.e5
-			    elif Type=='seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.e6
+                            if Type=='kappa':
+                                    y_vals=numpy.asarray(y_vals)/1.0e14
+                            if Type=='sig_seebeck':
+                                    y_vals=numpy.asarray(y_vals)/1.0e-9
+                            elif Type=='cond':
+                                    y_vals=numpy.asarray(y_vals)
+                                    y_vals /= 1.e14
+                                    y_vals /= 1.e5
+                            elif Type=='seebeck':
+                                    y_vals=numpy.asarray(y_vals)*1.e6
 
-			    if x_range==None:
-				    max_x=numpy.amax(x_vals)
-				    min_x=numpy.amin(x_vals)
-			    else:
-				    min_x=x_range[0]
-				    max_x=x_range[1]
+                            if x_range is None:
+                                    max_x=numpy.amax(x_vals)
+                                    min_x=numpy.amin(x_vals)
+                            else:
+                                    min_x=x_range[0]
+                                    max_x=x_range[1]
 
 
 
@@ -326,14 +327,14 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
                                 if set_max>max_val:
                                     max_val=set_max
-				
-			    for i in [y_vals]:
-			        set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
+                                
+                            for i in [y_vals]:
+                                set_min=min([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
 
                                 if set_min<min_val:
                                     min_val=set_min
 
-#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+#                           x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
 
@@ -341,20 +342,20 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                     ax1=pylab.subplot(211)
 
 
-                    sorted_dn =  sorted([[float(x[0]),x[1]] for x in data_by_temp_dn.items()])
-                    sorted_up =  sorted([[float(x[0]),x[1]] for x in data_by_temp_up.items()])
+                    sorted_dn =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp_dn.items())])
+                    sorted_up =  sorted([[float(x[0]),x[1]] for x in list(data_by_temp_up.items())])
 
                     for temp_index in range(len(sorted_dn)):                    
-		            if epsilon==True:
-				    try:
-					    if int(sorted_dn[temp_index][0])==-100:
-						    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}_{2}$'
-					    if int(sorted_dn[temp_index][0])==-200:
-						    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}_{1}$'
-				    except:
-					    continue
-			    else:
-				    label_text='%sK'%int(sorted_dn[temp_index][0])
+                            if epsilon==True:
+                                    try:
+                                            if int(sorted_dn[temp_index][0])==-100:
+                                                    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}_{2}$'
+                                            if int(sorted_dn[temp_index][0])==-200:
+                                                    label_text='$'+trans_plot_dict[Type]['lc']+'^{down}_{1}$'
+                                    except:
+                                            continue
+                            else:
+                                    label_text='%sK'%int(sorted_dn[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
                             ls_choice  = lines[temp_index%len(lines)]
@@ -363,29 +364,29 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                             y_vals=sorted_dn[temp_index][1][1]
 
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e14
-			    if Type=='sig_seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.0e6
-			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)
-				    y_vals /= 1.e14
-				    y_vals /= 1.e5
-			    elif Type=='seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.e6
+                            if Type=='kappa':
+                                    y_vals=numpy.asarray(y_vals)/1.0e14
+                            if Type=='sig_seebeck':
+                                    y_vals=numpy.asarray(y_vals)*1.0e6
+                            elif Type=='cond':
+                                    y_vals=numpy.asarray(y_vals)
+                                    y_vals /= 1.e14
+                                    y_vals /= 1.e5
+                            elif Type=='seebeck':
+                                    y_vals=numpy.asarray(y_vals)*1.e6
 
 
 
-			    if x_range==None:
-				    max_x=numpy.amax(x_vals)
-				    min_x=numpy.amin(x_vals)
-			    else:
-				    min_x=x_range[0]
-				    max_x=x_range[1]
+                            if x_range is None:
+                                    max_x=numpy.amax(x_vals)
+                                    min_x=numpy.amin(x_vals)
+                            else:
+                                    min_x=x_range[0]
+                                    max_x=x_range[1]
 
-			    if epsilon==True:
-				    if min_x<=0.2:
-					    min_x=0.2
+                            if epsilon==True:
+                                    if min_x<=0.2:
+                                            min_x=0.2
 
                             for i in [y_vals]:
                                 set_max=max([i[j] for j in range(len(i)) if (x_vals[j]>=min_x and  x_vals[j]<=max_x)])
@@ -401,29 +402,29 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
 
                             ax1.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
-			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
+                            pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 
                             
 
                     pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
                     ax1.legend(loc=1)
-		    if Type in ['ZT']:
-			    ax1.yaxis.set_ticks([0],)
+                    if Type in ['ZT']:
+                            ax1.yaxis.set_ticks([0],)
 
 
 
                     for temp_index in range(len(sorted_up)):                    
-		            if epsilon==True:
-				    try:
-					    if int(sorted_up[temp_index][0])==-100:
-						    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}_{2}$'
-					    if int(sorted_up[temp_index][0])==-200:
-						    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}_{1}$'
-				    except:
-					    continue
+                            if epsilon==True:
+                                    try:
+                                            if int(sorted_up[temp_index][0])==-100:
+                                                    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}_{2}$'
+                                            if int(sorted_up[temp_index][0])==-200:
+                                                    label_text='$'+trans_plot_dict[Type]['lc']+'^{up}_{1}$'
+                                    except:
+                                            continue
 
-			    else:
-				    label_text='%sK'%int(sorted_up[temp_index][0])
+                            else:
+                                    label_text='%sK'%int(sorted_up[temp_index][0])
 
                             color_choice  = colors[temp_index%len(colors)]
                             marker_choice = markers[temp_index%len(markers)]
@@ -432,23 +433,23 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                             y_vals=sorted_up[temp_index][1][1]
 
 
-			    if x_range==None:
-				    max_x=numpy.amax(x_vals)
-				    min_x=numpy.amin(x_vals)                    
-			    else:
-				    min_x=x_range[0]
-				    max_x=x_range[1]
+                            if x_range is None:
+                                    max_x=numpy.amax(x_vals)
+                                    min_x=numpy.amin(x_vals)                    
+                            else:
+                                    min_x=x_range[0]
+                                    max_x=x_range[1]
 
-			    if Type=='kappa':
-				    y_vals=numpy.asarray(y_vals)/1.0e14
-			    if Type=='sig_seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.0e6
-			    elif Type=='cond':
-				    y_vals=numpy.asarray(y_vals)
-				    y_vals /= 1.e14
-				    y_vals /= 1.e5
-			    elif Type=='seebeck':
-				    y_vals=numpy.asarray(y_vals)*1.e6
+                            if Type=='kappa':
+                                    y_vals=numpy.asarray(y_vals)/1.0e14
+                            if Type=='sig_seebeck':
+                                    y_vals=numpy.asarray(y_vals)*1.0e6
+                            elif Type=='cond':
+                                    y_vals=numpy.asarray(y_vals)
+                                    y_vals /= 1.e14
+                                    y_vals /= 1.e5
+                            elif Type=='seebeck':
+                                    y_vals=numpy.asarray(y_vals)*1.e6
 
 
 
@@ -461,33 +462,33 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                                 if set_min<min_val:
                                     min_val=set_min
 
-			    ax2=pylab.subplot(212)
+                            ax2=pylab.subplot(212)
 #[left,bottom,width,height]
 
-#			    ax2.tick_params(axis='both', which='major', labelsize=2)
+#                           ax2.tick_params(axis='both', which='major', labelsize=2)
 
 
-#			    x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
+#                           x_vals,y_vals = AFLOWpi.plot.__smoothGauss(x_vals,degree=5),AFLOWpi.plot.__smoothGauss(y_vals,degree=5)
                             ax2.plot(x_vals,y_vals,label=label_text,color=color_choice,linestyle=ls_choice,linewidth=4)
 
-			    pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
-			    ax1.set_position([0.04,0.465,0.96,0.435]) 
-			    ax2.set_position([0.04,0.02,0.96,0.435]) 
+                            pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
+                            ax1.set_position([0.04,0.465,0.96,0.435]) 
+                            ax2.set_position([0.04,0.02,0.96,0.435]) 
 
  #line separating up and down spni
 
-		if type(x_range)==type(None):
-			max_x=numpy.amax(x_vals)
-			min_x=numpy.amin(x_vals)
-		else:
-			min_x=x_range[0]
-			max_x=x_range[1]
+                if type(x_range)==type(None):
+                        max_x=numpy.amax(x_vals)
+                        min_x=numpy.amin(x_vals)
+                else:
+                        min_x=x_range[0]
+                        max_x=x_range[1]
 
-		if epsilon==True:
-			if min_x<=0.2:
-				min_x=0.2
+                if epsilon==True:
+                        if min_x<=0.2:
+                                min_x=0.2
 
-			
+                        
 
                 mult_max=1.05
                 if max_val<0.0:
@@ -495,49 +496,49 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                 mult_min=1.05
                 if min_val>0.0:
                     mult_min=0.95
-		
+                
 
 
                 try:
                     try:
                         ax1.set_ylim([min_val*mult_min,max_val*mult_max])
-			if type(y_range)!=type(None):
-				ax1.set_ylim(y_range[0],y_range[1])
+                        if type(y_range)!=type(None):
+                                ax1.set_ylim(y_range[0],y_range[1])
                         ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) 
                         ax1.axvline(0.0, color = 'k', linewidth = 1.0) 
 
-			if Type in ['ZT']:
-				ax1.yaxis.set_ticks([0.0])
+                        if Type in ['ZT']:
+                                ax1.yaxis.set_ticks([0.0])
 
                         ax1.xaxis.set_ticks([])
 
-			if epsilon==True:
-				if min_x<=0.2:
-					min_x=0.2
+                        if epsilon==True:
+                                if min_x<=0.2:
+                                        min_x=0.2
                         ax1.set_xlim([min_x,max_x])
 
-                    except Exception,e:
-			    pass
+                    except Exception as e:
+                            pass
 
                     pyplot.xlabel(trans_plot_dict[Type]['xl'],{'fontsize':30})
                     pyplot.ylabel(trans_plot_dict[Type]['yl'],{'fontsize':30})
 
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
                     pass
                 ax2.set_ylim([min_val*mult_min,max_val*mult_max])
-		if type(y_range)!=type(None):
-			ax2.set_ylim(y_range[0],y_range[1])
+                if type(y_range)!=type(None):
+                        ax2.set_ylim(y_range[0],y_range[1])
 
                 ax2.legend(loc=1)
 
-		if epsilon==True:
-			if min_x<=0.2:
-				min_x=0.2
+                if epsilon==True:
+                        if min_x<=0.2:
+                                min_x=0.2
                 ax2.set_xlim([min_x,max_x])
 
-		if Type in ['ZT']:
-			ax2.yaxis.set_ticks([0.0])
+                if Type in ['ZT']:
+                        ax2.yaxis.set_ticks([0.0])
 
 
 
@@ -546,88 +547,93 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                 compoundNameLatex = AFLOWpi.retr._getStoicName(oneCalc,strip=True,latex=True,gcd=False)
                 ax2.legend(loc=1)
 
-		if Type in ['ZT']:
-			ax2.yaxis.set_ticks([0])
+                if Type in ['ZT']:
+                        ax2.yaxis.set_ticks([0])
 
 
 
-		try:
-			ax2.yaxis.set_label(trans_plot_dict[Type]['yl'])
-			ax2.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
+                try:
+                        ax2.yaxis.set_label(trans_plot_dict[Type]['yl'])
+                        ax2.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3)
                         ax2.axvline(0.0, color = 'k', linewidth = 1.0) 
-		except Exception,e: 
-			AFLOWpi.run._fancy_error_log(e)
+                except Exception as e: 
+                        AFLOWpi.run._fancy_error_log(e)
 
-			pass
-		try:
-			ax1.yaxis.set_label(trans_plot_dict[Type]['yl'])
-			ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spni
+                        pass
+                try:
+                        ax1.yaxis.set_label(trans_plot_dict[Type]['yl'])
+                        ax1.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spni
 
-		except Exception,e:
-			pass
+                except Exception as e:
+                        pass
 
                 pylab.axhline(0.0, color = 'k',linestyle='dashed', linewidth = 1.3) #line separating up and down spin
 
                 figtitle = r'%s %s' % (trans_plot_dict[Type]['ft'],compoundNameLatex)
 
-                t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=50,horizontalalignment='center') #[x,y] 
+                if AFLOWpi.plot._get_title_option():
+                        t = pylab.gcf().text(0.5,0.92, figtitle,fontsize=50,horizontalalignment='center') #[x,y] 
 
                 if postfix!='':
                     postfix_append='_'+postfix
-		else:
+                else:
                     postfix_append=''
+                
+                ext=AFLOWpi.plot._get_plot_ext_type()
 
-                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.pdf'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append))
+                fileplot = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_%s_%s%s.%s'%(trans_plot_dict[Type]['fp'],compoundName,ID,postfix_append,ext))
                 matplotlib.pyplot.savefig(fileplot,bbox_inches='tight')
-		pylab.close()
+                AFLOWpi.plot._copy_to_fig_dir(oneCalc,fileplot)
+
+                pylab.close()
 
 
-            except Exception,e:
-		    AFLOWpi.run._fancy_error_log(e)
-		    raise SystemExit
+            except Exception as e:
+                    AFLOWpi.run._fancy_error_log(e)
+                    raise SystemExit
 
 
 
 ###############################################################################################################################
 def read_transport_datafile(ep_data_file,mult_x=1.0,mult_y=1.0):
-	'''
+        '''
 
 
-	Arguments:
+        Arguments:
 
 
-	Keyword Arguments:
+        Keyword Arguments:
 
 
         Returns:
 
-	'''
+        '''
 
-	with open(ep_data_file,'r') as epsilon_data_file:
-		ep_data_string=epsilon_data_file.read()
-		
-	lines=ep_data_string.split('\n')
-	en_array=[]
-	val_array=[]
+        with open(ep_data_file,'r') as epsilon_data_file:
+                ep_data_string=epsilon_data_file.read()
+                
+        lines=ep_data_string.split('\n')
+        en_array=[]
+        val_array=[]
 
-	for i in lines:
-		try:
-			float_array=[]
-			split_line = i.split()
+        for i in lines:
+                try:
+                        float_array=[]
+                        split_line = i.split()
 
-			for x in split_line:
-				float_array.append(float(x))
-			en_array.append(float_array[0])
-			val_array.append(sum([float_array[1],float_array[2],float_array[3]])/3.0)
-		except:
-			pass
+                        for x in split_line:
+                                float_array.append(float(x))
+                        en_array.append(float_array[0])
+                        val_array.append(sum([float_array[1],float_array[2],float_array[3]])/3.0)
+                except:
+                        pass
 
 
-		en_array=[mult_x*x for x in en_array]
-		val_array=[mult_y*y for y in val_array]
+                en_array=[mult_x*x for x in en_array]
+                val_array=[mult_y*y for y in val_array]
 
-		
-	return en_array,val_array	
+                
+        return en_array,val_array       
 
 
 

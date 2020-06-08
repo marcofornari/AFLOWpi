@@ -17,121 +17,114 @@
 #
 
 import numpy as np
-import cmath
-from math import cosh
-import sys, time
-
 from mpi4py import MPI
-from mpi4py.MPI import ANY_SOURCE
 
-from load_balancing import *
-from communication import scatter_array
-
-from smearing import *
-
-# initialize parallel execution
-comm=MPI.COMM_WORLD
+comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
-size = comm.Get_size()
 
-def do_Boltz_tensors(E_k,velkp,kq_wght,temp,ispin,deltak,smearing,t_tensor,emin,emax,ne):
-    # Compute the L_alpha tensors for Boltzmann transport
+def do_Boltz_tensors ( data_controller, smearing, temp, ene, velkp, ispin ):
+  # Compute the L_alpha tensors for Boltzmann transport
 
-    if emin!=emax:
-        de = (emax-emin)/ne
-        ene = np.arange(emin,emax,de,dtype=float)
+  arrays,attributes = data_controller.data_dicts()
+
+  esize = ene.size
+
+#### Forced t_tensor to have all components
+  t_tensor = np.array([[0,0],[1,1],[2,2],[0,1],[0,2],[1,2]], dtype=int)
+
+  # Quick call function for L_loop (None is smearing type)
+  fLloop = lambda spol : L_loop(data_controller, temp, smearing, ene, velkp, t_tensor, spol, ispin)
+
+  # Quick call function for Zeros on rank Zero
+  zoz = lambda r: (np.zeros((3,3,esize), dtype=float) if r==0 else None)
+
+  L0 = zoz(rank)
+  L0aux = fLloop(0)
+  comm.Reduce(L0aux, L0, op=MPI.SUM)
+  L0aux = None
+
+  if rank == 0:
+    # Assign lower triangular to upper triangular
+    sym = lambda L : (L[0,1], L[0,2], L[1,2])
+    L0[1,0],L0[2,0],L0[2,1] = sym(L0)
+
+  L1 = L2 = None
+  if smearing is None:
+
+    L1 = zoz(rank)
+    L1aux = fLloop(1)
+    comm.Reduce(L1aux, L1, op=MPI.SUM)
+    L1aux = None
+
+    L2 = zoz(rank)
+    L2aux = fLloop(2)
+    comm.Reduce(L2aux, L2, op=MPI.SUM)
+    L2aux = None
+
+    if rank == 0:
+      L1[1,0],L1[2,0],L1[2,1] = sym(L1)
+      L2[1,0],L2[2,0],L2[2,1] = sym(L2)
+
+  return (L0, L1, L2) if rank==0 else (None, None, None)
+
+
+def get_tau ( data_controller, channels ):
+  import numpy as np
+
+  arry,attr = data_controller.data_dicts()
+  snktot = arry['E_k'].shape[0]
+
+  taus = []
+  for c in channels:
+    if c == 'acoustic':
+      a_tau = np.ones((snktot), dtype=float)
+      taus.append(a_tau)
+
+    if c == 'optical':
+      o_tau = np.ones((snktot), dtype=float)
+      taus.append(o_tau)
+
+  tau = np.zeros((snktot), dtype=float)
+  for t in taus:
+    tau += 1./t
+  return len(channels)/tau
+
+
+def L_loop ( data_controller, temp, smearing, ene, velkp, t_tensor, alpha, ispin ):
+  from .smearing import gaussian,metpax
+  # We assume tau=1 in the constant relaxation time approximation
+
+  arrays,attributes = data_controller.data_dicts()
+
+  esize = ene.size
+
+  snktot = arrays['E_k'].shape[0]
+
+  bnd = attributes['bnd']
+  kq_wght = 1./attributes['nkpnts']
+
+  if smearing is not None and smearing != 'gauss' and smearing != 'm-p':
+    print('%s Smearing Not Implemented.'%smearing)
+    comm.Abort()
+
+  L = np.zeros((3,3,esize), dtype=float)
+
+  for n in range(bnd):
+    Eaux = np.reshape(np.repeat(arrays['E_k'][:,n,ispin],esize), (snktot,esize))
+    delk = (np.reshape(np.repeat(arrays['deltakp'][:,n,ispin],esize), (snktot,esize)) if smearing!=None else None)
+    EtoAlpha = np.power(Eaux[:,:]-ene, alpha)
+    if smearing is None:
+      Eaux -= ene
+      smearA = .5/(temp*(1.+.5*(np.exp(Eaux/temp)+np.exp(-Eaux/temp))))
     else:
-        ene=np.array([emax])
-    L0 = np.zeros((3,3,ene.size),dtype=float)
-    L0aux = np.zeros((3,3,ene.size),dtype=float)
+      if smearing == 'gauss':
+        smearA = gaussian(Eaux, ene, delk)
+      elif smearing == 'm-p':
+        smearA = metpax(Eaux, ene, delk)
+    for l in range(t_tensor.shape[0]):
+      i = t_tensor[l][0]
+      j = t_tensor[l][1]
+      tau = get_tau(data_controller, ['acoustic', 'optical'])
+      L[i,j,:] += np.sum(kq_wght*tau*velkp[:,i,n,ispin]*velkp[:,j,n,ispin]*(smearA*EtoAlpha).T, axis=1)
 
-    if smearing == None:
-        t_tensor = np.array([[0,0],[1,1],[2,2],[0,1],[0,2],[1,2]],dtype=int)
-
-    L0aux[:,:,:] = L_loop(ene,E_k,velkp,kq_wght,temp,ispin,0,deltak,smearing,t_tensor)
-
-    comm.Reduce(L0aux,L0,op=MPI.SUM)
-
-    if smearing == None:
-        L1 = np.zeros((3,3,ene.size),dtype=float)
-        L1aux = np.zeros((3,3,ene.size),dtype=float)
-
-        L1aux[:,:,:] = L_loop(ene,E_k,velkp,kq_wght,temp,ispin,1,deltak,smearing,t_tensor)
-
-        comm.Reduce(L1aux,L1,op=MPI.SUM)
-
-        L2 = np.zeros((3,3,ene.size),dtype=float)
-        L2aux = np.zeros((3,3,ene.size),dtype=float)
-
-        L2aux[:,:,:] = L_loop(ene,E_k,velkp,kq_wght,temp,ispin,2,deltak,smearing,t_tensor)
-
-        comm.Reduce(L2aux,L2,op=MPI.SUM)
-
-        L0[1,0] = L0[0,1]
-        L0[2,0] = L0[0,2]
-        L0[2,1] = L0[1,2]
-
-        L1[1,0] = L1[0,1]
-        L1[2,0] = L1[0,2]
-        L1[2,1] = L1[1,2]
-
-        L2[1,0] = L2[0,1]
-        L2[2,0] = L2[0,2]
-        L2[2,1] = L2[1,2]
-
-        return(ene,L0,L1,L2)
-    else:
-        return(ene,L0)
-
-def L_loop(ene,E_k,velkp,kq_wght,temp,ispin,alpha,deltak,smearing,t_tensor):
-    # We assume tau=1 in the constant relaxation time approximation
-
-    L = np.zeros((3,3,ene.size),dtype=float)
-
-    if smearing == None:
-        v2=np.zeros((t_tensor.shape[0],E_k.shape[0]),dtype=float,order="C")
-
-        for l in range(t_tensor.shape[0]):
-            i = t_tensor[l][0]
-            j = t_tensor[l][1]
-            v2[l]=velkp[i]*velkp[j]
-        for n in range(ene.shape[0]):
-            Eaux = E_k-ene[n]
-            Eaux = 1.0/(1.0+np.cosh(Eaux/temp)) * np.power(Eaux,alpha)
-            for l in range(t_tensor.shape[0]):
-                i = t_tensor[l][0]
-                j = t_tensor[l][1]
-            
-                L[i,j,n] += np.sum(v2[l]*Eaux)
-                                
-
-        L*=1.0/temp * kq_wght[0] * 0.5
-
-    if smearing == 'gauss':
-        om = ((ene*np.ones((E_k.shape[0],ene.size),dtype=float)).T).T
-        for n in range(velkp.shape[2]):
-            eig = (E_k[:,n,ispin]*np.ones((E_k.shape[0],ene.size),dtype=float).T).T
-            delk = (deltak[:,n,ispin]*np.ones((E_k.shape[0],ene.size),dtype=float).T).T
-            for l in range(t_tensor.shape[0]):
-                i = t_tensor[l][0]
-                j = t_tensor[l][1]
-                L[i,j,:] += np.sum((kq_wght[0]*velkp[:,i,n,ispin]*velkp[:,j,n,ispin] * \
-                                        (gaussian(eig,om,delk) * np.power(eig-om,alpha)).T),axis=1)
-
-
-    if smearing == 'm-p': 
-        om = ((ene*np.ones((E_k.shape[0],ene.size),dtype=float)).T).T
-        for n in range(velkp.shape[2]):
-            eig = (E_k[:,n,ispin]*np.ones((E_k.shape[0],ene.size),dtype=float).T).T
-            delk = (deltak[:,n,ispin]*np.ones((E_k.shape[0],ene.size),dtype=float).T).T
-            for l in range(t_tensor.shape[0]):
-                i = t_tensor[l][0]
-                j = t_tensor[l][1]
-                L[i,j,:] += np.sum((kq_wght[0]*velkp[:,i,n,ispin]*velkp[:,j,n,ispin] * \
-                                        (metpax(eig,om,delk) * np.power(eig-om,alpha)).T),axis=1)
-                
-
-    if smearing != None and smearing != 'gauss' and smearing != 'm-p':
-        sys.exit('smearing not implemented')
-
-    return(L)
+  return L

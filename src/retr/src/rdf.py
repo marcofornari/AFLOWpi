@@ -37,7 +37,7 @@ def atomicDistances(calcs,runlocal=False,inpt=False,outp=True):
     try:
         if AFLOWpi.prep._ConfigSectionMap('prep','copy_exec').lower()!='false':
             AFLOWpi.prep.totree(distXPath,calcs)
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             if runlocal:
                 if outp==True:
                     AFLOWpi.retr._getDist(oneCalc,ID,outp=True)
@@ -49,7 +49,7 @@ def atomicDistances(calcs,runlocal=False,inpt=False,outp=True):
                 if inpt==True:
                     AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._getDist(oneCalc,ID,outp=False)\n')
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -61,7 +61,7 @@ def _getDist(oneCalc,ID,outp=True):
         else:
             shutil.copyfile('%s.in'%ID,'%s_dist.in'%ID)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     #fix to clear restart_mode in input file to avoid error with dist.x
@@ -91,7 +91,7 @@ def _getDist(oneCalc,ID,outp=True):
         else:
             os.rename(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'dist.out'),os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_input_dist.out'))
 
-    except Exception,e:
+    except Exception as e:
         logging.error('dist.x did not run properly')
-        print 'ERROR: dist.x did not run properly'
+        print('ERROR: dist.x did not run properly')
 

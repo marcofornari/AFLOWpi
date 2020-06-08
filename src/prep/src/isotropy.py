@@ -27,7 +27,7 @@ import AFLOWpi
 import numpy as np
 import os
 import subprocess
-import StringIO
+import io
 import re
 import copy
 import scipy
@@ -71,8 +71,8 @@ class isotropy():
         self.ibrav     = self.__ibrav_from_sg_number()
         self.iso_pr_car= ''
         
-        self.iso_basis = self.__get_iso_basis()
-        self.iso_pr_car= self.__get_iso_cart()
+#        self.iso_basis = self.__get_iso_basis()
+#        self.iso_pr_car= self.__get_iso_cart()
 
         input_dict = AFLOWpi.retr._splitInput(self.input)
 
@@ -147,42 +147,43 @@ K_POINTS {automatic}
         '''
         # we need to take the wyckoff positions and match
         # the ATOMIC_SPECIES labels in the qe input
-        wyc_full = re.findall('Atomic positions in terms of a,b,c:\n((?:.*\n)+)------',
-                              self.output)[0]
-        each_wyc = re.findall('Wyckoff position.*\n(?:(\s*\d+\s*[\d.\s]+\n)+)',wyc_full)
+        # wyc_full = re.findall('Atomic positions in terms of a,b,c:\n((?:.*\n)+)------',
+        #                       self.output)[0]
+        # each_wyc = re.findall('Wyckoff position.*\n(?:(\s*\d+\s*[\d.\s]+\n)+)',wyc_full)
 
-        wyc_first_lab_ind=[]
-        for i in each_wyc:
-            wyc_first_lab_ind.append([int(x.split()[0])-1 for x in i.split('\n') if len(x.strip())!=0][0])
+        # wyc_first_lab_ind=[]
+        # for i in each_wyc:
+        #     wyc_first_lab_ind.append([int(x.split()[0])-1 for x in i.split('\n') if len(x.strip())!=0][0])
 
-        cif_file = re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
-        re_atom_pos=re.compile(r'(_atom_site_label.*\n(?:(?:[A-Za-z_\s])*\n))((?:.*\n)*)')
+        # cif_file = re.findall('# CIF file.*\n(?:.*\n)*',self.output)[0]
+        # re_atom_pos=re.compile(r'(_atom_site_label.*\n(?:(?:[A-Za-z_\s])*\n))((?:.*\n)*)')
 
-        atom_pos = re_atom_pos.findall(cif_file)[0]
+        # atom_pos = re_atom_pos.findall(cif_file)[0]
+        # print(atom_pos)
+        # raise System
+        # '''positions from cif'''
+        # loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
+        # spec_lab_index =  loop_list.index('_atom_site_type_symbol')
 
-        '''positions from cif'''
-        loop_list = [x.strip() for x in  atom_pos[0].split('\n') if len(x.strip())!=0]
-        spec_lab_index =  loop_list.index('_atom_site_type_symbol')
+        # positions = [list(map(str.strip,x.split())) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
-        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
-
-        mod_pos=[]
-        for i in xrange(len(positions)):
-            positions[i][spec_lab_index]=self.pos_labels[wyc_first_lab_ind[i]]
-            mod_pos.append(' '.join(['%8.8s'%x for x in positions[i]]))
-
-
-        atom_pos[0].split('\n')
-        cif_file_temp_split = [x for x in cif_file.split('\n') if len(x.strip())!=0]
-        cif_file_temp_split[-len(positions):] = mod_pos
-
-        cif_file = '\n'.join(cif_file_temp_split)+'\n'
+        # mod_pos=[]
+        # for i in range(len(positions)):
+        #     positions[i][spec_lab_index]=self.pos_labels[wyc_first_lab_ind[i]]
+        #     mod_pos.append(' '.join(['%8.8s'%x for x in positions[i]]))
 
 
+        # atom_pos[0].split('\n')
+        # cif_file_temp_split = [x for x in cif_file.split('\n') if len(x.strip())!=0]
+        # cif_file_temp_split[-len(positions):] = mod_pos
+
+        # cif_file = '\n'.join(cif_file_temp_split)+'\n'
 
 
 
-        return cif_file
+
+
+        return self.output
 
     def __generate_isotropy_input_from_qe_data(self,output=False):
         if output:
@@ -263,22 +264,24 @@ K_POINTS {automatic}
         return isotropy_input_str
 
     def __get_isotropy_output(self,qe_output=False):
-        centering='P'
-
-        in_str = self.__generate_isotropy_input_from_qe_data(output=qe_output)
-        ISODATA = os.path.join(AFLOWpi.__path__[0],'ISOTROPY')
-        os.putenv('ISODATA',ISODATA+'/') 
-        findsym_path = os.path.join(ISODATA,'findsym')
 
 
-        try:
-            find_sym_process = subprocess.Popen(findsym_path,stdin=subprocess.PIPE,stdout=subprocess.PIPE,)
-            output = find_sym_process.communicate(input=in_str)[0]
-            self.output=output
-        except:
-            print find_sym_process.returncode
+        # centering='P'
 
-        return output
+        # in_str = self.__generate_isotropy_input_from_qe_data(output=qe_output)
+        # ISODATA = os.path.join(AFLOWpi.__path__[0],'ISOTROPY')
+        # os.putenv('ISODATA',ISODATA+'/') 
+        # findsym_path = os.path.join(ISODATA,'findsym')
+
+
+        # try:
+        #     find_sym_process = subprocess.Popen(findsym_path,stdin=subprocess.PIPE,stdout=subprocess.PIPE,)
+        #     output = find_sym_process.communicate(input=in_str)[0]
+        #     self.output=output
+        # except:
+        #     print((find_sym_process.returncode))
+
+        return  AFLOWpi.retr._get_cif_aflow(self.input,thresh=self.accuracy)
 
     def __get_sg_num(self):
         try:
@@ -301,7 +304,7 @@ K_POINTS {automatic}
             self.sgn = self.__HM2Num(name)
             return self.sgn
 
-        except Exception,e:
+        except Exception as e:
             return 1
 
 
@@ -326,48 +329,51 @@ K_POINTS {automatic}
         return origin
 
     def __get_iso_basis(self):
+        return np.eye(3)
 
-        modifier = AFLOWpi.qe.regex.cell_parameters(self.input,return_which='modifier',).lower()
+        # self.iso_basis
 
-        origin = self.__conv_from_cif()
+        # modifier = AFLOWpi.qe.regex.cell_parameters(self.input,return_which='modifier',).lower()
 
-        origin = np.asarray([float(i) for i in origin])
-        self.origin=origin
+        # origin = self.__conv_from_cif()
 
-        std_prim_basis_str = re.findall('Vectors a,b,c:\s*\n(.*\n.*\n.*)\n',self.output)[0]
-        self.iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
+        # origin = np.asarray([float(i) for i in origin])
+        # self.origin=origin
 
-        input_dict = AFLOWpi.retr._splitInput(self.input)
-        if 'CELL_PARAMETERS' not in input_dict:
-            prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
-            try:
-                prim_in=AFLOWpi.retr._cellStringToMatrix(prim_in)
-            except:
-                pass
-        else:
-            if input_dict['CELL_PARAMETERS']["__content__"]=='':
-                try:
-                    prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
-                except:
-                    pass
-            try:
-                prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
-            except Exception,e:
-                print e
-                raise SystemExit
+        # std_prim_basis_str = re.findall('Vectors a,b,c:\s*\n(.*\n.*\n.*)\n',self.output)[0]
+        # self.iso_conv = AFLOWpi.retr._cellStringToMatrix(std_prim_basis_str)
 
-        self.iso_basis=prim_in
+        # input_dict = AFLOWpi.retr._splitInput(self.input)
+        # if 'CELL_PARAMETERS' not in input_dict:
+        #     prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
+        #     try:
+        #         prim_in=AFLOWpi.retr._cellStringToMatrix(prim_in)
+        #     except:
+        #         pass
+        # else:
+        #     if input_dict['CELL_PARAMETERS']["__content__"]=='':
+        #         try:
+        #             prim_in = AFLOWpi.retr.getCellMatrixFromInput(self.input)
+        #         except:
+        #             pass
+        #     try:
+        #         prim_in=AFLOWpi.retr._cellStringToMatrix(input_dict['CELL_PARAMETERS']['__content__'])
+        #     except Exception as e:
+        #         print(e)
+        #         raise SystemExit
 
-        a=np.array([[self.conv_a,],
-                       [self.conv_b,],
-                       [self.conv_c,],])
+        # self.iso_basis=prim_in
 
-        a=np.abs((self.iso_conv).dot(self.iso_basis))
+        # a=np.array([[self.conv_a,],
+        #                [self.conv_b,],
+        #                [self.conv_c,],])
 
-        prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
-        prim_abc=map(float,prim_abc)
+        # a=np.abs((self.iso_conv).dot(self.iso_basis))
 
-        return self.iso_basis
+        # prim_abc = re.findall('Lattice parameters, a,b,c,alpha,beta,gamma.*\n(.*)\n',self.output)[0].split()
+        # prim_abc=list(map(float,prim_abc))
+
+        # return 
 
 
     def __ibrav_from_sg_number(self):
@@ -417,7 +423,7 @@ K_POINTS {automatic}
             return 14
 
         else:
-            print 'SG num not found:',self.sgn
+            print(('SG num not found:',self.sgn))
             raise SystemExit
 
 
@@ -434,13 +440,13 @@ K_POINTS {automatic}
             inputString=inputString_new
         
             if self.sgn!=isotropy_chk.sgn:
-                print "warning "*10
-                print "warning "*10
-                print "warning "*10
-                print inputString
-                print "warning "*10
-                print "warning "*10
-                print "warning "*10
+                print(("warning "*10))
+                print(("warning "*10))
+                print(("warning "*10))
+                print(inputString)
+                print(("warning "*10))
+                print(("warning "*10))
+                print(("warning "*10))
             break
 
 
@@ -489,7 +495,7 @@ K_POINTS {automatic}
         except:
             pass
         '''get positions from input'''
-        positions = [map(str.strip,x.split()) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
+        positions = [list(map(str.strip,x.split())) for x in  atom_pos[1].split('\n') if (len(x.strip())!=0 and len(x.split())==len(loop_list))]
 
         pos_array=np.zeros((len(positions),3))
         
@@ -547,7 +553,7 @@ K_POINTS {automatic}
         all_eq_pos=np.zeros((pos_array.shape[0]*operations.shape[0],3))
 
         '''duplicate atoms by symmetry operations'''
-        for i in xrange(operations.shape[0]):
+        for i in range(operations.shape[0]):
 
             temp_pos=np.copy(pos_array)
             temp_pos   = temp_pos.dot(operations[i])
@@ -752,7 +758,7 @@ K_POINTS {automatic}
 
         '''form atomic positions card for QE input'''
         atm_pos_str=""
-        for i in xrange(all_eq_pos.shape[0]):
+        for i in range(all_eq_pos.shape[0]):
             atm_pos_str+= ('%3.3s'% labels_arr[i]) +(' % 9.9f % 9.9f % 9.9f '%tuple(all_eq_pos[i].tolist()))+"\n"
 
 
@@ -1388,7 +1394,7 @@ K_POINTS {automatic}
                 "I41/a-32/d":230,}
         try:
             return HMdict[HM_str.replace(" ","")]
-        except Exception,e: 
+        except Exception as e: 
 #            print e
             raise SystemExit
 #            return 1
@@ -1408,7 +1414,7 @@ def reduce_atoms(all_eq_pos,labels,cell=np.identity(3,dtype=float),thresh=0.1,in
     '''mask for duplicate positions'''
     mask = np.ones(all_eq_pos.shape[0],dtype=bool)
     '''for self mask'''
-    xr = xrange(all_eq_pos.shape[0])
+    xr = list(range(all_eq_pos.shape[0]))
     idx = np.array(xr,dtype=int)
     '''loop over each atomic position'''
     for i in xr:
@@ -1476,8 +1482,8 @@ def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
 
         return np.amin(dist,axis=2)
 
-    except Exception,e:
-        print e
+    except Exception as e:
+        print(e)
         
 
 
