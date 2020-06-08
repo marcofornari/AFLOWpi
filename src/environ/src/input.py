@@ -351,7 +351,9 @@ def get_environ_input(mode, wdir=None, **kwargs):
 		# any deviations in settings have been declared
 		try:
 			shutil.copy(wdir + 'environ.in', os.getcwd() + '/' + 'environ.in')
-		except FileNotFoundError:
+		# PYTHON 3, correct once upgrade is complete... 
+        # except FileNotFoundError:
+		except IOError:
 			get_environ_input('from_config', wdir)
 	elif mode == 'from_config':
 		# try to read a config file, expect environ.json inside AFLOWpi folder
@@ -367,12 +369,15 @@ def get_environ_input(mode, wdir=None, **kwargs):
 		try:
 			with open(aflowdir + '/' + 'environ.json', 'r') as f:
 				configd = json.load(f)
-		except FileNotFoundError:
+		#except FileNotFoundError:
+		except IOError:
 			# no config found, just get default
 			logging.warning((
 				'environ.ini not found, have you initialized the config file?'))
 			# for now, just load a default
 			get_environ_input('default', wdir)
+		
+		print configd
 
 		# read dictionary and parse contents into a template environ file
 		interface = configd['interface']
