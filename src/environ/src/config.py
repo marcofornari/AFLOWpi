@@ -5,6 +5,7 @@ import logging
 class EnvironConfig():
 	def __init__(self, mode='setup', configfile=None, projectname=None, setname=None):
 		# read from AFLOW config file and save important things
+		self.calcs = None
 		if mode == 'setup':
 			if not projectname:
 				print('projectname must be given in setup phase')
@@ -40,8 +41,14 @@ class EnvironConfig():
 		# read from existing environ-config file 
 		elif mode == 'run':
 			setdir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-			with open(os.path.join(setdir, AFLOWpi, environ_config.json)) as f:
+			# TODO change to onecalc
+			with open(os.path.join(setdir, "AFLOWpi", "environ_config.json")) as f:
 				self.config = json.load(f)
+
+	def init_calcs(self, calcs):
+		self.calcs = calcs
+		print(calcs)
+		quit()
 
 
 	def add_loop(self, param, rangelist):
@@ -63,6 +70,8 @@ class EnvironConfig():
 		self.config['diffuse'] = diffuse
 
 	def write_to_file(self):
+		oneCalc['__runList__'].append('environ_scf')
+		AFLOWpi.prep._saveOneCalc(oneCalc,ID)	
 		with open(os.path.join(self.config['workdir'], 'AFLOWpi', 'environ.json'), 'w') as f:
 			json.dump(self.config, f, sort_keys=True, indent=4)
 
@@ -76,17 +85,17 @@ def set_params(config):
 	return astr
 
 def set_workflow(config, mode, execPrefix, execPostfix):
-	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_%s(__submitNodeName__, oneCalc, ID,
-		execPrefix="%s", execPostfix="%s")
+	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_single(__submitNodeName__, oneCalc, ID,
+		mode={}, execPrefix="{}", execPostfix="{}")
 oneCalc['__execCounter__']+=1
-AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''%(mode, execPrefix, execPostfix)
+AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode, execPrefix, execPostfix)
 
 	astr = ""
 	if 'mode' in config.config and config.config['mode'] == 'loop':
 		# 1D loop add to script
 		param = config.config['param']
 		plist = config.config['pdict'][param]
-		for p in plist:
+		for _ in plist:
 			astr += ("AFLOWpi.environ.get_environ_input('from_config', loopparam='%s', "
 					 "loopval=%s[loopidx], loopidx=loopidx)\n"%(param, param))
 			astr += ("loopidx += 1\n")

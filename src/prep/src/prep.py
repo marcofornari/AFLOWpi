@@ -5076,29 +5076,7 @@ EXITING.
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
                 return AFLOWpi.prep.tight_binding(self.int_dict,cond_bands=cond_bands,proj_thr=proj_thr,kp_factor=kp_factor,proj_sh=proj_sh,exec_prefix=exec_prefix,band_mult=band_factor,smearing=smearing,tb_kp_mult=tb_kp_factor,emin=emin,emax=emax,ne=ne,symmetrize=symmetrize,sym_thr=sym_thr,sym_max_iter=sym_max_iter)
 
-
-
-        def environ_relax(self):
-                """
-                Relax (optimize) the atomic positions of the atoms in 
-                the unit cell with the calculation engine and environ
-
-                Returns:
-                     None
-                """
-
-
-                self.type='environ-relax'
-                self._new_step(update_positions=True,update_structure=True,)
-                self.initial_calcs.append(self.int_dict)
-                print("environ setup function...")
-                AFLOWpi.environ.setup_relax(self.int_dict)
-                calc_type='Environ: Relax Step'
-
-                print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
-level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
-        
-        def environ_scf(self, config=None, environmode='from_file'):
+        def environ_setup(self, workflow="scf", config=None, environmode="from_file"):
                 """
                 run self consistent cycle with the calculation engine and environ
 
@@ -5108,13 +5086,11 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 Returns:
                      None
                 """
-
-                self.type='environ-scf'
-                self._new_step(update_positions=True,update_structure=True,)
+                self.type = AFLOWpi.environ.typename[workflow]
+                self._new_step(update_positions=True, update_structure=True)
                 self.initial_calcs.append(self.int_dict)
-                print("environ setup function...")
-                AFLOWpi.environ.setup_scf(self.int_dict, config, environmode)
-                calc_type='Environ: Scf Step'
+                AFLOWpi.environ.setup_environ(self.int_dict, self.type, config, environmode)
+                calc_type='{} step'.format(self.type)
 
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),
 level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
