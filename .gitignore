@@ -1,5 +1,10 @@
 build/*
 sandbox/
-.vscode/
-*/__init__.py
+src/*/src/__init__.py
 
+# IDE settings
+.vscode/
+
+# environ specific
+!src/environ/src/__init__.py
+src/environ/src/environ.in
