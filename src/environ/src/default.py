@@ -62,7 +62,7 @@ environ_default = {
 		'ifdtype': 1,
 		'nfdpoint': 1
 	},
-	'&ELECTROLYTE': {
+	'&ELECTROSTATIC': {
 		'problem': 'poisson',
 		'solver': 'direct',
 		'auxiliary': 'none',

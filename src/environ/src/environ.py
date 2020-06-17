@@ -16,12 +16,15 @@ def _execheck():
 		raise SystemExit
 	return pwx_exec_loc, symlink
 
-def setup_environ(calcs, workflow, config=None, environmode='from_file'):
+def setup_environ(calcs, workflow, config=None):
 	"""SETUP_RELAX
 	this function should only need to worry about making sure
 	calculation is a relax and that the environ.in file is
 	correctly copied over
 	"""
+	environmode = "from_file"
+	if config is None:
+		environmode = "from_config"
 
 	print("entering SETUP, config={}".format(config))
 	if config is not None:

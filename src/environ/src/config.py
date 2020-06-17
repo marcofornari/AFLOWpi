@@ -1,55 +1,38 @@
+import AFLOWpi
 import os
 import json
 import logging
 
 class EnvironConfig():
-	def __init__(self, mode='setup', configfile=None, projectname=None, setname=None):
+	def __init__(self):
 		# read from AFLOW config file and save important things
 		self.calcs = None
-		if mode == 'setup':
-			if not projectname:
-				print('projectname must be given in setup phase')
-				raise Exception()
-			if not setname:
-				print('setname must be given in setup phase')
-				raise Exception()
-			if configfile is None:
-				print('configfile needs to be given in setup phase')
-				raise Exception()
-			wpre = ""
-			try:
-				with open(configfile, 'r') as f:
-					for line in f:
-						if 'work_dir' in line:
-							wpre = line.split()[2].strip()
-			except OSError:
-				print((os.path.abspath(configfile)))
-				print('configfile not found, check directory is set correctly')
-				raise Exception
-			if wpre[-1] != '/':
-				wpre += '/'
-			workdir = wpre + projectname + '/' + setname + '/'
-			self.config = {}
-			self.config['pdict'] = {}
-			self.config['workdir'] = workdir
+		self.config = {}
 
-			# by default set to fa-ionic, maybe change
-			self.config['solvent'] = 'water'
-			self.config['interface'] = 'fa-ionic'
-			self.config['diffuse'] = 'none'
-
-		# read from existing environ-config file 
-		elif mode == 'run':
-			setdir = os.path.abspath(os.path.join(os.getcwd(), '..'))
-			# TODO change to onecalc
-			with open(os.path.join(setdir, "AFLOWpi", "environ_config.json")) as f:
-				self.config = json.load(f)
+		# the config dictionary here determines the environ specific settings or all calcs. This loads in two different ways.
+		# a) calcs dictionary is initialized and has no environ information (aflowpi setup before environ module)
+		#    in this case, simply load the calcs, and a default config dictionary
+		# b) onecalc contains environ information (run)
+		#    in this case, load in the onecalc into self.config
 
 	def init_calcs(self, calcs):
 		self.calcs = calcs
-		print(calcs)
-		quit()
 
+	def init_environ(self):
+		#workdir = wpre + projectname + '/' + setname + '/'
+		self.config['pdict'] = {}
+		#self.config['workdir'] = workdir
+
+		# by default set to fa-ionic, maybe change
+		self.config['solvent'] = 'water'
+		self.config['interface'] = 'ionic'
+		self.config['diffuse'] = 'none'
+
+	def from_one_calc(self, oneCalc):
+		if "_AFLOW_ENVIRON_" not in oneCalc:
+			logging.warning("config.py tried to load oneCalc expecting _AFLOW_ENVIRON_ key, but no key existed")
+			return
+		self.config = oneCalc["_AFLOW_ENVIRON_"].copy()
 
 	def add_loop(self, param, rangelist):
 		self.config['pdict']['loopidx'] = 0
@@ -69,13 +52,21 @@ class EnvironConfig():
 	def set_diffuse(self, diffuse):
 		self.config['diffuse'] = diffuse
 
-	def write_to_file(self):
-		oneCalc['__runList__'].append('environ_scf')
-		AFLOWpi.prep._saveOneCalc(oneCalc,ID)	
-		with open(os.path.join(self.config['workdir'], 'AFLOWpi', 'environ.json'), 'w') as f:
-			json.dump(self.config, f, sort_keys=True, indent=4)
-
-
+	def update_calcs(self):
+		if self.calcs is None:
+			logging.error("environ.config.write_to_file called but calcs has not been initialized, this shouldn't happen!")
+			return None
+		for ID, oneCalc in self.calcs.int_dict.items():
+			oneCalc["_AFLOW_ENVIRON_"] = self.config.copy()
+			# most importantly save each oneCalc here! (I don't know when they are first created)
+			AFLOWpi.prep._saveOneCalc(oneCalc, ID)
+		return self.calcs
+	
+def init_config(calcs):
+	environ_config = AFLOWpi.environ.config.EnvironConfig()
+	environ_config.init_calcs(calcs)
+	environ_config.init_environ()
+	return environ_config
 
 def set_params(config):
 	astr = ""
@@ -86,7 +77,7 @@ def set_params(config):
 
 def set_workflow(config, mode, execPrefix, execPostfix):
 	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_single(__submitNodeName__, oneCalc, ID,
-		mode={}, execPrefix="{}", execPostfix="{}")
+		mode="{}", execPrefix="{}", execPostfix="{}")
 oneCalc['__execCounter__']+=1
 AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode, execPrefix, execPostfix)
 
@@ -96,14 +87,14 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode, execPrefix, execPostfix)
 		param = config.config['param']
 		plist = config.config['pdict'][param]
 		for _ in plist:
-			astr += ("AFLOWpi.environ.get_environ_input('from_config', loopparam='%s', "
+			astr += ("AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', loopparam='%s', "
 					 "loopval=%s[loopidx], loopidx=loopidx)\n"%(param, param))
 			astr += ("loopidx += 1\n")
 			astr += scfsingle + '\n'
 			astr += ("shutil.copy(ID+'.out', 'STEP_%02d'%loopidx)\n")
 	else:
 		# no loops
-		astr += "AFLOWpi.environ.get_environ_input('from_config')\n"
+		astr += "AFLOWpi.environ.get_environ_input(oneCalc, 'from_config')\n"
 		astr += scfsingle + '\n'
 	print(('set_workflow output: {}'.format(astr)))
 	return astr

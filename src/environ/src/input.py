@@ -3,6 +3,7 @@ import shutil
 import json
 import os
 import logging
+from copy import deepcopy
 
 class EnvironFile():
 	# TODO change defaults to something more general
@@ -18,7 +19,7 @@ class EnvironFile():
 		# TODO add sanity checks to make sure input is fine before writing environ.in file
 
 	def set_defaults(self):
-		self.environ_data = AFLOWpi.environ.environ_default.copy()
+		self.environ_data = deepcopy(AFLOWpi.environ.environ_default)
 
 	def set_interface_mode(self, interface):
 		# TODO, remove a lot of the assumptions that don't have anything to do with the interface
@@ -94,7 +95,11 @@ class EnvironFile():
 			for label, value in nml.items():
 				default = AFLOWpi.environ.environ_default[key]
 				if label in default and value != default[label]:
-					output += "{}{} = {}\n".format(s, label, value)
+					if type(value) == list:
+						for i, element in enumerate(value):
+							output += "{}{}({}) = {}\n".format(s, label, i+1, element)
+					else:		
+						output += "{}{} = {}\n".format(s, label, value)
 			output += "/\n"
 		with open(filepath, 'w') as f:
 			f.write(output)
@@ -120,6 +125,7 @@ def get_environ_input(oneCalc, mode, wdir=None, **kwargs):
 	elif mode == 'from_config':
 		if "_AFLOW_ENVIRON_" in oneCalc:
 			config = oneCalc["_AFLOW_ENVIRON_"]
+			print("CONFIG", config)
 
 			# read dictionary and parse contents into a template environ file
 			environ_file = EnvironFile()
@@ -157,8 +163,10 @@ def get_environ_input(oneCalc, mode, wdir=None, **kwargs):
 
 if __name__ == '__main__':
 	e = EnvironFile()
-	e.set_interface_mode("electronic")
+	e.set_interface_mode("ionic")
 	e.set_solvent_mode("water")
 	e.set_diffuse_mode("3d")
+	import pprint
+	pprint.pprint(e.environ_data)
 	e.write_file('environ.in')
 
