@@ -30,6 +30,7 @@ import re
 import itertools
 import shutil
 import glob
+import subprocess as sp
 
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/examples/','main.py')
@@ -54,10 +55,21 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     try:
         command = '%s python -u %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
         print(command)
-        os.system(command)
-    except Exception as e:
-        print(e)
 
+
+        proc = sp.Popen(command, stdout=sp.PIPE)
+        stdout = proc.communicate()[0]
+        return_code = child.returncode
+
+        if return_code!=0:
+            AFLOWpi.run._fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+            raise SystemExit
+
+    except Exception as e:
+        AFLOWpi.run._fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+        raise SystemExit
 
 def PAOFLOW_DATA_CONV(oneCalc,ID):
     try:
