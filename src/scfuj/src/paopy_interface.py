@@ -35,7 +35,12 @@ import subprocess as sp
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/examples/','main.py')
 
-    shutil.copy(paopy_path,oneCalc['_AFLOWPI_FOLDER_'])
+    try:
+        shutil.copy(paopy_path,oneCalc['_AFLOWPI_FOLDER_'])
+    except Exception as e:
+        AFLOWpi.run._fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+        raise SystemExit
 
     paopy_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'main.py')
 
@@ -57,9 +62,9 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
         print(command)
 
 
-        proc = sp.Popen(command, stdout=sp.PIPE)
-        stdout = proc.communicate()[0]
-        return_code = child.returncode
+        proc = sp.run(command,shell=True)
+
+        return_code = proc.returncode
 
         if return_code!=0:
             AFLOWpi.run._fancy_error_log(e)
