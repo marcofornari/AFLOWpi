@@ -520,7 +520,7 @@ static double three_center_1D(double xi, int ai, double alphai,
 /*  coefficients, etc., used by the contracted code. Decided to  */
 /*  allocate this all at once rather than doing mallocs/frees. */
 /*  Only speeds things up a little, but every little bit counts, I guess. */
-#define MAX_PRIMS_PER_CONT (10)
+#define MAX_PRIMS_PER_CONT (24)
 double work[12*MAX_PRIMS_PER_CONT];
 double work_luis[24*MAX_PRIMS_PER_CONT]; /*Luis*/
 
