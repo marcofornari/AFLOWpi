@@ -158,7 +158,7 @@ try:
 
                       
          package_data = {
-                                  'AFLOWpi':['PAOFLOW/examples/*.py',
+                                  'AFLOWpi':['PAOFLOW/examples/main.py',
                                              'scfuj/acbn0_support/*','AFLOWSYM/*'],
 
 
@@ -203,8 +203,6 @@ def binaries_directory():
 
 try:
    inst_dir=binaries_directory()
-
-
    AFLOW_EXEC = os.path.join(inst_dir,'AFLOWpi','AFLOWSYM','aflow')
    if not os.access(AFLOW_EXEC,3):
       os.chmod(AFLOW_EXEC,733)      
