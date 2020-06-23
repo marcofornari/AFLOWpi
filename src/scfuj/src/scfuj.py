@@ -934,13 +934,15 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
                 print(("Minimization for ibrav = %d not implemented" %ibrav))
                 logging.error("Minimization for ibrav = %d not implemented"%ibrav)
                 raise SystemExit
-def acbn0(oneCalc,projCalcID,byAtom=False):
+def acbn0(oneCalc,projCalcID):
         '''
         
 
 
 
         '''
+
+        byAtom=False
 
         oneCalcID = '_'.join(projCalcID.split('_')[:-1])#oneCalc['_AFLOWPI_PREFIX_'][1:]        
 
@@ -1104,7 +1106,7 @@ def acbn0(oneCalc,projCalcID,byAtom=False):
                                 if byAtom==False:
                                     #Get list of all orbitals of type ql of the same species
 #                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
+                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s*\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
 
 
                                     
