@@ -1,0 +1,125 @@
+\documentclass[11pt]{article}
+\usepackage[portrait,margin=0.8in,tmargin=1.0in]{geometry}
+\usepackage{longtable}
+
+\begin{document}
+%\begin{tiny}
+
+\section{AFLOW$\pi$ Configuration file}
+\begin{center}
+\begin{tabular}{|p{3cm}|l|p{9cm}|c|}
+\hline
+\textbf{Variable Name} & \textbf{Type} & \textbf{Description} & \textbf{Req?}\\
+\hline
+
+
+%\Xhline{2\arrayrulewidth}
+%\textbf{Engine Runtime} & \multicolumn{4}{l}{}\\
+%\hline
+
+work\_dir   & Text & Path of the directory where AFLOW$\pi$ will generate the directory tree. Typically this path will be in a scratch partition.& Y\\
+\hline
+pseudo\_dir & Text & Path of the directory containing the pseudopotential files you want to use in your calculations& Y \\
+\hline
+engine\_dir & Text & Path of the directory containing the executables of your calculation engine& Y \\
+\hline
+gipaw\_dir  & Text & Path of the directory containing the executables. Required if workflow contains steps that use GIPAW. & D \\
+\hline
+pao\_dir    & Text & Path of the directory containing the gaussian basis files used in ACBN0. Required if workflow contains ACBN0.& D\\
+\hline
+fig\_dir    & Text & Path of directory where figures will be copied to. If omiitted, figures will only be generated in the directory tree.& N\\
+\hline
+engine                & Text & Type of calculation engine. Only engine currently suppported is Quantum Espresso& N \\
+\hline
+exec\_prefix          & Text & Runtime execution prefix. ex. mpirun -n 64& N\\
+\hline
+exec\_postfix         & Text & Runtime execution postfix. ex. -npool 4& N  \\
+\hline
+exec\_prefix\_serial  & Text & Overrides exec\_postfix for serial executables. On some computing clusters certain executables do not run properly with parallel execution prefixes& N\\
+\hline
+exec\_postfix\_serial & Text & Overrides exec\_postfix for serial executables. When using exec\_prefix\_serial it is sometimes necessary to also override the exec\_postfix& N \\
+\hline
+exec\_postfix\_nscf   & Text & Overrides exec\_postfix for the nscf step of ACBN0 or the generation of PAO-TB hamiltonians& N \\
+\hline
+
+%\end{tabular}
+
+
+%\begin{tabular}{|p{3cm}|l|p{5.5cm}|c|p{5.5cm}|}
+%\hline
+%\textbf{Variable Name} & \textbf{Type} & \textbf{Description} & \textbf{Req?} &  \textbf{Notes}\\
+%\hline
+%\hline
+%\textbf{Data Directories} & \multicolumn{4}{l}{} \\
+%\hlyine
+
+
+%\end{tabular}
+%\begin{tabular}{|p{3cm}|l|p{5.5cm}|c|p{5.5cm}|}
+%\hline
+%\textbf{Variable Name} & \textbf{Type} & \textbf{Description} & \textbf{Req?} &  \textbf{Notes}\\
+%\hline
+%\hline
+%\textbf{Cluster and Queue} & \multicolumn{4}{l}{} \\
+%\hline
+queue             & Text & Name of queue to send PBS jobs to. On some cluster computers this is needed. -q value is appended to the qsub command.& D \\
+\hline
+job\_template     & Text &Path of the cluster job submission template. Required if submitting calculations to a queue.& D\\
+\hline
+steps\_as\_jobs   & Bool & If True: Each step in the calculation workflow will be submitted as a new job. Can be useful in certain situations like a very long workflow.& N \\
+\hline
+restart\_buffer   & Float & Amount of buffer time to include in diring the runtime of the workflow. The buffer allows the calculation engine to gracefully exit before hitting the walltime requested for the cluster job. The job will automatically resubmit itself and restart where it left off. If the value is less than 1.0 then it the buffer will be a (1-value)*walltime requested for the job. If the value is greater than 1.0 then the buffer will be that number of seconds. Default is 0.9& N\\
+\hline
+
+\end{tabular}
+\newpage
+\begin{tabular}{|p{3cm}|l|p{9cm}|c|}
+\hline
+\textbf{Variable Name} & \textbf{Type} & \textbf{Description} & \textbf{Req?}\\
+\hline
+%\hline
+%\textbf{Data Povenance} & \multicolumn{4}{l}{}\\
+%\hline
+cluster\_type     & Text& Type of cluster submission/queue system. Required if submitting jobs to a queue. if not included the calculations will run locally.& D\\
+\hline
+author         & Text & Name of user & N \\
+\hline
+affiliation    & Text & Affiliation of user& \\
+\hline
+title          & Text & Title of project& N\\
+\hline
+
+%\end{tabular}
+%\begin{tabular}{|p{3cm}|l|p{5.5cm}|c|p{5.5cm}|}
+%\hline
+%\textbf{Variable Name} & \textbf{Type} & \textbf{Description} & \textbf{Req?} &  \textbf{Notes}\\
+%\hline
+%\hline
+%\textbf{Miscellaneous}  & \multicolumn{4}{l}{}\\
+%\hline
+log\_level       & Text & Logging level of AFLOW$\pi$. Acceptable values: CRITICAL, ERROR, WARNING, INFO, DEBUG. Default is INFO & N\\
+\hline
+plot\_file\_type & Text & File extension of generated figures. Acceptable values: .png and .pdf. default is .png.& N \\
+\hline
+pseudo\_regex    & Text & Custom regular expression used to choose a pseudopotential file from pseudo\_dir. Rarely needed.& N\\
+\hline
+copy\_execs      & Bool & Whether to copy exectuables to the directory tree or use symbolic links instead. Default is True& N  \\
+\hline
+copy\_pseudos    & Bool & Whether to copy exectuables to the directory tree or use symbolic links instead. Default is True & N\\
+\hline
+
+
+\end{tabular}
+%\end{tiny}
+%% daemon & Defunct & \\
+%% copyback\_every\_step & Defunct & \\
+%% local\_scratch\_dir & Defunct & \\
+%% local\_scratch & Defunct & \\
+
+%    \hline
+%\end{tabular}
+\end{center}
+
+
+
+\end{document}
