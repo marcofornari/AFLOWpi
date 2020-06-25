@@ -5,14 +5,14 @@ import logging
 
 def _execheck():
 	pwx_dir=AFLOWpi.prep._ConfigSectionMap('prep', 'engine_dir')
-	if AFLOWpi.prep._ConfigSectionMap('prep', 'copy_execs').lower()=='false':
+	if AFLOWpi.prep._ConfigSectionMap('prep', 'copy_execs').lower() == 'false':
 		symlink = True
 	else:
 		symlink = False
-	pwx_exec_loc = os.path.join(pwx_dir,'pw.x')
+	pwx_exec_loc = os.path.join(pwx_dir, 'pw.x')
 	if not os.path.exists(pwx_exec_loc):
-		logging.error('ERROR: engine executables not found in %s please check your config file. EXITING' % pwx_dir)
-		print(('ERROR: engine executables not found in %s please check your config file EXITING' % pwx_dir))
+		logging.error('ERROR: engine executables not found in {} please check your config file. EXITING'.format(pwx_dir))
+		print(('ERROR: engine executables not found in {} please check your config file EXITING'.format(pwx_dir)))
 		raise SystemExit
 	return pwx_exec_loc, symlink
 
@@ -99,19 +99,19 @@ def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
 		execPrefix=''
 
 	if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-		execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+		execPostfix = AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix")
 	else:
 		execPostfix = ""
 		execPostfix += " --environ "
 
-	if AFLOWpi.prep._ConfigSectionMap('run','engine') == '':
-		engine = AFLOWpi.prep._ConfigSectionMap('run','engine')
+	if AFLOWpi.prep._ConfigSectionMap('run', 'engine') == '':
+		engine = AFLOWpi.prep._ConfigSectionMap('run', 'engine')
 	else:
 		engine = 'espresso'
 
-	oneCalc['_AFLOWPI_CONFIG_']=config
+	oneCalc['_AFLOWPI_CONFIG_'] = config
 
-	oneCalc, ID = AFLOWpi.environ._setup_environ_relax(oneCalc,ID)
+	oneCalc, ID = AFLOWpi.environ._setup_environ_relax(oneCalc, ID)
 
 	if 'environ_relax' not in oneCalc['__runList__']:
 		AFLOWpi.run._oneRun(__submitNodeName__, oneCalc, ID, execPrefix=execPrefix, 
@@ -120,13 +120,13 @@ def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
 		oneCalc['__runList__'].append('environ_relax')
 		AFLOWpi.prep._saveOneCalc(oneCalc,ID)
         
-		environ_scf_calc,environ_scf_ID= AFLOWpi.environ._setup_environ_scf(oneCalc,ID)
+		environ_scf_calc, environ_scf_ID = AFLOWpi.environ._setup_environ_scf(oneCalc, ID)
 
 	else:
 		'''if we are restarting from a job killed from going walltime 
 		   try to load environ_scf_ID and if we can't then just make a new one'''
 		try:
-			environ_scf_ID='%s_environ_scf' % ID
+			environ_scf_ID='{}_environ_scf'.format(ID)
 			environ_scf_calc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],environ_scf_ID)                
 			'''we have to make sure nscf step has the correct walltime and start time if it's a restart'''
 			environ_scf_calc['__walltime_dict__']=oneCalc['__walltime_dict__']
@@ -196,7 +196,7 @@ def _run_environ_single(__submitNodeName__, oneCalc, ID, mode, execPrefix, execP
 	return oneCalc, ID
 
 def _setup_environ_scf(oneCalc,ID):
-	onecalc, ID = AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"scf"')
+	oneCalc, ID = AFLOWpi.prep._modifyNamelistPW(oneCalc, ID, '&control', 'calculation', '"scf"')
 	return oneCalc, ID
 
 def _setup_environ_relax2scf(oneCalc,ID):
@@ -205,13 +205,14 @@ def _setup_environ_relax2scf(oneCalc,ID):
 	environ_scf_oneCalc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],ID)                    
 
 	# CHANGE THE RELAX TO SCF AND SAVE FILE TO DISK
-	environ_scf_oneCalc,environ_scf_ID=AFLOWpi.prep._modifyNamelistPW(environ_scf_oneCalc,environ_scf_ID,'&control','calculation','"scf"')    
+	environ_scf_oneCalc, environ_scf_ID = AFLOWpi.prep._modifyNamelistPW(
+		environ_scf_oneCalc, environ_scf_ID, '&control', 'calculation', '"scf"')    
 
-	return environ_scf_oneCalc,environ_scf_ID
+	return environ_scf_oneCalc, environ_scf_ID
 
 
 def _setup_environ_relax(oneCalc,ID):
-	oneCalc,ID=AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&control','calculation','"relax"')    
-	return oneCalc,ID
+	oneCalc, ID = AFLOWpi.prep._modifyNamelistPW(oneCalc, ID, '&control', 'calculation', '"relax"')    
+	return oneCalc, ID
 
 

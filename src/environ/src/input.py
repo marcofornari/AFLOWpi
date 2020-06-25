@@ -17,6 +17,11 @@ class EnvironFile():
 	def sanity_check(self, mode):
 		pass
 		# TODO add sanity checks to make sure input is fine before writing environ.in file
+	
+	def update_environ_data(self, keypath, val):
+		k1 = keypath.split('/')[0].upper()
+		k2 = keypath.split('/')[1].lower()
+		self.environ_data[k1][k2] = val
 
 	def set_defaults(self):
 		self.environ_data = deepcopy(AFLOWpi.environ.environ_default)
@@ -28,9 +33,9 @@ class EnvironFile():
 			self.environ_data['&BOUNDARY']['stype'] = 2
 		elif interface == 'ionic':
 			self.environ_data['&ENVIRON']['env_electrostatic'] = True
-			self.environ_data['&BOUNDARY']['radius_mode'] = 'muff'
+			#self.environ_data['&BOUNDARY']['radius_mode'] = 'muff'
 			self.environ_data['&BOUNDARY']['solvent_mode'] = 'ionic'
-			self.environ_data['&BOUNDARY']['boundary_core'] = 'lowmem'
+			#self.environ_data['&BOUNDARY']['boundary_core'] = 'lowmem'
 			self.environ_data['&ELECTROSTATIC']['pbc_correction'] = 'parabolic'
 			self.environ_data['&ELECTROSTATIC']['pbc_dim'] = 0
 			self.environ_data['&ELECTROSTATIC']['tol'] = 1e-10
@@ -98,19 +103,16 @@ class EnvironFile():
 					if type(value) == list:
 						for i, element in enumerate(value):
 							output += "{}{}({}) = {}\n".format(s, label, i+1, element)
-					else:		
+					elif type(value) == str:
+						output += "{}{} = '{}'\n".format(s, label, value)
+					else:
 						output += "{}{} = {}\n".format(s, label, value)
 			output += "/\n"
 		with open(filepath, 'w') as f:
 			f.write(output)
 
-	def edit(self, nml, key, val):
-		if not nml in self.environ_data or key in self.environ_data[nml]:
-			logging.error('namelist/key ({}/{}) not found, have you set up the environ file correctly?'.format(
-				nml, key))
-			return
-		# TODO sanity check the input
-		self.environ_data[nml][key] = val
+	def edit(self, keypath, val):
+		self.update_environ_data(keypath, val)
 
 def get_environ_input(oneCalc, mode, wdir=None, **kwargs):
 	if mode == 'from_file':
@@ -139,7 +141,7 @@ def get_environ_input(oneCalc, mode, wdir=None, **kwargs):
 			if 'edit' in config and config['edit']:
 				for edit in config['edit']:
 					# BROKE THIS, TODO fix
-					environ_file.edit(edit[0], edit[1], edit[2])
+					environ_file.edit(edit[0], edit[1])
 		else:
 			logging.warning("oneCalc does not contain an _AFLOW_ENVIRON_ entry")
 			get_environ_input(oneCalc, 'default', wdir)
@@ -153,7 +155,7 @@ def get_environ_input(oneCalc, mode, wdir=None, **kwargs):
 		if 'loopval' in kwargs and 'loopparam' in kwargs:
 			# part of a loop, thus do a substitution based on the param fed in
 			print('updating')
-			environ_file.environ_data[kwargs['loopparam']] = kwargs['loopval']
+			environ_file.update_environ_data(kwargs['loopparam'], kwargs['loopval'])
 			environ_file.write_file(os.getcwd() + '/' + 'ENVIRON_{:02d}'.format(kwargs['loopidx']+1))
 		environ_file.write_file(os.getcwd() + '/' + 'environ.in')
 	

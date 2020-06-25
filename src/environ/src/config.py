@@ -34,11 +34,13 @@ class EnvironConfig():
 			return
 		self.config = oneCalc["_AFLOW_ENVIRON_"].copy()
 
-	def add_loop(self, param, rangelist):
+	def add_single_loop(self, param, rangelist):
 		self.config['pdict']['loopidx'] = 0
-		self.config['pdict'][param] = rangelist
+		self.config['pdict']['loopvals'] = rangelist
+		self.config['loopparam'] = param
+		# include a valid python identifier
+		self.config['looplabel'] = "loopvals"
 		self.config['mode'] = 'loop'
-		self.config['param'] = param
 
 	def edit(self, key, val):
 		if 'edit' in self.config:
@@ -71,8 +73,8 @@ def init_config(calcs):
 def set_params(config):
 	astr = ""
 	for key, val in list(config.config['pdict'].items()):
-		astr += "%s = %s\n"%(str(key), str(val))
-	print(('set_params output: %s'%(astr)))
+		astr += "{} = {}\n".format(str(key), str(val))
+	print(('set_params output: {}'.format(astr)))
 	return astr
 
 def set_workflow(config, mode, execPrefix, execPostfix):
@@ -84,14 +86,15 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode, execPrefix, execPostfix)
 	astr = ""
 	if 'mode' in config.config and config.config['mode'] == 'loop':
 		# 1D loop add to script
-		param = config.config['param']
-		plist = config.config['pdict'][param]
+		param = config.config['loopparam']
+		label = config.config['looplabel']
+		plist = config.config['pdict']['loopvals']
 		for _ in plist:
-			astr += ("AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', loopparam='%s', "
-					 "loopval=%s[loopidx], loopidx=loopidx)\n"%(param, param))
+			astr += ("AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', loopparam='{}', "
+					 "loopval={}[loopidx], loopidx=loopidx)\n".format(param, label))
 			astr += ("loopidx += 1\n")
 			astr += scfsingle + '\n'
-			astr += ("shutil.copy(ID+'.out', 'STEP_%02d'%loopidx)\n")
+			astr += ("shutil.copy(ID+'.out', 'STEP_{:02d}'.format(loopidx))\n")
 	else:
 		# no loops
 		astr += "AFLOWpi.environ.get_environ_input(oneCalc, 'from_config')\n"
