@@ -1091,6 +1091,9 @@ def acbn0(oneCalc,projCalcID):
                 if byAtom:
                     atmSpList= [str(x) for x in range(1,len(atmPosList)+1)]
                 
+
+                orb_dict,orb_dict_red = AFLOWpi.scfuj.read_U_orbs(subdir,oneCalcID+"_TB.save")
+
                 #For each atomic species
                 for atmSp in atmSpList:
 
@@ -1101,50 +1104,9 @@ def acbn0(oneCalc,projCalcID):
                                     atmSp=oneCalc['__scfuj_label_mapping__'][atmSp]
                                 except:
                                     pass
-                                ql = get_orbital(atmSp.strip('0123456789'))
-#                                print 'ql',ql
-                                if byAtom==False:
-                                    #Get list of all orbitals of type ql of the same species
-#                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\d*\s*\).*\(l=%d.*\)\n"%(atmSp.strip('0123456789'),ql),re.MULTILINE)
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s*\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
 
-
-                                    
-                                    eqOrbList = list(map(int, list(map(float, eqOrbRegex.findall(proj_lines)))))
-                                    red_basis = [x - 1 for x in eqOrbList]
-
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*\(%s\s*\).*\(l=%d.*\)\n"%(atmSp,ql),re.MULTILINE)
-                                #Get ones relevant for hubbard center
-
-
-                                else:
-
-                                    getSpecByAtomRegex = re.compile(r"state #\s*(?:\d*): atom\s*%s\s*\(([a-zA-Z]+)"%atmSp)
-                                    speciesFromNum = getSpecByAtomRegex.findall(proj_lines)[-1]
-                                    ql = get_orbital(speciesFromNum.strip('0123456789'))
-
-                                    #Get list of all orbitals of type ql of the same atom
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*(%s\s*).*l=%d.*\n"%(speciesFromNum,ql),re.MULTILINE)  
-#                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom.*%s.*l=%d.*\n"%(speciesFromNum.strip('0123456789'),ql),re.MULTILINE)          
-
-
-                                    eqOrbList = list(map(int, list(map(float,eqOrbRegex.findall(proj_lines)))))
-                                    red_basis = [x - 1 for x in eqOrbList]
-
-                                #Get ones relevant for hubbard center
-                                    eqOrbRegex = re.compile(r"state #\s*(\d*): atom\s*%s.*\s*\(\s*l=%d.*\n"%(atmSp,ql),re.MULTILINE)          
-                              
-
-                                eqOrbList = list(map(int, list(map(float,eqOrbRegex.findall(proj_lines)))))#;print eqOrbList
-                            
-                                red_basis_for2e = [x - 1 for x in eqOrbList]
-                                #Get list of orbitals of type l for one atom of the species
-                                red_basis_2e = []
-                                red_basis_2e.append(red_basis_for2e[0])
-                                for i in range(1,len(red_basis_for2e)):
-                                        if float(red_basis_for2e[i]) == float(red_basis_for2e[i-1])+1:
-                                            red_basis_2e.append(red_basis_for2e[i])
-                                        else:break
+                                red_basis=orb_dict[atmSp]
+                                red_basis_2e=orb_dict_red[atmSp]
 
                                 #Create input file for respective species
                                 infnm = oneCalcID + "_acbn0_%s.in"%atmSp
