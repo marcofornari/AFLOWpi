@@ -5,8 +5,6 @@ import xml.etree.cElementTree as ET
 import os
 
 def resolve_old_qe_l(sd,onamd,slist):
-
-
     for sp in sd.keys(): 
         if sd[sp]==0:
             target="S"
@@ -22,7 +20,6 @@ def resolve_old_qe_l(sd,onamd,slist):
             if i[1]==target:
                 sd[sp]=i
                 break
-
 
     return sd
 
@@ -50,7 +47,6 @@ def read_old_QE_xml( fn):
                     pp_dict[species]=pseudos
                     species_list.append(species)
 
-
                 atoms = []
                 natoms = int(elem.findall("NUMBER_OF_ATOMS")[0].text.split()[0])
                 tau = np.zeros((natoms,3), dtype=float)
@@ -64,7 +60,6 @@ def read_old_QE_xml( fn):
                 HL = elem.findall("HUBBARD_L")[0].text.split()
                 for i in range(len(HL)):   
                     spec_dict[species_list[i]]=int(HL[i])
-
 
     atoms=np.array(atoms)
 
@@ -92,8 +87,6 @@ def read_QE_xml( fn):
                     spec_dict[spe]=lab
             except: pass
 
-
-
             lspecies = elem.findall("atomic_species/species")
             for n in lspecies:
                 pp_dict[n.attrib['name']]=n.findall('pseudo_file')[0].text
@@ -107,7 +100,6 @@ def read_QE_xml( fn):
                 for n in range(natoms):
                     atoms.append(latoms[n].attrib['name'])
 
-
     return spec_dict,pp_dict,atoms
 
 
@@ -118,10 +110,6 @@ def read_QE_xml( fn):
 
 def read_shell ( workpath,savedir,species,atoms,    spin_orb=False):
     # reads in shelks from pseudo files
-
-
-
-
 
     # Get Shells for each species
     sdict = {}
@@ -162,9 +150,7 @@ def read_shell ( workpath,savedir,species,atoms,    spin_orb=False):
                         tmp.extend([2.5,3.5])
                 jchid[s]=np.array(tmp)
 
-
         jchia = np.hstack([jchid[a] for a in atoms])
-
 
     # index of which orbitals belong to which atom in the basis
     a_index = np.hstack([[a]*np.sum((2*sdict[atoms[a]])+1) for a in range(len(atoms))])
@@ -172,13 +158,11 @@ def read_shell ( workpath,savedir,species,atoms,    spin_orb=False):
     # value of l
     shell   = np.hstack([sdict[a] for a in atoms])
 
-
     by_lab=[]
     for a in range(len(atoms)):
         orbs=sdict[atoms[a]]
         for o in range(len(orbs)):
-            by_lab.extend(((onamd[atoms[a]][o]+" ")*(2*orbs[o]+1)).split()            )
-
+            by_lab.extend(((onamd[atoms[a]][o]+" ")*(2*orbs[o]+1)).split())
 
     by_lab=np.array(by_lab)
 
@@ -269,6 +253,7 @@ def read_U_orbs(workpath,savedir):
     shell,a_index,_,onamd = read_shell ( workpath,savedir,ppd,atoms,spin_orb=False)
     slist=atoms[a_index]
 
+    # pick first orbital with angular momentum l
     if old_qe:
         sd=resolve_old_qe_l(sd,onamd,slist)
 
