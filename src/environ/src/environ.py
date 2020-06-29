@@ -2,7 +2,6 @@ import AFLOWpi
 import os
 import logging
 
-
 def _execheck():
 	pwx_dir=AFLOWpi.prep._ConfigSectionMap('prep', 'engine_dir')
 	if AFLOWpi.prep._ConfigSectionMap('prep', 'copy_execs').lower() == 'false':
@@ -17,10 +16,18 @@ def _execheck():
 	return pwx_exec_loc, symlink
 
 def setup_environ(calcs, workflow, config=None):
-	"""SETUP_RELAX
-	this function should only need to worry about making sure
-	calculation is a relax and that the environ.in file is
-	correctly copied over
+	"""MAIN setup function
+
+	this function is called by the user indirectly in order to write the submission scripts with some
+	predetermined workflow. Currently support the basic options, relax and scf.
+
+	Args:
+		workflow (str): the flag that determines a desired standard workflow
+		config (class:`AFLOWpi.environ.config.EnvironConfig`): an optional config file 
+			with non-standard workflow information
+
+	Returns:
+		None
 	"""
 	environmode = "from_file"
 	if config is None:
@@ -48,12 +55,9 @@ def setup_environ(calcs, workflow, config=None):
 	# oneCalc['__execCounter__']+=1
 	# AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''%(step_counter)
 	
-	execPrefix=AFLOWpi.prep._ConfigSectionMap("run", "exec_prefix")
-	execPostfix=AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix")
-	runcommand='''oneCalc, ID = AFLOWpi.environ._run_environ_single(__submitNodeName__, oneCalc, ID, "{}", execPrefix="{}",
-		execPostfix="{}")
+	runcommand = '''oneCalc, ID = AFLOWpi.environ._run_environ_single(__submitNodeName__, oneCalc, ID, "{}")
 oneCalc['__execCounter__']+=1
-AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(workflow, execPrefix, execPostfix)
+AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(workflow)
 
 	working_directory = os.getcwd() + "/"
 	param_pre = """wdir = '{}'""".format(working_directory)
@@ -69,10 +73,23 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(workflow, execPrefix, execPostf
 	AFLOWpi.prep.addToAll_(calcs, 'PREPROCESSING', environ_pre)
 
 	if config is not None:
-		runcommand = AFLOWpi.environ.set_workflow(config, workflow, execPrefix, execPostfix)
+		runcommand = AFLOWpi.environ.set_workflow(config, workflow)
 	AFLOWpi.prep.addToAll_(calcs, 'RUN', runcommand)
 
 def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
+	"""INTERNAL iterative function
+
+	This function is untested, and reserved since it contains potentially useful info on how
+	to construct particular workflows. Intended to run a relax and scf sequentially
+
+	Args:
+		__submitNodeName__ ([type]): [description]
+		oneCalc (dict): information specific to the submission
+		ID (str): unique job identifier
+
+	Returns:
+		tuple(dict, str): returns updated versions of input parameters
+	"""
 
 	# probably don't have to worry about this stuff
 	execPrefix = ''
@@ -80,12 +97,12 @@ def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
 	oneCalcID = ID
 
 	if '__runList__' not in list(oneCalc.keys()):
-		oneCalc['__runList__']=[]
+		oneCalc['__runList__'] = []
 		config=None
 
 	if config is not None:
 		AFLOWpi.prep._forceGlobalConfigFile(config)
-		logging.debug('forced config %s' % config)
+		logging.debug('forced config {}'.format(config))
 	else:
 		try:
 			config = AFLOWpi.prep._getConfigFile()
@@ -98,7 +115,7 @@ def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
 	else:
 		execPrefix=''
 
-	if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
+	if AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix") != '':
 		execPostfix = AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix")
 	else:
 		execPostfix = ""
@@ -144,11 +161,25 @@ def _run_environ_iterative(__submitNodeName__, oneCalc, ID):
 			execPostfix=execPostfix, engine='espresso', calcType='scf', executable=None, exit_on_error=False)
 
 		oneCalc['__runList__'].append('environ_scf')
-		AFLOWpi.prep._saveOneCalc(oneCalc,ID)	
+		AFLOWpi.prep._saveOneCalc(oneCalc, ID)	
 
-		return oneCalc,ID
+	return oneCalc, ID
 
-def _run_environ_single(__submitNodeName__, oneCalc, ID, mode, execPrefix, execPostfix):
+def _run_environ_single(__submitNodeName__, oneCalc, ID, mode):
+	"""INTERNAL single function
+
+	This function runs a single environ calculation, determined by the mode param, which
+	currently switches between scf and relax
+
+	Args:
+		__submitNodeName__ ([type]): [description]
+		oneCalc (dict): information specific to the submission
+		ID (str): unique job identifier
+		mode (str): job type
+
+	Returns:
+		tuple(dict, str): returns updated versions of input parameters
+	"""
 	oneCalcID = ID
 	engine = ''
 	config = None
@@ -167,11 +198,15 @@ def _run_environ_single(__submitNodeName__, oneCalc, ID, mode, execPrefix, execP
 		except Exception as e:
 			AFLOWpi.run._fancy_error_log(e)
 
+	if AFLOWpi.prep._ConfigSectionMap("run", "exec_prefix") != '':
+		execPrefix=AFLOWpi.prep._ConfigSectionMap("run", "exec_prefix")
+	else:
+		execPrefix=''
+
 	if AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix") != "":
 		execPostfix = AFLOWpi.prep._ConfigSectionMap("run", "exec_postfix")
 	else:
-		execPostfix = ""
-		execPostfix += " --environ"
+		execPostfix = " --environ"
 
 	if AFLOWpi.prep._ConfigSectionMap("run", "engine") == "":
 		engine = AFLOWpi.prep._ConfigSectionMap("run", "engine")
@@ -183,7 +218,7 @@ def _run_environ_single(__submitNodeName__, oneCalc, ID, mode, execPrefix, execP
 	if mode == "environ_scf":
 		oneCalc, ID = AFLOWpi.environ._setup_environ_scf(oneCalc, ID)
 	elif mode == "environ_relax":
-		oneCalc, ID = AFLOWpi.environ._setup_environ_scf(oneCalc, ID)
+		oneCalc, ID = AFLOWpi.environ._setup_environ_relax(oneCalc, ID)
 
 	# TODO check what this does exactly
 	AFLOWpi.run._oneRun(__submitNodeName__, oneCalc, ID, execPrefix=execPrefix,
@@ -195,14 +230,38 @@ def _run_environ_single(__submitNodeName__, oneCalc, ID, mode, execPrefix, execP
 
 	return oneCalc, ID
 
-def _setup_environ_scf(oneCalc,ID):
+def _setup_environ_scf(oneCalc, ID):
+	"""INTERNAL setup function
+
+	Not meant to be called directly, ensures the correct parameter entry in the pw input
+	file for an scf calculation
+
+	Args:
+		oneCalc (dict): information specific to the submission
+		ID (str): unique job identifier
+
+	Returns:
+		tuple(dict, str): returns updated versions of input parameters
+	"""
 	oneCalc, ID = AFLOWpi.prep._modifyNamelistPW(oneCalc, ID, '&control', 'calculation', '"scf"')
 	return oneCalc, ID
 
-def _setup_environ_relax2scf(oneCalc,ID):
+def _setup_environ_relax2scf(oneCalc, ID):
+	"""INTERNAL setup function
+
+	Not meant to be called directly, ensures the correct parameter entry in the pw input
+	file for an scf calculation
+
+	Args:
+		oneCalc (dict): information specific to the submission
+		ID (str): unique job identifier
+
+	Returns:
+		tuple(dict, str): returns updated versions of input parameters
+	"""
 
 	environ_scf_ID = "{}_environ_scf".format(ID)
-	environ_scf_oneCalc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'],ID)                    
+	environ_scf_oneCalc = AFLOWpi.prep._loadOneCalc(oneCalc['_AFLOWPI_FOLDER_'], ID)                    
 
 	# CHANGE THE RELAX TO SCF AND SAVE FILE TO DISK
 	environ_scf_oneCalc, environ_scf_ID = AFLOWpi.prep._modifyNamelistPW(
@@ -212,6 +271,18 @@ def _setup_environ_relax2scf(oneCalc,ID):
 
 
 def _setup_environ_relax(oneCalc,ID):
+	"""INTERNAL setup function
+
+	Not meant to be called directly, ensures the correct parameter entry in the pw input
+	file for a relax calculation
+
+	Args:
+		oneCalc (dict): information specific to the submission
+		ID (str): unique job identifier
+
+	Returns:
+		tuple(dict, str): returns updated versions of input parameters
+	"""
 	oneCalc, ID = AFLOWpi.prep._modifyNamelistPW(oneCalc, ID, '&control', 'calculation', '"relax"')    
 	return oneCalc, ID
 

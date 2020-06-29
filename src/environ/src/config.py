@@ -5,6 +5,17 @@ import logging
 
 class EnvironConfig():
 	def __init__(self):
+		"""Environ config object
+
+		Contains information for setting up a custom environ workflow.
+		Loaded in by the submission script in order to call the convenient inbuilt functions
+
+		Attributes:
+			calcs (class: `AFLOWpi.prep.calcs_container`): reference to the calcs, used to extract
+				the environ part stored in this object and is updated when needed
+			config (dict): Environ part of the calcs object, separated since calcs is quite unwieldly
+		"""
+
 		# read from AFLOW config file and save important things
 		self.calcs = None
 		self.config = {}
@@ -16,25 +27,46 @@ class EnvironConfig():
 		#    in this case, load in the onecalc into self.config
 
 	def init_calcs(self, calcs):
+		"""Initializes the calcs object
+
+		Args:
+			calcs (class: `AFLOWpi.prep.calcs_container`): reference to the calcs, used to extract
+				the environ part stored in this object and is updated when needed
+		"""
 		self.calcs = calcs
 
 	def init_environ(self):
+		"""Initializes the config dictionary with default environ settings
+		"""
 		#workdir = wpre + projectname + '/' + setname + '/'
 		self.config['pdict'] = {}
 		#self.config['workdir'] = workdir
 
-		# by default set to fa-ionic, maybe change
 		self.config['solvent'] = 'water'
-		self.config['interface'] = 'ionic'
+		self.config['interface'] = 'electronic'
 		self.config['diffuse'] = 'none'
 
 	def from_one_calc(self, oneCalc):
+		"""Initializes the config dictionary from the values in a oneCalc orderedDict
+
+		Args:
+			oneCalc (OrderedDict): information relating to the AFLOWpi job, typically loaded in from file
+		"""
 		if "_AFLOW_ENVIRON_" not in oneCalc:
 			logging.warning("config.py tried to load oneCalc expecting _AFLOW_ENVIRON_ key, but no key existed")
 			return
 		self.config = oneCalc["_AFLOW_ENVIRON_"].copy()
 
 	def add_single_loop(self, param, rangelist):
+		"""Adds a single loop over some parameter
+
+		Defines a more complex workflow where each job sequentially repeats the standard workflow over a defined
+		list of parameters
+
+		Args:
+			param (str): parameter formatted to store the namelist and the entry
+			rangelist (list): values to change the parameter on each step
+		"""
 		self.config['pdict']['loopidx'] = 0
 		self.config['pdict']['loopvals'] = rangelist
 		self.config['loopparam'] = param
@@ -43,16 +75,28 @@ class EnvironConfig():
 		self.config['mode'] = 'loop'
 
 	def edit(self, key, val):
+		"""Edits a particular key/value pair from the environ input file
+
+		Allows for more particular environ input files without a template
+
+		Args:
+			key (str): the parameter name
+			val (any): value to set
+		"""
 		if 'edit' in self.config:
 			self.config['edit'].append([key, val])
 		else:
 			self.config['edit'] = [[key, val]]
 
+	# perhaps merge functions
 	def set_interface(self, interface):
 		self.config['interface'] = interface
 
 	def set_diffuse(self, diffuse):
 		self.config['diffuse'] = diffuse
+
+	def set_solvent(self, solvent):
+		self.config['solvent'] = solvent
 
 	def update_calcs(self):
 		if self.calcs is None:
@@ -77,11 +121,11 @@ def set_params(config):
 	print(('set_params output: {}'.format(astr)))
 	return astr
 
-def set_workflow(config, mode, execPrefix, execPostfix):
+def set_workflow(config, mode):
 	scfsingle = '''oneCalc, ID = AFLOWpi.environ._run_environ_single(__submitNodeName__, oneCalc, ID,
-		mode="{}", execPrefix="{}", execPostfix="{}")
+		mode="{}")
 oneCalc['__execCounter__']+=1
-AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode, execPrefix, execPostfix)
+AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode)
 
 	astr = ""
 	if 'mode' in config.config and config.config['mode'] == 'loop':
