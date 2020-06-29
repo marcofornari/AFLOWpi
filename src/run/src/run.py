@@ -1702,14 +1702,14 @@ def _getWalltime(oneCalc,ID):
 
         elif cluster_type=='SLURM':
             try:
-                walltime = re.findall("--time\s*=\s*([0-9:]*)",qsubFileString)[-1]
+                walltime = re.findall("SBATCH --time\s*=\s*([0-9:]*)",qsubFileString)[-1]
             except:
-                walltime = re.findall("-t\s*([0-9:]*)",qsubFileString)[-1]
+                walltime = re.findall("SBATCH -t\s*([0-9:]*)",qsubFileString)[-1]
         else:
             walltime='3000:00:00'
     except:
         walltime='3000:00:00'
-
+    
     splitW = [int(x) for x in walltime.strip().split(":")]
     if len(splitW)==4:
         walltime=splitW[0]*24*3600+splitW[1]*3600+splitW[2]*60+splitW[3]
