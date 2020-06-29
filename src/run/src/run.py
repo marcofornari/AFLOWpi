@@ -2691,17 +2691,17 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
         logging.info("finished %s in %s" % (command, rd))
         print(("finished %s\n" % (command)))
 
-        if AFLOWpi.prep._ConfigSectionMap('prep','save_dir') != '':
-            try:
+        # if AFLOWpi.prep._ConfigSectionMap('prep','save_dir') != '':
+        #     try:
 
-                AFLOWpi.retr._moveToSavedir(os.path.join(rd,ro))
-                AFLOWpi.retr._moveToSavedir(os.path.join(rd,ri))
-                logs = glob.glob('%s/*%s*.log' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
-                for log in logs:
-                    AFLOWpi.retr._moveToSavedir(log)
-                pdf = glob.glob('%s/*%s*.pdf' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
-            except Exception as e:
-                AFLOWpi.run._fancy_error_log(e)
+        #         AFLOWpi.retr._moveToSavedir(os.path.join(rd,ro))
+        #         AFLOWpi.retr._moveToSavedir(os.path.join(rd,ri))
+        #         logs = glob.glob('%s/*%s*.log' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
+        #         for log in logs:
+        #             AFLOWpi.retr._moveToSavedir(log)
+        #         pdf = glob.glob('%s/*%s*.pdf' % (rd,oneCalc['_AFLOWPI_PREFIX_'][1:]))
+        #     except Exception as e:
+        #         AFLOWpi.run._fancy_error_log(e)
 
         logging.debug('STARTING DATA')
         if oneCalc['_AFLOWPI_PREFIX_'][1:]==ID:
