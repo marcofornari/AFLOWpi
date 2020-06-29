@@ -4,6 +4,79 @@ from tempfile import NamedTemporaryFile
 import xml.etree.cElementTree as ET
 import os
 
+def resolve_old_qe_l(sd,onamd,slist):
+
+
+    for sp in sd.keys(): 
+        if sd[sp]==0:
+            target="S"
+        if sd[sp]==1:
+            target="P"
+        if sd[sp]==2:
+            target="D"
+        if sd[sp]==3:
+            target="F"
+        
+        spec_orb=onamd[np.where(sp==slist)[0]]
+        for i in spec_orb:
+            if i[1]==target:
+                sd[sp]=i
+                break
+
+
+    return sd
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+
+def read_old_QE_xml( fn):
+
+    spec_dict={}
+    pp_dict={}
+
+    for event,elem in ET.iterparse(fn,events=('start','end')):
+        if event == 'end':
+
+            # number of atoms
+            if elem.tag == 'IONS':
+                species_list=[]
+                nspecs = int(elem.findall("NUMBER_OF_SPECIES")[0].text.split()[0])
+                for n in range(nspecs):
+                    string = "SPECIE."+str(n+1)
+                    species = elem.findall(string+"/ATOM_TYPE")[0].text.split()[0]
+                    pseudos = elem.findall(string+"/PSEUDO")[0].text.split()[0]
+                    pp_dict[species]=pseudos
+                    species_list.append(species)
+
+
+                atoms = []
+                natoms = int(elem.findall("NUMBER_OF_ATOMS")[0].text.split()[0])
+                tau = np.zeros((natoms,3), dtype=float)
+                for n in range(natoms):
+                    string = "ATOM."+str(n+1)
+                    aux = elem.findall(string)[0]
+                    atoms.append(aux.attrib['SPECIES'][:-1])
+
+
+            if elem.tag == 'EXCHANGE_CORRELATION':
+                HL = elem.findall("HUBBARD_L")[0].text.split()
+                for i in range(len(HL)):   
+                    spec_dict[species_list[i]]=int(HL[i])
+
+
+    atoms=np.array(atoms)
+
+    return spec_dict,pp_dict,atoms
+
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+
 def read_QE_xml( fn):
 
     spec_dict={}
@@ -11,7 +84,6 @@ def read_QE_xml( fn):
 
     for event,elem in ET.iterparse(fn,events=('start','end')):
         if event == 'end':
-#            if elem.tag == "Hubbard_U":
             try:
                 for ohu in elem.findall("dft/dftU/Hubbard_U"):
                 
@@ -183,12 +255,22 @@ def read_pseudopotential ( fpp ):
 
 def read_U_orbs(workpath,savedir):
 
-    dfn=os.path.join(workpath,savedir,"data-file-schema.xml")
-    sd,ppd,atoms=read_QE_xml(dfn)
+    old_qe=False
+    try:
+        dfn=os.path.join(workpath,savedir,"data-file-schema.xml")
+        sd,ppd,atoms=read_QE_xml(dfn)
+    except:
+        old_qe=True
+        dfn=os.path.join(workpath,savedir,"data-file.xml")
+        sd,ppd,atoms=read_old_QE_xml(dfn)
+
     atoms=np.array(atoms)
 
     shell,a_index,_,onamd = read_shell ( workpath,savedir,ppd,atoms,spin_orb=False)
     slist=atoms[a_index]
+
+    if old_qe:
+        sd=resolve_old_qe_l(sd,onamd,slist)
 
     orb_dict={}
     orb_dict_red={}
