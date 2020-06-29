@@ -82,7 +82,7 @@ def __init__gen(src_folder):
 
    os.chdir(orig_dir)
 
-modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph',"environ"]
+modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph']
 for j in modules:
    try:
       os.remove('./src/%s/src/__init__.py'%j)
