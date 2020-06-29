@@ -16,7 +16,7 @@ def resolve_old_qe_l(sd,onamd,slist):
             target="F"
         
         spec_orb=onamd[np.where(sp==slist)[0]]
-        for i in spec_orb:
+        for i in reversed(spec_orb):
             if i[1]==target:
                 sd[sp]=i
                 break
