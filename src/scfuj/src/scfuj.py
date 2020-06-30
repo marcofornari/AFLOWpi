@@ -934,7 +934,8 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
                 print(("Minimization for ibrav = %d not implemented" %ibrav))
                 logging.error("Minimization for ibrav = %d not implemented"%ibrav)
                 raise SystemExit
-def acbn0(oneCalc,projCalcID):
+
+def acbn0(oneCalc,projCalcID,exec_prefix):
         '''
         
 
@@ -1136,11 +1137,12 @@ def acbn0(oneCalc,projCalcID):
                 return inFileList
                         
 
-        def run_acbn0(inputFiles):
+        def run_acbn0(inputFiles,exec_prefix):
                         
                 for infnm in inputFiles:
                         
-                        cmd="python %s/acbn0.py %s > /dev/null"%(subdir,os.path.join(subdir,infnm))     
+                        cmd="%s python %s/acbn0.py %s > /dev/null"%(exec_prefix,subdir,
+                                                                    os.path.join(subdir,infnm))     
                         print(("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
                         logging.info("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
                         try:
@@ -1151,7 +1153,7 @@ def acbn0(oneCalc,projCalcID):
                         print(("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
                         logging.info("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
         acbn0_inFileList = gen_input(oneCalcID,subdir,nspin)    
-        run_acbn0(acbn0_inFileList)
+        run_acbn0(acbn0_inFileList,exec_prefix)
 
 
 def getU_frmACBN0out(oneCalc,ID,byAtom=False,U_eff=True):
@@ -1474,7 +1476,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
 
         #Get new U values from acbn0.py 
         try:
-            acbn0(oneCalc, pdos_ID)
+            acbn0(oneCalc, pdos_ID,execPrefix)
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
             raise SystemExit
