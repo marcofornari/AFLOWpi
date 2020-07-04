@@ -109,47 +109,47 @@ def chk_species(elm):
 
 ###################################################################################################################################################
 
-def _getPAOfilename(atom,PAOdir=None):
-        """
-        Get the pseudopotential filename for the specific atomic species in input
+# def _getPAOfilename(atom,PAOdir=None):
+#         """
+#         Get the pseudopotential filename for the specific atomic species in input
         
-        Arguments:
-         - atom -- a string designating the atomic species you want the pseudofile name for
+#         Arguments:
+#          - atom -- a string designating the atomic species you want the pseudofile name for
         
-        Keyword Arguments:
-         - pseudodir -- the path of the directory containing pseudofiles
-        """
-        if PAOdir is None:
-            PAOdir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')        
-            if os.path.isabs(PAOdir) == False:
-                configFileLocation = AFLOWpi.prep._getConfigFile()
-                configFileLocation = os.path.dirname(configFileLocation)
-                paodir =  os.path.normpath(os.path.join(configFileLocation, PAOdir))
+#         Keyword Arguments:
+#          - pseudodir -- the path of the directory containing pseudofiles
+#         """
+#         # if PAOdir is None:
+#         #     PAOdir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')        
+#         #     if os.path.isabs(PAOdir) == False:
+#         #         configFileLocation = AFLOWpi.prep._getConfigFile()
+#         #         configFileLocation = os.path.dirname(configFileLocation)
+#         #         paodir =  os.path.normpath(os.path.join(configFileLocation, PAOdir))
 
-        else:
-            if os.path.isabs(PAOdir) == False:
-                paodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), paodir))
+#         # else:
+#         #     if os.path.isabs(PAOdir) == False:
+#         #         paodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), paodir))
 
 
-        atom0=''
-        atom1=''
-        atom0 = atom[0]
-        try:
-            atom1 = atom[1]
-        except:
-            atom1 = ''
-        species='['+atom0.upper()+atom0.lower()+']'+'['+atom1.upper()+atom1.lower()+']'
-        regexFromConfig="re.compile(r'^'+species+'[._-]', re.I)"
-        rex1 = eval(regexFromConfig)
-        for l in os.listdir(PAOdir):
-                if rex1.search(l):
-                        PAOfilename = l
-                        logging.debug('Exiting getPAOfilename')
-                        return PAOfilename
-        if atom.strip()!='!':
-            logging.error('Missing PAO File')
-            logging.debug('Exiting getPAOfilename')
-        return None
+#         atom0=''
+#         atom1=''
+#         atom0 = atom[0]
+#         try:
+#             atom1 = atom[1]
+#         except:
+#             atom1 = ''
+#         species='['+atom0.upper()+atom0.lower()+']'+'['+atom1.upper()+atom1.lower()+']'
+#         regexFromConfig="re.compile(r'^'+species+'[._-]', re.I)"
+#         rex1 = eval(regexFromConfig)
+#         for l in os.listdir(PAOdir):
+#                 if rex1.search(l):
+#                         PAOfilename = l
+#                         logging.debug('Exiting getPAOfilename')
+#                         return PAOfilename
+#         if atom.strip()!='!':
+#             logging.error('Missing PAO File')
+#             logging.debug('Exiting getPAOfilename')
+#         return None
 
 ###################################################################################################################################################
 
@@ -185,17 +185,7 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
             configFileLocation = oneCalc['_AFLOWPI_CONFIG_']
 #            break
         
-        output_oneCalc = copy.deepcopy(oneCalc)
-        if paodir is None:
-                paodir = AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')
-                if os.path.isabs(paodir) == False:
-                    configFileLocation = os.path.dirname(configFileLocation)
-                    paodir =  os.path.join(configFileLocation, paodir)
-
-        else:
-            if os.path.isabs(paodir) == False:
-                paodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), paodir))
-        
+        output_oneCalc = copy.deepcopy(oneCalc)        
         oneCalc = copy.deepcopy(oneCalc)
 
 
@@ -203,18 +193,14 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
         #Modify inputfile to include Hubbard parameters
         inputfile = oneCalc['_AFLOWPI_INPUT_']
         #check if u vals are already in input and start with those.
-
-
-
-        #Assign initial U values
-#        species=list(set(AFLOWpi.retr._getPosLabels(inputfile)))
-#        temp_species,_ = AFLOWpi.prep._resolve_AS_order(inputfile)
-#        species = temp_species.keys()
-#        species = re.findall("(.*).*UPF",inputfile)
-#        species = [x.split()[0] for x in species]
         species=[x.split()[0] for x in AFLOWpi.retr._splitInput(inputfile)["ATOMIC_SPECIES"]["__content__"].split("\n") if len(x.strip()) !=0]
-        splitInput = AFLOWpi.retr._splitInput(inputfile)
+        pseudof=[x.split()[2] for x in AFLOWpi.retr._splitInput(inputfile)["ATOMIC_SPECIES"]["__content__"].split("\n") if len(x.strip()) !=0]
+        pseudof_map={}
+        for i in range(len(species)):
+            sn=species[i].strip('0123456789')
+            pseudof_map[sn]=pseudof[i]
 
+        splitInput = AFLOWpi.retr._splitInput(inputfile)
 
         Uvals = {}
         Jvals = {}
@@ -237,8 +223,6 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
                 else:
                     Jvals[species[isp]] = 0.001 
 
-
-
         AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='uValue',value=Uvals)
         AFLOWpi.prep._modifyVarVal(oneCalc,ID,varName='jValue',value=Jvals)
         new_calc = updateUvals(oneCalc,Uvals,Jvals,ID=ID,U_eff=U_eff)
@@ -253,8 +237,6 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
         except:
             pass
 
-        
-
         #adding config file location to the calculations
         configFile = AFLOWpi.prep._getConfigFile()
 
@@ -266,7 +248,12 @@ def _oneScfprep(oneCalc,ID,paodir=None,U_eff=True):
         with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_uValLog.log' % ID),'w') as uValLogFile:
             uValLogFile.write('')
 
-        
+        '''generate gaussian fits'''
+        for k in pseudof_map.keys():
+            ppfn=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],pseudof_map[k])
+            AFLOWpi.scfuj.gauss_fit_loop(ppfn,threshold=0.5)
+
+
         return output_oneCalc,calc_label
 
 def updateUvals(oneCalc, Uvals,Jvals,ID=None,U_eff=True):
@@ -387,103 +374,100 @@ def maketree(oneCalc,ID, paodir=None):
         else:
                 AFLOWpi.prep.totree(pyintsPath,{ID:oneCalc})
 
-
-
         moleculePath = os.path.join(AFLOWpi.__path__[0],'scfuj','acbn0_support', 'Molecule.py')
         if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower() == 'false':
             AFLOWpi.prep.totree(moleculePath,{ID:oneCalc},symlink=True)
 
         else:
+            AFLOWpi.prep.totree(moleculePath,{ID:oneCalc})
 
-                AFLOWpi.prep.totree(moleculePath,{ID:oneCalc})
+
+        '''save the inital list of things to exec so first iteration it will run through'''
+        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+
+        return oneCalc
 
 ############################################################################################################
         #Get paodir from config file
-        try:
-            if paodir is None:
-                paodir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')
-                if os.path.isabs(paodir) == False:
-                    configFileLocation = AFLOWpi.prep._getConfigFile()
-                    configFileLocation = os.path.dirname(configFileLocation)
-                    paodir =  os.path.join(configFileLocation, paodir)
+#         try:
+#             # if paodir is None:
+#             #     paodir= AFLOWpi.prep._ConfigSectionMap('prep','pao_dir')
+#             #     if os.path.isabs(paodir) == False:
+#             #         configFileLocation = AFLOWpi.prep._getConfigFile()
+#             #         configFileLocation = os.path.dirname(configFileLocation)
+#             #         paodir =  os.path.join(configFileLocation, paodir)
 
-            else:
+#             # else:
 
-                if os.path.isabs(paodir) == False:
-                    paodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), paodir))
+#             #     if os.path.isabs(paodir) == False:
+#             #         paodir =  os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), paodir))
 
-                else:
-                    pass
-#                    print 'Can not find PAO file. Exiting'
-#                    logging.error('Can not find PAO file. Exiting')
-#                    raise SystemExit
-        except Exception as e:
-            AFLOWpi.run._fancy_error_log(e)
-            print('Can not find PAO file. Exiting')
-            logging.error('Can not find PAO file. Exiting')
-            raise SystemExit
+#                 # else:
+#                 #     pass
+# #                    print 'Can not find PAO file. Exiting'
+# #                    logging.error('Can not find PAO file. Exiting')
+# #                    raise SystemExit
+#         except Exception as e:
+#             AFLOWpi.run._fancy_error_log(e)
+#             print('Can not find PAO file. Exiting')
+#             logging.error('Can not find PAO file. Exiting')
+#             raise SystemExit
 
 
 
 
         #Copy PAO files 
 
-        try:
-            work_dir = oneCalc['_AFLOWPI_FOLDER_'] 
-            for key in list(oneCalc.keys()):
-                    v = oneCalc[key]
-                    if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
-                            vp = AFLOWpi.scfuj._getPAOfilename(v.strip('0123456789'),paodir)            
+#         try:
+#             work_dir = oneCalc['_AFLOWPI_FOLDER_'] 
+#             for key in list(oneCalc.keys()):
+#                     v = oneCalc[key]
+#                     if re.search(r'_AFLOWPI_[A-Z][0-9]*_', key):
+#                             vp = AFLOWpi.scfuj._getPAOfilename(v.strip('0123456789'),paodir)            
 
 
-                            try:
-                                    a = os.path.join(paodir,vp)
-                            except AttributeError:
-                                if v=='!':
-                                    continue
-                                logging.debug('Cannot find correct PAO files in %s ...Exiting' % paodir)
-                                print(('cannot find correct PAO files in %s ...Exiting' % paodir))
-                                raise SystemExit
+#                             try:
+#                                     a = os.path.join(paodir,vp)
+#                             except AttributeError:
+#                                 if v=='!':
+#                                     continue
+#                                 logging.debug('Cannot find correct PAO files in %s ...Exiting' % paodir)
+#                                 print(('cannot find correct PAO files in %s ...Exiting' % paodir))
+#                                 raise SystemExit
 
-                            newPAOFileNm = os.path.join(work_dir,v.strip('0123456789')+"_basis.py")
-                            print(('Copying '+a+' to '+ newPAOFileNm+'\n'))
-                            logging.info('Copying '+a+' to '+ newPAOFileNm)
-                            if AFLOWpi.prep._ConfigSectionMap('prep','copy_pseudos').lower() == 'false':
-                                    try:
-                                            os.symlink(a,newPAOFileNm)
-                                    except OSError:
-                                        os.system('rm -fr %s' % newPAOFileNm)
-                                        try:
-                                            os.symlink(a,newPAOFileNm)
-                                        except:
-                                            logging.error('cant copy PAO!')
-                                            raise SystemExit
-                            else:
-#                                    print a
-#                                    print newPAOFileNm
+#                             newPAOFileNm = os.path.join(work_dir,v.strip('0123456789')+"_basis.py")
+#                             print(('Copying '+a+' to '+ newPAOFileNm+'\n'))
+#                             logging.info('Copying '+a+' to '+ newPAOFileNm)
+#                             if AFLOWpi.prep._ConfigSectionMap('prep','copy_pseudos').lower() == 'false':
+#                                     try:
+#                                             os.symlink(a,newPAOFileNm)
+#                                     except OSError:
+#                                         os.system('rm -fr %s' % newPAOFileNm)
+#                                         try:
+#                                             os.symlink(a,newPAOFileNm)
+#                                         except:
+#                                             logging.error('cant copy PAO!')
+#                                             raise SystemExit
+#                             else:
+# #                                    print a
+# #                                    print newPAOFileNm
 
-                                    if not os.path.exists(newPAOFileNm):
-                                        try:
-                                            shutil.copy(a, newPAOFileNm)
-                                        except:
-                                            try:
-                                                os.system('rm -fr %s' % newPAOFileNm)
-                                                shutil.copy(a, newPAOFileNm)
-                                            except:
-                                                pass
-                                    else:
-                                        pass
+#                                     if not os.path.exists(newPAOFileNm):
+#                                         try:
+#                                             shutil.copy(a, newPAOFileNm)
+#                                         except:
+#                                             try:
+#                                                 os.system('rm -fr %s' % newPAOFileNm)
+#                                                 shutil.copy(a, newPAOFileNm)
+#                                             except:
+#                                                 pass
+#                                     else:
+#                                         pass
 
-        except Exception as e:
-            AFLOWpi.run._fancy_error_log(e)
-
-
-        '''save the inital list of things to exec so first iteration it will run through'''
+#         except Exception as e:
+#             AFLOWpi.run._fancy_error_log(e)
 
 
-        AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-
-        return oneCalc
 
 def nscf_nosym_noinv(oneCalc,ID=None,kpFactor=1.50,unoccupied_states=False,band_factor=1.25,tetra_nscf=False,wsyminv=False):
         """
