@@ -239,7 +239,6 @@ def read_pseudopotential ( fpp ):
 ############################################################################################
 ############################################################################################
 
-
 def read_U_orbs(workpath,savedir):
 
     old_qe=False
@@ -260,12 +259,16 @@ def read_U_orbs(workpath,savedir):
     if old_qe:
         sd=resolve_old_qe_l(sd,onamd,slist)
 
+    slist_s=np.array([i.strip("0123456789") for i in slist])
+
     orb_dict={}
     orb_dict_red={}
     for sp in ppd.keys(): 
+        sp_s=sp.strip("0123456789")
+        allorb_s=np.where(np.logical_and(sp_s==slist_s,sd[sp]==onamd))[0].tolist()
         allorb=np.where(np.logical_and(sp==slist,sd[sp]==onamd))[0].tolist()
 
-        orb_dict[sp]=allorb
+        orb_dict[sp]=allorb_s
         acount=len(np.where(atoms==sp)[0])
         rac=int(len(allorb)/acount)
 
