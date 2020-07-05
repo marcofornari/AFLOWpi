@@ -210,8 +210,11 @@ def read_pseudopotential ( fpp ):
       for event,elem in iterator:        
           try:
               for i in elem.findall("PP_PSWFC/"):
-                  sh.append(int(i.attrib['l']))
-                  on.append(i.attrib['label'])
+                  try:
+                      sh.append(int(i.attrib['l']))
+                  except:
+                      sh.append(int(i.attrib['angular_momentum']))
+                  on.append(i.attrib['label'].upper())
           except Exception as e:
               pass
           for i in elem.findall("PP_SPIN_ORB/"):
