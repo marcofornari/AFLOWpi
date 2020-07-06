@@ -380,7 +380,7 @@ def _therm_pp(__submitNodeName__,oneCalc,ID,run_matdyn=True):
     Mass=M/float(N)
     Vol=V/float(N)
 
-    TEMP = np.linspace(5.0,1205.0,1201.0,endpoint=True)
+    TEMP = np.linspace(5.0,1205.0,1201,endpoint=True)
 
     therm_cond_data_str="T       Total        TA           TA'          LA"    
 
