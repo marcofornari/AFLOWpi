@@ -27,9 +27,10 @@
 import sys
 import os
 #import setuptools
-from distutils.core import setup, Command,Extension
-from distutils.util import change_root, convert_path
-from distutils.command.install import install
+from setuptools import setup, Command,Extension
+#from distutils.core import setup, Command,Extension
+#from distutils.util import change_root, convert_path
+#from distutils.command.install import install
 import shutil
 sys.path.append(os.path.curdir)
 import site
@@ -121,11 +122,11 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "1.1.0",
+         version = "1.2.0",
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
-         platforms=["linux"],
+         platforms=["manylinux2014"],
          url="http://aflowlib.org/src/aflowpi/",
 
          packages = ['AFLOWpi',
@@ -167,7 +168,9 @@ try:
 
 
          ext_modules = [Extension("cints",sources=["src/scfuj/extensions/cints.c"],include_dirs = ['src/scfuj/extensions/'],) ],
-#       install_requires=["numpy","scipy","matplotlib","PAOFLOW"],
+
+       install_requires=["matplotlib","PAOFLOW"],
+
          long_description = """Install Script for AFLOWpi""",)
    
 

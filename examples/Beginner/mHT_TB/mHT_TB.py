@@ -13,10 +13,7 @@ calcs = session.scfs(allvars,'mHT_TB.ref')
 
 # relax the structure
 calcs.vcrelax()
-calcs.update_cell()
-
 calcs.vcrelax()
-calcs.update_cell()
 
 # run calcs for spin polarized NiO for optical and
 # transport properties with WanT at 300K
@@ -32,10 +29,10 @@ tb = calcs.tight_binding(smearing=None,proj_thr=0.85,kp_factor=2.0,tb_kp_factor=
 tb.dos(projected=True)
 
 # do tb bands
-tb.bands(band_topology=False,fermi_surface=False)
+tb.bands(band_topology=False)
 
 #if t_tensor is omitted (default), all components are calculated
-tb.transport(t_tensor=None)
+tb.transport()
 
 # components for epsilon
 # must have xx,yy,zz for plotting epsilon
@@ -47,15 +44,15 @@ d_tensor = [[0,1], # xy component
 
 tb.optical(d_tensor=d_tensor)
 
-tb.plot.bands(yLim=[-1.5,1.5],DOSPlot="APDOS")
-tb.plot.opdos(yLim=[-1.5,1.5])
+tb.plot.bands(en_range=[-1.5,1.5],DOSPlot="APDOS")
+tb.plot.opdos(en_range=[-1.5,1.5])
 
 # plot sigma,kappa,seebeck
 # x_range is mu range
-tb.plot.transport(x_range=[-1.5,1.5])
+tb.plot.transport(en_range=[-1.5,1.5])
 
 # plot epsilon
-tb.plot.optical(x_range=[-1.5,1.5])
+tb.plot.optical(en_range=[-1.5,1.5])
 
 # submit the workflow to run
 calcs.submit()
