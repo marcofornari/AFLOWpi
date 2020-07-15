@@ -1122,9 +1122,9 @@ def acbn0(oneCalc,projCalcID,exec_prefix):
                         
 
         def run_acbn0(inputFiles,exec_prefix):
-            py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
-            if py_comm=="":
-                py_comm="python"
+                py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+                if py_comm=="":
+                    py_comm="python"
 
                         
                 for infnm in inputFiles:
