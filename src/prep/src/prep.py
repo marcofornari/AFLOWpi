@@ -3462,8 +3462,15 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
         if type(fileList)==type('aString'):
             fileList=[fileList]
 
+            
+                
+
         flist_t=[]
         for inputFile in fileList:
+
+            if not os.path.exists(os.path.abspath(inputFile)):
+                    print("%s does not exist. Exiting"%inputFile)
+                    raise SystemExit
             try:
                 holder=inputFile
                 with open(inputFile,'r') as inputFileObj:
@@ -4975,7 +4982,31 @@ EXITING.
                         %(namelist,parameter,value,del_value)
                 self.addToAll(block='PREPROCESSING',addition=addition)
 
+
+
+        def post_proc(self,plot_num,**kwargs):
+                tk=list(self.int_dict.keys())[0]
+                cwf=self.int_dict[tk]["_AFLOWPI_WORKFLOW_"][-1]
+
+                if cwf!="dos":
+                        print("post_proc can only be run after dos")
+                        raise SystemExit
+
+                engineDir  = AFLOWpi.prep._ConfigSectionMap("prep",'engine_dir')        
+                if os.path.isabs(engineDir) == False:
+                        configFileLocation = AFLOWpi.prep._getConfigFile()
+                        configFileLocation = os.path.dirname(configFileLocation)
+                        engineDir =  os.path.join(configFileLocation, engineDir)
+
+                eps_path = os.path.join(engineDir,'pp.x')
+
+                AFLOWpi.prep.totree(eps_path, self.int_dict,rename=None,symlink=False)
+
+                command="AFLOWpi.run._post_proc(oneCalc,ID,%s,%s)"%(plot_num,",".join(["%s=%s"%(k,v) for k,v in kwargs.items()]))
                 
+                self.addToAll(block='POSTPROCESSING',addition=command)
+
+
 #         def converge_smearing(self,relax='scf',smear_variance=0.3,num_points=4,smear_type='mp',mult_jobs=False):
 #                 print('converge_smeareing DISABLED. Coming soon. Exiting.')
 #                 raise SystemExit
@@ -5524,7 +5555,6 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 # #               print '\nADDING STEP #%02d: %s'% (self.step_index,calc_type)
 #                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
-
 
 
 
