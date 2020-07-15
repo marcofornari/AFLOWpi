@@ -1204,11 +1204,13 @@ def _qsubGen(oneCalc,ID):
                 else:
                     pass
             
-
+        py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+        if py_comm=="":
+            py_comm="python"
 
         with open(qsubFilename,'w') as qsubFile:
             qsubSub='''%scd %s
-python %s''' % (tmpdir_envar,oneCalc['_AFLOWPI_FOLDER_'],os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'.py'))
+%s %s''' % (tmpdir_envar,oneCalc['_AFLOWPI_FOLDER_'],py_comm,os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+ID+'.py'))
             #redirect the -e, -o or -oe to the directory for that job
             if len(re.findall('_AFLOWPI_QSUB_',qsubRef)):
                 qsubRef = re.sub('_AFLOWPI_QSUB_',qsubSub,qsubRef)

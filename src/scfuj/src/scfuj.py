@@ -1122,20 +1122,24 @@ def acbn0(oneCalc,projCalcID,exec_prefix):
                         
 
         def run_acbn0(inputFiles,exec_prefix):
+            py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+            if py_comm=="":
+                py_comm="python"
+
                         
                 for infnm in inputFiles:
                         
-                        cmd="%s python %s/acbn0.py %s > /dev/null"%(exec_prefix,subdir,
+                        cmd="%s %s %s/acbn0.py %s > /dev/null"%(exec_prefix,py_comm,subdir,
                                                                     os.path.join(subdir,infnm))     
-                        print(("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
-                        logging.info("Starting python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
+                        print(("Starting %s acbn0.py %s\n"%(py_comm,os.path.join(subdir,infnm))))
+                        logging.info("Starting %s acbn0.py %s\n"%(py_comm,os.path.join(subdir,infnm)))
                         try:
                                 os.system(cmd)
                 
                         except Exception as e:
                                 AFLOWpi.run._fancy_error_log(e)
-                        print(("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm))))
-                        logging.info("Finished python acbn0.py %s\n"%(os.path.join(subdir,infnm)))
+                        print(("Finished %s acbn0.py %s\n"%(py_comm,os.path.join(subdir,infnm))))
+                        logging.info("Finished %s acbn0.py %s\n"%(py_comm,os.path.join(subdir,infnm)))
         acbn0_inFileList = gen_input(oneCalcID,subdir,nspin)    
         run_acbn0(acbn0_inFileList,exec_prefix)
 

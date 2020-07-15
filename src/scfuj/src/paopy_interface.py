@@ -56,9 +56,14 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
 
     paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOFLOW.out'%ID)
 
+    py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+    if py_comm=="":
+        py_comm="python"
+
+
     paopy_input = '%s inputfile.xml'%oneCalc['_AFLOWPI_FOLDER_']
     try:
-        command = '%s python -u %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
+        command = '%s %s -u %s %s > %s' % (execPrefix,py_comm,paopy_path,paopy_input,paopy_output)
         print(command)
 
 

@@ -168,12 +168,17 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             config.set('prep', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
             config.set('prep', 'pseudo_dir', oneCalc['_AFLOWPI_PSEUDO_DIR_'])
 
+            py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+            if py_comm=="":
+                py_comm="python"
+
+
             if config.has_section('cluster'):
                 if config.has_option('cluster','job_template'):
                     try:
 
                         qsub_temp_ref = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CLUSTER.ref')
-                        qsubSub='''cd .*%s\npython .*%s''' % (os.path.basename(oneCalc['_AFLOWPI_FOLDER_']),os.path.join(os.path.basename(oneCalc['_AFLOWPI_FOLDER_']),'_'+ID+'.py'))
+                        qsubSub='''cd .*%s\n%s .*%s''' % (os.path.basename(oneCalc['_AFLOWPI_FOLDER_']),py_comm,os.path.join(os.path.basename(oneCalc['_AFLOWPI_FOLDER_']),'_'+ID+'.py'))
 
                         qsubSub_reg = re.compile(qsubSub)
 

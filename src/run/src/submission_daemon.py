@@ -101,13 +101,18 @@ def _start_submission_daemon(daemon_file_name):
     cur_dir=os.curdir
     os.chdir(os.path.dirname(daemon_file_name))
 
-    subprocess.Popen('nohup python ./submit_daemon.py  &',shell=True)
+    py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+    if py_comm=="":
+        py_comm="python"
+
+
+    subprocess.Popen('nohup %s ./submit_daemon.py  &'%py_comm,shell=True)
     os.chdir(cur_dir)
     print('daemon script started')
 
 def _restart_submission_daemon(file_name):
 
-    subprocess.Popen('nohup python ./%s &'%file_name,shell=True)
+    subprocess.Popen('nohup %s ./%s &'%(py_comm,file_name),shell=True)
 
 
 
