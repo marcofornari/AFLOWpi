@@ -2885,7 +2885,7 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
     except:
         efermi=0.0
 
-    emax=40.0-0o025
+    emax=40+0.0025
     emin=-40-0.0025
 
     try:
@@ -3041,7 +3041,6 @@ def _makeInput(oneCalc,engine,calcType,ID=''):
   hfi_output_unit = 'MHz'
 /
 ''' %prefix,
-
                             }
 
         
