@@ -13,7 +13,8 @@ Iron
     report=1,
     occupations='smearing', smearing='marzari-vanderbilt', degauss=0.02
     starting_magnetization(1)=0.5
-    nspin=2,
+    lspinorb=.true.
+    noncolin=.true.
  /
  &electrons
     startingwfc='random'
