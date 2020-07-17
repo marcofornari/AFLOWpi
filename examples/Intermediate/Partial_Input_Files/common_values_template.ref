@@ -1,0 +1,12 @@
+!common values for all the calcs in the set                                                                                                      
+&control
+verbosity='high'
+/
+                                                                                                                     
+&system                                                                                                              
+    ibrav=0                                                                                     
+    ecutwfc = 40.,                                                                                                    
+    ecutrho = 400.,            
+/                                                                                     
+K_POINTS {automatic}                                                                                                 
+8 8 8 1 1 1
