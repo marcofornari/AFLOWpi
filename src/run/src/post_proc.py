@@ -29,4 +29,5 @@ fileout = '%s_pp_%s%s.dat'
     with open(infn,"w") as ofo:
         ofo.write(pp_input)
 
-    AFLOWpi.run._oneRun("",oneCalc,"%s_pp_%02d"%(ID,plot_num),engine='espresso',calcType='custom',execPath='./pp.x' ) 
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+    AFLOWpi.run._oneRun("",oneCalc,"%s_pp_%02d"%(ID,plot_num),engine='espresso',calcType='custom',execPath='./pp.x',execPrefix=execPrefix ) 
