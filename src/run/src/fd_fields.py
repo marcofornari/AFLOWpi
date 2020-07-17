@@ -57,11 +57,12 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
         num=list(range(19))
     elif for_type=='born':
         val_type='force'
-        num=[0,2,4,6,1,3,5]
+#        num=[0,2,4,6,1,3,5]
+        num=[0,1,2,3,4,5,6]
     elif for_type=='epol':
         val_type='epol'
-        num=[0,2,4,6,1,3,5]
-
+#        num=[0,2,4,6,1,3,5]
+        num=[0,1,2,3,4,5,6]
     force_out_str=''
     for index in num:
         try:
