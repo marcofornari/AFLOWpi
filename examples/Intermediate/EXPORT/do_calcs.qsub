@@ -1,0 +1,14 @@
+## uncomment to reserve entire node 
+## use only if necessary
+
+#PBS -l walltime=3:59:00,nodes=1:ppn=24,feature=intel16
+
+#PBS -l mem=100gb
+#PBS -e jabbersnacks.err 
+#PBS -o jabbersnacks.out 
+#PBS -oe jabbersnacks.oe.txt 
+
+
+
+
+

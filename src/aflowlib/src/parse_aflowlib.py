@@ -127,6 +127,7 @@ class parser():
 
             connection = urllib.request.urlopen(search)            
             res_str = connection.read()
+            res_str=res_str.decode('utf-8')
 
             #change some json stuff to python form before using ast.literal
             res_str = true_to_True.sub('True',res_str)
