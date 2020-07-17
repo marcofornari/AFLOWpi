@@ -109,7 +109,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                                             'ft':'$Seebeck$:',
                                             'lc':'Seebeck ',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':'S $( \mu V/K)$',
+                                            'yl':'S $( \mu VK^{-1})$',
                                             'fp':'SEEBECK',
                                             }
 
@@ -125,7 +125,7 @@ def __transport_plot(oneCalc,ID,nm=False,postfix='',epsilon=False,x_range=None,y
                                             'ft':'$\kappa$:',
                                             'lc':'\kappa ',
                                             'xl':'$\mu$ (eV)',
-                                            'yl':'$\kappa$ $(10^{14}$ $W/m/K)$',
+                                            'yl':'$\kappa$ $(10^{14}$ $Wm^{-1}K^{-1})$',
                                             'fp':'KAPPA',
 
                                             }
