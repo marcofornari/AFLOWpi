@@ -35,7 +35,7 @@ def atomicDistances(calcs,runlocal=False,inpt=False,outp=True):
         engineDir =  os.path.join(configFileLocation, enginedir)
     distXPath = os.path.join(engineDir,'dist.x')
     try:
-        if AFLOWpi.prep._ConfigSectionMap('prep','copy_exec').lower()!='false':
+        if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()!='false':
             AFLOWpi.prep.totree(distXPath,calcs)
         for ID,oneCalc in list(calcs.items()):
             if runlocal:
@@ -75,7 +75,7 @@ def _getDist(oneCalc,ID,outp=True):
     with open(dest_file,'w') as fo:
         fo.write(infil)
 
-    if AFLOWpi.prep._ConfigSectionMap('prep','copy_exec').lower()=='false':
+    if AFLOWpi.prep._ConfigSectionMap('prep','copy_execs').lower()=='false':
         engineDir = AFLOWpi.prep._ConfigSectionMap('prep','engine_dir')
         if os.path.isabs(enginedir) == False:
             configFileLocation = AFLOWpi.prep._getConfigFile()
