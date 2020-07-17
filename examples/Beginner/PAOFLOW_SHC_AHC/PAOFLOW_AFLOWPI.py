@@ -35,6 +35,8 @@ s_tensor=[[0,1,1], # xy component, y spin component
 
 tb.shc(s_tensor=s_tensor,spin_texture=True)
 
+tb.plot.shc()
+tb.plot.ahc()
 
 # submit the workflow to run
 calcs.submit()
