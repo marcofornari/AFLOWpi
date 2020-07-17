@@ -520,7 +520,7 @@ static double three_center_1D(double xi, int ai, double alphai,
 /*  coefficients, etc., used by the contracted code. Decided to  */
 /*  allocate this all at once rather than doing mallocs/frees. */
 /*  Only speeds things up a little, but every little bit counts, I guess. */
-#define MAX_PRIMS_PER_CONT (10)
+#define MAX_PRIMS_PER_CONT (24)
 double work[12*MAX_PRIMS_PER_CONT];
 double work_luis[24*MAX_PRIMS_PER_CONT]; /*Luis*/
 
@@ -1185,19 +1185,32 @@ static PyMethodDef cints_methods[] = {
   {NULL,NULL} /* Sentinel */
 };
 
-static void module_init(char* name)
-{
-  (void) Py_InitModule(name,cints_methods);
-}
+static struct PyModuleDef cints =
+  {
+    PyModuleDef_HEAD_INIT,
+    "cints", /* name of module */
+    "",          /* module documentation, may be NULL */
+    -1,          /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
+    cints_methods
+  };
+
+/* static void module_init(char* name) */
+/* { */
+/*   (void) Py_InitModule(name,cints_methods); */
+/* } */
 
 #if defined(_WIN32)
 __declspec(dllexport)
 #endif
-#if defined(PYQUANTE_FULLY_QUALIFIED_MODULE_NAME)
-void initpyquante_cints_ext(){module_init("pyquante_cints_ext");}
-#else
-void initcints(){module_init("cints");}
-#endif
+//#if defined(PYQUANTE_FULLY_QUALIFIED_MODULE_NAME)
+//void initpyquante_cints_ext(){module_init("pyquante_cints_ext");}
+//#else
+//void initcints(){module_init("cints");}
+//#endif
+
+PyMODINIT_FUNC PyInit_cints(void){return PyModule_Create(&cints);}
+
+
 
 #undef ITMAX
 #undef EPS

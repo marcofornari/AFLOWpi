@@ -1,0 +1,41 @@
+&control
+   calculation = "vc-relax",
+   prefix = '_52af0fbeab3410ad_01',
+   restart_mode = "from_scratch",
+   tstress = .true.,
+   tprnfor = .true.,
+   pseudo_dir = './',
+   outdir = './',
+   verbosity = 'high',
+   etot_conv_thr = 1.0D-4,
+   forc_conv_thr = 1.0D-3,
+   nstep = 200,
+   wfcdir = './',
+/
+&system
+   ibrav = 2,
+   nat = 2,
+   ntyp = 1,
+   ecutwfc = 25.,
+   celldm(1) = 10.837573192447785,
+/
+&electrons
+   diagonalization = 'david',
+   mixing_mode = 'plain',
+   mixing_beta = 0.7,
+   conv_thr = 1.0d-8,
+   electron_maxstep = 200,
+/
+&ions
+/
+&cell
+   cell_factor = 2.0,
+/
+ATOMIC_SPECIES 
+
+ATOMIC_POSITIONS {crystal}
+Si 0.000000000000000000 0.000000000000000000 0.000000000000000000 1 1 1
+Si -0.250000000000000000 -0.250000000000000000 -0.250000000000000000 1 1 1
+
+K_POINTS {automatic}
+7 7 7 1 1 1

@@ -12,11 +12,9 @@ Iron
     ecutwfc = 44.0, ecutrho = 482.0
     report=1,
     occupations='smearing', smearing='marzari-vanderbilt', degauss=0.02
-    noncolin = .true.
+    starting_magnetization(1)=0.5
     lspinorb=.true.
-    starting_magnetization(1) = 0.5
-    angle1(1) =  0.1
-    angle2(1) = -0.1
+    noncolin=.true.
  /
  &electrons
     startingwfc='random'
@@ -28,4 +26,4 @@ ATOMIC_SPECIES
 ATOMIC_POSITIONS
  Fe 0.0 0.0 0.0
 K_POINTS {automatic}
-6 6 6 0 0 0
+6 6 6 1 1 1

@@ -1,0 +1,41 @@
+&control
+   calculation = 'scf',
+   prefix = '_04fb5975b7220b54_01',
+   restart_mode = 'from_scratch',
+   pseudo_dir = './',
+   outdir = './',
+/
+&system
+   ibrav = 0,
+   nat = 5,
+   ntyp = 3,
+   ecutwfc = 60.,
+   ecutrho = 720.,
+   celldm(1) = 7.691659986572004,
+/
+&electrons
+   diagonalization = 'david',
+   mixing_mode = 'plain',
+   mixing_beta = 0.5,
+   electron_maxstep = 800,
+/
+&ions
+/
+&cell
+/
+ATOMIC_SPECIES 
+Ba  137.327  ba_pbesol_v1.uspp.F.UPF 
+Ti  47.867  ti_pbesol_v1.uspp.F.UPF 
+O  15.999  o_pbesol_v1.2.uspp.F.UPF 
+ATOMIC_POSITIONS {crystal}
+  Ba 0.000000000000000000 0.000000000000000000 0.000000000000000000 1 1 1
+  Ti 0.500000000000000000 0.500000000000000000 0.500000000000000000 1 1 1
+   O 0.500000000000000000 0.500000000000000000 0.000000000000000000 1 1 1
+   O 0.000000000000000000 0.500000000000000000 0.500000000000000000 1 1 1
+   O 0.500000000000000000 0.000000000000000000 0.500000000000000000 1 1 1
+CELL_PARAMETERS {alat}
+    1.0000004938     0.0000000000     0.0000000000
+    0.0000000000     1.0000004938     0.0000000000
+    0.0000000000     0.0000000000     1.0000004938
+K_POINTS {automatic}
+6 6 6  1 1 1

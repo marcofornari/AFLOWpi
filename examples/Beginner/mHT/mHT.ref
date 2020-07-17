@@ -6,10 +6,11 @@
     nstep=200                                                                                                         
 /                                                                                                                     
 &system                                                                                                              
-    ibrav=2,A = 5.806447108750862
+    ibrav=2
+    CELLDM(1)=11.1
     nat=4,ntyp=2,                                                                                                     
-    ecutwfc = 20.,                                                                                                    
-    ecutrho = 200.,                                                                                                   
+    ecutwfc = 40.,                                                                                                    
+    ecutrho = 400.,                                                                                                   
 /                                                                                                                     
 &electrons                                                                                                            
     diagonalization = 'david',                                                                                        
@@ -23,7 +24,7 @@
 &cell                                                                                                                 
  cell_factor=2.0                                                                                                      
 /                                                                                                                     
-ATOMIC_SPECIES                                                                                                         
+ATOMIC_SPECIES                                                                                         
 _AFLOWPI_A_ _AFLOWPI_AMASS_ _AFLOWPI_APSEUDO_
 _AFLOWPI_B_ _AFLOWPI_BMASS_ _AFLOWPI_BPSEUDO_
 ATOMIC_POSITIONS {crystal}                                                                                            

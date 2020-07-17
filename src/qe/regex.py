@@ -9,11 +9,7 @@ import AFLOWpi
 def cell_parameters(string,return_which='content',regex_or_string='string'):
     modifier_regex = re.compile(r'(?:CELL_PARAMETERS)\s*(?:\s*[\[\(\{])*\s*([\w]*)\s*(?:[\]\)\}])*\s*\n*',re.MULTILINE)
     try:
-
-
         modifier = modifier_regex.findall(string)[-1]
-        
-
     except:
         alatSearch = re.compile(r'(?:CELL_PARAMETERS)\s*(?:\s*[\[\(\{])*\s*(?:alat\s*=\s*([0-9.]*))\s*(?:[\]\)\}])*\s\*\n*')
         if len(alatSearch.findall(string))==0:
@@ -27,13 +23,12 @@ def cell_parameters(string,return_which='content',regex_or_string='string'):
             return modifier
 
     if return_which=='content':
-
-        content_return = re.compile(r'(?:CELL_PARAMETERS.*\n)(\s*(?:\s*(?:[-0-9.]+)\s+(?:[-0-9.]+)\s+(?:[-0-9.]+)\s*)+)',re.MULTILINE)    
+        content_return = re.compile(r'(?:CELL_PARAMETERS.*\n)(\s*(?:\s*(?:[-0-9.E+]+)\s+(?:[-0-9.E+]+)\s+(?:[-0-9.E+]+)\s*)+)',re.MULTILINE)    
 
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return
 
 
@@ -86,7 +81,7 @@ def k_points(string,return_which='content',regex_or_string='string'):
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return ''
     return content_return
 
@@ -116,7 +111,7 @@ def atomic_positions(string,return_which='content',regex_or_string='string'):
 
         try:
             modifier = modifier_regex.findall(string)[-1]
-        except Exception,e:
+        except Exception as e:
             return ''
 
 
@@ -125,7 +120,7 @@ def atomic_positions(string,return_which='content',regex_or_string='string'):
     if regex_or_string=='string':
         try:
             content_return =  content_return.findall(string)[-1]
-        except Exception,e: 
+        except Exception as e: 
             return
     return content_return
 

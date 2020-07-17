@@ -31,7 +31,7 @@ from matplotlib import pylab
 from matplotlib import pyplot
 import os
 import logging
-import StringIO
+import io
 import glob
 import re
 import copy
@@ -73,9 +73,9 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
 
     '''
 
-    if xaxisTitle==None:
+    if xaxisTitle is None:
 	    xaxisTitle=variable1
-    if yaxisTitle==None:
+    if yaxisTitle is None:
 	    yaxisTitle=variable2
     X=[]
     Y=[]
@@ -86,7 +86,7 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(float(oneCalc[variable1]))
         Y.append(float(oneCalc[variable2]))
         Z.append(float(oneCalc[zaxis]))
@@ -154,26 +154,31 @@ def interpolatePlot(calcs,variable1,variable2,zaxis='Energy',xaxisTitle=None, ya
                                 ax.add_patch(circ)
 
 
-        except Exception,e:
+        except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)    
     
+    if int(matplotlib.__version__[0])<2:
+        im = pylab.imshow(Z,cmap=plot_color,aspect='equal',vmin=z_min,vmax=z_max,
+                          interpolation=interp,extent=[X.min(), X.max(), Y.min(), Y.max()],origin='lower',hold=True)
+    else:
+        im = pylab.imshow(Z,cmap=plot_color,aspect='equal',vmin=z_min,vmax=z_max,
+                          interpolation=interp,extent=[X.min(), X.max(), Y.min(), Y.max()],origin='lower')
 
-    im = pylab.imshow(Z,cmap=plot_color,aspect='auto',vmin=z_min,vmax=z_max,interpolation=interp,extent=[X.min(), X.max(), Y.min(), Y.max()],origin='lower',hold=True)
     cbar = pylab.colorbar()
 
-    if zaxisTitle!=None:
+    if zaxisTitle is not None:
 	    cbar.set_label(zaxisTitle,size=18)
     
     ax.set_xlabel(xaxisTitle)
     ax.set_ylabel(yaxisTitle)
 
-    if title!=None:
+    if title is not None:
 	    pyplot.title(title)
 
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    pass
 
 
@@ -200,9 +205,9 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
 
     '''
 
-    if xaxisTitle==None:
+    if xaxisTitle is None:
 	    xaxisTitle=variable1
-    if yaxisTitle==None:
+    if yaxisTitle is None:
 	    yaxisTitle=yaxis
     X=[]
     Y=[]
@@ -212,7 +217,7 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
     except:
 	    pass
 
-    for key,oneCalc, in calcs.iteritems():
+    for key,oneCalc, in list(calcs.items()):
         X.append(oneCalc[variable1])
         Y.append(oneCalc[yaxis])
 	
@@ -247,20 +252,20 @@ def interpolatePlot1D(calcs,variable1,yaxis='Energy',xaxisTitle=None, yaxisTitle
 
 	    pyplot.legend(['data','interpolated','min'], loc='best')	    
 
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)    
     
     
     ax.set_xlabel(xaxisTitle)
     ax.set_ylabel(yaxisTitle)
 
-    if title!=None:
+    if title is not None:
 	    pyplot.title(title)
 
 	    
     pyplot.savefig(fileName,bbox_inches='tight')
     try:
 	    AFLOWpi.retr._moveToSavedir(fileName)
-    except Exception,e:
+    except Exception as e:
 	    AFLOWpi.run._fancy_error_log(e)
 

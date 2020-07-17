@@ -28,9 +28,10 @@ import os
 import re
 import copy 
 import glob
+import shutil
 
 def _fd_field_gath(oneCalc,ID):
-    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/FD_FIELD'+'/finite_field*.in'))
+    return sorted(glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/'+ID+'_FD_FIELD'+'/finite_field*.in'))
 
 
 def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
@@ -53,22 +54,23 @@ def _collect_fd_field_forces(oneCalc,ID,for_type='raman'):
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
-        num=[0,2,4,6,1,3,5]
+#        num=[0,2,4,6,1,3,5]
+        num=[0,1,2,3,4,5,6]
     elif for_type=='epol':
         val_type='epol'
-        num=[0,2,4,6,1,3,5]
-
+#        num=[0,2,4,6,1,3,5]
+        num=[0,1,2,3,4,5,6]
     force_out_str=''
     for index in num:
         try:
-            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./FD_FIELD/%s.%d'%(val_type,index))
+            force_file_path=os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'./%s_FD_FIELD/%s.%d'%(ID,val_type,index))
             with open(force_file_path,'r') as force_file:
                 force_str=force_file.read()
                 force_out_str+=force_str
-        except Exception,e: print e
+        except Exception as e: print(e)
             
     
     return force_out_str
@@ -103,7 +105,7 @@ def _pull_polarization(oneCalc,ID):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         return
     e_pol_split = [float(x.split()[-1]) for x in ele_block.split('\n') if len(x.strip())!=0]
@@ -150,7 +152,7 @@ def _pull_eps_out(oneCalc,ID):
         eps_string=eps_regex.findall(out_string)[-1]
         
         
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return eps_string
@@ -186,7 +188,7 @@ def _pull_born_out(oneCalc,ID):
             born_string+='         %s\n'%num_index
             born_string+=born_charges[i]
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     return born_string
@@ -293,19 +295,19 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     #if possibly a metal don't do LOTO
 
-    if 'degauss' not in  in_dict['&system'].keys():
+    if 'degauss' not in  list(in_dict['&system'].keys()):
         pass
     else:
         bandgap_type = AFLOWpi.retr.gap_type(orig_oneCalc,orig_ID)
         if bandgap_type not in ['p-type','n-type','insulator']:
             return
         else:
-            if 'degauss' in in_dict['&system'].keys():
+            if 'degauss' in list(in_dict['&system'].keys()):
                 del in_dict['&system']['degauss']
             else:
                 pass
 
-            if "occupations" in in_dict['&system'].keys():
+            if "occupations" in list(in_dict['&system'].keys()):
                 val=eval(in_dict['&system']['occupations'].lower())
                 if val=="smearing":
                     del in_dict['&system']['occupations']
@@ -319,7 +321,7 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     if for_type=='raman':
         val_type='force'
-        num=range(19)
+        num=list(range(19))
     elif for_type=='born':
         val_type='force'
         num=[0,2,4,6,1,3,5]
@@ -329,13 +331,13 @@ def _setup_raman(orig_oneCalc,orig_ID,field_strength=0.001,field_cycles=3,for_ty
 
     num_calcs=19
 
-    if not os.path.exists(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD')):
-        os.mkdir(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD'))
+    if not os.path.exists(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID)):
+        os.mkdir(os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID))
 
     for index in range(len(num)):        
         fd_input = AFLOWpi.run._field_factory(input_string,field_strength=field_strength,for_type=for_type,field_cycles=field_cycles,dir_index=num[index])
 
-        fd_field_fn = os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'FD_FIELD',"finite_field.%s.in"%index)
+        fd_field_fn = os.path.join(orig_oneCalc['_AFLOWPI_FOLDER_'],'%s_FD_FIELD'%orig_ID,"finite_field.%s.in"%index)
         with open(fd_field_fn,"w") as ifo:
             ifo.write(fd_input)
          
@@ -453,3 +455,39 @@ def _field_factory(input_str,field_strength=0.001,for_type='raman',field_cycles=
 
         
     return new_input
+
+
+
+
+def _fd_field_copy_wfc(oneCalc,ID,root_prefix):
+    return oneCalc,ID
+    dirn = os.path.join(os.path.dirname(os.path.dirname(oneCalc["_AFLOWPI_FOLDER_"])),
+                            root_prefix+".wfc*")
+    dirn_list = glob.glob(dirn)
+
+
+    for one_dirn in dirn_list:
+        try:
+            ext  = one_dirn.split(".")[-1]
+            dest = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],oneCalc["_AFLOWPI_PREFIX_"]+"."+ext)
+            shutil.copy(one_dirn,dest)
+        except Exception as e:
+            return oneCalc,ID
+
+
+
+    if len(dirn_list)==0:
+        return oneCalc,ID
+        # try:
+        #     dirn = os.path.join(os.path.dirname(os.path.dirname(oneCalc["_AFLOWPI_FOLDER_"])),
+        #                         root_prefix+".save")
+
+
+        #     dest = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],oneCalc["_AFLOWPI_PREFIX_"]+".save")
+
+        #     if not os.path.exists(dest):
+        #         shutil.copytree(dirn,dest)
+        # except Exception as e:
+        #     print e        
+
+    return AFLOWpi.prep._modifyNamelistPW(oneCalc,ID,'&electrons','startingwfc','"file"')

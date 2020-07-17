@@ -27,7 +27,6 @@ import AFLOWpi.run
 import AFLOWpi.prep
 import os
 import datetime
-import cPickle
 import logging 
 import re
 import numpy
@@ -38,12 +37,13 @@ import sys
 import AFLOWpi.qe
 import decimal
 import contextlib
-import cStringIO
+import io
+from functools import reduce
 
 @contextlib.contextmanager
 def nostdout():
     save_stdout = sys.stdout
-    sys.stdout = cStringIO.StringIO()
+    sys.stdout = io.StringIO()
     yield
     sys.stdout = save_stdout
 
@@ -71,7 +71,7 @@ def _find_numkpoints(outputFile):
     kpointNumRegex = re.compile(r'\s*number\sof\sk\spoints\s*=\s*(\d*).*\n')
     try:
         return int(kpointNumRegex.findall(outputFile)[-1])
-    except Exception,e:
+    except Exception as e:
         return 1
 
 def _get_pool_num(oneCalc,ID):
@@ -99,13 +99,13 @@ def _get_pool_num(oneCalc,ID):
         if n_reduced_k!=1:
             num_mpi_procs = int(re.findall(r'np\s*(\d*)',execPrefix)[-1])
             npool=1
-            for i in reversed(range(1,n_reduced_k+1)):
+            for i in reversed(list(range(1,n_reduced_k+1))):
                 if num_mpi_procs%i == 0 and i<hard_limit+1:
                     npool=i
                     break
         return int(npool)
 
-    except Exception,e:
+    except Exception as e:
         return 1
 
 
@@ -215,18 +215,22 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
         origLength=len(calcsList[step])
         string_prev=''
         header = ['Folder'.ljust(8),'ID'.ljust(25)]
-        for ID,oneCalc in calcsList[step].iteritems():
-            string = ['%-8s' % x for x in calcsList[step][ID]['__status__'].keys()]
+        for ID,oneCalc in list(calcsList[step].items()):
+            string = ['%-8s' % x for x in list(calcsList[step][ID]['__status__'].keys())]
+
             if len(string_prev)>len(string):
-                string=string_prev
+#            if True:
                 string_prev=string
-                header.extend(string)
-            
+                string=string_prev
+
+            header.extend(string)
+            break
+
         calcCopy=copy.deepcopy(calcsList[step])
         if len(calcsList[step])!=0:
-            for ID,oneCalc in calcsList[step].iteritems():
+            for ID,oneCalc in list(calcsList[step].items()):
                 try:
-                    for k,v in status.iteritems():
+                    for k,v in list(status.items()):
                         if negate_status:
                             if oneCalc['__status__'][k]==v:
                                 del calcCopy[ID]                                
@@ -238,18 +242,19 @@ def checkStatus(PROJECT,SET='',config='',step=0,status={},negate_status=False):
 
             headerString=' | '.join(header)
             outString+=  '-'*(len(headerString))+'\n'
-            outString+=  'STEP: %s' % (step+1)+'  | %s/%s'%(len(calcCopy),origLength)+'\n'
+            outString+=  'STEP: %s' % (step+1)+'  | %s/%s'%(len(calcCopy),origLength)+" ### "+oneCalc["_AFLOWPI_WORKFLOW_"][step]+' ###\n'
+
             outString+=  '-'*(len(headerString))+'\n'
             outString+=  headerString+'\n'
             outString+=  '-'*(len(headerString))+'\n'
-            for ID,oneCalc in calcCopy.iteritems():
-                stringStatusList = ['%-8s' % x for x in oneCalc['__status__'].values()]
+            for ID,oneCalc in list(calcCopy.items()):
+                stringStatusList = ['%-8s' % x for x in list(oneCalc['__status__'].values())]
                 string=[os.path.basename(oneCalc['_AFLOWPI_FOLDER_'].split('_')[-1]).ljust(8),ID.ljust(25)]
                 string.extend(stringStatusList)
                 outString+= ' | '.join(string)+'\n'
             #copy back for return of subset
             calcsList[step]=copy.deepcopy(calcCopy)
-            print outString
+    print(outString)
 
     return calcsList
             
@@ -276,7 +281,7 @@ def _getOutputString(oneCalc,ID):
         return outFileString
     except:
         logging.warning('could not get output file: %s' % outFilePath)
-        print 'could not get output file: %s' % outFilePath
+#        print 'could not get output file: %s' % outFilePath
 
 def getCellVolume(oneCalc,ID,conventional=True,string=True):
     '''
@@ -298,9 +303,8 @@ def getCellVolume(oneCalc,ID,conventional=True,string=True):
 
 
     try:
-        print ID
         outFileString = AFLOWpi.retr._getOutputString(oneCalc,ID)
-        vol = float(re.findall(ur'unit-cell volume\s*=\s*([0-9.-]*)',outFileString)[-1])
+        vol = float(re.findall(r'unit-cell volume\s*=\s*([0-9.-]*)',outFileString)[-1])
 
 
 
@@ -311,11 +315,11 @@ def getCellVolume(oneCalc,ID,conventional=True,string=True):
             cell_vec = AFLOWpi.retr.getCellMatrixFromInput(input_str)
             vol =  AFLOWpi.retr.getCellVolumeFromVectors(cell_vec)
 
-        except Exception,e:
-            print e
+        except Exception as e:
+            print(e)
             raise SystemExit
-            logging.warning('could not get volume from output')
-            print 'could not get volume from output'
+
+
 
     if conventional==True:
         ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
@@ -526,10 +530,10 @@ def _moveToSavedir(filePath):
                         logging.warning('Could not transfer %s to %s. %s does not exist and could not be created. ' % (filePath,savedir,savedir))
 
                 os.system('cp  %s %s/' % (filePath,os.path.abspath(savedir)))
-            except Exception,e:
+            except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 def grabEnergy(oneCalc,ID):
@@ -572,10 +576,10 @@ def grabEnergyOut(calcs):
     calcs1 = copy.deepcopy(calcs)
     energyRegex = re.compile(r'(?:(?:(?:(?:\!\s+)total)|(?:Final)) en\w+\s*=\s+(.+?)Ry)',re.MULTILINE)
     
-    for ID,oneCalc in calcs1.iteritems():
+    for ID,oneCalc in list(calcs1.items()):
         try:
             if os.path.exists(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID)):
-                with file(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID),'r') as outFile:
+                with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % ID),'r') as outFile:
                     outFileString=outFile.read()
                     #searches for either total energy or final energy in the scf output and 
                     #adds it to the output dictionary
@@ -588,18 +592,18 @@ def grabEnergyOut(calcs):
                     else: #if the energy can not be found the test entry is deleted from the output dictionary
                         outCalcPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:])
                         logging.warning('could not get energy. check output file: %s' % outCalcPath)
-                        print 'could not get energy. check output file: %s' % outCalcPath
+                        print(('could not get energy. check output file: %s' % outCalcPath))
                         calcs[ID]['Energy']=0.0
             else:
                 
                 outCalcPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:])
                 logging.warning('could not get energy. check output file: %s' % outCalcPath)
-                print 'could not get energy. check output file: %s' % outCalcPath
+                print(('could not get energy. check output file: %s' % outCalcPath))
                 calcs[ID]['Energy']=0.0
         except:
             outCalcPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:])
             logging.warning('could not get energy. check output file: %s' % outCalcPath)
-            print 'could not get energy. check output file: %s' % outCalcPath
+            print(('could not get energy. check output file: %s' % outCalcPath))
     return calcs
 
 
@@ -669,8 +673,8 @@ def getCellOutput(oneCalc,ID):
         with open(os.path.join(folder,scfOutput),'r') as outFile:
 
             lines = outFile.read()
-    except Exception,e:
-        print "No caclulation output available for %s. Are you sure the test ran properly?" % scfOutput
+    except Exception as e:
+        print(("No caclulation output available for %s. Are you sure the test ran properly?" % scfOutput))
 
         return
 
@@ -679,10 +683,10 @@ def getCellOutput(oneCalc,ID):
         with open(os.path.join(folder,scfInput),'r') as inFile:
 
             inLines = inFile.read()
-    except Exception,e:
+    except Exception as e:
 
 
-        print "No caclulation output available for %s. Are you sure the test ran properly?" % scfOutput
+        print(("No caclulation output available for %s. Are you sure the test ran properly?" % scfOutput))
         return
     retrDict = {}
     try:
@@ -701,7 +705,7 @@ def getCellOutput(oneCalc,ID):
         energyArr = energyRegex.findall(lines)
         stressArr = stressRegex.findall(lines)
         forceArr  = forceRegex.findall(lines)
-    except Exception,e:
+    except Exception as e:
         pass
 
 
@@ -713,20 +717,20 @@ def getCellOutput(oneCalc,ID):
     try:
         outputStr+='Total Energy '+energyArr[-1]+' Ry\n\n'
         retrDict['energy']= energyArr[-1]
-    except Exception,e:
+    except Exception as e:
         retrDict['energy']= ''
 
         pass
     try:
         outputStr+=forceArr[-1]+'\n\n'
         retrDict['force'] = forceArr[-1]
-    except Exception,e:
+    except Exception as e:
         retrDict['force']= ''
         pass
     try:
         outputStr+=stressArr[-1]+'\n\n'
         retrDict['stress']= stressArr[-1]
-    except Exception,e:
+    except Exception as e:
         retrDict['stress']= ''
         pass
 
@@ -770,7 +774,7 @@ def getCellOutput(oneCalc,ID):
             testDictString+=atomicCELLSTRING
         except:
             pass
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         testDictString = ''
     try:
@@ -876,10 +880,10 @@ def _getCellParams(oneCalc,ID):
                 return float(alat[0]),paramMatrix
 
         else:
-                print 'No card!'
+                print('No card!')
                 return AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
 
-    except Exception,e:
+    except Exception as e:
 
      
         paramMatrix = AFLOWpi.retr.getCellMatrixFromInput(oneCalc['_AFLOWPI_INPUT_'])
@@ -965,7 +969,7 @@ def getRecipParams(oneCalc):
                     return alat,paramMatrix
 
             else:
-                    print 'No card!'
+                    print('No card!')
                     return alat,[[0.,0.,0.],[0.,0.,0.],[0.,0.,0.]]
 	
 
@@ -1000,7 +1004,7 @@ def _getAtomNum(inputString,strip=False):
     return numOfEach
 
 from collections import OrderedDict
-def _getStoicName(oneCalc,strip=False,latex=False,order=True,gcd=True):
+def _getStoicName(oneCalc,strip=False,latex=False,order=False,gcd=True):
     '''
     Determines the name of the compound by looking at the input and
     finds the stoichiometric number of species in the compound
@@ -1030,14 +1034,14 @@ def _getStoicName(oneCalc,strip=False,latex=False,order=True,gcd=True):
                     return GCD(b, a % b)
     '''cycle through the number of each species for each calculation
     to get the GCD of all the number of species in the calculation'''
-    stoicGCD = reduce(GCD, numOfEach.values())
+    stoicGCD = reduce(GCD, list(numOfEach.values()))
 
     numOfEachCopy = OrderedDict(numOfEach)
     '''go through and divide the number of each species by the GCD
     and update the dictionary with {species:number of them in the cell}'''
 
-    for species,num in numOfEach.iteritems():
-            numOfEachCopy[species] = numOfEach[species] / stoicGCD
+    for species,num in list(numOfEach.items()):
+            numOfEachCopy[species] = int(numOfEach[species] / stoicGCD)
 
     '''builds name for printing in order of elements are listed in the 
     ATOMIC POSTIONS from top of that list is first atom down to bottom 
@@ -1050,7 +1054,7 @@ def _getStoicName(oneCalc,strip=False,latex=False,order=True,gcd=True):
     if order==True:
         iterator = sorted(numOfEachCopy.items())
     else:
-        iterator = numOfEachCopy.items()
+        iterator = list(numOfEachCopy.items())
 
     for key,value in iterator:
         number=value
@@ -1098,448 +1102,13 @@ def _getPathFromFile(oneCalc):
 
 
             return path
-    except Exception,e:
-            print e
-            print 'Did you run ppBands and did it complete properly?'
+    except Exception as e:
+            print(e)
+            print('Did you run ppBands and did it complete properly?')
             return 
 
 ###############################################################################
 ###############################################################################
-def _getHighSymPoints(oneCalc,ID=None):
-    '''
-    Searching for the ibrav number in the input file for the calculation
-    to determine the path for the band structure calculation
-
-    Arguments:
-          oneCalc (dict): a dictionary containing properties about the AFLOWpi calculation
-                
-    Keyword Arguments:
-          ID (str): ID string for the particular calculation and step          
-
-    Returns:
-          special_points (list): list of the HSP names
-          band_path (str): path in string form
-
-    '''
-
-
-    
-    ibrav = 0
-    ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
-    
-    ibrav=int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[-1])
-
-    if ibrav==0:
-            return
-    if ibrav < 0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
-
-
-    alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)        
-    cellOld=cellOld.getA()
-
-#    raise SystemExit
-    #get a,b,c of QE convention conventional cell from primitive lattice vecs
-    if ibrav == 1:
-        a=numpy.abs(cellOld[0][0])
-    if ibrav == 2:
-        a=numpy.abs(cellOld[0][0])*2.0
-    if ibrav == 3:
-        a=numpy.abs(cellOld[0][0])*2.0
-    if ibrav == 4:
-        a=numpy.abs(cellOld[0][0])
-        b=a
-        c=numpy.abs(cellOld[2][2])
-    if ibrav == 5:
-        a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
-        alpha=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a**2))
-        alpha_deg = alpha*180.0/numpy.pi
-    if ibrav == 6:
-        a=numpy.abs(cellOld[0][0])
-        c=numpy.abs(cellOld[2][2])
-    if ibrav == 7:
-        a=numpy.abs(cellOld[0][0])*2.0
-        c=numpy.abs(cellOld[2][2])*2.0
-    if ibrav == 8:
-        a=numpy.abs(cellOld[0][0])
-        b=numpy.abs(cellOld[1][1])
-        c=numpy.abs(cellOld[2][2])
-
-    if ibrav == 9:
-        a=numpy.abs(cellOld[0][0])*2.0
-        b=numpy.abs(cellOld[1][1])*2.0
-        c=numpy.abs(cellOld[2][2])
-
-    if ibrav == 10:
-        a=numpy.abs(cellOld[0][0])*2.0
-        b=numpy.abs(cellOld[1][1])*2.0
-        c=numpy.abs(cellOld[2][2])*2.0
-
-    if ibrav == 11:
-        a=numpy.abs(cellOld[0][0])*2.0
-        b=numpy.abs(cellOld[1][1])*2.0
-        c=numpy.abs(cellOld[2][2])*2.0
-
-    if ibrav == 12:
-        a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
-        b=numpy.sqrt(cellOld[1].dot(cellOld[1].T))
-        c=numpy.sqrt(cellOld[2].dot(cellOld[2].T))
-        alpha=numpy.arccos(cellOld[1].dot(cellOld[2].T)/(c*b))
-        beta =numpy.arccos(cellOld[0].dot(cellOld[2].T)/(a*c))
-        gamma=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a*b))
-
-    if ibrav==14:
-        cellOld=numpy.linalg.inv(cellOld.T).T
-        a=numpy.sqrt(cellOld[0].dot(cellOld[0].T))
-        b=numpy.sqrt(cellOld[1].dot(cellOld[1].T))
-        c=numpy.sqrt(cellOld[2].dot(cellOld[2].T))
-        alpha=numpy.arccos(cellOld[1].dot(cellOld[2].T)/(c*b))*(180.0/numpy.pi)
-        beta =numpy.arccos(cellOld[0].dot(cellOld[2].T)/(a*c))*(180.0/numpy.pi)
-        gamma=numpy.arccos(cellOld[0].dot(cellOld[1].T)/(a*b))*(180.0/numpy.pi)
-        alat*=  0.529177249
-        print a*alat,b*alat,c*alat,alpha,beta,gamma
-
-    if   ibrav==1:  ibrav_var =  'CUB'
-    elif ibrav==2:  ibrav_var =  'FCC'
-    elif ibrav==3:  ibrav_var =  'BCC'
-    elif ibrav==4:  ibrav_var =  'HEX'
-    elif ibrav==6:  ibrav_var =  'TET'
-    elif ibrav==8:  ibrav_var =  'ORC'
-    elif ibrav==9:  ibrav_var =  'ORCC'
-    elif ibrav==11: ibrav_var =  'ORCI'
-    elif ibrav==12: ibrav_var =  'MCL'
-
-    elif ibrav==5:
-        if   alpha_deg < 90.0: ibrav_var = 'RHL1'
-        elif alpha_deg > 90.0: ibrav_var = 'RHL2'
-    elif ibrav==7:
-        if(c < a):   ibrav_var =  'BCT1'
-        elif(c > a): ibrav_var =  'BCT2'
-        else:        ibrav_var =  'BCC'
-    elif ibrav==10:
-
-        if    (1.0/a**2 > 1.0/b**2+1.0/c**2): ibrav_var =  'ORCF1'
-        elif  numpy.isclose(1.0/a**2, 1.0/b**2+1.0/c**2,1.e-2): ibrav_var =  'ORCF3'
-        elif  (1.0/a**2 < 1.0/b**2+1.0/c**2): ibrav_var =  'ORCF2'
-
-    elif(int(ibrav)==14):
-        print alpha,beta,gamma
-        minAngle = numpy.amin([alpha,beta,gamma])
-        maxAngle = numpy.amax([alpha,beta,gamma])
-        if alpha==90.0 or beta==90.0 or gamma==90.0:
-            if alpha>=90.0 or beta>=90.0 or gamma>=90.0: ibrav_var =  'TRI2A'
-            if alpha<=90.0 or beta<=90.0 or gamma<=90.0: ibrav_var =  'TRI2B'
-        elif minAngle>90.0:                              ibrav_var =  'TRI1A'
-        elif maxAngle<90:                                ibrav_var =  'TRI1B'
-        else: ibrav_var =  'TRI1A'
-###############################################################################
-###############################################################################
-    if ibrav_var=='CUB':
-        band_path = 'gG-X-M-gG-R-X|M-R'
-        special_points = {'gG'   : (0.0, 0.0, 0.0),
-                           'M'   : (0.5, 0.5, 0.0),
-                           'R'   : (0.5, 0.5, 0.5),
-                           'X'   : (0.0, 0.5, 0.0)}
-                           
-    if ibrav_var=='FCC':
-        band_path = 'gG-X-W-K-gG-L-U-W-L-K|U-X'
-        special_points = {'gG'   : (0.0, 0.0, 0.0),
-                          'K'    : (0.375, 0.375, 0.750),
-                          'L'    : (0.5, 0.5, 0.5),
-                          'U'    : (0.625, 0.250, 0.625),
-                          'W'    : (0.5, 0.25, 0.75),
-                          'X'    : (0.5, 0.0, 0.5)}
-                          
-    if ibrav_var=='BCC':
-        band_path = 'gG-H-N-gG-P-H|P-N'
-        special_points = {'gG'   : (0, 0, 0),
-                          'H'    : (0.5, -0.5, 0.5),
-                          'P'    : (0.25, 0.25, 0.25,), 
-                          'N'    : (0.0, 0.0, 0.5)}
-            
-    if ibrav_var=='HEX':
-        band_path = 'gG-M-K-gG-A-L-H-A|L-M|K-H'
-        special_points = {'gG'   : (0, 0, 0),
-                          'A'    : (0.0, 0.0, 0.5),
-                          'H'    : (1.0/3.0, 1.0/3.0, 0.5),
-                          'K'    : (1.0/3.0, 1.0/3.0, 0.0),
-                          'L'    : (0.5, 0.0, 0.5),
-                          'M'    : (0.5, 0.0, 0.0)}
-        
-    if ibrav_var=='RHL1':
-        eta = (1.0 + 4.0*numpy.cos(alpha))/(2.0 + 4.0*numpy.cos(alpha))
-        nu =0.75-eta/2.0
-        band_path = 'gG-L-B1|B-Z-gG-X|Q-F-P1-Z|L-P'
-        special_points = {'gG'   : (0.0, 0.0, 0.0),
-                          'B'    : (eta, 0.5, 1.0-eta),
-                          'B1'   : (0.5, 1.0-eta, eta-1.0),
-                          'F'    : (0.5, 0.5, 0.0),
-                          'L'    : (0.5, 0.0, 0.0),
-                          'L1'   : (0.0, 0.0, -0.5),
-                          'P'    : (eta, nu, nu),
-                          'P1'   : (1.0-nu, 1.0-nu, 1.0-eta),
-                          'P2'   : (nu, nu, eta-1.0),
-                          'Q'    : (1.0-nu, nu, 0.0),
-                          'X'    : (nu, 0.0, -nu),
-                          'Z'    : (0.5, 0.5, 0.5)}
-         
-    if ibrav_var=='RHL2':
-        eta=1.0/(2.0*numpy.tan(alpha/2.0)**2)
-        nu =0.75-eta/2.0
-        band_path = 'gG-P-Z-Q-gG-F-P1-Q1-L-Z'
-        special_points = {'gG'   : (0.0, 0.0, 0.0),
-                          'F'    : (0.5, -0.5, 0.0),
-                          'L'    : (0.5, 0.0, 0.0),
-                          'P'    : (1.0-nu, -nu, 1.0-nu),
-                          'P1'   : (nu, nu-1.0, nu-1.0),
-                          'Q'    : (eta, eta, eta),
-                          'Q1'   : (1.0-eta, -eta, -eta),
-                          'Z'    : (0.5, -0.5, 0.5)} 
-
-    if ibrav_var=='TET':
-        band_path = 'gG-X-M-gG-Z-R-A-Z|X-R|M-A'
-        special_points = {'gG'   : (0.0, 0.0, 0.0),
-                          'A'    : (0.5, 0.5, 0.5),
-                          'M'    : (0.5, 0.5, 0.0),
-                          'R'    : (0.0, 0.5, 0.5),
-                          'X'    : (0.0, 0.5, 0.0),
-                          'Z'    : (0.0, 0.0, 0.5)}
-
-    if ibrav_var=='BCT1':
-       eta = (1.0+(c/a)**2)/4.0
-       band_path = 'gG-X-M-gG-Z-P-N-Z1-M|X-P'
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'M'     : (-0.5, 0.5, 0.5),
-                         'N'     : (0.0, 0.5, 0.0),
-                         'P'     : (0.25, 0.25, 0.25),
-                         'X'     : (0.0, 0.0, 0.5),
-                         'Z'     : (eta, eta, -eta),
-                         'Z1'    : (-eta, 1.0-eta, eta)}
-         
-    if ibrav_var=='BCT2':
-       band_path = 'gG-X-Y-gS-gG-Z-gS1-N-P-Y1-Z|X-P'
-       eta = (1.0+(a/c)**2)/4.0
-       zeta = 0.5*(a/c)**2
-
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'N'     : (0.0, 0.5, 0.0),
-                         'P'     : (0.25, 0.25, 0.25),
-                         'gS'    : (-eta, eta, eta),
-                         'gS1'   : (eta, 1-eta, -eta),
-                         'X'     : (0.0, 0.0, 0.5),
-                         'Y'     : (-zeta, zeta, 0.5),
-                         'Y1'    : (0.5, 0.5, -zeta),
-                         'Z'     : (0.5, 0.5, -0.5)}
-         
-    if ibrav_var=='ORC':
-         band_path = 'gG-X-S-Y-gG-Z-U-R-T-Z|Y-T|U-X|S-R'
-         special_points = {'gG'  : (0.0, 0.0, 0.0),
-                           'R'   : (0.5, 0.5, 0.5),
-                           'S'   : (0.5, 0.5, 0.0),
-                           'T'   : (0.0, 0.5, 0.5),
-                           'U'   : (0.5, 0.0, 0.5),
-                           'X'   : (0.5, 0.0, 0.0),
-                           'Y'   : (0.0, 0.5, 0.0),
-                           'Z'   : (0.0, 0.0, 0.5)}
-
-    if ibrav_var=='ORCC':
-       band_path = 'gG-X-S-R-A-Z-gG-Y-X1-A1-T-Y|Z-T'
-       zeta=(1.0+((a/b)**2))/4.0
-       special_points = {'gG'    : (  0.0, 0.0     , 0.0),
-                         'A'     : ( zeta, zeta    , 0.5),
-                         'A1'    : (-zeta, 1.0-zeta, 0.5),
-                         'R'     : (  0.0, 0.5     , 0.5),
-                         'S'     : (  0.0, 0.5     , 0.0),
-                         'T'     : ( -0.5, 0.5     , 0.5),
-                         'X'     : ( zeta, zeta    , 0.0),
-                         'X1'    : (-zeta, 1.0-zeta, 0.0),
-                         'Y'     : ( -0.5, 0.5     , 0.0),
-                         'Z'     : (  0.0, 0.0     , 0.5)}
-
-
-    if ibrav_var=='ORCF1':
-       band_path = 'gG-Y-T-Z-gG-X-A1-Y|T-X1|X-A-Z|L-gG'
-       eta =(1.0+(a/b)**2+(a/c)**2)/4.0
-       zeta=(1.0+(a/b)**2-(a/c)**2)/4.0
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'A'     : (0.5, 0.5 + zeta, zeta),
-                         'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
-                         'L'     : (0.5, 0.5, 0.5),
-                         'T'     : (1.0, 0.5, 0.5),
-                         'X'     : (0.0, eta, eta),
-                         'X1'    : (1.0, 1.0-eta, 1.0-eta),
-                         'Y'     : (0.5, 0.0, 0.5),
-                         'Z'     : (0.5, 0.5, 0.0)}
-
-    if ibrav_var=='ORCF2':
-       band_path = 'gG-Y-C-D-X-gG-Z-D1-H-C|C1-Z|X-H1|H-Y|L-gG'
-       eta =(1.0+(a/b)**2-(a/c)**2)/4.0
-       phi =(1.0+(c/b)**2-(c/a)**2)/4.0
-       delta =(1.0+(b/a)**2-(b/c)**2)/4.0
-
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'C'     : (0.5, 0.5-eta, 1.0-eta),
-                         'C1'    : (0.5, 0.5+eta, eta),
-                         'D'     : (0.5-delta, 0.5, 1.0-delta),
-                         'D1'    : (0.5+delta, 0.5, delta),
-                         'L'     : (0.5, 0.5, 0.5),
-                         'H'     : (1.0-phi, 0.5-phi, 0.5),
-                         'H1'    : (phi, 0.5+phi, 0.5),
-                         'X'     : (0.0, 0.5, 0.5),
-                         'Y'     : (0.5, 0.0, 0.5),
-                         'Z'     : (0.5, 0.5, 0.0),}
-
-    if ibrav_var=='ORCF3':
-       band_path = 'gG-Y-T-Z-gG-X-A1-Y|X-A-Z|L-R'
-       eta =(1.0+(a/b)**2+(a/c)**2)/4.0
-       zeta=(1.0+(a/b)**2+(a/c)**2)/4.0
-       special_points = {'gG'    : (0.0, 0.0, 0.0),
-                         'A'     : (0.5, 0.5 + zeta, zeta),
-                         'A1'    : (0.5, 0.5-zeta, 1.0-zeta),
-                         'L'     : (0.5, 0.5, 0.5),
-                         'T'     : (1.0, 0.5, 0.5),
-                         'X'     : (0.0, eta, eta),
-                         'X1'    : (1.0, 1.0-eta, 1.0-eta),
-                         'Y'     : (0.5, 0.0, 0.5),
-                         'Z'     : (0.5, 0.5, 0.0)}
-
-         
-    if ibrav_var=='ORCI':
-         band_path = 'gG-X-L-T-W-R-X1-Z-gG-Y-S-W|L1-Y|Y1-Z'
-         chi   = (1.0  + (a/c)**2)/(4.0)
-         eta   = (1.0  + (b/c)**2)/(4.0)
-         delta = ( (b/c)**2 - (a/c)**2    )/(4.0)
-         mu    = ( (b/c)**2 + (a/c)**2    )/(4.0)
-         special_points = {'gG'   : (0, 0, 0),
-                           'L'    : (-mu, mu, 0.5-delta),
-                           'L1'   : (mu, -mu, 0.5+delta),
-                           'L2'   : (0.5-delta, 0.5+delta, -mu),
-                           'R'    : (0.0, 0.5, 0.0),
-                           'S'    : (0.5, 0.0, 0.0),
-                           'T'    : (0.0, 0.0, 0.5),
-                           'W'    : (0.25,0.25,0.25),
-                           'X'    : (-chi, chi, chi),
-                           'X1'   : (chi, 1.0-chi, -chi),
-                           'Y'    : (eta, -eta, eta),
-                           'Y1'   : (1.0-eta, eta, -eta),
-                           'Z'    : (0.5, 0.5, -0.5)}
-
-    if ibrav_var=='MCL':
-         #abc->cba
-         eta =  (1.0 - (b/a)*numpy.cos(numpy.pi-gamma))/(2.0*numpy.sin(numpy.pi-gamma)**2)
-         nu =   0.5  - eta*(a/b)*numpy.cos(numpy.pi-gamma)
-         band_path = 'gG-Y-H-C-E-M1-A-X-gG-Z-D-M|Z-A|D-Y|X-H1'
-         special_points = {
-                           'gG'    : (0.0, 0.0    , 0.0    ),
-                           'A'     : (0.5, 0.5    , 0.0    ),
-                           'C'     : (0.0, 0.5    , 0.5    ),
-                           'D'     : (0.5, 0.0    , 0.5    ),
-                           'D1'    : (0.5, 0.0    ,-0.5    ),
-                           'E'     : (0.5, 0.5    , 0.5    ),
-                           'H'     : (0.0, eta    , 1.0-nu ),
-                           'H1'    : (0.0, 1.0-eta, nu     ),
-                           'H2'    : (0.0, eta    ,-nu     ),
-                           'M'     : (0.5, eta    , 1.0-nu ),
-                           'M1'    : (0.5, 1.0-eta, nu     ),
-                           'M2'    : (0.5, eta    ,-nu     ),
-                           'X'     : (0.0, 0.5    , 0.0    ),
-                           'Y'     : (0.0, 0.0    , 0.5    ),
-                           'Y1'    : (0.0, 0.0    ,-0.5    ),
-                           'Z'     : (0.5, 0.0    , 0.0    )}
-         
-   
-    if ibrav_var=='TRI1A':         
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG' 
-        special_points = {'gG'    : (0.0,0.0,0.0),
-                          'L'     : (0.5,0.5,0.0),
-                          'M'     : (0.0,0.5,0.5),
-                          'N'     : (0.5,0.0,0.5),
-                          'R'     : (0.5,0.5,0.5),
-                          'X'     : (0.5,0.0,0.0),
-                          'Y'     : (0.0,0.5,0.0),
-                          'Z'     : (0.0,0.0,0.5),}
-        
-    if ibrav_var=='TRI2A':        
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-        special_points = {'gG'    : (0.0,0.0,0.0),
-                          'L'     : (0.5,0.5,0.0),
-                          'M'     : (0.0,0.5,0.5),
-                          'N'     : (0.5,0.0,0.5),
-                          'R'     : (0.5,0.5,0.5),
-                          'X'     : (0.5,0.0,0.0),
-                          'Y'     : (0.0,0.5,0.0),
-                          'Z'     : (0.0,0.0,0.5),}
- 
-    if ibrav_var=='TRI1B':        
-        band_path = "X-gG-Y|L-gG-Z|N-gG-M|R-gG"
-        special_points = {'gG'    : ( 0.0, 0.0,0.0),
-                          'L'     : ( 0.5,-0.5,0.0),
-                          'M'     : ( 0.0, 0.0,0.5),
-                          'N'     : (-0.5,-0.5,0.5),
-                          'R'     : ( 0.0,-0.5,0.5),
-                          'X'     : ( 0.0,-0.5,0.0),
-                          'Y'     : ( 0.5, 0.0,0.0),
-                          'Z'     : (-0.5, 0.0,0.5),}
-
-    if ibrav_var=='TRI2B':        
-        band_path = 'X-gG-Y|L-gG-Z|N-gG-M|R-gG'
-        special_points = {'gG'    : ( 0.0, 0.0,0.0),
-                          'L'     : ( 0.5,-0.5,0.0),
-                          'M'     : ( 0.0, 0.0,0.5),
-                          'N'     : (-0.5,-0.5,0.5),
-                          'R'     : ( 0.0,-0.5,0.5),
-                          'X'     : ( 0.0,-0.5,0.0),
-                          'Y'     : ( 0.5, 0.0,0.0),
-                          'Z'     : (-0.5, 0.0,0.5),}
-
-
-    aflow_conv = numpy.identity(3)
-    qe_conv    = numpy.identity(3)
-
-    if ibrav==2:
-        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0     
-        qe_conv    = numpy.asarray([[-1.0, 0.0, 1.0],[ 0.0, 1.0, 1.0],[-1.0, 1.0, 0.0]])/2.0
-    if ibrav==3:
-        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0     
-        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0     
-#    if ibrav==4:
-#        s32 = numpy.sqrt(3)/2.0
-#        aflow_conv = numpy.asarray([[ 0.5,-s32, 0.0],[ 0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
-#        qe_conv    = numpy.asarray([[ 1.0, 0.0, 0.0],[-0.5, s32, 0.0],[ 0.0, 0.0, 1.0]])     
-    if ibrav==7:
-        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
-        qe_conv    = numpy.asarray([[ 1.0,-1.0, 1.0],[ 1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
-    if ibrav==9:
-        aflow_conv = numpy.asarray([[ 1.0,-1.0, 0.0],[ 1.0, 1.0, 0.0],[ 0.0, 0.0, 2.0]])/2.0
-        qe_conv    = numpy.asarray([[ 1.0, 1.0, 0.0],[-1.0, 1.0, 0.0],[ 0.0, 0.0, 2.0]])/2.0
-    if ibrav==10:
-        aflow_conv = numpy.asarray([[ 0.0, 1.0, 1.0],[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0]])/2.0
-        qe_conv    = numpy.asarray([[ 1.0, 0.0, 1.0],[ 1.0, 1.0, 0.0],[ 0.0, 1.0, 1.0]])/2.0  
-    if ibrav==11:
-        aflow_conv = numpy.asarray([[-1.0, 1.0, 1.0],[ 1.0,-1.0, 1.0],[ 1.0, 1.0,-1.0]])/2.0
-        qe_conv    = numpy.asarray([[ 1.0, 1.0, 1.0],[-1.0, 1.0, 1.0],[-1.0,-1.0, 1.0]])/2.0
-    if ibrav==12:
-        aflow_conv = numpy.asarray([[ 0.0, 0.0, 1.0],[ 0.0, 1.0, 0.0],[ 1.0, 0.0, 0.0]])
-        qe_conv    = numpy.asarray([[ 1.0, 0.0, 0.0],[ 0.0, 1.0, 0.0],[ 0.0, 0.0, 1.0]])
-
-
-
-                                   
-
-    for k,v in special_points.iteritems():
-        first  = numpy.array(v).dot(numpy.linalg.inv(aflow_conv))
-        if ibrav == 9:
-            second = qe_conv.T.dot(first)
-        else:
-            second = qe_conv.dot(first)
-        special_points[k]=tuple((second).tolist())
-
-
-#    print special_points
-#    raise SystemExit
-    return special_points, band_path
 
 #############################################################################################################
 #############################################################################################################
@@ -1570,7 +1139,7 @@ def writeInputFromOutput(calcs,replace=False,runlocal=False):
 
     '''
 
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         if runlocal==False:
             AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._writeInputFromOutput(oneCalc,ID,replace=%s)\n' % replace)
         else:
@@ -1592,7 +1161,7 @@ def _writeInputFromOutputString(oneCalc,ID):
 
     '''
 
-    alatRegex = re.compile(ur'(?:CELL_PARAMETERS)\s*\(\s*alat\s*=\s*([0-9.]*)\s*\)',re.MULTILINE)
+    alatRegex = re.compile(r'(?:CELL_PARAMETERS)\s*\(\s*alat\s*=\s*([0-9.]*)\s*\)',re.MULTILINE)
 
     try:
         if os.path.exists(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.out')):
@@ -1611,11 +1180,11 @@ def _writeInputFromOutputString(oneCalc,ID):
         pass
     try:
         alat = alatRegex.findall(engineOutput)[-1]
-    except IndexError,e:
+    except IndexError as e:
         pass
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
-        print e
+        print(e)
     
     newInput = ''
 
@@ -1629,7 +1198,7 @@ def _writeInputFromOutputString(oneCalc,ID):
         newInput = inFileString
         nameListRegex = re.compile(r'(&[A-Za-z]+)|(?:\s*(\S*?)\s*=\s*(\S+?)(?:(?:\s*\,\s*)|(?:\s*\n)))')
         namelist = nameListRegex.findall(inFileString)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
         
     try:
@@ -1643,9 +1212,9 @@ def _writeInputFromOutputString(oneCalc,ID):
         tokenizedInput =  AFLOWpi.retr._splitInput(newInput)
         tokenCopy = copy.deepcopy(tokenizedInput)
 
-        for nameList,nameListDict in tokenizedInput.iteritems():
+        for nameList,nameListDict in list(tokenizedInput.items()):
             if type(nameListDict)==type(OrderedDict({'someDict':42})):
-                for parameter,value in nameListDict.iteritems():
+                for parameter,value in list(nameListDict.items()):
                     if parameter.upper() =='A' or parameter.upper() =='B' or parameter.upper() =='C' or parameter.upper() =='COSBC' or parameter.upper() =='COSAC' or parameter.upper() =='COSAB':
                         del tokenCopy[nameList][parameter]
                     elif parameter=='ibrav':
@@ -1661,7 +1230,7 @@ def _writeInputFromOutputString(oneCalc,ID):
                 tokenCopy['ATOMIC_POSITIONS']['__content__']=attachPosFlags(atomCoord,flags)
             else:
                 pass
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
         newInput = AFLOWpi.retr._joinInput(tokenCopy)        
@@ -1681,7 +1250,7 @@ def _writeInputFromOutputString(oneCalc,ID):
             pass
     except IndexError:
         pass
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     newInput = AFLOWpi.prep.remove_blank_lines(newInput)
@@ -1728,7 +1297,7 @@ def _writeInputFromOutput(oneCalc,ID,replace=False):
 
     outFileName = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'_new.in')
     newInput = AFLOWpi.retr._writeInputFromOutputString(oneCalc,ID)
-    if newInput!=None:
+    if newInput is not None:
         with open(outFileName,'w') as outFile:
             outFile.write(newInput)
 
@@ -1790,8 +1359,8 @@ def _writeEfermi(oneCalc,ID):
 
 
 
-    except Exception,e:
-            print e
+    except Exception as e:
+            print(e)
             logging.info('could not find eFermi/HOMO-LUMO in %s checking to see if EFERMI/HOMOLUMO is in calc dictionary from previous calculation.')
 
     'look to see if efermi is there from dos calc and if not add efermi as part of the dos calc'
@@ -1832,7 +1401,7 @@ def _getEfermi(oneCalc,ID,directID=False):
         with open(fermi_file,'r') as outFileObj:
             efermi = float(outFileObj.read())
             return efermi
-    except Exception,e:
+    except Exception as e:
         return 0.0
 
 
@@ -1852,10 +1421,10 @@ def _joinInput(inputDict):
     '''
 
     newInputString = ''
-    for namelist,parameters in inputDict.iteritems():
+    for namelist,parameters in list(inputDict.items()):
         if '&' in namelist:        
             newInputString+=namelist+'\n'
-            for parameter,value in inputDict[namelist].iteritems():
+            for parameter,value in list(inputDict[namelist].items()):
                 newInputString+= '   %s = %s,\n' % (parameter.lower(),value)
 
             newInputString+='/\n'
@@ -1936,12 +1505,12 @@ def _getPath(dk, oneCalc,ID=None,points=False):
     ibravRegex = re.compile('ibrav[\s]*=[\s]*([\d]+)\s*[,\n]*')
     ibrav = int(ibravRegex.findall(oneCalc['_AFLOWPI_INPUT_'])[0])	
 
-    if ibrav==0:
-            return
-    if ibrav<0:
-        print 'Lattice type %s is not implemented' % ibrav
-        logging.error('The ibrav value from expresso has not yet been implemented to the framework')
-        raise Exception
+    # if ibrav==0:
+    #         return
+    # if ibrav<0:
+    #     print 'Lattice type %s is not implemented' % ibrav
+    #     logging.error('The ibrav value from expresso has not yet been implemented to the framework')
+    #     raise Exception
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
     BohrToAngstrom = 1.0/1.889727
@@ -1975,7 +1544,7 @@ def _getPath(dk, oneCalc,ID=None,points=False):
                 numK = int(numpy.ceil((kdistance(hs, p1, p2)/newDK)))
                 totalK+=numK
 
-                numK = str(numK)
+
 
                 if points==True:
                     a0 = numpy.linspace(p1[0],p2[0],numK).astype(numpy.float16)
@@ -2000,8 +1569,8 @@ def _getPath(dk, oneCalc,ID=None,points=False):
                     if(index2 == len(a)-2):
                         numPointsStr += '%s %s %s %s ! %s\n' % (sp2[0],sp2[1],sp2[2],str(0),point2.rjust(2))
 
-            except Exception,e:
-                print e
+            except Exception as e:
+                print(e)
     if points==True:
 
         numPointsStr=numPointsStr.replace('!!','%5.4f !!' % (2.0/float(totalK)))
@@ -2048,11 +1617,11 @@ def _orderSplitInput(inputCalc):
     newOrderedDict=OrderedDict()
     inputOrder = ['&control','&system','&electrons','&ions','&cell','ATOMIC_SPECIES','ATOMIC_POSITIONS','K_POINTS']
     for item in inputOrder:
-        if item in inputCalc.keys():
+        if item in list(inputCalc.keys()):
             newOrderedDict.update({item:inputCalc[item]})
         else:
             newOrderedDict.update({item:OrderedDict()})
-    for key in inputCalc.keys():
+    for key in list(inputCalc.keys()):
         if key not in inputOrder:
             newOrderedDict.update({key:inputCalc[key]})
 
@@ -2083,10 +1652,10 @@ def _splitInput(inFileString):
             inputDict[lastOne]=OrderedDict()
         else:
             try:                    
-                if lastOne not in inputDict.keys():
+                if lastOne not in list(inputDict.keys()):
                     inputDict[lastOne.lower()]=OrderedDict()
                 inputDict[lastOne.lower()][namelist[item][1].lower()]=namelist[item][2]
-            except Exception,e:
+            except Exception as e:
                 pass
 #                AFLOWpi.run._fancy_error_log(e)
 
@@ -2141,7 +1710,7 @@ def _splitInput(inFileString):
         if len(cellParamRegex.findall(inFileString)):
             paramUnits=unitsRegex.findall(inFileString)[-1].strip()
             paramUnits = paramUnits.lower()
-            if paramUnits in ['cubic','crystal','angstrom','bohr']:
+            if paramUnits in ['cubic','crystal','angstrom','bohr','alat']:
                 if len(paramUnits.strip()):
                     paramUnits = '{%s}' % paramUnits
                 else:
@@ -2159,7 +1728,7 @@ def _splitInput(inFileString):
 
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     try:
@@ -2176,12 +1745,12 @@ def _splitInput(inFileString):
             inputDict['K_POINTS']=OrderedDict()
             inputDict['K_POINTS']['__modifier__']=modifier
             inputDict['K_POINTS']['__content__']=kpoints
-        except Exception,e:
+        except Exception as e:
             modifier=''
-            print e
+            print(e)
 
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 
@@ -2217,7 +1786,7 @@ def getBravaisLatticeName(bravaisLatticeNumber):
         return 'triclinic'
     else:
         logging.error('Not a valid bravais lattice number')
-        print 'Not a valid bravais lattice number'
+        print('Not a valid bravais lattice number')
         return ''
 
 
@@ -2248,23 +1817,23 @@ def pw2cif(calcs,inpt=True,outp=True,runlocal=False,outputFolder=None,filePrefix
         inpt_or_outp='""'
 
     try:
-        for ID,oneCalc in calcs.iteritems():
+        for ID,oneCalc in list(calcs.items()):
             if runlocal:
                 inOrOut=eval(inpt_or_outp)
                 try:
                     AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=inOrOut,outputFolder=outputFolder,filePrefix=filePrefix)
-                except Exception,e:
+                except Exception as e:
                     AFLOWpi.run._fancy_error_log(e)
                     continue
             else:
                 inOrOut=inpt_or_outp
-                if outputFolder==None:
+                if outputFolder is None:
 
                     AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=%s,outputFolder=None,filePrefix="%s")\n' % (inOrOut,filePrefix))
                 else:
                     AFLOWpi.prep._addToBlock(oneCalc,ID,'RUN','AFLOWpi.retr._pw2cif(oneCalc,ID,inOrOut=%s,outputFolder="%s",filePrefix="%s")\n' % (inOrOut,outputFolder,filePrefix))
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
@@ -2286,7 +1855,7 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
     '''        
 
 
-    if outputFolder == None:
+    if outputFolder is None:
         outputFolder = oneCalc['_AFLOWPI_FOLDER_']
 
 
@@ -2297,7 +1866,8 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
         outFileString = iso.cif
 
         cif_prefix='INPUT_'
-        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
+        cmp_name  = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
+        joiner = filePrefix+'STRUCT_'+cmp_name+'_'+cif_prefix+ID+'.cif'
 
         with open(os.path.join(outputFolder,joiner),'w') as outFile:
             outFile.write(outFileString)
@@ -2309,7 +1879,8 @@ def _pw2cif(oneCalc,ID,inOrOut='input',outputFolder=None,filePrefix=''):
         
         outFileString = iso.cif
         cif_prefix='OUTPUT_'
-        joiner = filePrefix+'STRUCT_'+cif_prefix+ID+'.cif'
+        cmp_name  = AFLOWpi.retr._getStoicName(oneCalc,strip=True)
+        joiner = filePrefix+'STRUCT_'+cmp_name+'_'+cif_prefix+ID+'.cif'
 
         with open(os.path.join(outputFolder,joiner),'w') as outFile:
             outFile.write(outFileString)
@@ -2372,13 +1943,13 @@ def inputDict2params(inputDict):
     '''        
 
     ibrav=0
-    for k,v in sorted(inputDict.iteritems()):
+    for k,v in sorted(inputDict.items()):
 
         if re.match(r'ibrav',k):
             ibrav=int(v)
 
     a,b,c,alpha,beta,gamma,k = (0.0,0.0,0.0,0.0,0.0,0.0,k)
-    for k,v in sorted(inputDict.iteritems()):
+    for k,v in sorted(inputDict.items()):
         a,b,c,alpha,beta,gamma = celldm2params(a,b,c,alpha,beta,gamma,k,v)
 
     if ibrav == 1:
@@ -2446,7 +2017,7 @@ def _getCellOutDim(oneCalc,ID,cosine=True,degrees=True):
     inputFileString  = oneCalc['_AFLOWPI_INPUT_']
     try:
         ibravOrig= ibravRegex.findall(inputFileString)[-1]
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
     with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],ID+'.out'),'r') as inFileObj:
@@ -2456,11 +2027,11 @@ def _getCellOutDim(oneCalc,ID,cosine=True,degrees=True):
     try:
 
         splitParams =  cellParamRegex.findall(inFileString)[-1].split('\n')
-    except Exception,e:
+    except Exception as e:
         try:
             cellParamRegex = re.compile(r'crystal axes: \(cart. coord. in units of alat\)\n\s*a\(1\)\s*=\s*\(\s*([0-9.\s]*)\)\s*\n\s*a\(2\)\s*=\s*\(\s*([0-9.\s]*)\)\s*\n\s*a\(3\)\s*=\s*\(\s*([0-9.\s]*)\)\s*\n')
             splitParams =  cellParamRegex.findall(inFileString)[-1]
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
     alat,cellOld = AFLOWpi.retr._getCellParams(oneCalc,ID)
@@ -2502,7 +2073,7 @@ def _getCellOutDim(oneCalc,ID,cosine=True,degrees=True):
             out_params['gamma']*=180.0/numpy.pi
 
 
-    for k,v in out_params.iteritems():
+    for k,v in list(out_params.items()):
         out_params[k]=float('%10.5e'%numpy.around(v,decimals=5))
 
     return out_params
@@ -2528,7 +2099,7 @@ def _getInputParams(oneCalc,ID):
 
     inputDict = AFLOWpi.retr._splitInput(inputFileString)['&system']
     
-    for key in inputDict.keys():
+    for key in list(inputDict.keys()):
         if re.match(r'celldm',key): 
             pass
         elif re.match(r'ibrav',key): 
@@ -2570,7 +2141,7 @@ def celldm2free(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,c
 
     if int(ibrav)==0 or abs(int(ibrav))>14:
         logging.error('ibrav = %s not a valid option' % ibrav)
-        print 'ibrav = %s not a valid option' % ibrav
+        print(('ibrav = %s not a valid option' % ibrav))
 
     ibrav=int(ibrav)
 
@@ -2851,7 +2422,7 @@ def _free2celldm(cellparamatrix,ibrav=0,primitive=True):
         paramDict[item[0]]=item[1].strip(' ,')
         
     newParamDict=OrderedDict()
-    for k,v in paramDict.iteritems():
+    for k,v in list(paramDict.items()):
         key=k.replace('(','').replace(')','')
         if k=='ibrav':
             newParamDict[key]=int(v)
@@ -2949,10 +2520,10 @@ def free2ibrav(cellparamatrix,ibrav=0,primitive=True):
                 ibravStr = "ibrav=%s, celldm(1)=%f, celldm(2)=%f, celldm(3)=%f, celldm(4)=%f celldm(5)=%f celldm(6)=%f\n"%(ibrav,celldm_1, celldm_2, celldm_3, celldm_4, celldm_5, celldm_6)
         else:
             logging.error('ibrav %s is not a valid option.' % ibrav)
-            print 'ibrav %s is not a valid option.' % ibrav
+            print(('ibrav %s is not a valid option.' % ibrav))
             return 
 
-    except Exception,e:
+    except Exception as e:
 
         AFLOWpi.run._fancy_error_log(e)
 
@@ -2982,7 +2553,7 @@ def free2abc(cellparamatrix,cosine=True,degrees=True,string=True,bohr=False):
     ibrav = getIbravFromVectors(cellparamatrix)
     try:
         cellparamatrix=cellparamatrix.getA()
-    except Exception,e:
+    except Exception as e:
         pass
 #        print e
     try:
@@ -3090,7 +2661,6 @@ def celldm2abc(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,ce
         celldm5=0.0
         celldm6=0.0
 
-
         
     elif ibrav==6 or ibrav==7:
         celldm2=1.0
@@ -3112,8 +2682,9 @@ def celldm2abc(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,ce
         
     else:
 
-        print 'ibrav=%s not supported' % ibrav
+        print(('ibrav=%s not supported' % ibrav))
         logging.warning('ibrav=%s not supported' % ibrav)
+
         return
 
     a=celldm1
@@ -3312,7 +2883,7 @@ def abc2free(a=None,b=None,c=None,alpha=None,beta=None,gamma=None,ibrav=None,ret
 #             print 'ibrav %s is not a valid option.' % ibrav
 #             return 
 
-#     except Exception,e:
+#     except Exception as e:
 #         AFLOWpi.run._fancy_error_log(e)
 
 #     return ibravStr
@@ -3358,7 +2929,7 @@ def getPositionsFromOutput(oneCalc,ID):
             pos = AFLOWpi.retr._getPositions(outFileString)
 
             return pos 
-        except Exception,e:
+        except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
 
 
@@ -3381,7 +2952,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
     '''        
 
     splitInput = AFLOWpi.retr._splitInput(inputString)
-    if 'CELL_PARAMETERS' in splitInput.keys():
+    if 'CELL_PARAMETERS' in list(splitInput.keys()):
         '''sanitize the modifier'''
         modifier=splitInput['CELL_PARAMETERS']['__modifier__'].strip('(){}')
         cellTimes=1.0
@@ -3389,7 +2960,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
             if modifier=='angstrom':
                 cellTimes=1.0/0.529177249
             if modifier=='alat':
-                if "celldm(1)" in splitInput['&system'].keys():
+                if "celldm(1)" in list(splitInput['&system'].keys()):
                     cellTimes = float(splitInput['&system']["celldm(1)"])
                 try:
                     cellTimes = float(splitInput['&system']["a"])/0.529177249
@@ -3406,7 +2977,7 @@ def getCellMatrixFromInput(inputString,string=False,scale=True):
 
     celldm2freeDict={'ibrav':splitInput['&system']['ibrav'],'returnString':string}
 
-    for items in splitInput['&system'].keys():
+    for items in list(splitInput['&system'].keys()):
 
         if len(re.findall('celldm',items)):
             inputVar = items.replace(')','')
@@ -3435,7 +3006,7 @@ def _getCelldm2freeDict(free2celldm_output_dict):
     '''        
 
     outputDict=OrderedDict()
-    for k,v in free2celldm_output_dict.iteritems():
+    for k,v in list(free2celldm_output_dict.items()):
         if len(re.findall('celldm',k)):
             inputVar = k.replace(')','')
             inputVar = inputVar.replace('(','')
@@ -3816,10 +3387,10 @@ def transform_input_conv(oneCalc,ID):
     
     splitInput = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 
-    for k,v in splitInput['&system'].iteritems():
+    for k,v in list(splitInput['&system'].items()):
         try:
             splitInput['&system'][k]=celldmDict[k]
-        except Exception,e:
+        except Exception as e:
             pass
     splitInput['ATOMIC_POSITIONS']['__content__']=atomic_pos
     splitInput['&system']['nat']=len(labels)
@@ -4332,16 +3903,16 @@ def _getCellInput(oneCalc,ID,scaled=True):
         cellParamMatrixDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
         ibrav=cellParamMatrixDict['&system']['ibrav']
         celldmDict={'ibrav':int(ibrav)}
-        for y in  [(x[0],float(x[1])) for x in cellParamMatrixDict['&system'].items() if len(re.findall('celldm',x[0])) !=0 ]:
+        for y in  [(x[0],float(x[1])) for x in list(cellParamMatrixDict['&system'].items()) if len(re.findall('celldm',x[0])) !=0 ]:
             fixed = re.sub('[)(\s]', '', y[0])
             celldmDict[fixed]=y[1]
                        
         
         cellParams = celldm2free(**celldmDict)
 
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
-        print 'no CELL_PARAMETERS in input'
+        print('no CELL_PARAMETERS in input')
         return
 
     symMatrix = AFLOWpi.retr._cellStringToMatrix(cellParams)
@@ -4771,7 +4342,7 @@ def getPointGroup(oneCalc,ID,source='input'):
     '''
 
     if source!='input' and source!='output':
-        print 'source must equal "input" or "output"'
+        print('source must equal "input" or "output"')
         logging.error('source must equal "input" or "output"')
         return 
     if source=='input':
@@ -5630,7 +5201,7 @@ def _get_cell_mass(oneCalc,ID):
     num_of_each = AFLOWpi.retr._getAtomNum(oneCalc['_AFLOWPI_INPUT_'],strip=True)
 
     total_mass=0.0
-    for atom,number in num_of_each.iteritems():
+    for atom,number in list(num_of_each.items()):
         total_mass+=float(AFLOWpi.prep._getAMass(atom))*float(number)
 
     return total_mass
@@ -5658,7 +5229,7 @@ def chemAsKeys(calcs):
 
     calcsCopy = OrderedDict()
     stoicNameList=[]
-    for ID,oneCalc in OrderedDict(calcs).iteritems():
+    for ID,oneCalc in list(OrderedDict(calcs).items()):
         newKey=AFLOWpi.retr._getStoicName(oneCalc)
         stoicNameList.append(newKey)
         calcsCopy[newKey]=oneCalc
@@ -5666,7 +5237,7 @@ def chemAsKeys(calcs):
 
     if len(set(stoicNameList))!=len(calcs):
         logging.warning('cannot uniquely identify each calc with a corresponding chem. returning original calcs')
-        print 'cannot uniquely identify each calc with a corresponding chem. returning original calcs'
+        print('cannot uniquely identify each calc with a corresponding chem. returning original calcs')
     
 
     return calcsCopy

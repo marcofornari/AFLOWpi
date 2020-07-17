@@ -47,7 +47,7 @@ def _get_cluster_submit_command():
                     
 def _check_and_submit(submit_file,sub_command):
     if os.path.exists(submit_file):
-        qf=re.sub(u'.submit',u'.qsub',submit_file)
+        qf=re.sub('.submit','.qsub',submit_file)
         os.system('%s %s'%(sub_command,qf))
         directory=os.path.dirname(submit_file)
         ID=os.path.basename(submit_file)[1:-7]
@@ -63,7 +63,7 @@ def _check_and_submit(submit_file,sub_command):
 
 def _generate_submission_daemon_script(calcs):
     workdir=AFLOWpi.prep._ConfigSectionMap('prep','work_dir')
-    for ID,oneCalc in calcs.iteritems():
+    for ID,oneCalc in list(calcs.items()):
         project=oneCalc['PROJECT']
         calc_set=oneCalc['SET']
         break
@@ -89,7 +89,7 @@ AFLOWpi.prep._forceGlobalConfigFile(configFile)
 AFLOWpi.run._run_submission_check()
 AFLOWpi.run._restart_submission_daemon('submit_daemon.py')'''
 
-    print 'generating daemon script in %s'%daemon_file_name
+    print(('generating daemon script in %s'%daemon_file_name))
     with open(daemon_file_name,'w') as daemon_file_object:
         daemon_file_object.write(daemon_file_string)
 
@@ -97,17 +97,22 @@ AFLOWpi.run._restart_submission_daemon('submit_daemon.py')'''
     AFLOWpi.run._start_submission_daemon(daemon_file_name)
 
 def _start_submission_daemon(daemon_file_name):
-    print 'starting daemon script: %s'%daemon_file_name    
+    print(('starting daemon script: %s'%daemon_file_name))    
     cur_dir=os.curdir
     os.chdir(os.path.dirname(daemon_file_name))
 
-    subprocess.Popen('nohup python ./submit_daemon.py  &',shell=True)
+    py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+    if py_comm=="":
+        py_comm="python"
+
+
+    subprocess.Popen('nohup %s ./submit_daemon.py  &'%py_comm,shell=True)
     os.chdir(cur_dir)
-    print 'daemon script started'
+    print('daemon script started')
 
 def _restart_submission_daemon(file_name):
 
-    subprocess.Popen('nohup python ./%s &'%file_name,shell=True)
+    subprocess.Popen('nohup %s ./%s &'%(py_comm,file_name),shell=True)
 
 
 
@@ -180,10 +185,10 @@ def _check_statuses(calc_list):
     submission_check_list=[]
     calc_list_by_chain = AFLOWpi.run._sort_by_chain(calc_list)
 
-    for prefix in calc_list_by_chain.keys():
+    for prefix in list(calc_list_by_chain.keys()):
         chain = calc_list_by_chain[prefix]
 
-        for ID in chain.keys():
+        for ID in list(chain.keys()):
             try:
                 completed=chain[ID]['__status__']['Complete']
                 error=chain[ID]['__status__']['Error']
@@ -209,7 +214,7 @@ def _check_statuses(calc_list):
 
     if keep_alive==False:
         logging.info('All calculations in set are finished. Stopping daemon')
-        print 'All calculations in set are finished. Stopping daemon'
+        print('All calculations in set are finished. Stopping daemon')
         sys.exit(0)
     else:
         return submission_check_list
@@ -219,7 +224,7 @@ def _sort_by_chain(calc_list):
     by_chain={}
 
     for calc_set in calc_list:
-        for ID,oneCalc in calc_set.iteritems():        
+        for ID,oneCalc in list(calc_set.items()):        
             try:
                 prefix=oneCalc['_AFLOWPI_PREFIX_']
             except:

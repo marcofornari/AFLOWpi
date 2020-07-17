@@ -42,7 +42,7 @@ def _gen_smear_conv_calcs(oneCalc,ID,num_points=4,smear_type='mp',smear_variance
         initial_degauss = '0.01'
 
         input_dict['&system']['occupations']='"smearing"'
-        if 'smearing' not in input_dict['&system'].keys():
+        if 'smearing' not in list(input_dict['&system'].keys()):
             input_dict['&system']['smearing']='"%s"'%smear_type
 
     input_dict['&system']['degauss']=initial_degauss
@@ -84,7 +84,7 @@ def _extrapolate_smearing(oneCalc,ID):
     smear_vals=[]
 
     calcs = AFLOWpi.retr.grabEnergyOut(calcs)
-    for k,v in calcs.iteritems():
+    for k,v in list(calcs.items()):
 
         oc_in_dict = AFLOWpi.retr._splitInput(v['_AFLOWPI_INPUT_'])
         smear_type = oc_in_dict['&system']['smearing']
@@ -133,7 +133,7 @@ def _extrapolate_smearing(oneCalc,ID):
     en_deriv=numpy.polyder(fit)
 #    en_deriv=fit
 
-    print en_deriv
+    print(en_deriv)
 #    en_deriv=fit.deriv()
 #    fir1d= numpy.polyfit(params[0],params[1],1)
     interp_en =numpy.polyval(en_deriv,extrap_smear)
@@ -141,8 +141,8 @@ def _extrapolate_smearing(oneCalc,ID):
 #    interp_en = en_deriv(extrap_smear)
 #    at_zero = en_deriv[0]
     at_zero=en_deriv[0]/en_deriv[1]
-    print at_zero
-    print de_set
+    print(at_zero)
+    print(de_set)
 #    print en_data_diff
     inputDict = AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
 

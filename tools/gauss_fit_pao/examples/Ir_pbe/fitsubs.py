@@ -1,7 +1,7 @@
 #By Luis Agapito at Marco Buongiorno Nardelli's UNT group
 #2013
 ##################################################
-from __future__ import division
+
 import numpy as np
 
 ##################################################
@@ -31,7 +31,7 @@ def print_opt_prim_gauss_cart(prim_gauss_sph,fullpath,atomlabel,l):
   for counter,(d,lx,ly,lz) in enumerate(mytuple):
    factor_lm = 1/4*np.sqrt(spm.factorial2(2*l+1)/np.pi/Nlm)
    for prim_g in prim_gauss_sph: 
-    print prim_g
+    print(prim_g)
     g_tuples = g_tuples + [(lx, ly, lz, d*prim_g[1]*factor_lm,prim_g[0])]
    dict_field= {(l,m) : g_tuples} 
    PCG.update(dict_field)
@@ -92,38 +92,38 @@ def optimize_prim_gauss_sph_coeffs_only(prim_gauss_sph,l_phi,rmesh,l):
  from scipy.optimize import leastsq
  l_coeffs_init     = prim_gauss_sph[:,2]
  l_exps            = prim_gauss_sph[:,1]
- print "initial coefficients:",l_coeffs_init
- print "initial exps        :",l_exps
- print "initial residuals   :",sum(residuals_1(l_coeffs_init,l_exps,l_phi,rmesh,l)**2)
+ print(("initial coefficients:",l_coeffs_init))
+ print(("initial exps        :",l_exps))
+ print(("initial residuals   :",sum(residuals_1(l_coeffs_init,l_exps,l_phi,rmesh,l)**2)))
  
 #lsq_coeffs, other = leastsq(residuals_1, l_coeffs_init, args=(l_exps,l_phi,rmesh,l))
  lsq_coeffs, cov_x,infodict,mesg,ier = leastsq(residuals_1, l_coeffs_init, args=(l_exps,l_phi,rmesh,l),full_output=1,ftol=1e-9,xtol=1e-9)
 
  aux = np.concatenate((l_exps,lsq_coeffs))
- print "final coefficients  :",lsq_coeffs
- print "final exps          :",l_exps
- print "final residuals     :",sum(residuals_1(lsq_coeffs,l_exps,l_phi,rmesh,l)**2)
+ print(("final coefficients  :",lsq_coeffs))
+ print(("final exps          :",l_exps))
+ print(("final residuals     :",sum(residuals_1(lsq_coeffs,l_exps,l_phi,rmesh,l)**2)))
  return np.reshape(aux,(2,-1)).T
 
 ##################################################
 def optimize_prim_gauss_sph(prim_gauss_sph,l_phi,rmesh,l):
  from scipy.optimize import leastsq
- print "initial coefficients:",prim_gauss_sph[:,2]
- print "initial exps        :",prim_gauss_sph[:,1]
+ print(("initial coefficients:",prim_gauss_sph[:,2]))
+ print(("initial exps        :",prim_gauss_sph[:,1]))
  l_gauss2_init    = np.concatenate((prim_gauss_sph[:,1],prim_gauss_sph[:,2]))
- print "initial residuals   :",sum(residuals_2(l_gauss2_init,l_phi,rmesh,l)**2)
+ print(("initial residuals   :",sum(residuals_2(l_gauss2_init,l_phi,rmesh,l)**2)))
 
  #lsq_coeff2, other = leastsq(residuals_2, l_gauss2_init, args=(l_phi,rmesh,l))
  lsq_coeff2, cov_x,infodict,mesg,ier = leastsq(residuals_2, l_gauss2_init, args=(l_phi,rmesh,l),full_output=1,ftol=1e-9,xtol=1e-9)
- print "number of calls:",infodict['nfev']
+ print(("number of calls:",infodict['nfev']))
  if ier>4:
-    print "ier=",ier,"  Error message:",mesg
+    print(("ier=",ier,"  Error message:",mesg))
  solut = np.reshape(lsq_coeff2,(2,-1)).T
 
 
- print "final coefficients  :",solut[:,1]
- print "final exps          :",solut[:,0]
- print "final residuals     :",sum(residuals_2(lsq_coeff2,l_phi,rmesh,l)**2)
+ print(("final coefficients  :",solut[:,1]))
+ print(("final exps          :",solut[:,0]))
+ print(("final residuals     :",sum(residuals_2(lsq_coeff2,l_phi,rmesh,l)**2)))
  return solut 
 ##################################################
 #residuals_1 optimizes coefficients but not exponents
@@ -156,7 +156,7 @@ def prim_spherical_gaussian(prim_gauss_cart):
 #for d it takes the normalization factor of the dxy , which is = dyz = dxz != dx2-y2 ,etc
     #factors = i!j!k!/(2i)!/(2j)!/(2k)!
     factorials = { 0 : 1, 1 : 1/2, 2: 1/4 }
-    print factorials[2]
+    print((factorials[2]))
     c2s_factor = { 0 : 3.54490770181103, 1 : 2.04665341589298, 2 : 0.915291232863769 }
     #>>> c2s[(0,0,0)]()
     #3.54490770181103*s*exp(-r**2)
@@ -188,14 +188,14 @@ def read_qe_radial_function(fullpath):
  for xx in root.iter('PP_R'):
    nmesh1 = int(xx.attrib['size'])
    xxaux = re.split('\n| ',xx.text)
- rmesh  =np.array(map(float,filter(None,xxaux))) #In Bohrs
+ rmesh  =np.array(list(map(float,[_f for _f in xxaux if _f]))) #In Bohrs
  nmesh  =len(rmesh) 
  if nmesh1 != nmesh:
    sys.exit('Error deciding the size of the r mesh')
 
- print 'Number of radial points: %i' % nmesh
+ print(('Number of radial points: %i' % nmesh))
  
- xvar = range(1,nmesh+1)
+ xvar = list(range(1,nmesh+1))
  #plt.plot(xvar,rmesh*Bohr2Angs,'ro')
  #plt.yscale('log')
  #plt.xlabel('mesh counter')
@@ -207,13 +207,13 @@ def read_qe_radial_function(fullpath):
  labels = []
   
  for node in pswfc:
-   print node.tag, node.attrib['l'],node.attrib['label']
+   print((node.tag, node.attrib['l'],node.attrib['label']))
    labels.append('l='+node.attrib['l']+'   '+node.attrib['label'])
    xxaux = re.split('\n| ',node.text)
-   wfc_aux  =np.array([map(float,filter(None,xxaux))])
+   wfc_aux  =np.array([list(map(float,[_f for _f in xxaux if _f]))])
    wfc_mat = np.concatenate((wfc_mat,wfc_aux))
  
- print 'Number of radial wavefunctions found: %i' % wfc_mat.shape[0]
+ print(('Number of radial wavefunctions found: %i' % wfc_mat.shape[0]))
  
  return rmesh, wfc_mat #in Bohrs
  
@@ -279,19 +279,19 @@ def get_prim_gauss(atomlabel,gbs_path,subblocks):
  sed_str = 'sed -n "/^-%s$/,/^\*\*\*\*$/p" %s' % (atomlabel,gbs_path)
  unix_out = subprocess.check_output(sed_str,shell=True)
  block  = re.split('\n', unix_out)
- print unix_out
- print '************'
+ print(unix_out)
+ print('************')
  prevline = 0
  counter = 1
  bb5=np.zeros((0,3))
  while (prevline+1 < len(block)-2 ): #2 accounts for the last spurious lines in block i.e. ****,\n
   #print prevline+1
-  print ' '.join(block[prevline+1].split()).split()
+  print((' '.join(block[prevline+1].split()).split()))
   shell,nprim,unknown=' '.join(block[prevline+1].split()).split()
-  print shell,nprim,unknown
+  print((shell,nprim,unknown))
   subb= block[prevline+2:prevline+2+int(nprim)]
   bb1=' '.join(subb).replace('D','E')
-  bb2=np.array(map(float,bb1.split()))
+  bb2=np.array(list(map(float,bb1.split())))
   
   #subb= map(split,block[prevline+2:prevline+2+int(nprim)])
   #print subb
@@ -302,7 +302,7 @@ def get_prim_gauss(atomlabel,gbs_path,subblocks):
   elif shell == 'SPD':
     nshell = 4
   else:
-   print 'case not contemplated'  
+   print('case not contemplated')  
   bb3=np.reshape(bb2,(int(nprim),nshell)) 
   #print bb3 
   if any( x in subblocks for x in [counter]):
@@ -318,7 +318,7 @@ def get_prim_gauss(atomlabel,gbs_path,subblocks):
       elif shell=='D':
         ii_shell=3
       else:
-        print shell
+        print(shell)
         sys.exit('Case not contemplated 2')
     else:
       ii_shell=ii

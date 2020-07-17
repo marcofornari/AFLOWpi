@@ -23,15 +23,17 @@
 #
 # ***************************************************************************
 
-
+#import setuptools
 import sys
 import os
-from distutils.core import setup, Command,Extension
-from distutils.util import change_root, convert_path
-from distutils.command.install import install
+#import setuptools
+from setuptools import setup, Command,Extension
+#from distutils.core import setup, Command,Extension
+#from distutils.util import change_root, convert_path
+#from distutils.command.install import install
 import shutil
 sys.path.append(os.path.curdir)
-
+import site
 
 #os.environ["CC"] = "gcc"
 #os.environ["CXX"] = "g++"
@@ -39,7 +41,7 @@ sys.path.append(os.path.curdir)
 
 
 
-ext_modules=[Extension("cints",sources=["src/scfuj/extensions/cints.c"]) ]
+#ext_modules=
 
 
 import glob
@@ -72,18 +74,17 @@ def __init__gen(src_folder):
                for j in classes:
                   new_file+='from  .%s import %s\n'%(file_name,j)
 
-       except Exception,e:
-           print 'CRITICAL ERROR DURING GENERATION OF __init__.py' 
-           print e
+       except Exception as e:
+           print('CRITICAL ERROR DURING GENERATION OF __init__.py') 
+           print(e)
            raise SystemExit
 
    with open('./__init__.py','w') as initFile:
        initFile.write(new_file)
 
-
    os.chdir(orig_dir)
 
-modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj',]
+modules=['prep','run','pseudo','plot','retr','plot','aflowlib','db','scfuj','elph']
 for j in modules:
    try:
       os.remove('./src/%s/src/__init__.py'%j)
@@ -92,11 +93,11 @@ for j in modules:
 
 for j in modules:
    try:
-      print 'generating ./src/%s/src/__init__.py'%j
+      print(('generating ./src/%s/src/__init__.py'%j))
       __init__gen('./src/%s/src/'%j)
 
-   except Exception,e:
-      print e
+   except Exception as e:
+      print(e)
 
 
 for j in modules:
@@ -107,22 +108,13 @@ for j in modules:
 
 for j in modules:
    try:
-
-      print 'generating ./src/%s/tests/__init__.py'%j
+      print(('generating ./src/%s/tests/__init__.py'%j))
       __init__gen('./src/%s/tests/'%j)      
-   except Exception,e:
+   except Exception as e:
       pass
-#      print e
-
-
-
 
 try:
    
-   ISOTROPY = glob.glob('src/ISOTROPY/*')
-
-   PAOPY_SRC = glob.glob('src/PAOpy/src/*')
-   PAOPY_DEF = glob.glob('src/PAOpy/src/defs/*')
 
    ACBN0=['scfuj/acbn0_support/integs.py',
           'scfuj/acbn0_support/acbn0.py',
@@ -130,12 +122,12 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "0.9.9",
+         version = "1.2.0",
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
-
-
+         platforms=["manylinux2014"],
+         url="http://aflowlib.org/src/aflowpi/",
 
          packages = ['AFLOWpi',
                    'AFLOWpi.qe',
@@ -146,7 +138,11 @@ try:
                    'AFLOWpi.plot',
                    'AFLOWpi.db',
                    'AFLOWpi.aflowlib',
-                   'AFLOWpi.prep'],
+                   'AFLOWpi.prep',
+                   'AFLOWpi.environ',
+                   'AFLOWpi.elph',
+                     
+],
          package_dir = {'AFLOWpi'       :'src',
                       'AFLOWpi.qe'      :'src/qe',
                       'AFLOWpi.prep'    :'src/prep/src/',
@@ -156,49 +152,67 @@ try:
                       'AFLOWpi.plot'    :'src/plot/src/',
                       'AFLOWpi.pseudo'  :'src/pseudo/src/',
                       'AFLOWpi.db'      :'src/db/src/',
-                      'AFLOWpi.aflowlib':'src/aflowlib/src/'},
+                      'AFLOWpi.elph'    :'src/elph/src/',
+                      'AFLOWpi.environ' :'src/environ/src/',
+                      'AFLOWpi.aflowlib':'src/aflowlib/src/',
+},
 
 
                       
          package_data = {
-                                  'AFLOWpi':['ISOTROPY/*','PAOpy/src/*/*','PAOpy/src/*','scfuj/acbn0_support/*'],
+                                  'AFLOWpi':['PAOFLOW/examples/main.py',
+                                             'scfuj/acbn0_support/*','AFLOWSYM/*'],
+
 
                                   },
 
 
-       ext_modules = ext_modules,
-       long_description = """Install Script for AFLOWpi""",) 
+         ext_modules = [Extension("cints",sources=["src/scfuj/extensions/cints.c"],include_dirs = ['src/scfuj/extensions/'],) ],
+
+       install_requires=["matplotlib","PAOFLOW"],
+
+         long_description = """Install Script for AFLOWpi""",)
    
 
 
 
-except Exception,e:
-   print e
-   print 'Something went wrong...exiting'
+except Exception as e:
+   print(e)
+   print('Something went wrong...exiting')
    exit
 
 
 
+def binaries_directory():
+      """Return the installation directory, or None"""
+      # taken from stackoverflow
+      if '--user' in sys.argv:
+         paths = (site.getusersitepackages(),)
+      else:
+         py_version = '%s.%s' % (sys.version_info[0], sys.version_info[1])
+         paths = (s % (py_version) for s in (
+            sys.prefix + '/lib/python%s/dist-packages/',
+            sys.prefix + '/lib/python%s/site-packages/',
+            sys.prefix + '/local/lib/python%s/dist-packages/',
+            sys.prefix + '/local/lib/python%s/site-packages/',
+            '/Library/Python/%s/site-packages/',
+         ))
+         
+
+      for path in paths:
+         if os.path.exists(path):
+            return path
+      print('no installation path found', file=sys.stderr)
+      return None
+
 try:
-   import AFLOWpi
-   FINDSYM_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','findsym')
-   COMSUBS_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','comsubs')
-   SMODES_EXEC = os.path.join(AFLOWpi.__path__[0],'ISOTROPY','smodes')
+   inst_dir=binaries_directory()
+   AFLOW_EXEC = os.path.join(inst_dir,'AFLOWpi','AFLOWSYM','aflow')
+   if not os.access(AFLOW_EXEC,3):
+      os.chmod(AFLOW_EXEC,733)      
 
-
-
-   if not os.access(SMODES_EXEC,3) and not os.access(COMSUBS_EXEC,3) and not os.access(FINDSYM_EXEC,3):
-      print "INSTALLING ISOTROPY"
-      print
-      print 'Setting permission to for the user to read and execute (733) to the ISOTROPY executables findsym, smodes, and comsubs.'
-      os.chmod(FINDSYM_EXEC,733)
-      os.chmod(COMSUBS_EXEC,733)
-      os.chmod(SMODES_EXEC,733)
-      print 
-      print 'Done.'
-      
-except Exception,e:
-   print 'Could not install ISOTROPY package:',e
+except Exception as e:
+    print(('Could not install AFLOW binary:',e))
    
 
 

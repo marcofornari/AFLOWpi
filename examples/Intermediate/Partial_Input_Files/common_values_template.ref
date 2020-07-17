@@ -5,7 +5,7 @@ verbosity='high'
                                                                                                                      
 &system                                                                                                              
     ibrav=0                                                                                     
-    ecutwfc = 40.,                                                                                                    
+    ecutwfc = 50.,                                                                                          
     ecutrho = 400.,            
 /                                                                                     
 K_POINTS {automatic}                                                                                                 

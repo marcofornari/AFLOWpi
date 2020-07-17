@@ -28,9 +28,21 @@ import os
 import numpy as np 
 import re
 import itertools
+import shutil
+import glob
+import subprocess as sp
 
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
-    paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOpy/src','main.py')
+    paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/examples/','main.py')
+
+    try:
+        shutil.copy(paopy_path,oneCalc['_AFLOWPI_FOLDER_'])
+    except Exception as e:
+        AFLOWpi.run._fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+        raise SystemExit
+
+    paopy_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'main.py')
 
     if exec_prefix=="":
 
@@ -42,56 +54,92 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
     else:
         execPrefix=exec_prefix
 
-    paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOpy.out'%ID)
+    paopy_output = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_PAOFLOW.out'%ID)
 
-    paopy_input = 'inputfile.xml'
+    py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+    if py_comm=="":
+        py_comm="python"
+
+
+    paopy_input = '%s inputfile.xml'%oneCalc['_AFLOWPI_FOLDER_']
     try:
-        command = '%s python %s %s > %s' % (execPrefix,paopy_path,paopy_input,paopy_output)
-        print command
-        os.system(command)
-    except Exception,e:
-        print e
+        command = '%s %s -u %s %s > %s' % (execPrefix,py_comm,paopy_path,paopy_input,paopy_output)
+        print(command)
 
 
+        proc = sp.run(command,shell=True)
 
-    
+        return_code = proc.returncode
+
+        if return_code!=0:
+            AFLOWpi.run._fancy_error_log(e)
+            AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+            raise SystemExit
+
+    except Exception as e:
+        AFLOWpi.run._fancy_error_log(e)
+        AFLOWpi.run._fancy_error_log("PAOFLOW did mot run properly. Exiting.")        
+        raise SystemExit
+
+def PAOFLOW_DATA_CONV(oneCalc,ID):
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,-1)    
+    except: pass
+    try:
+        AFLOWpi.prep._convert_tb_pdos(oneCalc,ID,1)    
+    except: pass
+    try:
+        AFLOWpi.prep._combine_pol_pdos(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_hall_files(oneCalc,ID)    
+    except: pass
+    try:
+        AFLOWpi.scfuj._rename_bands_files(oneCalc,ID)
+    except: pass
 
 
-def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4):
-    content = """AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s)""" % \
-        (shift_type,thresh,tb_kp_mult)
+def paopy_header_wrapper(calcs,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,smearing=None,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
+    command="""     AFLOWpi.scfuj._add_paopy_header(oneCalc,ID,shift_type=%s,shift='auto',thresh=%s,tb_kp_mult=%s,smearing=%s,emin=%s,emax=%s,ne=%s,symmetrize=%s,sym_thr=%s,sym_max_iter=%s)""" % (shift_type,thresh,tb_kp_mult,repr(smearing),emin,emax,ne,symmetrize,sym_thr,sym_max_iter)
         
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',content)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_spin_Hall_wrapper(calcs,s_tensor,spin_texture=False):
-    command = """AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,%s,spin_texture=%s)"""%(repr(s_tensor),spin_texture)
-    for ID,oneCalc in calcs.iteritems():
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'r') as ifo:
-            input_text = ifo.read()
-        input_text = re.sub('###_PAOFLOW_SPECIAL_###',command,input_text)
-        with open(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.py'%ID),'w') as ofo:
-            ofo.write(input_text)
+    command="""     AFLOWpi.scfuj._add_paopy_spin_Hall(oneCalc,ID,%s,spin_texture=%s)"""%(repr(s_tensor),spin_texture)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
 
 def paopy_Berry_wrapper(calcs,a_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor))
+    command="""     AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_dos_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)""")
+    command="""     AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)"""
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_pdos_wrapper(calcs):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)""")
+    command="""     AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)"""
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False):
-    AFLOWpi.prep.addToAll_(calcs,
-                           'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s)"""%(band_topology,fermi_surface))
+def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2,nk=1000):
+    command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol,nk)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_transport_wrapper(calcs,t_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s)"""%repr(t_tensor))
-    AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
+def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step):
+    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s)"""%(repr(t_tensor),t_min,t_max,t_step)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
 
 def paopy_optical_wrapper(calcs,d_tensor):
-    AFLOWpi.prep.addToAll_(calcs,'PREPROCESSING',"""AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor))
-    AFLOWpi.prep.addToAll_(calcs,'POSTPROCESSING','AFLOWpi.scfuj._rename_boltz_files(oneCalc,ID)')
+    command="""     AFLOWpi.scfuj._add_paopy_optical(oneCalc,ID,%s)"""%repr(d_tensor)
+    AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
 
 def paopy_acbn0_wrapper(calcs):
     pass
@@ -102,7 +150,7 @@ def paopy_acbn0_wrapper(calcs):
 
 def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):  
 
-    with open(filename,'r') as ifo:                                                                                   
+    with open(filename,'r') as ifo:                                                                 
         lines=ifo.readlines()
                                                                                          
     var_size=1
@@ -115,20 +163,20 @@ def _add_paopy_xml(filename,var_name,var_type,var_val,degree=0):
     elif degree==1:
         var_size = len(var_val)
         var_val = ' '.join(map(str,var_val))
-        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)        
+        lines[-1]='\t<%s><a type="%s" size="%s">%s</a></%s>'%(var_name,var_type,var_size,var_val,var_name)   
     else:
-        lines[-1]='\t<%s type="%s" size="%s">%s</%s>'%(var_name,var_type,var_size,var_val,var_name)            
-    lines.extend(['\n</root>'])                                                                                       
-    outstr = ''.join(lines)                                                                                           
-    with open(filename,'w') as ofo:                                                                                   
+        lines[-1]='\t<%s type="%s" size="%s">%s</%s>'%(var_name,var_type,var_size,var_val,var_name)          
+    lines.extend(['\n</root>'])                                                                     
+    outstr = ''.join(lines)                                                                            
+    with open(filename,'w') as ofo:                                                                   
         ofo.write(outstr)
 
 
-def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing='gauss'):
+def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mult=4,acbn0=False,ovp=False,smearing=None,emin=-5.0,emax=5.0,ne=1000,symmetrize=False,sym_thr=1.e-6,sym_max_iter=20):
     
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
-    ibrav=int(AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])['&system']['ibrav'])
-
+    ibrav=oneCalc['_AFLOWPI_ORIG_IBRAV_']
+    
     nk1,nk2,nk3 = AFLOWpi.scfuj._mult_kgrid(oneCalc,mult=tb_kp_mult)
 
     blank = '''<?xml version="1.0"?>
@@ -150,12 +198,27 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'pthr','decimal',thresh)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'verbose','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'npool','int',1)
-    if float(tb_kp_mult)!=1.0:
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft2','int',nk2)
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft3','int',nk3)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ne','int',ne)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',emin)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',emax)
+
+
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'double_grid','logical','T')
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft1','int',nk1)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft2','int',nk2)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nfft3','int',nk3)
+
+    if symmetrize:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symmetrize','logical','T')
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_max_iter','int',sym_max_iter)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'symm_thresh','decimal',"%6.4e"%sym_thr)
+
+
     if acbn0==True:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'expand_wedge','logical','F')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write2file','logical','T')
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'write_binary','logical','T')
     if ovp==True:
@@ -164,32 +227,46 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
 def _add_paopy_dos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_dos','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
+
 
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_pdos','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emin','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emax','decimal',12.0)
+
     
-def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False):
+def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
 
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_bands','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nk','int',nk)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ipol','int',ipol)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'jpol','int',jpol)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spol','int',spol)
     if topology==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_topology','logical','T')
     if fermi_surface==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'fermisurf','logical','T')
 
+    if oneCalc['_AFLOWPI_ORIG_IBRAV_']==0:
+        HSP,band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID)
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_path','character',band_path)
+        temp_HSP_list=[]
+        for k,v in list(HSP.items()):
+            tmp = [k]
+            tmp.extend(list(map(str,v)))
+            temp_HSP_list.append(tmp)
+
+        HSP_ARRAY= np.asarray(temp_HSP_list)
+
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'high_sym_points','string',HSP_ARRAY,degree=2)
 
 
-def _add_paopy_transport(oneCalc,ID,t_tensor):
+def _add_paopy_transport(oneCalc,ID,t_tensor,t_min,t_max,t_step):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Boltzmann','logical','T')
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmin','decimal',t_min)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmax','decimal',t_max)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tstep','decimal',t_step)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'t_tensor','int',t_tensor,degree=2)
 
 def _add_paopy_optical(oneCalc,ID,d_tensor):
@@ -206,9 +283,9 @@ def _add_paopy_spin_Hall(oneCalc,ID,s_tensor,spin_texture=False):
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'nl','int',nl,degree=1)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'s_tensor','int',s_tensor,degree=2)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spin_Hall','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',12.0)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminSH','decimal',-5.0)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxSH','decimal',5.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_spin','logical','T')
 
     if spin_texture:
@@ -218,9 +295,9 @@ def _add_paopy_Berry(oneCalc,ID,a_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
 
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Berry','logical','T')
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'delta','decimal',0.1)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminAH','decimal',-12.0)
-    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxAH','decimal',12.0)
+
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'eminAH','decimal',-5.0)
+    AFLOWpi.scfuj._add_paopy_xml(paopy_input,'emaxAH','decimal',5.0)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'ac_cond_Berry','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'a_tensor','int',a_tensor,degree=2)
 
@@ -229,55 +306,71 @@ def _mult_kgrid(oneCalc,mult=5.0):
 
     inputDict=AFLOWpi.retr._splitInput(oneCalc['_AFLOWPI_INPUT_'])
     kpt_str  = inputDict['K_POINTS']['__content__']    
-    k_grid = [int(np.ceil(float(x)*mult)) for x in kpt_str.split()[:3]]
+    try:
+        mult[0]
+        tmp_kps = kpt_str.split()[:3]
+        k_grid = [int(np.ceil(float(tmp_kps[x])*mult[x])) for x in range(len(tmp_kps))]
+    except:
+        k_grid = [int(np.ceil(float(x)*mult)) for x in kpt_str.split()[:3]]
 
     return k_grid[0],k_grid[1],k_grid[2]
    
 def _rename_boltz_files(oneCalc,ID):
     nspin = AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID=ID)
-    temperature='300'
+
    
-    conv_dict={}
-    if nspin!=1:
-        conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_up_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_up_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_up_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_up_real.dat'%ID                        
-        conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_up_imag.dat'%ID                        
+    try:
+        test_file = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Seebeck_0.dat')
+        test_dat  = np.loadtxt(test_file)
+        temp = np.unique(test_dat[:,0])
+    except Exception as e: 
+        return
+ 
+    for T in range(temp.shape[0]):
+        conv_dict={}
+        if nspin!=1:
+            conv_dict['Seebeck_0.dat']  = '%s_PAOFLOW_seebeck_up_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_0.dat']    = '%s_PAOFLOW_cond_up_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_0.dat']    = '%s_PAOFLOW_kappa_up_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_0.dat']     = '%s_PAOFLOW_epsilon_up_real.dat'%ID                        
+            conv_dict['epsi_0.dat']     = '%s_PAOFLOW_epsilon_up_imag.dat'%ID                        
 
-        conv_dict['Seebeck_1.dat']  = '%s_PAOpy_seebeck_down_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_1.dat']    = '%s_PAOpy_cond_down_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_1.dat']    = '%s_PAOpy_kappa_down_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_1.dat']     = '%s_PAOpy_epsilon_down_real.dat'%ID                        
-        conv_dict['epsi_1.dat']     = '%s_PAOpy_epsilon_down_imag.dat'%ID                        
-    else:
-        conv_dict['Seebeck_0.dat']  = '%s_PAOpy_seebeck_%sK.dat'%(ID,temperature)           
-        conv_dict['sigma_0.dat']    = '%s_PAOpy_cond_%sK.dat'%(ID,temperature)     
-        conv_dict['kappa_0.dat']    = '%s_PAOpy_kappa_%sK.dat'%(ID,temperature)             
-        conv_dict['epsr_0.dat']     = '%s_PAOpy_epsilon_real.dat'%ID                        
-        conv_dict['epsi_0.dat']     = '%s_PAOpy_epsilon_imag.dat'%ID                        
+            conv_dict['Seebeck_1.dat']  = '%s_PAOFLOW_seebeck_down_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_1.dat']    = '%s_PAOFLOW_cond_down_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_1.dat']    = '%s_PAOFLOW_kappa_down_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_1.dat']     = '%s_PAOFLOW_epsilon_down_real.dat'%ID                        
+            conv_dict['epsi_1.dat']     = '%s_PAOFLOW_epsilon_down_imag.dat'%ID                        
+        else:
+            conv_dict['Seebeck_0.dat']  = '%s_PAOFLOW_seebeck_%sK.dat'%(ID,int(temp[T]))           
+            conv_dict['sigma_0.dat']    = '%s_PAOFLOW_cond_%sK.dat'%(ID,int(temp[T]))     
+            conv_dict['kappa_0.dat']    = '%s_PAOFLOW_kappa_%sK.dat'%(ID,int(temp[T]))             
+            conv_dict['epsr_0.dat']     = '%s_PAOFLOW_epsilon_real.dat'%ID                        
+            conv_dict['epsi_0.dat']     = '%s_PAOFLOW_epsilon_imag.dat'%ID                        
 
-    for old,new in conv_dict.iteritems():
-        old_split = old.split('_')
-        try:
-            xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
-            yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
-            zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
-            print xx
-            xx_arr = np.loadtxt(xx)
-            yy_arr = np.loadtxt(yy)
-            zz_arr = np.loadtxt(zz)
-
-            comb_arr = np.concatenate((xx_arr[:,np.newaxis,0],xx_arr[:,np.newaxis,1],
-                                       yy_arr[:,np.newaxis,1],zz_arr[:,np.newaxis,1] ),axis=1)
-            new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
-
-            np.savetxt(new_path,comb_arr)
-
-        except Exception,e: 
+        for old,new in list(conv_dict.items()):
+            old_split = old.split('_')
             try:
-                os.rename(old,new)
-            except Exception,e: print e
+                xx = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_xx_'+old_split[1])
+                yy = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_yy_'+old_split[1])
+                zz = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],old_split[0]+'_zz_'+old_split[1])
+          
+                xx_arr = np.loadtxt(xx)
+                yy_arr = np.loadtxt(yy)
+                zz_arr = np.loadtxt(zz)
+
+                comb_arr = np.concatenate((xx_arr[:,np.newaxis,0],xx_arr[:,np.newaxis,1],
+                                           yy_arr[:,np.newaxis,1],zz_arr[:,np.newaxis,1] ),axis=1)
+                new_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],new)
+
+                np.savetxt(new_path,comb_arr)
+
+            except Exception as e: 
+                try:
+                    dat = np.loadtxt(old)
+                    temp_dat = dat[np.where(dat[:,0]==temp[T])]
+                    np.savetxt(new,temp_dat[:,1:])
+                except:
+                    pass
 
 
 
@@ -296,8 +389,8 @@ def _get_spin_ordering(oneCalc,ID):
     grouped_l = [list(g) for k, g in itertools.groupby(l_list)] 
     sh = []
     nl = []
-
-    for i in xrange(len(grouped_l)):
+    print(grouped_l)
+    for i in range(len(grouped_l)):
         sh.append(grouped_l[i][0][1])
         if grouped_l[i][0][1]==0:
             nl.append(len(grouped_l[i])/2)
@@ -309,3 +402,118 @@ def _get_spin_ordering(oneCalc,ID):
             nl.append(len(grouped_l[i])/14)
 
     return nl,sh
+
+
+def _rename_hall_files(oneCalc,ID):
+    dirn = oneCalc["_AFLOWPI_FOLDER_"]
+    hall_files = ["ahcEf_xy.dat","MCDi_xy.dat","MCDr_xy.dat",
+                  "SCDi_z_xy.dat","SCDr_z_xy.dat","shcEf_z_xy.dat",]
+
+    for fn in hall_files:
+        old=os.path.join(dirn,fn)
+        new=os.path.join(dirn,"%s_%s"%(ID,fn))
+        try:
+            os.rename(old,new)
+        except: pass
+
+
+
+
+def _rename_bands_files(oneCalc,ID):
+    '''
+
+
+    Arguments:
+
+
+    Keyword Arguments:
+
+        
+    Returns:
+
+
+    '''
+    try:
+        try:
+            want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/kpath_points.txt')[-1]
+        except:
+            want_stdout_path = glob.glob(oneCalc['_AFLOWPI_FOLDER_']+'/%s_kpath_points.txt'%ID)[-1]
+
+        with open(want_stdout_path,"r") as ofo:
+                lines=ofo.readlines()
+
+        output_path_string=""
+        flag=False
+        points_list=[]
+        for l in lines:
+                if len(l.strip())==0:
+                        flag=True
+                if flag==False:
+                        lspl=l.split()
+                        output_path_string+="0.0 0.0 0.0 %s ! %s\n"%(lspl[1],lspl[0])
+                else:
+                        points_list.extend([float(x) for x in l.split()])
+
+        points=np.reshape(np.asarray(points_list),(int(len(points_list)/3.0),3))
+
+        r = np.diff(points,axis=0)
+
+        dist=np.cumsum(np.sqrt(np.sum(r**2,axis=1)))
+        dist = np.concatenate((np.array([0.0]),dist),axis=0)
+    except: pass
+    calcID = AFLOWpi.prep._return_ID(oneCalc,ID,step_type='PAO-TB',last=True)
+
+
+    si= AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])
+    try:
+        nspin=int(si["&system"]["nspin"])        
+    except Exception as e: 
+        nspin=1
+
+
+
+    if nspin==2:
+        try:
+                with open("bands_1.dat","r") as ofo:
+                        by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
+                ofs=""
+                for band in range(by_band.shape[0]):
+                        for kpt in range(by_band.shape[1]):
+                                ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+                        if band!=by_band.shape[0]-1:
+                                ofs+="\n"
+
+                filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_down_cleaned.dat'%calcID)
+                with open(filebands,"w") as ofo:
+                        ofo.write(ofs)
+        except Exception as e: print(e)
+
+
+
+    if nspin==2:
+            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_up_cleaned.dat'%calcID)
+    else:
+            filebands = os.path.join(oneCalc["_AFLOWPI_FOLDER_"],'%s_bands_paopy_cleaned.dat'%calcID)
+
+    with open(os.path.join(oneCalc["_AFLOWPI_FOLDER_"],"bands_0.dat"),"r") as ofo:
+            by_band = np.array([list(map(float,x.split())) for x in ofo.readlines()]).T
+
+    try:
+            ofs=""
+            for band in range(1,by_band.shape[0]):
+                    for kpt in range(by_band.shape[1]):
+                            ofs+="%s %s\n"%(dist[kpt],by_band[band,kpt])
+                    if band!=by_band.shape[0]-1:
+                            ofs+="\n"       
+
+            with open(filebands,"w") as ofo:
+                    ofo.write(ofs)
+    except Exception as e:
+            AFLOWpi.run._fancy_error_log(e)
+            raise SystemExit
+            pass
+            
+    nfm = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'%s_kpath_points.txt'%ID)
+    try:
+        os.rename(want_stdout_path,nfm)
+    except: pass

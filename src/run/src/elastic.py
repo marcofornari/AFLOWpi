@@ -33,7 +33,20 @@ import numpy
 
 def _grab_elastic_generated_inputs(oneCalc,ID):
     glob_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'Structures_ESPRESSO')
-    input_files = glob.glob(glob_path+'/*.in')
+    input_files = sorted(glob.glob(glob_path+'/*.in'))
+
+    orig_kp = AFLOWpi.retr._splitInput(oneCalc["_AFLOWPI_INPUT_"])["K_POINTS"]
+
+    for i in input_files:
+        with open(i) as ifo:
+            ifs=ifo.read()
+        in_dict = AFLOWpi.retr._splitInput(ifs)
+        in_dict["K_POINTS"]=orig_kp
+        ifs = AFLOWpi.retr._joinInput(in_dict)
+
+        with open(i,"w") as ofo:
+            ofo.write(ifs)    
+
 
     return input_files
 
@@ -87,7 +100,7 @@ def _copy_qe_out_file(oneCalc,ID):
 
     try:
         shutil.copy(orig_path,new_path)
-    except Exception,e:
+    except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
 def _grab_el_plot_data(file_path):
@@ -100,7 +113,7 @@ def _grab_el_plot_data(file_path):
     for order,fit_data in per_fit_order:
         fit_array=[]
         for i in fit_data.split('\n'):
-            to_float = map(float,i.split())
+            to_float = list(map(float,i.split()))
             if len(to_float)!=0:
                 fit_array.append(to_float)
 
@@ -147,7 +160,7 @@ def _find_flat_region(data):
             else:
                 break
 
-    print 'plateau ends at index:',plateau_index
+    print(('plateau ends at index:',plateau_index))
 
     return eta[plateau_index]
 
@@ -196,7 +209,7 @@ def _pp_elastic(oneCalc,ID,order=2,use_stress=True):
             files_sep_dist[distortion_ID]=[data_file]
     
     
-    for distortion_ID,fit_files in files_sep_dist.iteritems():
+    for distortion_ID,fit_files in list(files_sep_dist.items()):
         order_list=[]
         m_eta_list=[]
         for data_file in fit_files:
@@ -212,7 +225,7 @@ def _pp_elastic(oneCalc,ID,order=2,use_stress=True):
             else:
                 fit_index=2
             #iterate through all orders of poly fit data
-            for poly_order,data in fit_data.iteritems():
+            for poly_order,data in list(fit_data.items()):
                 #find max eta for one order of poly fit
                 max_eta = AFLOWpi.run._find_flat_region(data)
                 #check if the max eta is greater or equal to the current global
