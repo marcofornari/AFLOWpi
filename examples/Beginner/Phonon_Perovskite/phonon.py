@@ -25,7 +25,7 @@ calcs.vcrelax()
 #do phonon calculations with 2x2x2 supercell
 calcs.phonon(mult_jobs=True,nrx1=2,nrx2=2,nrx3=2,innx=2,
              de=0.003,LOTO=True,field_strength=0.003,
-             disp_sym=True,atom_sym=True,)
+             field_cycles=4,disp_sym=True,atom_sym=True,)
 #plot the phonons
 calcs.plot.phonon(postfix='inCM',THz=False)
 calcs.plot.phonon(postfix='THz')
