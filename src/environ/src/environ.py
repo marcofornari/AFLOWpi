@@ -30,7 +30,7 @@ def setup_environ(calcs, workflow, config=None):
 		None
 	"""
 	environmode = "from_file"
-	if config is None:
+	if config is not None:
 		environmode = "from_config"
 
 	print("entering SETUP, config={}".format(config))
