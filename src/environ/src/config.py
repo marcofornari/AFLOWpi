@@ -134,14 +134,14 @@ AFLOWpi.prep._saveOneCalc(oneCalc, ID)'''.format(mode)
 		label = config.config['looplabel']
 		plist = config.config['pdict']['loopvals']
 		for _ in plist:
-			astr += ("AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', loopparam='{}', "
+			astr += ("AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', wdir, loopparam='{}', "
 					 "loopval={}[loopidx], loopidx=loopidx)\n".format(param, label))
 			astr += ("loopidx += 1\n")
 			astr += scfsingle + '\n'
 			astr += ("shutil.copy(ID+'.out', 'STEP_{:02d}'.format(loopidx))\n")
 	else:
 		# no loops
-		astr += "AFLOWpi.environ.get_environ_input(oneCalc, 'from_config')\n"
+		astr += "AFLOWpi.environ.get_environ_input(oneCalc, 'from_config', wdir)\n"
 		astr += scfsingle + '\n'
 	print(('set_workflow output: {}'.format(astr)))
 	return astr
