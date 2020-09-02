@@ -808,63 +808,58 @@ def _transformParamsInput(inputString):
 
     ###################################################################################################
     ibr = inputDict["&system"]["ibrav"]
-    try:
-            cdm1 = float(inputDict["&system"]["celldm(1)"])
-    except: cdm1 = None
-    try:
-            cdm2 = float(inputDict["&system"]["celldm(2)"])
-    except: cdm2 = None
-    try:
-            cdm3 = float(inputDict["&system"]["celldm(3)"])
-    except: cdm3 = None
-    try:
-            cdm4 = float(inputDict["&system"]["celldm(4)"])
-    except: cdm4 = None
-    try:
-            cdm5 = float(inputDict["&system"]["celldm(5)"])
-    except: cdm5 = None
-    try:
-            cdm6 = float(inputDict["&system"]["celldm(6)"])
-    except: cdm6 = None
+    # try:
+    #         cdm1 = float(inputDict["&system"]["celldm(1)"])
+    # except: cdm1 = None
+    # try:
+    #         cdm2 = float(inputDict["&system"]["celldm(2)"])
+    # except: cdm2 = None
+    # try:
+    #         cdm3 = float(inputDict["&system"]["celldm(3)"])
+    # except: cdm3 = None
+    # try:
+    #         cdm4 = float(inputDict["&system"]["celldm(4)"])
+    # except: cdm4 = None
+    # try:
+    #         cdm5 = float(inputDict["&system"]["celldm(5)"])
+    # except: cdm5 = None
+    # try:
+    #         cdm6 = float(inputDict["&system"]["celldm(6)"])
+    # except: cdm6 = None
 
-    cdm1 *= BohrToAngstrom
+    # cdm1 *= BohrToAngstrom
 
-    cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
-                                        celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
+    # cell_vec = AFLOWpi.retr.celldm2free(ibrav=ibr,celldm1=cdm1,celldm2=cdm2,celldm3=cdm3,
+    #                                     celldm4=cdm4,celldm5=cdm5,celldm6=cdm6,returnString=False)
  
 
 
 
-    celldm1 = AFLOWpi.prep._standardize_alat(inputString)
-    cell_vec /= celldm1
-    celldm1 /= BohrToAngstrom
+    # celldm1 = AFLOWpi.prep._standardize_alat(inputString)
+    # cell_vec /= celldm1
+    # celldm1 /= BohrToAngstrom
 
-    inputDict['&system']['celldm(1)'] = celldm1
-    try:
-            del inputDict['&system']['celldm(2)']
-    except: pass
-    try:
-            del inputDict['&system']['celldm(3)']
-    except: pass
-    try:
-            del inputDict['&system']['celldm(4)']
-    except: pass
-    try:
-            del inputDict['&system']['celldm(5)']
-    except: pass
-    try:
-            del inputDict['&system']['celldm(6)']
-    except: pass
-    try:
-            inputDict['&system']['ibrav'] = 0
-    except: pass
-
-    inputDict['CELL_PARAMETERS'] = {}
-    inputDict['CELL_PARAMETERS']['__modifier__'] = '{alat}'
+    # inputDict['&system']['celldm(1)'] = celldm1
+    # try:
+    #         del inputDict['&system']['celldm(2)']
+    # except: pass
+    # try:
+    #         del inputDict['&system']['celldm(3)']
+    # except: pass
+    # try:
+    #         del inputDict['&system']['celldm(4)']
+    # except: pass
+    # try:
+    #         del inputDict['&system']['celldm(5)']
+    # except: pass
+    # try:
+    #         del inputDict['&system']['celldm(6)']
+    # except: pass
+    # try:
+    #         inputDict['&system']['ibrav'] = 0
+    # except: pass
 
 
-
-    inputDict['CELL_PARAMETERS']['__content__'] = AFLOWpi.retr._cellMatrixToString(cell_vec)
     
 
     inputString = AFLOWpi.retr._joinInput(inputDict)

@@ -1445,7 +1445,7 @@ def reduce_atoms(all_eq_pos,labels,cell=np.identity(3,dtype=float),thresh=0.1,in
     
     else: return all_eq_pos,labels_arr
 
-def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
+def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float),nreps=1,return_shift=False):
     '''
     needed to check for distance atoms of a system 
     with periodic boundary conditions
@@ -1455,32 +1455,27 @@ def periodic_dist_func(X,Y,cell=np.identity(3,dtype=float)):
     try:
         Xt=np.copy(Y)
         Xtc=np.copy(Y)
-        dist=np.zeros((X.shape[0],Xt.shape[0],8))
 
-        dist[:,:,0] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[1.0,0.0,0.0],]).T)).T
+        shift=[]
+        for x1 in range(-nreps,nreps+1):
+            for x2 in range(-nreps,nreps+1):
+                for x3 in range(-nreps,nreps+1):
+                    shift.append([x1,x2,x3])
 
-        dist[:,:,1] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[0.0,1.0,0.0],]).T)).T
+        shift=np.array(shift)
 
-        dist[:,:,2] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[0.0,0.0,1.0],]).T)).T
+        dist=np.zeros((X.shape[0],Xt.shape[0],shift.shape[0]))
 
-        dist[:,:,3] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[1.0,0.0,1.0],]).T)).T
+        for i in range(shift.shape[0]):
 
-        dist[:,:,4] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[1.0,1.0,0.0],]).T)).T
+            Xt=Xtc-(cell.dot(np.array([shift[i],]).T)).T
+            dist[:,:,i] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
 
-        dist[:,:,5] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[0.0,1.0,1.0],]).T)).T
 
-        dist[:,:,6] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-        Xt=Xtc-(cell.dot(np.array([[1.0,1.0,1.0],]).T)).T
-
-        dist[:,:,7] = scipy.spatial.distance.cdist(X, Xt, 'euclidean')
-
-        return np.amin(dist,axis=2)
+        if return_shift:
+            return np.amin(dist,axis=2),shift[np.argmin(dist,axis=2)]
+        else:
+            return np.amin(dist,axis=2)
 
     except Exception as e:
         print(e)

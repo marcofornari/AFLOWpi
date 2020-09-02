@@ -2399,6 +2399,39 @@ def _pw2aflowPositions(cellParamMatrix,symMatrix):
     return returnMatrix.T
 
 
+def _check_ibrav(cellparamatrix,ibrav=0):
+    '''
+    check that ibrav is preserved in lattice vectors
+    '''
+
+    ibrav_dict=AFLOWpi.retr._free2celldm(cellparamatrix,ibrav=ibrav,primitive=True)
+
+    celldm1=celldm2=celldm3=celldm4=celldm5=celldm6=None
+
+    for k,v in ibrav_dict.items():
+        if k=='celldm(1)':
+            celldm1=float(v)
+        if k=='celldm(2)':
+            celldm2=float(v)
+        if k=='celldm(3)':
+            celldm3=float(v)
+        if k=='celldm(4)':
+            celldm4=float(v)
+        if k=='celldm(5)':
+            celldm5=float(v)
+        if k=='celldm(6)':
+            celldm6=float(v)
+        
+
+    new_cpm=AFLOWpi.retr.celldm2free(ibrav,celldm1,celldm2,celldm3,celldm4,celldm5,celldm6,returnString=False)
+
+    if not numpy.all(numpy.isclose(new_cpm,cellparamatrix)):
+        return False
+    else: 
+        return True
+        
+
+#    def celldm2abc(ibrav=None,celldm1=None,celldm2=None,celldm3=None,celldm4=None,celldm5=None,celldm6=None,cosine=True,degrees=False):
 def _free2celldm(cellparamatrix,ibrav=0,primitive=True):
     '''
     Convert lattice vectors to celldm

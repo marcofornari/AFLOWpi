@@ -267,8 +267,14 @@ def gen_gauss_proj(nzeta,xml_file,threshold=0.5,exclude=''):
         print("INFO: fitting file", xml_file, "with", nzeta, "gaussians")
         print("INFO: UPF version", upfver, "detected")
     except Exception as inst:
-        print("Unexpected error opening %s: %s" % (xml_file, inst))
-        sys.exit(1)
+        try:
+            version = root.attrib["UPF version"]
+            upfver = int(version.split(".")[0])
+            print("INFO: fitting file", xml_file, "with", nzeta, "gaussians")
+            print("INFO: UPF version", upfver, "detected")
+        except Exception as inst:
+            print("Unexpected error opening %s: %s" % (xml_file, inst))
+            sys.exit(1)
 
 
     #### get element name ####

@@ -27,8 +27,8 @@
 import sys
 import os
 #import setuptools
-from setuptools import setup, Command,Extension
-#from distutils.core import setup, Command,Extension
+#from setuptools import setup, Command,Extension
+from distutils.core import setup, Command,Extension
 #from distutils.util import change_root, convert_path
 #from distutils.command.install import install
 import shutil

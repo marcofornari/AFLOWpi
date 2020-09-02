@@ -794,7 +794,7 @@ def dos(calcs,engine='',execPrefix="  ",execPostfix="  ",holdFlag=True,config=No
     
 
 
-    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
     if execPrefix=="":
         execPrefix=="  "
         
