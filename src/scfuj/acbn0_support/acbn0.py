@@ -209,7 +209,7 @@ def get_hartree_energy_spin(DR_0_up,DR_0_dn,bfs,reduced_basis_2e,fpath):
 
         a_b_0123= DR_0_up[m,n]*DR_0_up[k,l]+DR_0_dn[m,n]*DR_0_dn[k,l]
 
-        etemp_U += (a_b_0123+DR_0_dn[m,n]*DR_0_up[k,l]+DR_0_up[m,n]*DR_0_up[k,l])*myint_U
+        etemp_U += (a_b_0123+DR_0_dn[m,n]*DR_0_up[k,l]+DR_0_up[m,n]*DR_0_dn[k,l])*myint_U
         etemp_J += (a_b_0123)*myint_J
 #        print(rank,time.time()-st)
 
