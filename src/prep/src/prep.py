@@ -6737,7 +6737,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
                             print("cant find alat from output. getting it from input")
                             alat=float(splitInput["&system"]["celldm(1)"])
                     #Get ibrav
-
                     try:
                         ibrav=int(splitInput['&system']['ibrav'])
                     except:
@@ -6751,50 +6750,60 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
 
                     cellParaMatrix = np.array(temp).astype(np.float)
-                    in_copy_split["&system"]["ibrav"]=0
-                    try:
-                            del in_copy_split["&system"]["celldm(2)"]
-                    except: pass
-                    try:
-                            del in_copy_split["&system"]["celldm(3)"]
-                    except: pass
-                    try:
-                            del in_copy_split["&system"]["celldm(4)"]
-                    except: pass
-                    try:
-                            del in_copy_split["&system"]["celldm(5)"]
-                    except: pass
-                    try:
-                            del in_copy_split["&system"]["celldm(6)"]
-                    except: pass
 
-                    cell_vec = cellParaMatrix
+                    ibrav_flag=False
+                    if ibrav!=0:
+                            if AFLOWpi.retr._check_ibrav(cellParaMatrix,ibrav=ibrav):
+                                    ibrav_flag=True
+                                    
+                                   
+                    if ibrav_flag:
+                            ibrav_dict=AFLOWpi.retr._free2celldm(cellParaMatrix*alat,ibrav)
+                            for k,v in ibrav_dict.items():
+                                    in_copy_split["&system"][k]=v         
+                    else:
+                            in_copy_split["&system"]["ibrav"]=0
+                            try:
+                                    del in_copy_split["&system"]["celldm(2)"]
+                            except: pass
+                            try:
+                                    del in_copy_split["&system"]["celldm(3)"]
+                            except: pass
+                            try:
+                                    del in_copy_split["&system"]["celldm(4)"]
+                            except: pass
+                            try:
+                                    del in_copy_split["&system"]["celldm(5)"]
+                            except: pass
+                            try:
+                                    del in_copy_split["&system"]["celldm(6)"]
+                            except: pass
 
-                    temp_cell_vec =  cell_vec*alat*0.529177249
+                            cell_vec = cellParaMatrix
 
-                    in_copy_split["CELL_PARAMETERS"]={}
-                    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(temp_cell_vec)
-                    in_copy_split['CELL_PARAMETERS']['__modifier__']='{angstrom}'
-                    try:
-                            del in_copy_split["&system"]["celldm(1)"]
-                    except: pass
-                    out_in = AFLOWpi.retr._joinInput(in_copy_split)
+                            temp_cell_vec =  cell_vec*alat*0.529177249
 
-                    new_celldm1 = AFLOWpi.prep._standardize_alat(out_in)/0.529177249
+                            in_copy_split["CELL_PARAMETERS"]={}
+                            in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(temp_cell_vec)
+                            in_copy_split['CELL_PARAMETERS']['__modifier__']='{angstrom}'
+                            try:
+                                    del in_copy_split["&system"]["celldm(1)"]
+                            except: pass
+                            out_in = AFLOWpi.retr._joinInput(in_copy_split)
+
+                            new_celldm1 = AFLOWpi.prep._standardize_alat(out_in)/0.529177249
+
+                            in_copy_split = AFLOWpi.retr._splitInput(out_in)
+
+                            in_copy_split["CELL_PARAMETERS"]={}
+                            in_copy_split['CELL_PARAMETERS']['__modifier__']='{alat}'
+
+                            cell_vec *= alat/new_celldm1
+                            in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
 
 
-
-                    in_copy_split = AFLOWpi.retr._splitInput(out_in)
-
-                    in_copy_split["CELL_PARAMETERS"]={}
-                    in_copy_split['CELL_PARAMETERS']['__modifier__']='{alat}'
-
-                    cell_vec *= alat/new_celldm1
-                    in_copy_split["CELL_PARAMETERS"]["__content__"]=AFLOWpi.retr._cellMatrixToString(cell_vec)
-
-
-                    in_copy_split["&system"]["celldm(1)"]=new_celldm1
-                    out_in = AFLOWpi.retr._joinInput(in_copy_split)
+                            in_copy_split["&system"]["celldm(1)"]=new_celldm1
+                            out_in = AFLOWpi.retr._joinInput(in_copy_split)
                     break
 
                 else:
@@ -6803,13 +6812,10 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
             except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
-
     out_in = AFLOWpi.retr._joinInput(in_copy_split)
     split_tmp = AFLOWpi.retr._splitInput(out_in)
 
-
     try:
-
             atom_pos_input = split_tmp['ATOMIC_POSITIONS']['__content__']
 
             fakeFlags,flags=AFLOWpi.retr.detachPosFlags(atom_pos_input)
@@ -6819,9 +6825,6 @@ def _oneUpdateStructs(oneCalc,ID,update_structure=True,update_positions=True,ove
 
     except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
-
-
-
 
     inputfile=AFLOWpi.retr._joinInput(split_tmp)
     oneCalc["_AFLOWPI_INPUT_"]=inputfile
