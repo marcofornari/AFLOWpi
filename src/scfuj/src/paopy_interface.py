@@ -33,6 +33,7 @@ import glob
 import subprocess as sp
 
 def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
+    
     paopy_path = os.path.join(AFLOWpi.__path__[0],'PAOFLOW/examples/','main.py')
 
     try:
@@ -63,7 +64,8 @@ def _run_paopy(oneCalc,ID,acbn0=False,exec_prefix=""):
 
     paopy_input = '%s inputfile.xml'%oneCalc['_AFLOWPI_FOLDER_']
     try:
-        command = '%s %s -u %s %s > %s' % (execPrefix,py_comm,paopy_path,paopy_input,paopy_output)
+        command = '%s %s -u %s %s > %s %s' % (execPrefix,py_comm,paopy_path,paopy_input,paopy_output,
+                                              acbn0)
         print(command)
 
 

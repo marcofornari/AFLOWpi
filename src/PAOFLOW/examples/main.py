@@ -40,12 +40,12 @@ def main():
   argc = len(argv)
   arg1 = ('./' if argc<2 else argv[1])
   arg2 = ('inputfile.xml' if argc<3 else argv[2])
-
+  arg3 = argv[3]
   # Start PAOFLOW with an inputfile in the current directory
   #
   # PAOFLOW will us data attributes read from 
   #   inputfile.xml for the following calculations 
-  paoflow = PAOFLOW.PAOFLOW(non_ortho=attr['non_ortho'],workpath=arg1, inputfile=arg2, verbose=True,outputdir="")
+  paoflow = PAOFLOW.PAOFLOW(non_ortho=arg3,workpath=arg1, inputfile=arg2, verbose=True,outputdir="")
 
   # Get dictionary containers with the
   #   attributes and arrays read from inputfiles
