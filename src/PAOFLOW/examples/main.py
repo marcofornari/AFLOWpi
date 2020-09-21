@@ -45,7 +45,7 @@ def main():
   #
   # PAOFLOW will us data attributes read from 
   #   inputfile.xml for the following calculations 
-  paoflow = PAOFLOW.PAOFLOW(non_ortho=arg3,workpath=arg1, inputfile=arg2, verbose=True,outputdir="")
+  paoflow = PAOFLOW.PAOFLOW(acbn0=arg3,workpath=arg1, inputfile=arg2, verbose=True,outputdir="")
 
   # Get dictionary containers with the
   #   attributes and arrays read from inputfiles
