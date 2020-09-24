@@ -501,6 +501,9 @@ def _getHighSymPoints_aflow(oneCalc,ID=None):
     AFLOWSYM_LOC = os.path.join(AFLOWpi.__path__[0],'AFLOWSYM')
     AFLOW_EXE    = os.path.join(AFLOWSYM_LOC,'aflow')
 
+    if not os.access(AFLOW_EXE,3):
+        os.chmod(AFLOW_EXE,733)      
+
     find_sym_process = subprocess.Popen('%s --kpath --grid=1'%AFLOW_EXE,stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,shell=True)
 

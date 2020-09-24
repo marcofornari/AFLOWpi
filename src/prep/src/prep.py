@@ -727,8 +727,9 @@ def _transformParamsInput(inputString):
 
                     if 'celldm(1)' in list(inputDict['&system'].keys()):
                             A = float(inputDict['&system']['celldm(1)'])
-
-                    cellParamMatrix *= A
+                    try:
+                            cellParamMatrix *= A
+                    except: pass
 
             celldm1 = AFLOWpi.prep._standardize_alat(inputString)/BohrToAngstrom
 
