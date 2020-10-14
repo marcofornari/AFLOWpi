@@ -5039,7 +5039,7 @@ EXITING.
 #                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
                 
 
-        def shake_atoms(self,dist=0.2,weight=False):            
+        def shake_atoms(self,dist=0.2,weight=False,shake_atoms=[]):            
                 """
                 Shakes (displaces) atoms in input files randomly
 
@@ -5051,7 +5051,7 @@ EXITING.
                      None
                 """
 
-                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight_by_mass=%s)'%(dist,weight)
+                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight_by_mass=%s,shake_atoms=%s)'%(dist,weight,repr(shake_atoms))
                 self.addToAll(block='PREPROCESSING',addition=command)
 
 
