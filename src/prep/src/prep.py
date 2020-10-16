@@ -1148,6 +1148,8 @@ def _getPseudofilename(atom,pseudodir=os.path.join(os.curdir,'PSEUDOs')):
                             logging.debug('Exiting getPseudofilename')
                             return pseudofilename
             logging.error('Missing Pseudopotential File')
+            print('Cannot find pseudopotential file for species "%s"\n\nin %s\n\nEXITING!\n'%(atom,pseudodir))
+            raise SystemExit
             logging.debug('Exiting getPseudofilename')
             return None
         else:
@@ -5039,7 +5041,7 @@ EXITING.
 #                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
                 
 
-        def shake_atoms(self,dist=0.2,weight=False,shake_atoms=[]):            
+        def shake_atoms(self,dist=0.2,weight=False,atoms=[]):            
                 """
                 Shakes (displaces) atoms in input files randomly
 
@@ -5051,7 +5053,7 @@ EXITING.
                      None
                 """
 
-                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight_by_mass=%s,shake_atoms=%s)'%(dist,weight,repr(shake_atoms))
+                command = 'oneCalc,ID = AFLOWpi.prep._shake_atoms(oneCalc,ID,dist=%s,weight_by_mass=%s,atoms=%s)'%(dist,weight,repr(atoms))
                 self.addToAll(block='PREPROCESSING',addition=command)
 
 

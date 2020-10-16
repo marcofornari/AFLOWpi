@@ -2,16 +2,12 @@ import AFLOWpi
 import numpy as np
 import os
 
-def _shake_atoms(oneCalc,ID,dist=0.1,weight_by_mass=False,shake_atoms=[]):
+def _shake_atoms(oneCalc,ID,dist=0.1,weight_by_mass=False,atoms=[]):
 
 
     pos_str = AFLOWpi.retr._getPositions(oneCalc['_AFLOWPI_INPUT_'],matrix=False)
     pos_str,flags = AFLOWpi.retr.detachPosFlags(pos_str)
     labels = AFLOWpi.retr._getPosLabels(oneCalc['_AFLOWPI_INPUT_'])
-
-
-
-
 
     alat,cell = AFLOWpi.retr._getCellParams(oneCalc,ID)
 
@@ -33,7 +29,7 @@ def _shake_atoms(oneCalc,ID,dist=0.1,weight_by_mass=False,shake_atoms=[]):
             weights[i] = AFLOWpi.prep._getAMass(sl)[0]
         weights = np.amin(weights)/weights
 
-    if len(shake_atoms)!=0:
+    if len(atoms)!=0:
         for i in range(len(labels)):
             if labels[i] not in shake_atoms:
                 weights[i]=0.0
