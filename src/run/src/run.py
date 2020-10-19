@@ -793,8 +793,8 @@ def dos(calcs,engine='',execPrefix="  ",execPostfix="  ",holdFlag=True,config=No
 
     
 
-
-    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+    
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
     if execPrefix=="":
         execPrefix=="  "
         
@@ -831,8 +831,8 @@ def pdos(calcs,engine='',execPrefix="  ",execPostfix='  ',holdFlag=True,config=N
     """    
 
     
-
-    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+    step_num = calcs[list(calcs.keys())[0]]['__chain_index__']
+    execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial",step_num=step_num)
     if execPrefix=="":
         execPrefix=="  "
         
@@ -909,21 +909,23 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
         """
         #############################################################################################################
 
+        step_num = calcs[list(calcs.keys())[0]]['__chain_index__']
+
         try:
             logging.debug('entering testOne')
                 
             if execPrefix is None:
-                if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+                if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num) != '':
+                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
                 else:
-                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial",step_num=step_num)
                     
 
             if execPostfix is None:
-                if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-                    execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+                if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num) != '':
+                    execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num)
                 else:
-                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial")
+                    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial",step_num=step_num)
 
             
             if calcType=='bands':
@@ -980,7 +982,7 @@ def testOne(calcs,calcType='scf',engine='',execPrefix=None,execPostfix=None,hold
         except Exception as e:
             AFLOWpi.run._fancy_error_log(e)
         #############################################################################################################
-        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type')
+        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'job_type')
         if clusterType=='':
             clusterType=''
         try:
@@ -1126,10 +1128,10 @@ def _qsubGen(oneCalc,ID):
     try:
         qsubFilename = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.qsub' % ID)
         prevQsubString = ''
-        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').strip().upper()
+        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'job_type').strip().upper()
 
         if clusterType in ['PBS','UGE','SLURM']:
-            qsubRefFileName = AFLOWpi.prep._ConfigSectionMap("cluster",'job_template')
+            qsubRefFileName = AFLOWpi.prep._ConfigSectionMap("cluster",'job_template',step_num=oneCalc['__chain_index__'])
             if os.path.isabs(qsubRefFileName) == False:
                 configFileLocation = AFLOWpi.prep._getConfigFile()
                 configFileLocation = os.path.dirname(configFileLocation)
@@ -1253,7 +1255,7 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
     """
 
     if execPrefix is None:
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=oneCalc['__chain_index__']) != '':
             execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
 
 
@@ -1261,8 +1263,8 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
 #            execPrefix=''
 
     if execPostfix is None:
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-            execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=oneCalc['__chain_index__']) != '':
+            execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=oneCalc['__chain_index__'])
 #        else:
 #            execPostfix=''
 
@@ -1275,14 +1277,14 @@ def _testOne(ID,oneCalc,engine='',calcType='',execPrefix=None,execPostfix=None):
         AFLOWpi.prep._forceGlobalConfigFile(configFile)
 
         if execPrefix is None:
-            if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-                execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+            if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=oneCalc['__chain_index__']) != '':
+                execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=oneCalc['__chain_index__'])
 #            else:
 #                execPrefix=''
 
         if execPostfix is None:
-            if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+            if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=oneCalc['__chain_index__']) != '':
+                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=oneCalc['__chain_index__'])
 #            else:
 #                execPostfix=''
     except Exception as e:
@@ -1330,7 +1332,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
     folder = oneCalc['_AFLOWPI_FOLDER_']
 
     try:
-        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","type").upper()
+        clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","job_type").upper()
 
         if len(clusterType)==0:
             clusterType='None'
@@ -1340,7 +1342,7 @@ def _submitJob(ID,oneCalc,__submitNodeName__,sajOverride=False,forceOneJob=False
         AFLOWpi.run._fancy_error_log(e)
 
     try:
-        stepsAsJobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs").lower()
+        stepsAsJobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs",step_num=oneCalc['__chain_index__']).lower()
     except Exception as e:
         AFLOWpi.run._fancy_error_log(e)
 
@@ -1503,7 +1505,7 @@ def submitFirstCalcs__(calcs):
 
     logging.debug('sending from %s' % __submitNodeName__)
     
-    if AFLOWpi.prep._ConfigSectionMap('cluster','type') != '':
+    if AFLOWpi.prep._ConfigSectionMap('cluster','job_type') != '':
         submit_message = '\n*** Submitting Workflow ***\n'
     else:
         submit_message = '\n*** Starting Workflow ***\n'
@@ -1691,7 +1693,7 @@ def _getWalltime(oneCalc,ID):
           
     """    
 
-    cluster_type=AFLOWpi.prep._ConfigSectionMap("cluster","type").upper()
+    cluster_type=AFLOWpi.prep._ConfigSectionMap("cluster","job_type").upper()
 
     try:
         with open(oneCalc['__qsubFileName__'],"r") as qsubfileObj:
@@ -1748,7 +1750,7 @@ def _generic_restart_check(oneCalc,ID,__submitNodeName__):
         return
 
     percent_timer=0.90
-    from_config = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer").lower()
+    from_config = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer",step_num=oneCalc['__chain_index__']).lower()
     if from_config!='':
         percent_timer = float(from_config)
     
@@ -1818,7 +1820,7 @@ def _setupRestartPW(oneCalc,ID,__submitNodeName__):
 
     '''set buffer to time before walltime to stop the job'''
     percent_timer=0.90
-    from_config = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer").lower()
+    from_config = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer",step_num=oneCalc['__chain_index__']).lower()
     if from_config!='':
         percent_timer = float(from_config)
 
@@ -1905,7 +1907,7 @@ def _setupRestartGIPAW(oneCalc,ID):
 
     percent_timer=0.90
     try:
-        percent_timer = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer").lower()
+        percent_timer = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer",step_num=oneCalc['__chain_index__']).lower()
         percent_timer = float(percent_timer.strip())
     except:
         percent_timer=0.90
@@ -2094,7 +2096,7 @@ def _restartScript(oneCalc,ID,PID):
     logging.debug('main processess running on PID: %s' % PID)
     percent_timer=0.90
     try:
-        percent_timer = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer").lower()
+        percent_timer = AFLOWpi.prep._ConfigSectionMap("cluster","restart_buffer",step_num=oneCalc['__chain_index__']).lower()
         percent_timer = float(percent_timer.strip())
     except:
         percent_timer=0.90
@@ -2106,7 +2108,7 @@ def _restartScript(oneCalc,ID,PID):
     
     __submitNodeName__=__main__.__submitNodeName__
 
-    stepsasjobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs").lower()
+    stepsasjobs = AFLOWpi.prep._ConfigSectionMap("cluster","steps_as_jobs",step_num=oneCalc['__chain_index__']).lower()
     if stepsasjobs=='false' or stepsasjobs=='f':
         stepsasjobsBool=False
         logging.debug('stepsasjobs set to false in config file. reading in start time from oneCalc')
@@ -2467,7 +2469,7 @@ def _qe__pre_run(oneCalc,ID,calcType,__submitNodeName__,engine):
     
     """
 
-    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","type")
+    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","job_type")
     home = os.path.abspath(os.curdir)
     rd ='./'
 
@@ -2541,7 +2543,7 @@ def _oneRun(__submitNodeName__,oneCalc,ID,execPrefix='',execPostfix='',engine='e
     os.chdir(os.path.abspath(oneCalc['_AFLOWPI_FOLDER_']))
     AFLOWpi.prep._forceGlobalConfigFile(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'../AFLOWpi/CONFIG.config'))
 
-    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","type")
+    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","job_type")
 
     try:
         '''save the status of the calcs'''
@@ -2771,19 +2773,19 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
     logging.debug('entering _onePrep')
 
     if execPrefix is None or execPrefix is  '':
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=oneCalc['__chain_index__'])
 #    else:
 #        execPrefix=''
     if execPostfix is None or execPostfix is  '':
 
-        execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+        execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=oneCalc['__chain_index__'])
 #    else:
 #        execPostfix=''
 
 
     if calcType in ["dos","pdos"]:
-        execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial")
-        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial")
+        execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix_serial",step_num=oneCalc['__chain_index__'])
+        execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix_serial",step_num=oneCalc['__chain_index__'])
 
     folder = oneCalc['_AFLOWPI_FOLDER_']
     prefix = oneCalc['_AFLOWPI_PREFIX_']
@@ -2833,7 +2835,7 @@ def _onePrep(oneCalc,ID,execPrefix=None,execPostfix=None,engine='espresso',calcT
 def _bands_pp(__submitNodeName__,oneCalc,ID):
     
     nspin = int(AFLOWpi.scfuj.chkSpinCalc(oneCalc,ID))
-    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+    execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=oneCalc['__chain_index__'])
 
     if nspin==2:
         up = oneCalc,'','bands_up',ID

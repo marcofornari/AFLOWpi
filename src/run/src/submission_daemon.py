@@ -35,7 +35,7 @@ import time
 
 def _get_cluster_submit_command():
     '''set parent processID to 0 so they'll be different when the script starts'''
-    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","type").upper()
+    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster","job_type").upper()
     submitCommand='qsub'
     if clusterType.upper()=='SLURM':
         submitCommand='sbatch'  

@@ -1196,7 +1196,7 @@ def writeToScript(executable,calcs,from_step=0):
         new_oneCalc['__status__']=collections.OrderedDict({"Start":False,'Complete':False,"Restart":0,"Error":'None'})    
         
         
-        if AFLOWpi.prep._ConfigSectionMap("cluster","type") != '':              
+        if AFLOWpi.prep._ConfigSectionMap("cluster","job_type") != '':              
             AFLOWpi.run._qsubGen(new_oneCalc,new_ID)     
             new_oneCalc['__qsubFileName__']='_%s%s.qsub' % (new_ID,extension) 
 
@@ -1245,7 +1245,7 @@ def _fillTemplate(oneCalc,ID):
             AFLOWpi.prep._addToBlock(oneCalc,ID,'IMPORT',"import inspect")
             AFLOWpi.prep._addToBlock(oneCalc,ID,'IMPORT',"os.chdir(os.path.dirname(os.path.abspath(inspect.stack()[0][1])))")
 
-            clusterType  = AFLOWpi.prep._ConfigSectionMap('cluster','type').lower()
+            clusterType  = AFLOWpi.prep._ConfigSectionMap('cluster','job_type').lower()
             AFLOWpi.prep._addToBlock(oneCalc,ID,'RESTART',"oneCalc = AFLOWpi.run._setStartTime(oneCalc,ID,__CLOCK__)")
             if clusterType!='':
 
@@ -1685,7 +1685,7 @@ def _writeToScript(executable,oneCalc,ID,from_step=0):
 
         new_oneCalc,new_ID,oneCalc,ID = AFLOWpi.prep._temp_executable(oneCalcCopy,ID,from_step=from_step)
         index = oneCalc['__chain_index__']
-
+        print("*"*16,index)
         try:
             nextIDName,nextCalcName = AFLOWpi.prep._getNextOneCalcVarName(oneCalc,ID)
 
@@ -2412,7 +2412,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
                     AFLOWpi.run._fancy_error_log(e) 
 
                 try:
-                    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'type').upper()
+                    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'job_type').upper()
                     if clusterType in ['PBS','UGE','SLURM']:
                         AFLOWpi.run._qsubGen(v,k)
                 except Exception as e:
@@ -3920,8 +3920,9 @@ def _config_dict(configFile):
 
     return config_dict
 
-def _ConfigSectionMap(section,option,configFile=None):
-    index=1
+def _ConfigSectionMap(section,option,configFile=None,step_num=None):
+
+    section="global"
 
     Config = configparser.ConfigParser()
     config = AFLOWpi.prep._getConfigFile()
@@ -3951,7 +3952,8 @@ def _ConfigSectionMap(section,option,configFile=None):
     else:
             returned_option=''
     try:
-        section='step_%02d'%int(index)
+#        print("!"*8,step_num)
+        section='step_%02d'%int(step_num)
         returned_option = Config.get(section, option)
     except Exception as e:
         pass
@@ -5839,7 +5841,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
                 self._new_step(update_positions=True,update_structure=True)
 
-                postfix = ConfigSectionMap('run','exec_postfix')
+
 
 
         

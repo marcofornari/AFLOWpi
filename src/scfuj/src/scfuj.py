@@ -747,16 +747,16 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
                         AFLOWpi.run._fancy_error_log(e)
 
 
-
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+        step_num=oneCalc['_AFLOWPI_INDEX_']
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num) != '':
+            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
 
         else:
             execPrefix=''
 
 
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num) != '':
+                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num)
         else:
                 execPostfix=''
         
@@ -1404,22 +1404,23 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
                 except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
+        step_num=oneCalc['_AFLOWPI_INDEX_']
 
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix") != '':
-            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix")
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num) != '':
+            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
 
         else:
             execPrefix=''
 
 
-        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix") != '':
-                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix")
+        if AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num) != '':
+                execPostfix = AFLOWpi.prep._ConfigSectionMap("run","exec_postfix",step_num=step_num)
         else:
                 execPostfix=''
 
 
-        if AFLOWpi.prep._ConfigSectionMap('run','engine') == '':
-                engine = AFLOWpi.prep._ConfigSectionMap('run','engine')
+        if AFLOWpi.prep._ConfigSectionMap('run','engine',step_num=step_num) == '':
+                engine = AFLOWpi.prep._ConfigSectionMap('run','engine',step_num=step_num)
         else:
                 engine = 'espresso'
 
