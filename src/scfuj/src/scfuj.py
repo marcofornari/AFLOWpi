@@ -747,9 +747,9 @@ def _oneMinimizeCalcs(oneCalc,ID,config=None,pThresh=10.0):
                         AFLOWpi.run._fancy_error_log(e)
 
 
-        step_num=oneCalc['_AFLOWPI_INDEX_']
+        step_num=oneCalc['__chain_index__']
         if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num) != '':
-            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
+            execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_nm)
 
         else:
             execPrefix=''
@@ -1404,7 +1404,7 @@ def _run(__submitNodeName__,oneCalc,ID,config=None,mixing=0.10,kp_mult=1.6,U_eff
                 except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
-        step_num=oneCalc['_AFLOWPI_INDEX_']
+        step_num=oneCalc['__chain_index__']
 
         if AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num) != '':
             execPrefix=AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)

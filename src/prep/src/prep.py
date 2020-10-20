@@ -1195,14 +1195,14 @@ def writeToScript(executable,calcs,from_step=0):
     
         new_oneCalc['__status__']=collections.OrderedDict({"Start":False,'Complete':False,"Restart":0,"Error":'None'})    
         
-        
+
         if AFLOWpi.prep._ConfigSectionMap("cluster","job_type") != '':              
             AFLOWpi.run._qsubGen(new_oneCalc,new_ID)     
             new_oneCalc['__qsubFileName__']='_%s%s.qsub' % (new_ID,extension) 
 
         new_calcs[new_ID]=new_oneCalc
         step_index=new_oneCalc['__chain_index__']
-    
+        print("&"*12,from_step)
 
     return new_calcs
 
@@ -1446,7 +1446,6 @@ def _temp_executable(oneCalc,ID,from_step=0):
     except:
             pass
     
-
     temp_calcs=copy.deepcopy(oneCalc)
     new_calcs=copy.deepcopy(oneCalc)
 
@@ -1464,11 +1463,13 @@ def _temp_executable(oneCalc,ID,from_step=0):
 
             """generate a dummy .py file for use later when scf has run and we have info to generate hash"""
 
-            if from_step==0:
-                    extension= '_%.02d' % oneCalc['__chain_index__']
-            else:
-                    extension= '_%.02d' % from_step
+#            if from_step==0:
+#
+#            else:
 
+
+            extension= '_%.02d' % oneCalc['__chain_index__']
+            extension= '_%.02d' % from_step
 
             temp_hash = '%s%s'%(ID.split('_')[0],extension)
                     
@@ -1604,13 +1605,17 @@ def _addToBlock(oneCalc,ID,block,addition):
           None
 
     '''
- 
+    
     logging.debug('entering _addToBlock')
     if False:
         logging.debug('not writing to tree because build=False flag included in AFLOWpi.maketree')
     else:
         subdir = oneCalc['_AFLOWPI_FOLDER_']    
         fileName = '_'+ID+'.py'
+
+        if not os.path.exists(os.path.join(subdir,fileName)):
+                return
+
         try:
             with open(os.path.join(subdir,fileName),'r') as inputfile:
                 inputFileText = inputfile.read()
@@ -1684,8 +1689,8 @@ def _writeToScript(executable,oneCalc,ID,from_step=0):
         calc_type=''
 
         new_oneCalc,new_ID,oneCalc,ID = AFLOWpi.prep._temp_executable(oneCalcCopy,ID,from_step=from_step)
-        index = oneCalc['__chain_index__']
-        print("*"*16,index)
+        index = from_step#oneCalc['__chain_index__']
+        print("*"*16,index,from_step)
         try:
             nextIDName,nextCalcName = AFLOWpi.prep._getNextOneCalcVarName(oneCalc,ID)
 
@@ -1731,8 +1736,8 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
                 AFLOWpi.prep._addToBlock(oneCalc,prev_ID,'SUBMITNEXT','''AFLOWpi.run._submitJob("%s",oneCalc,__submitNodeName__,forceOneJob=%s)''' % (new_ID,force_one_job))
                 AFLOWpi.prep._addToBlock(oneCalc,prev_ID,'SUBMITNEXT',"globals()['__TEMP__INDEX__COUNTER__']-=1")
 
-                #remove the copyback from the previous step
-                AFLOWpi.prep._removeFromBlock(oneCalc,prev_ID,'CLEANUP',"AFLOWpi.prep._from_local_scratch(oneCalc,ID)")
+            #     #remove the copyback from the previous step
+            #     AFLOWpi.prep._removeFromBlock(oneCalc,prev_ID,'CLEANUP',"AFLOWpi.prep._from_local_scratch(oneCalc,ID)")
 
 
             AFLOWpi.prep._fillTemplate(oneCalc,new_ID)
@@ -1743,6 +1748,9 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
             #         s_ID="_".join(ID.split("_")[:-1])+"_00"
             # else:
             #         s_ID=ID
+
+
+
             AFLOWpi.prep._addToBlock(new_oneCalc,new_ID,'LOADCALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %s_ID)
 
             tryLoadStr = '''
@@ -2087,9 +2095,9 @@ def _oneBands(oneCalc,ID,dk=None,nk=None,configFile=None,n_conduction=None):
                 '''we need nscf and not bands because we need output for HOMO'''
                 subdir = oneCalc['_AFLOWPI_FOLDER_']
 
-                if not os.path.exists(os.path.join(subdir,'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:])):
-                    logging.error('%s does not exist. Can not make bands calculations. Exiting' % os.path.join(subdir,'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:]))
-                    raise SystemExit
+#                if not os.path.exists(os.path.join(subdir,'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:])):
+#                    logging.error('%s does not exist. Can not make bands calculations. Exiting' % os.path.join(subdir,'%s.out' % oneCalc['_AFLOWPI_PREFIX_'][1:]))
+#                    raise SystemExit
 
 
         except Exception as e:
@@ -2400,10 +2408,10 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                     if False:
                         logging.debug('not writing to tree because build=False flag included in AFLOWpi.maketree')
-                    else:
+#                    else:
 
-                            AFLOWpi.prep._writeTemplate(finp)
-                            AFLOWpi.prep._fillTemplate(v,k)
+#                            AFLOWpi.prep._writeTemplate(finp)
+ #                           AFLOWpi.prep._fillTemplate(v,k)
 
 
                     configFile= AFLOWpi.prep._getConfigFile()
@@ -2411,12 +2419,12 @@ def maketree(calcs, pseudodir=None,workdir=None):
                 except Exception as e:
                     AFLOWpi.run._fancy_error_log(e) 
 
-                try:
-                    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'job_type').upper()
-                    if clusterType in ['PBS','UGE','SLURM']:
-                        AFLOWpi.run._qsubGen(v,k)
-                except Exception as e:
-                    AFLOWpi.run._fancy_error_log(e)
+#                try:
+#                    clusterType = AFLOWpi.prep._ConfigSectionMap("cluster",'job_type').upper()
+#                    if clusterType in ['PBS','UGE','SLURM']:
+#                        AFLOWpi.run._qsubGen(v,k)
+#                except Exception as e:
+#                    AFLOWpi.run._fancy_error_log(e)
 
 
                 # copy the pseudo file
@@ -3278,7 +3286,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                             calc_label = AFLOWpi.prep._hash64String(inputfile2)
 
                             kp = '_AFLOWPI_PREFIX_'
-                            calc_label+='_01'
+                            calc_label+='_00'
                             vp ='_'+calc_label
                             prefix=vp
 
@@ -3294,7 +3302,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                             D.update({'SET':aflowkeys['set']})
                             D.update({'__refFile__':refFile})
                             D.update({'_AFLOWPI_INPUT_':inputfile2})
-                            D['__chain_index__']=1
+                            D['__chain_index__']=0
                                 
                             if calc_label not in list(calcs.keys()):
                                 calcs[calc_label] = copy.deepcopy(D)
@@ -3319,7 +3327,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                 calc_label = AFLOWpi.prep._hash64String(inputfile)
 
                 kp = '_AFLOWPI_PREFIX_'
-                calc_label+='_01'
+                calc_label+='_00'
                 vp ='_'+calc_label
 
                 prefix=vp
@@ -3334,7 +3342,7 @@ def scfs(aflowkeys,allAFLOWpiVars, refFile,pseudodir=None,build_type='product',c
                 DICT.update({'_AFLOWPI_CONFIG_':CONFIG_FILE})
                 DICT.update({'_AFLOWPI_FOLDER_':os.path.join(workdir,PROJECT,SET,'%s_%s_%04d' % (PROJDIR, SET, DICT['_AFLOWPI_INDEX_']))})
 
-                DICT['__chain_index__']=1
+                DICT['__chain_index__']=0
 
                 DICT.update({'_AFLOWPI_INPUT_':inputfile}) 
 
@@ -3772,7 +3780,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             '''make the ID'''
             try:
-                chain_ind=1
+                chain_ind=0
                 ext ='_%02d'%chain_ind
 
             except Exception as e:
@@ -3808,7 +3816,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
 
             
             DICT.update({'_AFLOWPI_INDEX_':index})
-            DICT.update({'__chain_index__':1})
+            DICT.update({'__chain_index__':0})
 
             if clean_input==True:
                     inputfile = AFLOWpi.prep._cleanInputStringSCF(inputfile)                            
@@ -3952,9 +3960,10 @@ def _ConfigSectionMap(section,option,configFile=None,step_num=None):
     else:
             returned_option=''
     try:
-#        print("!"*8,step_num)
+
         section='step_%02d'%int(step_num)
         returned_option = Config.get(section, option)
+        print("!"*8,step_num)
     except Exception as e:
         pass
 

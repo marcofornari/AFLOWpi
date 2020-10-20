@@ -793,7 +793,7 @@ def dos(calcs,engine='',execPrefix="  ",execPostfix="  ",holdFlag=True,config=No
 
     
 
-    
+    step_num = calcs[list(calcs.keys())[0]]['__chain_index__']
     execPrefix = AFLOWpi.prep._ConfigSectionMap("run","exec_prefix",step_num=step_num)
     if execPrefix=="":
         execPrefix=="  "

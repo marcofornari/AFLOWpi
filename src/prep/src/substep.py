@@ -165,8 +165,8 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             newConfigPath = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CONFIG.config')
             config = configparser.RawConfigParser()
             config.read(oneCalc['_AFLOWPI_CONFIG_'])
-            config.set('prep', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
-            config.set('prep', 'pseudo_dir', oneCalc['_AFLOWPI_PSEUDO_DIR_'])
+            config.set('global', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
+            config.set('global', 'pseudo_dir', oneCalc['_AFLOWPI_PSEUDO_DIR_'])
 
             py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
             if py_comm=="":
@@ -190,7 +190,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                         with open(qsub_temp_ref,'w') as qsub_post_trans:
                             qsub_post_trans.write(qsub_string)
 
-                        config.set('cluster', 'job_template',qsub_temp_ref) 
+                        config.set('global', 'job_template',qsub_temp_ref) 
                     except Exception as e:
                         AFLOWpi.run._fancy_error_log(e)
 
