@@ -1192,7 +1192,7 @@ def writeToScript(executable,calcs,from_step=0):
 
     for ID,oneCalc in list(calcs.items()):
         new_oneCalc,new_ID = AFLOWpi.prep._writeToScript(executable,oneCalc,ID,from_step=from_step)
-    
+        print('!'*8,new_ID)
         new_oneCalc['__status__']=collections.OrderedDict({"Start":False,'Complete':False,"Restart":0,"Error":'None'})    
         
 
@@ -1463,15 +1463,12 @@ def _temp_executable(oneCalc,ID,from_step=0):
 
             """generate a dummy .py file for use later when scf has run and we have info to generate hash"""
 
-#            if from_step==0:
-#
-#            else:
 
 
             extension= '_%.02d' % oneCalc['__chain_index__']
             extension= '_%.02d' % from_step
 
-            temp_hash = '%s%s'%(ID.split('_')[0],extension)
+            temp_hash = '%s%s'%('_'.join(ID.split('_')[:-1]),extension)
                     
             finp_temp = "_%s.py" % (temp_hash)
             finp = os.path.join(subdir,finp_temp)
@@ -1698,7 +1695,7 @@ def _writeToScript(executable,oneCalc,ID,from_step=0):
             AFLOWpi.run._fancy_error_log(e)
 
         try:
-            prev_ID = '%s_%.02d' % (ID.split('_')[0],from_step-1)
+            prev_ID = '%s_%.02d' % ('_'.join(ID.split('_')[:-1]),from_step-1)
 
             if os.path.exists(os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_'+prev_ID+'.py')):
                 pass
@@ -4448,7 +4445,6 @@ def _copyConfig(config,dest):
 import datetime
 class calcs_container:
         def __init__(self,dictionary):
-
                 self.int_dict=dictionary
                 self.type='scf'
                 self.step_index=0
@@ -4574,7 +4570,8 @@ EXITING.
         def __getInitInputs(self):
                 inputDict=collections.OrderedDict()
                 for ID,oneCalc in list(self.int_dict.items()):
-                        inputDict[ID.split('_')[0]]=oneCalc['_AFLOWPI_INPUT_']
+                        new_ID='_'.join(ID.split('_')[:-1])
+                        inputDict[new_ID]=oneCalc['_AFLOWPI_INPUT_']
 
                 return inputDict
 
@@ -4630,8 +4627,11 @@ EXITING.
                 self.load_index+=1
                 self.change_input('&control','calculation','"scf"')#,change_initial=False)
                 self.type='scf'
+
                 self._new_step(update_positions=True,update_structure=True)
+
                 self.initial_calcs.append(self.int_dict)
+
 
                 calc_type='Self-consistent'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
@@ -4893,7 +4893,7 @@ EXITING.
                         last_calcs=self.int_dict
 
                 self.workflow.append(self.type)
-                        
+
                 self.int_dict = writeToScript('',last_calcs,from_step=self.step_index)
 
                 if self.first_step==False:
@@ -5834,7 +5834,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 self.tight_banding=False
                 self.type='bands'
 
-                self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)              
+                self.change_input('&control','wf_collect','.TRUE.')#,change_initial=False)            
                 self._new_step(update_positions=True,update_structure=True)
 
 

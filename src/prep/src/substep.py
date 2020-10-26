@@ -48,18 +48,21 @@ def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=
     intoInit={'PROJECT':subset_name,'SET':'','workdir':oneCalc['_AFLOWPI_FOLDER_'],'config':config}
     fake_session_keys = AFLOWpi.prep.init(**intoInit)
 
+
     input_strings=None
     _locals=locals()
     exec('input_strings=%s'%build_command,globals(),_locals)
     input_strings = _locals["input_strings"]
 
+    
     if merge_oneCalc==True:
         varied_calcs = AFLOWpi.prep.calcFromFile(fake_session_keys,input_strings,reffile=oneCalc['_AFLOWPI_INPUT_'],workdir=oneCalc['_AFLOWPI_FOLDER_'],keep_name=keep_name,clean_input=clean_input)
     else:
         varied_calcs = AFLOWpi.prep.calcFromFile(fake_session_keys,input_strings,workdir=oneCalc['_AFLOWPI_FOLDER_'],keep_name=keep_name,clean_input=clean_input)
-    
 
-    return varied_calcs
+
+    return AFLOWpi.prep.calcs_container(varied_calcs)
+
 ###############################################################################################################
 
 ###############################################################################################################
@@ -126,7 +129,7 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
         try:
 
             chain_index=oneCalc['__chain_index__']
-            #           AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',oneCalc['__TEMP__INDEX__COUNTER__'])
+         
             AFLOWpi.prep._passGlobalVar('__TEMP__INDEX__COUNTER__',chain_index)
         except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
@@ -200,11 +203,9 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
 ################################################################################################################
             calc_subset = AFLOWpi.prep._one_test_build(oneCalc,ID,build_command,subset_name=subset_name,keep_name=keep_file_names,config=newConfigPath,clean_input=clean_input)
 
-            AFLOWpi.prep.runAfterAllDone(calc_subset,command,faultTolerant=fault_tolerant)
 
 
             '''if we are submitting the grid calc jobs separately or one big job'''
-
 
 
             for task in subset_tasks:                
@@ -212,18 +213,21 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
                 exec(task,globals(),_locals)
 
 
-            for ID_sub,oneCalc_sub in list(calc_subset.items()):
-                set_complete_string='''oneCalc['__status__']['Complete']=False
+            set_complete_string='''oneCalc['__status__']['Complete']=False
 AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
-                AFLOWpi.prep._addToBlock(oneCalc_sub,ID_sub,'LOCK',set_complete_string) 
+            calc_subset.addToAll('LOCK',set_complete_string) 
 
-                set_complete_string='''oneCalc['__status__']['Complete']=True
+            set_complete_string='''oneCalc['__status__']['Complete']=True
 AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
-                AFLOWpi.prep._addToBlock(oneCalc_sub,ID_sub,'SUBMITNEXT',set_complete_string) 
+            calc_subset.addToAll('SUBMITNEXT',set_complete_string) 
+
+            
+            
+
 
             '''submit in reverse order because calcs later in the orderedDict are more likely'''
             '''to be larger cells than those at the beginning'''                
- #           invert_bool=True
+
             '''if we're almost at the end of the walltime don't try to submit'''
             walltime,startScript=AFLOWpi.run._grabWalltime(oneCalc,ID)
             try:
@@ -255,15 +259,22 @@ AFLOWpi.prep._saveOneCalc(oneCalc,ID)'''
             except Exception as e:
                 AFLOWpi.run._fancy_error_log(e)
 
+
+
 #################################################################################################
         for ID_new,oneCalc_new in list(calc_subset.items()):
+
             try:
                 calc_subset[ID_new]['__walltime_dict__']=oneCalc['__walltime_dict__']
                 AFLOWpi.prep._saveOneCalc(oneCalc_new,ID_new)
             except Exception as e:
                 print(e)
                 pass
-#################################################################################################            
+#################################################################################################      
+
+        AFLOWpi.prep.runAfterAllDone(calc_subset,command,faultTolerant=fault_tolerant)
+
+        
         if mult_jobs==True:
             oneJobBool=False
             sajO=True
