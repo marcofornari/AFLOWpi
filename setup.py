@@ -34,6 +34,7 @@ from distutils.core import setup, Command,Extension
 import shutil
 sys.path.append(os.path.curdir)
 import site
+import src._version as _version
 
 #os.environ["CC"] = "gcc"
 #os.environ["CXX"] = "g++"
@@ -122,7 +123,7 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "1.2.0",
+         version = _version.__version__,
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",

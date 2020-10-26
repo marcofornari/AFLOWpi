@@ -52,7 +52,7 @@ import AFLOWpi.plot
 import functools
 import filecmp
 from functools import reduce
-
+import AFLOWpi._version
 
 #########################################################################################################################
 #########################################################################################################################
@@ -2316,7 +2316,7 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
 
 
-        logging.debug('Entering makeAFLOWpitree')
+        logging.debug('Entering maketree')
         megahashStr=''
         for ID in list(calcs.keys()):
             megahashStr+=ID
@@ -2470,22 +2470,22 @@ def maketree(calcs, pseudodir=None,workdir=None):
 
                                     
         '''saving the first set of calcs so they can be loaded by the script when the first calcs start'''
-        for ID,oneCalc in list(calcs.items()):
-#            oneCalc_file_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc'%ID)
-#            if not os.path.exists(oneCalc_file_name):
-#                   AFLOWpi.prep._saveOneCalc(oneCalc,ID)
-#            save_ID="_".join(ID.split("_")[:-1])+"_00"
-            save_ID=ID
-            AFLOWpi.prep._saveOneCalc(oneCalc,save_ID)
-            if AFLOWpi.prep._findInBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)==False:
-                AFLOWpi.prep._addToBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)
+#         for ID,oneCalc in list(calcs.items()):
+# #            oneCalc_file_path = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'_%s.oneCalc'%ID)
+# #            if not os.path.exists(oneCalc_file_name):
+# #                   AFLOWpi.prep._saveOneCalc(oneCalc,ID)
+# #            save_ID="_".join(ID.split("_")[:-1])+"_00"
+#             save_ID=ID
+#             AFLOWpi.prep._saveOneCalc(oneCalc,save_ID)
+#             if AFLOWpi.prep._findInBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)==False:
+#                 AFLOWpi.prep._addToBlock(oneCalc,ID,'ONECALC','''oneCalc = AFLOWpi.prep._loadOneCalc('./','%s')''' %ID)
                 
 
         index=1
         
         updatelogs(calcs,'step_%02d'%index)
 
-        logging.debug('Exiting makeAFLOWpitree')
+        logging.debug('Exiting maketree')
 
 
 def totree(tobecopied, calcs,rename=None,symlink=False):
@@ -3699,7 +3699,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
             inputCalc['&control']['wfcdir']="'./'"
 
             inputCalc['&control']['restart_mode']="'from_scratch'"
-            
+
             if '&electrons' not in list(inputCalc.keys()):
                 inputCalc['&electrons']=collections.OrderedDict()
                 inputCalc['&electrons']['diagonalization']='"david"'
@@ -3845,6 +3845,7 @@ def calcFromFile(aflowkeys,fileList,reffile=None,pseudodir=None,workdir=None,kee
         
 
         maketree(returnDict, pseudodir=pseudodir,workdir=workdir)
+
 #        if build==True:
 #            maketree(returnDict, pseudodir=pseudodir,workdir=workdir)
 
@@ -4036,41 +4037,27 @@ class init:
 
         def __gen_logo(self):
             logo=''
-#           logo+= '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
             logo+='\n'
-#           logo+='%%'
             logo+=AFLOWpi.run._colorize_message('            ______ _      ______          __',level='DEBUG',show_level=False)
             logo+='           '
-#           logo+='%%'
-            logo+='\n'
-#           logo+='%%'
+            logo+='\n'            
             logo+=AFLOWpi.run._colorize_message('      /\   |  ____| |    / __ \ \        / /',level='DEBUG',show_level=False)
             logo+='           '
-#           logo+='%%'
             logo+='\n'
-#           logo+='%%'
             logo+=AFLOWpi.run._colorize_message('     /  \  | |__  | |   | |  | \ \  /\  / /',level='DEBUG',show_level=False)
             logo+=AFLOWpi.run._colorize_message('__________  ',level='ERROR',show_level=False)
-#           logo+='%%'
             logo+='\n'
-#           logo+='%%'
             logo+=AFLOWpi.run._colorize_message('    / /\ \ |  __| | |   | |  | |\ \/  \/ /',level='DEBUG',show_level=False)
             logo+=AFLOWpi.run._colorize_message('|__________| ',level='ERROR',show_level=False)
-#           logo+='%%'   
             logo+='\n'
-#           logo+='%%'
             logo+=AFLOWpi.run._colorize_message('   / ____ \| |    | |___| |__| | \  /\  /',level='DEBUG',show_level=False)
             logo+=AFLOWpi.run._colorize_message('   | |  | |   ',level='ERROR',show_level=False)
-#           logo+='%%'
             logo+='\n'
-#           logo+='%%'
             logo+=AFLOWpi.run._colorize_message('  /_/    \_\_|    |______\____/   \/  \/',level='DEBUG',show_level=False)
             logo+=AFLOWpi.run._colorize_message('    |_|  |_|   ',level='ERROR',show_level=False)
-#           logo+='%%'
             logo+='\n'
-#           logo+='%%                                                       %%'
+            logo+='                                     ver. %s\n'%(AFLOWpi._version.__version__)
             logo+='\n'
-#           logo+='%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
             logo+='                                     By Andrew Supka et al.\n'
 
             return logo
@@ -4195,7 +4182,7 @@ class init:
                 #add it to this newly created calcs_container object
                 loaded_calcs.workflow=workflow
 
-                #check for last scf-type calc and load from there for additions to workflow
+                #check for last scf-type calc and load from there fora dditions to workflow
                 for progress in range(len(loaded_calcs.workflow)):
                         if loaded_calcs.workflow[progress] in ['relax','vcrelax','scf','scfuj','crawl_min','converge_smearing']:
                                 scf_step = AFLOWpi.prep.loadlogs(PROJECT=self.project,SET=self.set,logname='step_%02d'%(progress+1),config=self.config)
@@ -5413,20 +5400,20 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
                 #need to take a dictionary of dictionaries called "calc_subset" which is 
                 #generated from the list of files or strings representing inputs to the 
                 #calculation engine in AFLOWpi.prep.prep_split_step.
-                force_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_forces(oneCalc,ID)')"""
+                force_pull_string="""calc_subset.addToAll('RUN','AFLOWpi.run._pull_forces(oneCalc,ID)')"""
                 #adds the command to run the FD phonon calculations with pw.x and to add the command
                 #to run finite fields calculations for raman to the calculations in the subset
 
-                pol_pull_string="""AFLOWpi.prep._addToAll(calc_subset,'RUN','AFLOWpi.run._pull_polarization(oneCalc,ID)')"""
+                pol_pull_string="""calc_subset.addToAll('RUN','AFLOWpi.run._pull_polarization(oneCalc,ID)')"""
 
-                copy_wfc_str="""AFLOWpi.prep._addToAll(calc_subset,'PREPROCESSING','oneCalc,ID = AFLOWpi.run._fd_field_copy_wfc(oneCalc,ID,"%s")'%oneCalc['_AFLOWPI_PREFIX_'])"""
+                copy_wfc_str="""calc_subset.addToAll('PREPROCESSING','oneCalc,ID = AFLOWpi.run._fd_field_copy_wfc(oneCalc,ID,"%s")'%oneCalc['_AFLOWPI_PREFIX_'])"""
                 if raman==True:
                         LOTO=True
                         ff_add="""AFLOWpi.run._setup_raman(oneCalc,ID,field_strength=%s,field_cycles=%s,for_type="raman")"""%(field_strength,field_cycles)
                                                            
 
-
-                        task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
+                        execPostfix="-northo 1"
+                        task_list=['calc_subset.scf()',
                                    force_pull_string,pol_pull_string,copy_wfc_str]
 
                         self._addToAll(block='RUN',addition=ff_add)             
@@ -5448,8 +5435,8 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
 
                         self._addToAll(block='RUN',addition=ff_add)             
-
-                        task_list=['AFLOWpi.run.scf(calc_subset,execPostfix="-northo 1")',
+                        execPostfix="-northo 1"
+                        task_list=['calc_subset.scf()',
                                    force_pull_string,pol_pull_string,copy_wfc_str]
                                    
                         self.int_dict=AFLOWpi.prep.prep_split_step(self.int_dict,
@@ -5463,7 +5450,7 @@ level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='D
 
                 #adds the command to run the FD phonon calculations with pw.x
                 else:
-                        task_list=['AFLOWpi.run.scf(calc_subset)',
+                        task_list=['calc_subset.scf()',
                                    force_pull_string,]
 
                 #add the command to the ID.py that will generate the subset FD_PHONON and perform
