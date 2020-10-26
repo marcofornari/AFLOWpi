@@ -44,7 +44,6 @@ def _one_test_build(oneCalc,ID,build_command,subset_name='SUBSET',merge_oneCalc=
     if config is None:
         config=oneCalc['_AFLOWPI_CONFIG_']
 
-
     intoInit={'PROJECT':subset_name,'SET':'','workdir':oneCalc['_AFLOWPI_FOLDER_'],'config':config}
     fake_session_keys = AFLOWpi.prep.init(**intoInit)
 
@@ -171,13 +170,23 @@ def construct_and_run(__submitNodeName__,oneCalc,ID,build_command='',subset_task
             config.set('global', 'work_dir', oneCalc['_AFLOWPI_FOLDER_']) 
             config.set('global', 'pseudo_dir', oneCalc['_AFLOWPI_PSEUDO_DIR_'])
 
-            py_comm = AFLOWpi.prep._ConfigSectionMap('run','python_command')
+            py_comm = AFLOWpi.prep._ConfigSectionMap('global','python_command')
             if py_comm=="":
                 py_comm="python"
 
 
-            if config.has_section('cluster'):
-                if config.has_option('cluster','job_template'):
+            # in case of custom [step_xx] in config for this step
+            step_sec='step_%02d'%oneCalc['__chain_index__']
+            if config.has_section(step_sec):
+                sec_options=config.options(step_sec)
+                for sop in sec_options:
+                    op_val=config.get(step_sec,sop)
+                    print(op_val)
+                    config.set('global', sop,op_val) 
+                config.remove_section(step_sec)
+
+            if config.has_section('global'):
+                if config.has_option('global','job_template'):
                     try:
 
                         qsub_temp_ref = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],subset_name,'AFLOWpi','CLUSTER.ref')

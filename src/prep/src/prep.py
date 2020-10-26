@@ -1192,7 +1192,7 @@ def writeToScript(executable,calcs,from_step=0):
 
     for ID,oneCalc in list(calcs.items()):
         new_oneCalc,new_ID = AFLOWpi.prep._writeToScript(executable,oneCalc,ID,from_step=from_step)
-        print('!'*8,new_ID)
+        #print('!'*8,new_ID)
         new_oneCalc['__status__']=collections.OrderedDict({"Start":False,'Complete':False,"Restart":0,"Error":'None'})    
         
 
@@ -1202,7 +1202,7 @@ def writeToScript(executable,calcs,from_step=0):
 
         new_calcs[new_ID]=new_oneCalc
         step_index=new_oneCalc['__chain_index__']
-        print("&"*12,from_step)
+        #print("&"*12,from_step)
 
     return new_calcs
 
@@ -1687,7 +1687,7 @@ def _writeToScript(executable,oneCalc,ID,from_step=0):
 
         new_oneCalc,new_ID,oneCalc,ID = AFLOWpi.prep._temp_executable(oneCalcCopy,ID,from_step=from_step)
         index = from_step#oneCalc['__chain_index__']
-        print("*"*16,index,from_step)
+        #print("*"*16,index,from_step)
         try:
             nextIDName,nextCalcName = AFLOWpi.prep._getNextOneCalcVarName(oneCalc,ID)
 
@@ -2787,7 +2787,8 @@ def _loadOneCalc(folder,ID):
             oldOneCalc['_AFLOWPI_INPUT_']=inputFileString
             AFLOWpi.prep._saveOneCalc(oldOneCalc,ID)
         except Exception as e:
-            AFLOWpi.run._fancy_error_log(e)
+            pass    
+#            AFLOWpi.run._fancy_error_log(e)
 
         return oldOneCalc
         
@@ -3961,7 +3962,7 @@ def _ConfigSectionMap(section,option,configFile=None,step_num=None):
 
         section='step_%02d'%int(step_num)
         returned_option = Config.get(section, option)
-        print("!"*8,step_num)
+        #print("!"*8,step_num)
     except Exception as e:
         pass
 
@@ -4614,10 +4615,12 @@ EXITING.
                 AFLOWpi.run.resubmit(self.int_dict)
 
 
-        def scf(self):
+        def scf(self,exec_postfix_override=None):
                 """
                 Runs self consistent calculation with the calculation engine
-
+               
+                Keyword Arguments:
+                     exec_postfix_override (string): overrides the exec_postfix in the config file.
                 Returns:
                      None
                 """
@@ -4635,7 +4638,9 @@ EXITING.
 
                 calc_type='Self-consistent'
                 print((AFLOWpi.run._colorize_message('\nADDING STEP #%02d: '%(self.step_index),level='GREEN',show_level=False)+AFLOWpi.run._colorize_message(calc_type,level='DEBUG',show_level=False)))
-                AFLOWpi.run.scf(self.int_dict)  
+
+
+                AFLOWpi.run.scf(self.int_dict,execPostfix=exec_postfix_override)  
 
 
         def efg(self):
