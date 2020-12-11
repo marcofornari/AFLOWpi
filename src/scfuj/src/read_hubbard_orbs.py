@@ -53,7 +53,7 @@ def read_old_QE_xml( fn):
                 for n in range(natoms):
                     string = "ATOM."+str(n+1)
                     aux = elem.findall(string)[0]
-                    atoms.append(aux.attrib['SPECIES'][:-1])
+                    atoms.append(aux.attrib['SPECIES'].strip())
 
 
             if elem.tag == 'EXCHANGE_CORRELATION':
