@@ -221,7 +221,7 @@ class tight_binding:
 
 
 
-    def transport(self,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05):
+    def transport(self,t_min=300,t_max=300,t_step=1,en_range=[-5.05,5.05],de=0.05,carr_conc=False):
         '''
         Calculate Boltzmann transport properties with PAOFLOW
 
@@ -246,7 +246,7 @@ class tight_binding:
 
         ne=float(en_range[1]-en_range[0])/de
         AFLOWpi.scfuj.paopy_transport_wrapper(self.calcs,t_tensor,t_min,t_max,
-                                              t_step)
+                                              t_step,carr_conc=carr_conc)
 
         calc_type='Transport Properties'
         calc_type_color = AFLOWpi.run._colorize_message(calc_type,

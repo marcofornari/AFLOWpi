@@ -87,7 +87,7 @@ def main():
   if attr['spintexture']:
     paoflow.spin_texture()
 
-  paoflow.gradient_and_momenta()
+  paoflow.gradient_and_momenta(band_curvature=attr["carrier_conc"])
 
   if attr['smearing'] is not None:
     paoflow.adaptive_smearing()
@@ -103,7 +103,7 @@ def main():
 
   if attr['Boltzmann']:
     paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'], tstep=attr['tstep'], emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],
-                      t_tensor=arry['t_tensor'])
+                      t_tensor=arry['t_tensor'],carrier_conc=attr["carrier_conc"])
 
   if attr['epsilon']:
     paoflow.dielectric_tensor(metal=attr['metal'], emin=attr['epsmin'], emax=attr['epsmax'], ne=attr['ne'],d_tensor=arry['d_tensor'])

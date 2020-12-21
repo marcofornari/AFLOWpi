@@ -133,8 +133,8 @@ def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol
     command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol,nk)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step):
-    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s)"""%(repr(t_tensor),t_min,t_max,t_step)
+def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step,carr_conc=False):
+    command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s,carr_conc=%s)"""%(repr(t_tensor),t_min,t_max,t_step,carr_conc)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 
@@ -263,13 +263,17 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'high_sym_points','string',HSP_ARRAY,degree=2)
 
 
-def _add_paopy_transport(oneCalc,ID,t_tensor,t_min,t_max,t_step):
+def _add_paopy_transport(oneCalc,ID,t_tensor,t_min,t_max,t_step,carr_conc):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'Boltzmann','logical','T')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmin','decimal',t_min)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tmax','decimal',t_max)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'tstep','decimal',t_step)
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'t_tensor','int',t_tensor,degree=2)
+    if carr_conc:
+        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'carrier_conc','logical','T')
+
+
 
 def _add_paopy_optical(oneCalc,ID,d_tensor):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
