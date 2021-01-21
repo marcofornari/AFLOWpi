@@ -44,13 +44,12 @@ The examples directory in the AFLOWpi source directory contains example scripts.
 
 Quantum Espresso must be modified and recompiled for ACBN0 to work properly. The files needed are located in engine_mods directory. 
 
-Use of AFLOWpi should reference:
+**REFERENCES:**
+
+AFLOWpi:
 
 A.R. Supka, T.E. Lyons, L. Liyanage, P. D'Amico, R. Al Rahal Al Orabi, S. Mahatara, P. Gopal, C. Toher, D. Ceresoli, A. Calzolari, S. Curtarolo, M. Buongiorno Nardelli, and M. Fornari, AFLOW𝛑: A minimalist approach to high-throughput ab initio calculations including the generation of tight-binding hamiltonians, Computational Materials Science, 136 (2017) 76-84. doi:10.1016/j.commatsci.2017.03.055
 
-Use of PAOFLOW should reference:
+PAOFLOW:
 
 M. Buongiorno Nardelli, F. T. Cerasoli, M. Costa, S Curtarolo,R. De Gennaro, M. Fornari, L. Liyanage, A. Supka and H. Wang, PAOFLOW: A utility to construct and operate on ab initio Hamiltonians from the Projections of electronic wavefunctions on Atomic Orbital bases, including characterization of topological materials, Comp. Mat. Sci. vol. 143, 462 (2018). doi:10.1016/j.commatsci.2017.11.034
-
-
-
