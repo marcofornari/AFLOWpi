@@ -2,10 +2,10 @@
 
 **PREREQUISITES:**
 
-Python     >= 3.5 
-NumPy      >= 1.8.0
-SciPy      >= 0.14.0
-matplotlib >= 1.3.0
+- Python     >= 3.5 
+- NumPy      >= 1.8.0
+- SciPy      >= 0.14.0
+- matplotlib >= 1.3.0
 
 The following free scientific Python distributions include these prerequisites:
 
@@ -17,8 +17,8 @@ https://assets.enthought.com/downloads/edm/
 
 **For ACBN0 and PAOFLOW capabilities:**
 
-PAOFLOW >= 2.0.10
-mpi4py >= 2.0
+- PAOFLOW >= 2.0.10
+- mpi4py >= 2.0
 
 **INSTALLATION:**
 
@@ -29,7 +29,7 @@ To install AFLOWpi, execute this command in the AFLOW$\pi$ source directory:
 
 with the --user flag optional depending on the setup of your python distribution.
 
-**AFLOW$\pi$ can also be installed easily onto linux based systems via pip:**
+**AFLOWpi can also be installed easily onto linux based systems via pip:**
 
 pip install AFLOWpi
 
