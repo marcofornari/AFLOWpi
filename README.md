@@ -1,6 +1,6 @@
-**Installation instructions for AFLOW$\pi$**
+**Installation instructions for AFLOWpi**
 
-**PREREQUISITES: **
+**PREREQUISITES:**
 Python     >= 3.5 
 NumPy      >= 1.8.0
 SciPy      >= 0.14.0
@@ -19,7 +19,7 @@ PAOFLOW >= 2.0.10
 mpi4py >= 2.0
 
 **INSTALLATION:**
-To install AFLOW$\pi$, execute this command in the AFLOW$\pi$ source directory:
+To install AFLOWpi, execute this command in the AFLOW$\pi$ source directory:
 
 1. Clone this repository and enter the cloned directory
 2. python setup.py install --user
@@ -30,9 +30,9 @@ with the --user flag optional depending on the setup of your python distribution
 pip install AFLOWpi
 
 **GETTING STARTED:**
- The examples directory in the AFLOW$\pi$ source directory contains example scripts. 
+ The examples directory in the AFLOWpi source directory contains example scripts. 
 - AFLOW$\pi$ config must be modified to point to the proper executable directories of the calculation engine(s) being used. 
-- Once the AFLOW$\pi$ config file is properly setup for the computer environment, to start the example, run them as python executables. 
+- Once the AFLOWpi config file is properly setup for the computer environment, to start the example, run them as python executables. 
 
 
 **FOR ACBN0:**
