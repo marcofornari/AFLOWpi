@@ -22,7 +22,7 @@ https://github.com/marcobn/PAOFLOW
 
 **INSTALLATION:**
 
-To install AFLOWpi, execute this command in the AFLOW$\pi$ source directory:
+To install AFLOWpi, execute this command in the AFLOWpi source directory:
 
 1. Clone this repository and enter the cloned directory
 2. python setup.py install --user
