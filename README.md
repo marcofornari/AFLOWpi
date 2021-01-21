@@ -1,4 +1,4 @@
-###**Installation instructions for AFLOW$\pi$**
+**Installation instructions for AFLOW$\pi$**
 
 **PREREQUISITES: **
 Python     >= 3.5 
