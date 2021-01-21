@@ -17,6 +17,7 @@ https://assets.enthought.com/downloads/edm/
 **For ACBN0 and PAOFLOW capabilities:**
 
 - PAOFLOW >= 2.0.10
+https://github.com/marcobn/PAOFLOW
 - mpi4py >= 2.0
 
 **INSTALLATION:**
