@@ -8,10 +8,8 @@
 - matplotlib >= 1.3.0
 
 The following free scientific Python distributions include these prerequisites:
-
 *Continuum Anaconda*
 https://www.anaconda.com/products/individual
-
 *Enthought Canopy*
 https://assets.enthought.com/downloads/edm/
 
