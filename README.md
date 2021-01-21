@@ -35,7 +35,7 @@ pip install AFLOWpi
 **GETTING STARTED:**
  
 The examples directory in the AFLOWpi source directory contains example scripts. 
-- AFLOW$\pi$ config must be modified to point to the proper executable directories of the calculation engine(s) being used. 
+- AFLOWpi config must be modified to point to the proper executable directories of the calculation engine(s) being used. 
 - Once the AFLOWpi config file is properly setup for the computer environment, to start the example, run them as python executables. 
 
 
