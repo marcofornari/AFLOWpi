@@ -1,4 +1,4 @@
-**Installation instructions for AFLOWpi**
+![AFLOWpi_logo](https://github.com/marcofornari/AFLOWpi/blob/master/AFLOWpi_ascii.png?raw=true)
 
 **PREREQUISITES:**
 
