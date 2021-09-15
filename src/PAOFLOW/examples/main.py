@@ -102,8 +102,10 @@ def main():
     paoflow.anomalous_Hall(do_ac=attr['ac_cond_Berry'], emin=attr['eminAH'], emax=attr['emaxSH'],a_tensor=arry['a_tensor'])
 
   if attr['Boltzmann']:
-    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'], tstep=attr['tstep'], emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],
-                      t_tensor=arry['t_tensor'],carrier_conc=attr["carrier_conc"])
+    nt=int(np.abs(attr['tmax']-attr['tmin'])/attr['tstep'])
+    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'],nt=nt,
+                      emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],)
+
 
   if attr['epsilon']:
     paoflow.dielectric_tensor(metal=attr['metal'], emin=attr['epsmin'], emax=attr['epsmax'], ne=attr['ne'],d_tensor=arry['d_tensor'])
