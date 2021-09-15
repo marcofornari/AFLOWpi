@@ -252,7 +252,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         '''
         
 
-        font_mult=1.0
+        font_mult=1.5
         fig_title=AFLOWpi.plot._get_title_option()
         matplotlib.rcParams['figure.dpi'] = 600
         matplotlib.rcParams['savefig.dpi'] = 600
@@ -725,7 +725,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
         #
 
 
-        pylab.ylabel('E(eV)')
+        pylab.ylabel('E (eV)',size=18*font_mult)
         pylab.xlim(min(k_x[1]),max(k_x[1])) 
         pylab.ylim(yLim[0],yLim[1])    
 #       pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
@@ -1005,7 +1005,8 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
                         pylab.axvline(0.0, color = 'k', linewidth = 2.0) #line separating up and down spin
                 else:
 #                       ax2.legend(handles[::-1], labels[::-1],fontsize=14,loc=1)
-                        ax2.legend(handles, labels,fontsize=14*font_mult,loc=1)
+#                        ax2.legend(handles, labels,fontsize=14*font_mult,loc=1)
+                        ax2.legend(handles, labels,fontsize=18*font_mult,loc=0)
                         pylab.xlim(0,1.1*maxDOS) # scales DOS to larges value of DOS in the given energy range
 
 #               pylab.yticks(numpy.arange(yLim[0],yLim[1]+1,2))
@@ -1021,7 +1022,7 @@ def __bandPlot(oneCalc,yLim=[-10,10],DOSPlot='',postfix='',tight_banding=False,s
 
 
                 ax2.yaxis.set_ticks_position('left')
-                pylab.xlabel('Density of States (States/eV)',fontsize=20*font_mult)
+                pylab.xlabel('Density of States (States/eV)',fontsize=20)
                 ax2.axes.xaxis.set_label_position('top')
                 locs, labels = pylab.xticks()
                 
