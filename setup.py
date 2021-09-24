@@ -27,8 +27,8 @@
 import sys
 import os
 #import setuptools
-#from setuptools import setup, Command,Extension
-from distutils.core import setup, Command,Extension
+from setuptools import setup, Command,Extension
+# distutils.core import setup, Command,Extension
 #from distutils.util import change_root, convert_path
 #from distutils.command.install import install
 import shutil
@@ -122,7 +122,7 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "1.2.0",
+         version = "1.3",
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
