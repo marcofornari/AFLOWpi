@@ -170,7 +170,7 @@ try:
 
          ext_modules = [Extension("cints",sources=["src/scfuj/extensions/cints.c"],include_dirs = ['src/scfuj/extensions/'],) ],
 
-       install_requires=["matplotlib","PAOFLOW"],
+       install_requires=["matplotlib","PAOFLOW==2.0.18"],
 
          long_description = """Install Script for AFLOWpi""",)
    
