@@ -47,6 +47,9 @@ def main():
   #   inputfile.xml for the following calculations 
   paoflow = PAOFLOW.PAOFLOW(acbn0=arg3,workpath=arg1, inputfile=arg2, verbose=True,outputdir="")
 
+  paoflow.read_atomic_proj_QE()
+
+
   # Get dictionary containers with the
   #   attributes and arrays read from inputfiles
   arry,attr = paoflow.data_controller.data_dicts()
@@ -81,12 +84,6 @@ def main():
 
   paoflow.pao_eigh()
 
-  if attr['fermisurf']:
-    paoflow.fermi_surface()
-
-  if attr['spintexture']:
-    paoflow.spin_texture()
-
   paoflow.gradient_and_momenta(band_curvature=attr["carrier_conc"])
 
   if attr['smearing'] is not None:
@@ -95,6 +92,14 @@ def main():
   if attr['do_dos'] or attr['do_pdos']:
     paoflow.dos(do_dos=attr['do_dos'], do_pdos=attr['do_pdos'], emin=attr['emin'], emax=attr['emax'])
 
+  if attr['fermisurf']:
+    attr["fermi_up"]=1.0
+    attr["fermi_dw"]=-1.0
+    paoflow.fermi_surface()
+
+  if attr['spintexture']:
+    paoflow.spin_texture()
+
   if attr['spin_Hall']:
     paoflow.spin_Hall(do_ac=attr['ac_cond_spin'], emin=attr['eminSH'], emax=attr['emaxSH'],s_tensor=arry['s_tensor'])
 
@@ -102,8 +107,10 @@ def main():
     paoflow.anomalous_Hall(do_ac=attr['ac_cond_Berry'], emin=attr['eminAH'], emax=attr['emaxSH'],a_tensor=arry['a_tensor'])
 
   if attr['Boltzmann']:
-    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'], tstep=attr['tstep'], emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],
-                      t_tensor=arry['t_tensor'],carrier_conc=attr["carrier_conc"])
+    nt=int(abs(attr['tmax']-attr['tmin'])/attr['tstep'])
+    paoflow.transport(tmin=attr['tmin'], tmax=attr['tmax'],nt=nt,
+                      emin=attr['emin'], emax=attr['emax'], ne=attr['ne'],)
+
 
   if attr['epsilon']:
     paoflow.dielectric_tensor(metal=attr['metal'], emin=attr['epsmin'], emax=attr['epsmax'], ne=attr['ne'],d_tensor=arry['d_tensor'])

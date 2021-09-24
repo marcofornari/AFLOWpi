@@ -281,7 +281,7 @@ class tight_binding:
         k_grid=None
         cond_bands=True
 
-        AFLOWpi.scfuj.paopy_dos_wrapper(self.calcs)
+        AFLOWpi.scfuj.paopy_dos_wrapper(self.calcs,fermi_surf=fermi_surface)
         ne=float(dos_range[1]-dos_range[0])/de
 
         calc_type='Density of States'
