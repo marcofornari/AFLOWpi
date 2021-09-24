@@ -34,6 +34,7 @@ from setuptools import setup, Command,Extension
 import shutil
 sys.path.append(os.path.curdir)
 import site
+from src.prep.src.prep import __version__ as version
 
 #os.environ["CC"] = "gcc"
 #os.environ["CXX"] = "g++"
@@ -122,7 +123,7 @@ try:
           'scfuj/acbn0_support/pyints.py',]
 
    setup(name = "AFLOWpi",
-         version = "1.3.1",
+         version = version,
          description = "Medium Throughput Framework for Quantum Espresso",
          author = "Andrew Supka,Marco Fornari",
          author_email = "supka1ar@cmich.edu",
@@ -169,7 +170,7 @@ try:
 
          ext_modules = [Extension("cints",sources=["src/scfuj/extensions/cints.c"],include_dirs = ['src/scfuj/extensions/'],) ],
 
-       install_requires=["matplotlib","PAOFLOW"],
+       install_requires=["matplotlib","PAOFLOW==2.0.18"],
 
          long_description = """Install Script for AFLOWpi""",)
    

@@ -54,6 +54,8 @@ import filecmp
 from functools import reduce
 
 
+__version__ = "1.3.1"
+
 #########################################################################################################################
 #########################################################################################################################
 ##LOCKING WRAPPERS
@@ -4060,7 +4062,11 @@ class init:
 #           logo+='%%                                                       %%'
             logo+='\n'
 #           logo+='%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-            logo+='                                     By Andrew Supka et al.\n'
+            logo+=AFLOWpi.run._colorize_message('                                                  %8.8s\n'%("v"+__version__),
+                                                level='WARNING',show_level=False)
+            logo+=AFLOWpi.run._colorize_message('                                     By Andrew Supka et al.\n',
+                                                level='INFO',show_level=False)
+
 
             return logo
 
