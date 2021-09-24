@@ -121,21 +121,25 @@ def paopy_Berry_wrapper(calcs,a_tensor):
     command="""     AFLOWpi.scfuj._add_paopy_Berry(oneCalc,ID,%s)"""%repr(a_tensor)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
-def paopy_dos_wrapper(calcs):
-    command="""     AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID)"""
+def paopy_dos_wrapper(calcs,fermi_surf=False):
+    command="""     AFLOWpi.scfuj._add_paopy_dos(oneCalc,ID,fermi_surf=%s)"""%fermi_surf
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
+
 
 def paopy_pdos_wrapper(calcs):
     command="""     AFLOWpi.scfuj._add_paopy_pdos(oneCalc,ID)"""
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_bands_wrapper(calcs,band_topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2,nk=1000):
-    command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,fermi_surface=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,fermi_surface,ipol,jpol,spol,nk)
+    command="""     AFLOWpi.scfuj._add_paopy_bands(oneCalc,ID,topology=%s,ipol=%s,jpol=%s,spol=%s,nk=%s)"""%(band_topology,ipol,jpol,spol,nk)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
 
 def paopy_transport_wrapper(calcs,t_tensor,t_min,t_max,t_step,carr_conc=False):
     command="""     AFLOWpi.scfuj._add_paopy_transport(oneCalc,ID,%s,t_min=%s,t_max=%s,t_step=%s,carr_conc=%s)"""%(repr(t_tensor),t_min,t_max,t_step,carr_conc)
     AFLOWpi.prep.addToAll_(calcs,'PAOFLOW',command)
+
+
 
 
 def paopy_optical_wrapper(calcs,d_tensor):
@@ -226,17 +230,18 @@ def _add_paopy_header(oneCalc,ID,shift_type=1,shift='auto',thresh=0.90,tb_kp_mul
     if ovp==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'non_ortho','logical','T')
 
-def _add_paopy_dos(oneCalc,ID):
+def _add_paopy_dos(oneCalc,ID,fermi_surf=False):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_dos','logical','T')
-
+    if fermi_surf:
+            AFLOWpi.scfuj._add_paopy_xml(paopy_input,'fermisurf','logical','T')
 
 def _add_paopy_pdos(oneCalc,ID):
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_pdos','logical','T')
 
     
-def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0,jpol=1,spol=2):
+def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,ipol=0,jpol=1,spol=2):
 
     paopy_input = os.path.join(oneCalc['_AFLOWPI_FOLDER_'],'inputfile.xml')
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'do_bands','logical','T')
@@ -246,8 +251,7 @@ def _add_paopy_bands(oneCalc,ID,nk=1000,topology=True,fermi_surface=False,ipol=0
     AFLOWpi.scfuj._add_paopy_xml(paopy_input,'spol','int',spol)
     if topology==True:
         AFLOWpi.scfuj._add_paopy_xml(paopy_input,'band_topology','logical','T')
-    if fermi_surface==True:
-        AFLOWpi.scfuj._add_paopy_xml(paopy_input,'fermisurf','logical','T')
+
 
     if oneCalc['_AFLOWPI_ORIG_IBRAV_']==0:
         HSP,band_path = AFLOWpi.retr._getHighSymPoints(oneCalc,ID)
